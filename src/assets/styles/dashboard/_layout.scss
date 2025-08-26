@@ -1,0 +1,233 @@
+/**
+ * Layout Styles
+ * Structural layout, wrappers, and grid system
+ */
+
+// Layout and structure
+.wrapper-constructed {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.wrapper-content {
+  flex: 1;
+}
+
+// App Layout to accommodate fixed header
+.app-layout {
+  padding-top: 60px; // Match header height
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-content {
+  flex: 1;
+  display: flex;
+}
+
+// Main Content Layout - Fixed for proper toggle
+.main-content {
+  margin-left: 280px; // Default margin for visible sidebar
+  transition: margin-left 0.3s ease;
+  background: #fafafa; // Light background to make shadow more visible
+  min-height: calc(100vh - 60px); // Full height minus header
+  position: relative; // For pseudo-element positioning
+  
+  // Create visible left shadow using pseudo-element
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8px; // Shadow width
+    height: 100%;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+    pointer-events: none; // Don't interfere with content interaction
+    z-index: 1;
+  }
+}
+
+// When sidebar is collapsed, remove margin
+.app-sidebar.sidebar-collapsed ~ .main-content {
+  margin-left: 0;
+}
+
+// Body classes for sidebar state
+body.sidebar-closed .main-content {
+  margin-left: 0;
+}
+
+body.sidebar-open .main-content {
+  margin-left: 0; // On mobile, no margin when overlay is used
+}
+
+// Desktop: ensure proper margin when sidebar is visible
+@media (min-width: 1025px) {
+  body:not(.sidebar-closed) .main-content {
+    margin-left: 280px;
+  }
+  
+  .app-sidebar:not(.sidebar-collapsed) ~ .main-content {
+    margin-left: 280px;
+  }
+}
+
+// Content container
+.content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white; // White background for content cards
+  border-radius: $border-radius;
+}
+
+.breadcrumbs {
+  margin-bottom: 20px;
+  font-size: $font-size-sm; // 14px
+}
+
+// Dashboard header
+.placeholder-header {
+  width: 100%;
+  margin-bottom: 30px;
+  
+  .cell-left h1 {
+    font-size: $font-size-h1; // 25px to match admin-ui
+    color: $dark-color;
+    margin: 0;
+  }
+  
+  .cell-right {
+    text-align: right;
+  }
+}
+
+// Welcome section
+#container_welcome {
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8f9fa;
+  border-radius: $border-radius;
+  margin-bottom: 30px;
+  
+  .ui-header-light {
+    font-size: 24px;
+    color: $dark-color;
+    margin-bottom: 15px;
+  }
+}
+
+// Activity section
+#container_activity {
+  .ui-header-light {
+    font-size: 20px;
+    color: $dark-color;
+    margin-bottom: 15px;
+  }
+  
+  .params {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    .param-value {
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+}
+
+// Statistics
+.insights-statistics {
+  list-style: none;
+  margin: 20px 0;
+  padding: 0;
+  display: flex;
+  gap: 30px;
+  
+  li {
+    text-align: center;
+    
+    > div {
+      > div:first-child {
+        font-size: 14px;
+        color: $secondary-color;
+        margin-bottom: 5px;
+      }
+      
+      .insights-statistics-figure {
+        font-size: 24px;
+        font-weight: bold;
+        
+        &.label-started {
+          color: #3b5998;
+        }
+        
+        &.label-completed {
+          color: $success-color;
+        }
+        
+        &.label-completion-rate {
+          color: $info-color;
+        }
+        
+        &.label-partial {
+          color: $warning-color;
+        }
+        
+        &.label-disqualified {
+          color: $danger-color;
+        }
+      }
+    }
+  }
+}
+
+// Chart container
+#chart {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: $border-radius;
+  margin: 20px 0;
+}
+
+// Footer
+.wrapper-footer {
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  padding: 20px 0;
+  margin-top: auto;
+  margin-left: 280px; // Start after sidebar
+  transition: margin-left 0.3s ease; // Smooth transition when sidebar toggles
+  
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  
+  // Navigation links removed - moved to sidebar footer
+  
+  .footer-copyright {
+    margin-top: 15px;
+    font-size: 12px;
+    color: $secondary-color;
+  }
+}
+
+// Adjust footer when sidebar is collapsed
+.app-sidebar.sidebar-collapsed ~ * .wrapper-footer,
+body.sidebar-closed .wrapper-footer {
+  margin-left: 0;
+  padding-left: 20px; // Normal padding when sidebar is hidden
+}
+
+// Mobile: footer should not extend under sidebar
+@media (max-width: 1024px) {
+  .wrapper-footer {
+    margin-left: 0 !important;
+    padding-left: 20px !important;
+  }
+}

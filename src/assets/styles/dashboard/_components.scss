@@ -1,0 +1,328 @@
+/**
+ * UI Components Styles
+ * Buttons, forms, tables, dropdowns, and other reusable UI elements
+ */
+
+// Buttons - Updated to match admin-ui styling
+.button-green,
+.btn-add {
+  background: $success-color;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: $border-radius;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  font-weight: normal; // Changed from 500 to match admin-ui
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: $font-size-sm; // 14px to match admin-ui
+  min-height: 36px;
+  text-transform: none;
+  
+  &:hover {
+    background: color.scale($success-color, $lightness: -10%);
+    color: white;
+    text-decoration: none;
+  }
+  
+  i.icon-add-white,
+  .add-icon {
+    margin-right: 5px;
+    
+    &::before {
+      content: '+';
+      font-weight: bold;
+    }
+  }
+}
+
+// Primary button style matching admin-ui
+.button-primary,
+.btn-action {
+  background: $primary-color;
+  color: white;
+  border: 1px solid color.scale($primary-color, $lightness: -10%);
+  text-shadow: 0 1px 1px color.scale($primary-color, $lightness: -15%);
+  background: linear-gradient(to bottom, #8A9CC2, #6D84B4);
+  padding: 8px 16px;
+  border-radius: $border-radius;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  font-weight: normal;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: $font-size-sm; // 14px
+  min-height: 36px;
+  text-transform: none;
+  
+  &:hover {
+    background: color.scale($primary-color, $lightness: -10%);
+    background: linear-gradient(to bottom, #6D84B4, #4F6AA3);
+    color: white;
+    text-decoration: none;
+  }
+}
+
+.button-white,
+.btn-cancel {
+  background: #e5e5e5;
+  color: $dark-color;
+  border: 1px solid #999999;
+  text-shadow: 0 1px 0 #fff;
+  background: linear-gradient(to bottom, #f9f9f9, #e5e5e5);
+  padding: 8px 16px;
+  border-radius: $border-radius;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: $font-size-sm; // 14px
+  min-height: 36px;
+  text-transform: none;
+  font-weight: normal;
+  
+  &:hover {
+    background: #ddd;
+    background: linear-gradient(to bottom, #e5e5e5, #dddddd);
+    border-color: #9ca3af;
+    text-decoration: none;
+  }
+  
+  i.icon-more::after {
+    content: '▼';
+    font-size: 10px;
+    margin-left: 5px;
+  }
+}
+
+// Update button font sizes and spacing to match admin-ui
+button, .btn, input[type="button"], input[type="submit"] {
+  font-size: $font-size-sm; // 14px
+  font-family: $font-family-sans-serif;
+  padding: 8px 16px;
+  min-height: 36px;
+  text-transform: none;
+  font-weight: normal;
+}
+
+// Data table
+.data-table {
+  margin-top: 20px;
+  
+  .data-table-body {
+    border: 1px solid #dee2e6;
+    border-radius: $border-radius;
+    overflow: hidden;
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      
+      thead {
+        background: #f8f9fa;
+        
+        th {
+          padding: 12px;
+          text-align: left;
+          font-weight: 600;
+          color: $dark-color;
+          border-bottom: 1px solid #dee2e6;
+          
+          &.sortable {
+            cursor: pointer;
+            
+            &:hover {
+              background: #e9ecef;
+            }
+          }
+        }
+      }
+      
+      tbody {
+        tr {
+          &.even {
+            background: white;
+          }
+          
+          &.odd {
+            background: #f8f9fa;
+          }
+          
+          &:hover {
+            background: #e3f2fd;
+          }
+          
+          td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f3f4;
+            
+            &.first-item {
+              font-weight: 500;
+            }
+            
+            &.last-item {
+              border-right: none;
+            }
+            
+            a {
+              color: $primary-color;
+              text-decoration: none;
+              
+              &:hover {
+                text-decoration: underline;
+              }
+            }
+            
+            .hours {
+              color: $secondary-color;
+              font-weight: normal;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Row buttons and icons
+.row-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: $border-radius-sm;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  text-decoration: none;
+  
+  &:hover {
+    background: #e9ecef;
+    text-decoration: none;
+  }
+  
+  i.row-icon-preview::before {
+    content: '👁';
+    font-style: normal;
+  }
+}
+
+// Dropdown components
+.ui-button-dropdown {
+  position: relative;
+  display: inline-block;
+  
+  .ui-combo-popup {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 150px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+    z-index: 1000;
+    display: none;
+    
+    ul.ml {
+      list-style: none;
+      margin: 0;
+      padding: 5px 0;
+      
+      li {
+        a {
+          display: block;
+          padding: 8px 15px;
+          color: $dark-color;
+          text-decoration: none;
+          
+          &:hover {
+            background: #f8f9fa;
+          }
+          
+          &.checked {
+            background: #e3f2fd;
+            color: $primary-color;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Legend indicator
+.legend {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: 5px;
+}
+
+// Date picker
+.datepicker-text {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: $border-radius;
+  cursor: pointer;
+  
+  &:hover {
+    border-color: #adb5bd;
+  }
+  
+  .datepicker-date-range-container {
+    font-size: 14px;
+    
+    #datepicker_date_range_description {
+      color: $secondary-color;
+    }
+    
+    #datepicker_date_range_value {
+      font-weight: 500;
+      color: $dark-color;
+    }
+  }
+}
+
+// Chosen dropdown styling
+.chosen-container {
+  width: 100% !important;
+  
+  .chosen-single {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: $border-radius;
+    padding: 8px 12px;
+    height: auto;
+    font-size: 14px;
+    
+    &:hover {
+      border-color: #adb5bd;
+    }
+    
+    span {
+      color: $dark-color;
+    }
+    
+    div b {
+      background-position: right center;
+      
+      &::after {
+        content: '▼';
+        font-size: 10px;
+        color: $secondary-color;
+      }
+    }
+  }
+  
+  &.chosen-container-active .chosen-single {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+  }
+}

@@ -3,25 +3,37 @@
  */
 
 // Colors
-$primary-color: #007bff;
+$primary-color: #324E8D; // Updated to match admin-ui primary color
 $secondary-color: #6c757d;
-$success-color: #28a745;
-$danger-color: #dc3545;
-$warning-color: #ffc107;
-$info-color: #17a2b8;
+$success-color: #67A54B; // Updated to match admin-ui success color
+$danger-color: #BA0A1C; // Updated to match admin-ui error color
+$warning-color: #FFBF4A; // Updated to match admin-ui warning color
+$info-color: #324E8D; // Updated to match admin-ui info color
 $light-color: #f8f9fa;
-$dark-color: #343a40;
+$dark-color: #333333; // Updated to match admin-ui text color
 
-// Typography
-$font-family-sans-serif: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+// Typography - Updated to match admin-ui font sizes
+$font-family-sans-serif: arial, helvetica, sans-serif; // Updated to match admin-ui
 $font-family-monospace: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
 
-$font-size-xs: 0.75rem;
-$font-size-sm: 0.875rem;
-$font-size-base: 1rem;
-$font-size-lg: 1.125rem;
-$font-size-xl: 1.25rem;
+// Font sizes updated to match admin-ui (+1px from original)
+$font-size-xs: 0.75rem; // 12px
+$font-size-sm: 0.875rem; // 14px 
+$font-size-base: 0.9375rem; // 15px (updated from 1rem/16px)
+$font-size-lg: 1.125rem; // 18px
+$font-size-xl: 1.25rem; // 20px
+
+// Header sizes to match admin-ui
+$font-size-h1: 1.5625rem; // 25px
+$font-size-h2: 1.1875rem; // 19px
+$font-size-h3: 1.0625rem; // 17px
+$font-size-h4: 0.9375rem; // 15px
+$font-size-h5: 0.9375rem; // 15px
+$font-size-h6: 0.9375rem; // 15px
+
+// Menu and navigation sizes
+$font-size-menu: 1rem; // 16px for sidebar menu items
+$font-size-nav: 0.9375rem; // 15px for navigation elements
 
 // Spacing
 $spacer: 1rem;

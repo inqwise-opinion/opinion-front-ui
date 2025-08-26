@@ -3,18 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Opinion - Survey Management Dashboard</title>
-  <meta name="description" content="Opinion Front UI - TypeScript migration from servlet-based application">
+  <title>Opinion - Survey Management Platform</title>
+  <meta name="description" content="Opinion - Modern survey management platform for creating, managing and analyzing surveys">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <style>
     /* Basic loading styles */
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+    
     .loader-container {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-family: Arial, sans-serif;
       background: #f8f9fa;
     }
     
@@ -36,6 +41,7 @@
     .loading-text {
       color: #6c757d;
       font-size: 16px;
+      font-weight: 400;
     }
   </style>
 </head>
@@ -47,6 +53,6 @@
     </div>
   </div>
 
-  <script type="module" src="../src/main.ts"></script>
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

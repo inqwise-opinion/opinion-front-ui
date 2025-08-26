@@ -1,0 +1,691 @@
+/**
+ * Sidebar Component Styles
+ * App sidebar, navigation, toggles, and floating menu
+ */
+
+// Responsive visibility classes
+.mobile-only {
+  display: none !important;
+  
+  @media (max-width: $breakpoint-md) {
+    display: inline-flex !important;
+  }
+}
+
+.desktop-only {
+  display: inline-flex !important;
+  
+  @media (max-width: $breakpoint-md) {
+    display: none !important;
+  }
+}
+
+// Floating Hamburger Menu Toggle - Show only when sidebar is collapsed
+.sidebar-toggle-floating {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1003; // Above sidebar and overlay
+  background: $primary-color;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  display: none; // Hidden by default
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  
+  &:hover {
+    background: color.scale($primary-color, $lightness: -10%);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  .hamburger-icon {
+    display: flex;
+    flex-direction: column;
+    width: 22px;
+    height: 18px;
+    justify-content: space-between;
+    
+    span {
+      display: block;
+      height: 3px;
+      width: 100%;
+      background: white;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+  }
+  
+  &.active .hamburger-icon {
+    span {
+      &:nth-child(1) {
+        transform: rotate(45deg) translate(6px, 6px);
+      }
+      
+      &:nth-child(2) {
+        opacity: 0;
+      }
+      
+      &:nth-child(3) {
+        transform: rotate(-45deg) translate(8px, -8px);
+      }
+    }
+  }
+}
+
+// Adjust position when sidebar is open on desktop
+@media (min-width: 1025px) {
+  body:not(.sidebar-closed) .sidebar-toggle-floating {
+    left: 300px; // Move right when sidebar is open
+  }
+}
+
+// App Sidebar (Enhanced Structure)
+.app-sidebar {
+  position: fixed;
+  top: 0; // Start from top of viewport (Y=0)
+  left: 0;
+  width: 280px;
+  height: 100vh; // Full viewport height
+  background: white;
+  border-right: none; // Remove border to connect seamlessly with header
+  z-index: 1001;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+  box-shadow: none; // Remove general shadow
+  
+  // Remove the pseudo-element shadow since we're adding border to navigation
+  // &::after removed - shadow now handled by .sidebar-navigation
+  
+  &.sidebar-collapsed {
+    transform: translateX(-280px);
+  }
+  
+  .sidebar-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  // Sidebar Header - Match main header height
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: #fff;
+    border-bottom: 1px solid #f1f3f5; // Light separator to match main header
+    height: 60px; // Match main header height exactly
+    min-height: 60px;
+    flex-shrink: 0;
+    box-shadow: none; // Remove shadow for cleaner look
+    
+    .sidebar-brand {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      
+      .brand-title {
+        margin: 0;
+        padding-bottom: 0; // Override global h1 padding
+        font-size: 24px; // Increased from $font-size-lg (18px)
+        font-weight: 600;
+        color: $primary-color;
+        line-height: 1.2;
+        text-align: left;
+      }
+    }
+    
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 12px; // Increased from 8px
+      border-radius: $border-radius;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $secondary-color;
+      min-width: 44px; // Added minimum touch target
+      min-height: 44px; // Added minimum touch target
+      position: relative; // For icon positioning
+      
+      &:hover {
+        background: rgba($primary-color, 0.1);
+        color: $primary-color;
+      }
+      
+      &:focus {
+        outline: 2px solid $primary-color;
+        outline-offset: 2px;
+      }
+
+      .material-icons,
+      .hamburger-icon {
+        font-size: 26px; // Increased from 20px
+        transition: transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .hamburger-icon {
+        font-size: 20px !important;
+        font-family: 'Arial', monospace !important;
+        line-height: 1 !important;
+        text-decoration: none !important;
+        color: inherit !important;
+      }
+      
+      &[aria-expanded="false"] .material-icons {
+        transform: rotate(0deg);
+      }
+      
+      &[aria-expanded="true"] .material-icons {
+        transform: rotate(180deg);
+      }
+      
+      // Don't rotate the hamburger icon
+      &[aria-expanded="false"] .hamburger-icon,
+      &[aria-expanded="true"] .hamburger-icon {
+        transform: none;
+      }
+    }
+  }
+  
+  // Sidebar Navigation
+  .sidebar-navigation {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid #e0e6ed; // Right border for separation
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08); // Shadow extending to the right
+    
+    .nav-section {
+      padding: 8px 0;
+      
+      .nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        
+        .nav-item {
+          margin: 2px 8px;
+          
+          .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: $dark-color;
+            text-decoration: none;
+            border-radius: $border-radius;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: $font-size-base;
+            position: relative;
+            
+            &:hover {
+              background: rgba($primary-color, 0.08);
+              color: $primary-color;
+              text-decoration: none;
+              
+              .nav-icon {
+                color: $primary-color;
+              }
+            }
+            
+            &.nav-link-active,
+            &[aria-current="page"] {
+              background: rgba($primary-color, 0.15);
+              color: $primary-color;
+              font-weight: 600;
+              
+              .nav-icon {
+                color: $primary-color;
+              }
+              
+              &::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 3px;
+                height: 20px;
+                background: $primary-color;
+                border-radius: 0 2px 2px 0;
+              }
+            }
+            
+            .nav-icon {
+              font-size: 20px;
+              margin-right: 12px;
+              color: $secondary-color;
+              transition: color 0.2s ease;
+              width: 20px;
+              text-align: center;
+              flex-shrink: 0;
+              
+              // Hide text content in Material Icons to prevent duplicate text
+              &.material-icons {
+                font-size: 0; // Hide the text by making font-size 0
+                
+                // Show the icon using ::before pseudo-element
+                &::before {
+                  content: attr(data-icon);
+                  font-family: 'Material Icons';
+                  font-size: 20px;
+                  line-height: 1;
+                  font-weight: normal;
+                  font-style: normal;
+                  display: inline-block;
+                  text-transform: none;
+                  letter-spacing: normal;
+                  word-wrap: normal;
+                  white-space: nowrap;
+                  direction: ltr;
+                  -webkit-font-feature-settings: 'liga';
+                  -webkit-font-smoothing: antialiased;
+                  text-rendering: optimizeLegibility;
+                  -moz-osx-font-smoothing: grayscale;
+                  font-feature-settings: 'liga';
+                }
+                
+                // Fallback when Material Icons font fails to load
+                &[data-icon="dashboard"]::before { content: 'dashboard'; }
+                &[data-icon="poll"]::before { content: 'poll'; }
+                &[data-icon="business"]::before { content: 'business'; }
+                &[data-icon="collections_bookmark"]::before { content: 'collections_bookmark'; }
+                &[data-icon="payment"]::before { content: 'payment'; }
+                &[data-icon="settings"]::before { content: 'settings'; }
+                &[data-icon="expand_more"]::before { content: 'expand_more'; }
+                &[data-icon="receipt"]::before { content: 'receipt'; }
+                &[data-icon="work"]::before { content: 'work'; }
+                &[data-icon="event"]::before { content: 'event'; }
+              }
+            }
+            
+            .nav-text {
+              flex: 1;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            
+            .nav-badge {
+              background: $success-color;
+              color: white;
+              font-size: 11px;
+              font-weight: 600;
+              padding: 3px 7px;
+              border-radius: 12px;
+              min-width: 20px;
+              text-align: center;
+              line-height: 1;
+              margin-left: 8px;
+              flex-shrink: 0;
+            }
+          }
+          
+          // Expandable Navigation Items
+          &.nav-item-expandable {
+            .nav-link-expandable {
+              cursor: pointer;
+              background: none;
+              border: none;
+              width: 100%;
+              text-align: left;
+              
+              .nav-arrow {
+                margin-left: auto;
+                font-size: 18px;
+                transition: transform 0.2s ease;
+                color: $secondary-color;
+                flex-shrink: 0;
+              }
+              
+              &:hover .nav-arrow {
+                color: $primary-color;
+              }
+              
+              &[aria-expanded="true"] {
+                .nav-arrow {
+                  transform: rotate(180deg);
+                }
+              }
+            }
+            
+            .nav-submenu {
+              list-style: none;
+              margin: 4px 0 0 0;
+              padding: 0;
+              background: rgba($light-color, 0.5);
+              border-radius: $border-radius;
+              overflow: hidden;
+              max-height: 0;
+              transition: max-height 0.3s ease, padding 0.3s ease;
+              
+              &[aria-expanded="true"] {
+                max-height: 200px;
+                padding: 8px 0;
+              }
+              
+              .nav-subitem {
+                margin: 0;
+                
+                .nav-sublink {
+                  display: flex;
+                  align-items: center;
+                  padding: 8px 20px 8px 48px;
+                  color: $secondary-color;
+                  text-decoration: none;
+                  font-size: $font-size-sm;
+                  font-weight: 400;
+                  border-radius: $border-radius;
+                  margin: 0 8px;
+                  transition: all 0.2s ease;
+                  
+                  &:hover {
+                    background: rgba($primary-color, 0.08);
+                    color: $primary-color;
+                    text-decoration: none;
+                    
+                    .nav-subicon {
+                      color: $primary-color;
+                    }
+                  }
+                  
+                  &.nav-sublink-active,
+                  &[aria-current="page"] {
+                    background: rgba($primary-color, 0.12);
+                    color: $primary-color;
+                    font-weight: 500;
+                    
+                    .nav-subicon {
+                      color: $primary-color;
+                    }
+                  }
+                  
+                  .nav-subicon {
+                    font-size: 16px;
+                    margin-right: 8px;
+                    color: $secondary-color;
+                    transition: color 0.2s ease;
+                    width: 16px;
+                    text-align: center;
+                    flex-shrink: 0;
+                  }
+                  
+                  .nav-subtext {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Sidebar Footer
+  .sidebar-footer {
+    flex-shrink: 0;
+    padding: 20px; // Simple padding like original footer
+    border-top: 1px solid #dee2e6; // Match wrapper-footer border style
+    border-right: 1px solid #e0e6ed; // Right border to match navigation
+    background: #f8f9fa; // Match wrapper-footer background
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08); // Shadow extending to the right
+    
+    .footer-navigation-left-panel {
+      ul.ld {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        
+        li {
+          a {
+            color: $secondary-color;
+            text-decoration: none;
+            font-size: 14px; // Match original footer font size
+            
+            &:hover {
+              color: $primary-color;
+              text-decoration: underline; // Match original footer hover
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.sidebar-nav {
+  .sidebar-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    
+    .menu-item {
+      margin: 0;
+      
+      &.menu-item-expandable {
+        .menu-link.expandable {
+          cursor: pointer;
+          position: relative;
+          
+          .expand-icon {
+            margin-left: auto;
+            font-size: 20px;
+            transition: transform 0.2s ease;
+            color: $secondary-color;
+          }
+          
+          &:hover .expand-icon {
+            color: $dark-color;
+          }
+        }
+        
+        &.expanded {
+          .menu-link.expandable {
+            background-color: rgba($primary-color, 0.05);
+            
+            .expand-icon {
+              transform: rotate(180deg);
+            }
+          }
+        }
+      }
+    }
+    
+    .menu-link {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: $dark-color;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+      position: relative;
+      
+      &:hover {
+        background: #f8f9fa;
+        border-left-color: $primary-color;
+        text-decoration: none;
+        
+        .menu-icon {
+          color: $primary-color;
+        }
+      }
+      
+      &.active {
+        background: rgba($primary-color, 0.1);
+        border-left-color: $primary-color;
+        color: $primary-color;
+        font-weight: 500;
+        
+        .menu-icon {
+          color: $primary-color;
+        }
+      }
+      
+      .menu-icon {
+        font-size: 20px;
+        margin-right: 12px;
+        width: 24px;
+        text-align: center;
+        color: $secondary-color;
+        transition: color 0.2s ease;
+        
+        &.material-icon {
+          font-size: 20px;
+        }
+      }
+      
+      .menu-text {
+        flex: 1;
+        font-size: $font-size-menu; // 16px to match admin-ui
+        font-weight: 500;
+      }
+      
+      .menu-count {
+        background-color: $success-color;
+        color: white;
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        border-radius: 10px;
+        min-width: 18px;
+        text-align: center;
+        line-height: 1.2;
+        margin-left: 8px;
+      }
+    }
+    
+    // Submenu styles
+    .menu-submenu {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      background-color: rgba(#f8f9fa, 0.5);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      
+      .menu-item-expandable.expanded & {
+        max-height: 300px;
+        padding: 0.5rem 0;
+      }
+    }
+    
+    .submenu-item {
+      margin: 0;
+    }
+    
+    .submenu-link {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 2.5rem;
+      color: $secondary-color;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      font-size: $font-size-sm;
+      
+      &:hover {
+        background-color: #f8f9fa;
+        color: $dark-color;
+        text-decoration: none;
+        
+        .menu-icon {
+          color: $dark-color;
+        }
+      }
+      
+      &.active {
+        background-color: rgba($primary-color, 0.1);
+        color: $primary-color;
+        font-weight: 500;
+        
+        .menu-icon {
+          color: $primary-color;
+        }
+      }
+      
+      .menu-icon {
+        font-size: 18px;
+        margin-right: 10px;
+        width: 20px;
+        color: $secondary-color;
+        transition: color 0.2s ease;
+        
+        &.material-icon {
+          font-size: 18px;
+        }
+      }
+      
+      .menu-text {
+        font-weight: 400;
+      }
+    }
+  }
+}
+
+// Sidebar Overlay (for mobile)
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+// Sidebar States
+body.sidebar-open {
+  overflow: hidden;
+  
+  .left-sidebar {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+body.sidebar-closed {
+  .sidebar-toggle-floating {
+    display: flex !important; // Show floating button when sidebar is collapsed
+  }
+}
+
+// Show floating button when sidebar has collapsed class
+.app-sidebar.sidebar-collapsed ~ .sidebar-toggle-floating {
+  display: flex !important;
+}

@@ -1,0 +1,24 @@
+/**
+ * Dashboard Styles - Main Entry Point
+ * TypeScript migration of dashboard-specific styles
+ * 
+ * This file imports all dashboard modules in the correct order:
+ * 1. Variables and base styles
+ * 2. Typography 
+ * 3. Layout structure
+ * 4. Header components
+ * 5. Sidebar components
+ * 6. UI components
+ * 7. Responsive styles
+ */
+
+@use 'sass:color';
+@use './_variables.scss' as *;
+
+// Import modular stylesheets in dependency order
+@import 'dashboard/typography';
+@import 'dashboard/layout';
+@import 'dashboard/header';
+@import 'dashboard/sidebar';
+@import 'dashboard/components';
+@import 'dashboard/responsive';

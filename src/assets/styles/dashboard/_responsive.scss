@@ -1,0 +1,258 @@
+/**
+ * Responsive Styles
+ * Media queries and responsive behavior for different screen sizes
+ */
+
+// Responsive design
+@media (max-width: 1024px) {
+  // Hide the visual separator line on mobile
+  .app-header::after {
+    display: none;
+  }
+  
+  // Hide left menu section and adjust header layout for mobile
+  .app-header {
+    .header-left-section {
+      display: none; // Hide logo section on mobile
+    }
+    
+    .header-menu-section {
+      width: auto;
+      padding: 0 10px;
+      border-right: none;
+    }
+    
+    .header-right-section {
+      padding: 0 15px;
+    }
+    
+    .header-container {
+      padding: 0;
+    }
+    
+    .header-breadcrumbs {
+      display: none; // Hide breadcrumbs on mobile to save space
+    }
+    
+    .header-title .page-title {
+      display: none; // Hide page title on smaller screens to save space
+    }
+  }
+  
+  // Tablet and smaller desktop adjustments
+  .main-content {
+    margin-left: 0 !important; // Remove default sidebar margin on tablets
+  }
+  
+  // Hide sidebar by default in responsive mode
+  .app-sidebar {
+    transform: translateX(-280px); // Hide sidebar by default on tablets
+    z-index: 1002; // Higher z-index for overlay behavior
+    
+    &:not(.sidebar-collapsed) {
+      transform: translateX(-280px); // Keep hidden even when not collapsed class
+    }
+  }
+  
+  // Only show sidebar when explicitly opened via menu button
+  body.sidebar-open .app-sidebar {
+    transform: translateX(0); // Show when hamburger is clicked
+  }
+  
+  // Show overlay on tablets when sidebar is open
+  .sidebar-overlay.active {
+    display: block;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .header-toolbar {
+    padding: 8px 0;
+  }
+  
+  .header-container {
+    padding: 0 15px;
+  }
+  
+  // Make hamburger menu more prominent on mobile
+  .sidebar-toggle {
+    padding: 12px;
+    margin-right: 10px;
+    
+    .hamburger-icon {
+      width: 24px;
+      height: 18px;
+      
+      span {
+        height: 3px;
+      }
+    }
+  }
+  
+  // Adjust user menu for mobile
+  .user-menu-trigger {
+    padding: 6px 10px;
+    
+    .user-info {
+      .username {
+        display: none; // Hide username on mobile to save space
+      }
+    }
+    
+    .user-avatar .user-icon {
+      font-size: 24px;
+    }
+  }
+  
+  // Mobile sidebar adjustments
+  .left-sidebar {
+    width: 100%; // Full width on mobile
+    max-width: 320px;
+    
+    .sidebar-content {
+      padding: 15px 0;
+    }
+    
+    .sidebar-header {
+      padding: 0 15px 15px;
+      
+      h3 {
+        font-size: 16px;
+      }
+    }
+    
+    .menu-item {
+      padding: 14px 15px;
+      
+      .menu-text {
+        font-size: 15px;
+      }
+    }
+  }
+  
+  // Content adjustments for mobile
+  .insights-statistics {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .params {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start !important;
+  }
+  
+  // Make statistics cards more mobile-friendly
+  .insights-statistics li {
+    background: white;
+    padding: 15px;
+    border-radius: $border-radius;
+    border: 1px solid #dee2e6;
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .content-container {
+    padding: 15px;
+  }
+  
+  .header-container {
+    padding: 0 10px;
+  }
+  
+  .placeholder-header {
+    margin-bottom: 20px;
+    
+    table {
+      display: block;
+    }
+    
+    .cell-left,
+    .cell-right {
+      display: block;
+      text-align: center;
+      margin-bottom: 15px;
+      
+      h1 {
+        font-size: 24px;
+        margin-bottom: 15px;
+      }
+    }
+  }
+  
+  // Mobile-specific user menu dropdown
+  .user-menu-dropdown {
+    right: -10px;
+    min-width: 260px;
+    max-width: calc(100vw - 20px);
+  }
+  
+  // Improve mobile table display
+  .data-table {
+    overflow-x: auto;
+    
+    table {
+      min-width: 800px;
+    }
+  }
+  
+  // Stack buttons vertically on small screens
+  .button-green {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+}
+
+// Very small screens (phones in portrait)
+@media (max-width: 375px) {
+  .sidebar-toggle {
+    .hamburger-icon {
+      width: 20px;
+      height: 16px;
+    }
+  }
+  
+  .logo {
+    font-size: 16px !important;
+  }
+  
+  .content-container {
+    padding: 10px;
+  }
+  
+  .insights-statistics li {
+    padding: 12px;
+  }
+}
+
+// Landscape mobile adjustments
+@media (max-height: 500px) and (orientation: landscape) {
+  .left-sidebar {
+    .sidebar-content {
+      padding: 10px 0;
+    }
+    
+    .sidebar-header {
+      padding: 0 15px 10px;
+      
+      h3 {
+        font-size: 14px;
+      }
+    }
+    
+    .menu-item {
+      padding: 10px 15px;
+      
+      .menu-text {
+        font-size: 14px;
+      }
+    }
+    
+    .section-title {
+      font-size: 10px;
+      padding: 0 15px 8px;
+    }
+  }
+}

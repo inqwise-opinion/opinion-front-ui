@@ -1,0 +1,117 @@
+/**
+ * Typography Styles
+ * Font imports, typography rules, and text element styling
+ */
+
+/* Material Icons - Clean approach */
+.material-icon,
+.material-icons {
+  font-family: 'Material Icons', 'Material Icons Fallback', monospace;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-display: swap;
+}
+
+/* Fallback for when Material Icons don't load */
+@supports not (font-family: 'Material Icons') {
+  .material-icons {
+    &:contains("menu") {
+      font-family: monospace !important;
+      &:before {
+        content: '☰';
+      }
+    }
+  }
+}
+
+/* Simple fallback using font substitution */
+@font-face {
+  font-family: 'Material Icons Fallback';
+  src: local('Arial'), local('Helvetica'), local('sans-serif');
+  unicode-range: U+0000-FFFF;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+// Base typography settings to match admin-ui
+body {
+  font-family: $font-family-sans-serif;
+  font-size: $font-size-base; // 15px
+  line-height: 1.5;
+  color: $dark-color;
+}
+
+// Header typography to match admin-ui
+h1 {
+  font-size: $font-size-h1; // 25px
+  font-weight: bold;
+  line-height: 1.32;
+  color: $dark-color;
+  padding-bottom: 20px;
+  margin: 0;
+}
+
+h2 {
+  font-size: $font-size-h2; // 19px
+  font-weight: bold;
+  color: $dark-color;
+  margin: 0;
+}
+
+h3 {
+  font-size: $font-size-h3; // 17px
+  font-weight: bold;
+  color: $dark-color;
+  margin: 0;
+}
+
+h4 {
+  font-size: $font-size-h4; // 15px
+  color: #5c5c5c;
+  font-weight: normal;
+  margin: 0;
+}
+
+h5 {
+  font-size: $font-size-h5; // 15px
+  color: #5c5c5c;
+  font-weight: normal;
+  margin: 0;
+}
+
+h6 {
+  font-size: $font-size-h6; // 15px
+  font-weight: 600;
+  margin: 0;
+}
+
+// Update general text elements
+p, div, span {
+  font-size: $font-size-base; // 15px
+  line-height: 1.5;
+}

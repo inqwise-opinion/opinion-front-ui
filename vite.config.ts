@@ -2,15 +2,10 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  root: 'public',
+  publicDir: 'public',
   build: {
-    outDir: '../dist',
+    outDir: 'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'public/index.html')
-      }
-    },
     sourcemap: true,
     target: 'es2020'
   },
@@ -32,9 +27,12 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "@/assets/styles/_variables.scss";`
+        // Silence the legacy JS API deprecation warning
+        silenceDeprecations: ['legacy-js-api']
       }
-    }
+    },
+    // Additional config to handle Sass warnings
+    devSourcemap: true
   },
   esbuild: {
     target: 'es2020'
