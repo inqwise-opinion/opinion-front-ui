@@ -4,6 +4,7 @@
  */
 
 @use '../variables' as *;
+@use 'sass:color';
 
 // Always Visible Header Styles (Connected to Sidebar) - Enhanced Desktop Design
 .app-header {
@@ -25,7 +26,7 @@
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0; // Remove padding to allow title to reach left border
   justify-content: space-between;
   
   // Subtle top highlight
@@ -53,9 +54,14 @@
   
   // Header left section - mobile toggle
   .header-left {
-    display: flex;
+    display: none; // Hidden by default (tablet and desktop)
     align-items: center;
-    min-width: 48px;
+    min-width: 48px; // Reserve space for mobile toggle
+    
+    // Show only on mobile (phone) screens
+    @media (max-width: 767px) {
+      display: flex;
+    }
     
     .mobile-menu-toggle {
       // Show on mobile and tablet (up to 1024px), hide only on desktop
@@ -75,20 +81,38 @@
     flex: 1;
     display: flex;
     align-items: center;
-    margin: 0 24px;
+    margin: 0;
+    min-width: 0; // Allow shrinking on small screens
+    overflow: hidden; // Prevent overflow on small screens
+    padding-left: 0; // Default no padding for tablet/desktop
+    
+    // Only add padding on mobile where header-left is visible
+    @media (max-width: 767px) {
+      padding-left: 16px;
+    }
     
     .header-breadcrumbs {
+      // Unified styles for all screen sizes
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      
       .breadcrumb-list {
         display: flex;
         align-items: center;
         list-style: none;
         margin: 0;
         padding: 0;
-        gap: 8px;
+        padding-left: 16px; // Applied to all screen sizes
+        gap: 6px; // Unified gap for all screen sizes
+        justify-content: flex-start;
+        width: 100%;
         
         .breadcrumb-item {
           display: flex;
           align-items: center;
+          padding: 0;
+          margin: 0;
           
           &.breadcrumb-brand {
             .breadcrumb-brand-link {
@@ -119,7 +143,7 @@
               .brand-text {
                 font-weight: 700;
                 font-size: 16px;
-                background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 15%) 100%);
+                background: linear-gradient(135deg, $primary-color 0%, color.adjust($primary-color, $lightness: -15%) 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
@@ -131,13 +155,33 @@
           &.breadcrumb-current {
             .breadcrumb-text {
               font-weight: 600;
-              font-size: 18px;
+              font-size: 18px; // Desktop/tablet size
               color: $dark-color;
-              background: linear-gradient(135deg, $dark-color 0%, lighten($dark-color, 20%) 100%);
+              background: linear-gradient(135deg, $dark-color 0%, color.adjust($dark-color, $lightness: 20%) 100%);
               -webkit-background-clip: text;
               -webkit-text-fill-color: transparent;
               background-clip: text;
               letter-spacing: -0.01em;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              text-align: left;
+              display: block;
+              line-height: normal;
+              padding: 0;
+              margin: 0;
+              
+              // Mobile-specific adjustments
+              @media (max-width: 767px) {
+                font-size: 16px;
+                color: #212529; // Solid color for better mobile readability
+                background: none; // Remove gradient on mobile
+                -webkit-background-clip: unset;
+                -webkit-text-fill-color: unset;
+                background-clip: unset;
+                line-height: 1.5;
+                max-width: calc(100vw - 120px);
+              }
             }
           }
         }
@@ -146,7 +190,7 @@
           display: flex;
           align-items: center;
           color: rgba($secondary-color, 0.6);
-          margin: 0 4px;
+          margin: 0 3px; // Unified margin for all screen sizes
           
           svg {
             filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
@@ -156,78 +200,12 @@
     }
   }
   
-  // Header right section - Enhanced actions and user menu
+  // Header right section - User menu only
   .header-right {
     display: flex;
     align-items: center;
-    gap: 16px;
     min-width: fit-content;
-    
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      
-      .header-action-btn {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 249, 250, 0.9) 100%);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        color: $secondary-color;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        
-        &:hover {
-          background: linear-gradient(135deg, rgba($primary-color, 0.08) 0%, rgba($primary-color, 0.12) 100%);
-          border-color: rgba($primary-color, 0.2);
-          color: $primary-color;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba($primary-color, 0.15);
-        }
-        
-        &:active {
-          transform: translateY(0);
-          box-shadow: 0 2px 6px rgba($primary-color, 0.2);
-        }
-        
-        svg {
-          transition: all 0.2s ease;
-        }
-        
-        .notification-badge {
-          position: absolute;
-          top: -2px;
-          right: -2px;
-          min-width: 18px;
-          height: 18px;
-          background: linear-gradient(135deg, $danger-color 0%, darken($danger-color, 10%) 100%);
-          color: white;
-          border-radius: 9px;
-          font-size: 11px;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 2px solid white;
-          box-shadow: 0 2px 6px rgba($danger-color, 0.3);
-          animation: subtle-pulse 2s infinite;
-        }
-      }
-    }
-    
-    .header-divider {
-      width: 1px;
-      height: 24px;
-      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.1) 20%, rgba(0, 0, 0, 0.1) 80%, transparent 100%);
-      margin: 0 4px;
-    }
+    padding-right: 16px; // Consistent right padding across all screen sizes
   }
 }
   
@@ -703,20 +681,19 @@ body.sidebar-closed .app-header,
   }
 }
 
-// Hide quick actions on mobile to save space
+// Mobile adjustments
 @media (max-width: 767px) {
   .app-header {
     height: 58px;
-    padding: 0 16px;
+    padding: 0; // Remove padding on mobile too
+    
+    .header-center {
+      padding-left: 16px; // Add padding for mobile to prevent cramped look
+      // Breadcrumb mobile styles are now handled in the unified base styles
+    }
     
     .header-right {
-      .header-actions {
-        display: none;
-      }
-      
-      .header-divider {
-        display: none;
-      }
+      padding-right: 16px; // Mobile right padding
     }
   }
 }

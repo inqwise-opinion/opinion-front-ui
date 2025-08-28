@@ -21,27 +21,32 @@ export class AppHeader {
   /**
    * Initialize the header component
    */
-  init(): void {
+  async init(): Promise<void> {
     console.log('AppHeader - Initializing...');
     
-    // Create header if it doesn't exist
-    this.createHeader();
-    
-    // Add slight delay to ensure proper viewport detection and DOM readiness
-    setTimeout(() => {
+    try {
+      // Create header if it doesn't exist
+      this.createHeader();
+      
+      // Wait for DOM to be ready and elements to be available
+      await this.waitForDOMReady();
+      
       console.log(`AppHeader - Current viewport: ${window.innerWidth}px`);
       
       // Initialize user menu component (desktop only)
-      this.initUserMenu();
+      await this.initUserMenu();
       
       // Initialize mobile menu component
-      this.initMobileMenu();
+      await this.initMobileMenu();
       
       // Setup event listeners
       this.setupEventListeners();
       
       console.log('AppHeader - Ready');
-    }, 100);
+    } catch (error) {
+      console.error('AppHeader - Initialization failed:', error);
+      throw error;
+    }
   }
 
   /**
@@ -60,6 +65,9 @@ export class AppHeader {
     header.className = 'app-header';
     header.id = 'app_header';
 
+    // Always include mobile toggle container for DOM consistency
+    // CSS will handle visibility and sizing based on viewport
+    
     header.innerHTML = `
       <div class="header-container">
         <!-- Left section: Mobile toggle button -->
@@ -126,56 +134,31 @@ export class AppHeader {
         </div>
         
         <!-- Center section: Enhanced breadcrumbs and page title -->
-        <div class="header-center">
+        <div class="header-center" style="${window.innerWidth <= 767 ? 'padding-left: 16px;' : 'padding-left: 0;'}">
           <nav class="header-breadcrumbs" aria-label="Breadcrumb">
             <ol class="breadcrumb-list">
-              <!-- Brand/App Title -->
-              <li class="breadcrumb-item breadcrumb-brand">
-                <a href="/dashboard" class="breadcrumb-brand-link">
-                  <span class="brand-icon">🏢</span>
-                  <span class="brand-text">Opinion</span>
-                </a>
+              <!-- Current Page (Menu Item) -->
+              <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+                <span class="breadcrumb-text" id="current_page_title">Dashboard</span>
               </li>
               
-              <!-- Separator -->
-              <li class="breadcrumb-separator" aria-hidden="true">
+              <!-- Separator (for future sub-pages) -->
+              <li class="breadcrumb-separator" aria-hidden="true" id="breadcrumb_separator" style="display: none;">
                 <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1 1L4.5 5L1 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </li>
               
-              <!-- Current Page -->
-              <li class="breadcrumb-item breadcrumb-current" aria-current="page">
-                <span class="breadcrumb-text" id="current_page_title">Dashboard</span>
+              <!-- Sub-page (dynamically added when needed) -->
+              <li class="breadcrumb-item breadcrumb-subpage" id="breadcrumb_subpage" style="display: none;">
+                <span class="breadcrumb-text" id="subpage_title"></span>
               </li>
             </ol>
           </nav>
         </div>
         
-        <!-- Right section: Enhanced actions and user menu -->
+        <!-- Right section: User menu only -->
         <div class="header-right">
-          <!-- Quick Actions -->
-          <div class="header-actions">
-            <button class="header-action-btn" id="search_toggle" title="Search" aria-label="Open Search">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8.25 14.25C11.5637 14.25 14.25 11.5637 14.25 8.25C14.25 4.93629 11.5637 2.25 8.25 2.25C4.93629 2.25 2.25 4.93629 2.25 8.25C2.25 11.5637 4.93629 14.25 8.25 14.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M15.75 15.75L12.4875 12.4875" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            
-            <button class="header-action-btn" id="notifications_toggle" title="Notifications" aria-label="View Notifications">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6.75 15.75C6.75 16.9926 7.75736 18 9 18C10.2426 18 11.25 16.9926 11.25 15.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2.25 12.75C2.25 12.75 3.75 12.75 3.75 9C3.75 6.51472 5.76472 4.5 8.25 4.5H9.75C12.2353 4.5 14.25 6.51472 14.25 9C14.25 12.75 15.75 12.75 15.75 12.75H2.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M9 2.25V3.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="notification-badge">3</span>
-            </button>
-          </div>
-          
-          <!-- Divider -->
-          <div class="header-divider"></div>
-          
           <!-- User Menu -->
           <div id="user_menu_container"></div>
         </div>
@@ -198,11 +181,11 @@ export class AppHeader {
   /**
    * Initialize user menu component (responsive - works on both mobile and desktop)
    */
-  private initUserMenu(): void {
-    const userMenuContainer = document.getElementById('user_menu_container');
+  private async initUserMenu(): Promise<void> {
+    const userMenuContainer = await this.waitForElement('#user_menu_container');
     if (userMenuContainer) {
       this.userMenu = new UserMenu(userMenuContainer);
-      this.userMenu.init();
+      await this.userMenu.init();
       console.log('AppHeader - UserMenu component initialized (responsive)');
     } else {
       console.warn('AppHeader - User menu container not found');
@@ -212,9 +195,9 @@ export class AppHeader {
   /**
    * Initialize mobile menu component
    */
-  private initMobileMenu(): void {
+  private async initMobileMenu(): Promise<void> {
     this.mobileMenu = new SimpleMobileMenu();
-    this.mobileMenu.init();
+    await this.mobileMenu.init();
     console.log('AppHeader - MobileMenu component initialized');
   }
 
@@ -237,62 +220,58 @@ export class AppHeader {
       }
     });
     
-    // Handle header action buttons
-    this.setupHeaderActionButtons();
+    // Handle window resize to update header structure
+    window.addEventListener('resize', () => {
+      this.handleResize();
+    });
   }
   
-  
   /**
-   * Setup header action button event listeners
+   * Handle window resize events to update header styling
    */
-  private setupHeaderActionButtons(): void {
-    const searchButton = document.getElementById('search_toggle');
-    const notificationsButton = document.getElementById('notifications_toggle');
+  private handleResize(): void {
+    const currentWidth = window.innerWidth;
+    const headerCenter = this.container?.querySelector('.header-center') as HTMLElement;
     
-    if (searchButton) {
-      searchButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.handleSearchToggle();
-      });
-    }
-    
-    if (notificationsButton) {
-      notificationsButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.handleNotificationsToggle();
-      });
+    if (headerCenter) {
+      // Apply mobile styles only on phone screens, desktop/tablet get no padding
+      if (currentWidth <= 767) {
+        headerCenter.style.cssText = 'padding-left: 16px;'; // Mobile padding for header-left space
+      } else {
+        headerCenter.style.cssText = 'padding-left: 0;'; // No padding on tablet/desktop
+      }
+      console.log(`AppHeader - Updated header-center styling for ${currentWidth}px viewport`);
     }
   }
   
   /**
-   * Handle search toggle action
+   * Recreate header with updated structure based on current viewport
    */
-  private handleSearchToggle(): void {
-    console.log('AppHeader - Search toggle clicked');
+  private recreateHeader(): void {
+    if (!this.container) return;
     
-    // Placeholder for search functionality
-    // In a real implementation, this would open a search modal or focus a search input
-    const message = 'Search functionality would be implemented here.\n\n' +
-                   'This could open a search modal, focus a search input field, or ' +
-                   'navigate to a dedicated search page.';
+    // Store current page title
+    const currentTitle = document.getElementById('current_page_title')?.textContent || 'Dashboard';
     
-    alert(message);
-  }
-  
-  /**
-   * Handle notifications toggle action
-   */
-  private handleNotificationsToggle(): void {
-    console.log('AppHeader - Notifications toggle clicked');
+    // Remove existing header
+    this.container.remove();
     
-    // Placeholder for notifications functionality
-    // In a real implementation, this would open a notifications dropdown or panel
-    const message = 'Notifications panel would open here.\n\n' +
-                   'This could show a dropdown with recent notifications, ' +
-                   'mark them as read, or navigate to a notifications page.\n\n' +
-                   'Current notifications: 3';
+    // Create new header with current viewport structure
+    this.createHeader();
     
-    alert(message);
+    // Restore page title
+    this.updatePageTitle(currentTitle);
+    
+    // Restore user if available
+    if (this.user) {
+      // Wait a moment for DOM to be ready, then reinitialize user menu
+      setTimeout(async () => {
+        await this.initUserMenu();
+        if (this.user) {
+          this.updateUser(this.user);
+        }
+      }, 100);
+    }
   }
 
 
@@ -384,6 +363,43 @@ export class AppHeader {
   }
 
   /**
+   * Update breadcrumbs with main page and optional sub-page
+   * @param mainPage - The main menu item (e.g., "Dashboard", "Surveys")
+   * @param subPage - Optional sub-page (e.g., "Settings", "Create Survey")
+   */
+  updateBreadcrumbs(mainPage: string, subPage?: string): void {
+    const mainPageElement = document.getElementById('current_page_title');
+    const separator = document.getElementById('breadcrumb_separator');
+    const subPageContainer = document.getElementById('breadcrumb_subpage');
+    const subPageElement = document.getElementById('subpage_title');
+
+    if (mainPageElement) {
+      mainPageElement.textContent = mainPage;
+    }
+
+    if (subPage && separator && subPageContainer && subPageElement) {
+      // Show separator and sub-page
+      separator.style.display = 'flex';
+      subPageContainer.style.display = 'flex';
+      subPageElement.textContent = subPage;
+      
+      // Update document title
+      document.title = `${subPage} - ${mainPage} - Opinion`;
+      
+      console.log(`AppHeader - Breadcrumbs updated: ${mainPage} > ${subPage}`);
+    } else {
+      // Hide separator and sub-page
+      if (separator) separator.style.display = 'none';
+      if (subPageContainer) subPageContainer.style.display = 'none';
+      
+      // Update document title
+      document.title = `${mainPage} - Opinion`;
+      
+      console.log(`AppHeader - Breadcrumbs updated: ${mainPage}`);
+    }
+  }
+
+  /**
    * Show/hide header
    */
   setVisible(visible: boolean): void {
@@ -434,11 +450,77 @@ export class AppHeader {
     
     console.log(`🎯 AppHeader - Will load user: ${randomUser.username}`);
     
-    setTimeout(() => {
+    // Use Promise-based simulation instead of timer
+    this.simulateAsyncUserLoad(randomUser).then(() => {
       console.log('✅ AppHeader - Loading complete, updating user...');
       this.updateUser(randomUser);
       console.log('🎉 AppHeader - User updated successfully!');
-    }, 1500);
+    });
+  }
+
+  /**
+   * Wait for DOM to be ready
+   */
+  private async waitForDOMReady(): Promise<void> {
+    if (document.readyState === 'loading') {
+      return new Promise((resolve) => {
+        document.addEventListener('DOMContentLoaded', () => resolve(), { once: true });
+      });
+    }
+    return Promise.resolve();
+  }
+
+  /**
+   * Wait for a specific element to be available in the DOM
+   */
+  private async waitForElement(selector: string, timeout: number = 5000): Promise<HTMLElement | null> {
+    const element = document.querySelector(selector) as HTMLElement;
+    if (element) {
+      return element;
+    }
+
+    return new Promise((resolve) => {
+      const observer = new MutationObserver((mutations) => {
+        const element = document.querySelector(selector) as HTMLElement;
+        if (element) {
+          observer.disconnect();
+          resolve(element);
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+
+      // Timeout fallback
+      setTimeout(() => {
+        observer.disconnect();
+        resolve(null);
+      }, timeout);
+    });
+  }
+
+  /**
+   * Simulate async user loading using requestAnimationFrame for better performance
+   */
+  private async simulateAsyncUserLoad(user: HeaderUser): Promise<void> {
+    // Use requestAnimationFrame for smooth animation-based delays
+    return new Promise((resolve) => {
+      let frames = 0;
+      const targetFrames = 90; // ~1.5 seconds at 60fps
+      
+      const animate = () => {
+        frames++;
+        if (frames >= targetFrames) {
+          resolve();
+        } else {
+          requestAnimationFrame(animate);
+        }
+      };
+      
+      requestAnimationFrame(animate);
+    });
   }
 
   /**

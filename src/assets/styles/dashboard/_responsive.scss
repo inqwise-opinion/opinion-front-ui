@@ -32,12 +32,22 @@
       padding: 0;
     }
     
-    .header-breadcrumbs {
-      display: none; // Hide breadcrumbs on mobile to save space
-    }
+    // Breadcrumb styles are now unified in _header.scss base styles
     
-    .header-title .page-title {
-      display: none; // Hide page title on smaller screens to save space
+    .header-title {
+      .page-title {
+        // Keep page title visible on tablet, adjust size
+        font-size: 16px;
+        
+        // Only hide on mobile phones
+        @media (max-width: 767px) {
+          display: none;
+        }
+      }
+      
+      .logo {
+        font-size: 20px; // Slightly smaller logo on tablet
+      }
     }
   }
   
@@ -65,6 +75,58 @@
   .sidebar-overlay.active {
     display: block;
   }
+}
+
+// Tablet specific improvements (768px to 1024px) - AGGRESSIVE LEFT ALIGNMENT
+@media (min-width: 768px) and (max-width: 1024px) {
+  .app-header {
+    padding: 0 !important; // Remove padding to maintain consistent title positioning
+    justify-content: flex-start !important; // Force left alignment
+    
+    // Header-left is already hidden by default on tablet (handled in _header.scss)
+    // No need to override here
+    
+    .header-container {
+      padding: 0 !important; // Remove container padding
+      margin: 0 !important; // Remove container margin
+      justify-content: flex-start !important; // Force left alignment
+      align-items: stretch !important; // Full height alignment
+    }
+    
+    // header-center inherits identical styles from base _header.scss - no overrides needed
+    
+    .header-right {
+      flex-shrink: 0 !important; // Don't shrink
+      flex-grow: 0 !important; // Don't grow
+      padding-right: 16px !important; // Keep right padding for user menu
+      padding-left: 0 !important; // Remove left padding
+      margin: 0 !important; // Remove margin
+      justify-content: flex-end !important; // Right align user menu
+      align-items: center !important; // Center vertically
+    }
+    
+    // Breadcrumb styles are now unified in _header.scss base styles - no tablet overrides needed
+  }
+}
+
+// Desktop override (1025px+) - Fix SimpleMobileMenu CSS interference
+@media (min-width: 1025px) {
+  .app-header, #app_header {
+    left: 280px !important; // Maintain proper desktop positioning with sidebar
+    width: calc(100vw - 280px) !important; // Proper width calculation
+  }
+  
+  // Hide mobile toggle container completely on desktop using display:none
+  .app-header .header-container .header-left,
+  #app_header .header-container .header-left,
+  header.app-header .header-container .header-left,
+  .app-header .header-left,
+  #app_header .header-left,
+  header.app-header .header-left {
+    display: none !important; // Hide container completely - no space reserved
+  }
+  
+  // header-center uses base styles from _header.scss - already has padding-left: 0
 }
 
 @media (max-width: $breakpoint-md) {

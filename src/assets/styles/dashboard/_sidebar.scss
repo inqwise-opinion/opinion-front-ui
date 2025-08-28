@@ -588,7 +588,7 @@
     padding: 20px; // Same padding as wrapper-footer
     border-top: 1px solid #dee2e6; // Match wrapper-footer border style
     border-right: 1px solid #e0e6ed; // Right border to match navigation
-    background: #f8f9fa; // Match wrapper-footer background
+    background: linear-gradient(to bottom, #f8f9fa 50px, white) !important; // Match wrapper-footer background with gradient to white at bottom
     // Shadow removed - handled by main content shadow in layout.scss
     box-sizing: border-box; // Ensure padding and borders are included in height
     display: flex;

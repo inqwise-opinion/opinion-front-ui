@@ -28,7 +28,7 @@ export class AppFooter {
   constructor(config: FooterConfig = {}) {
     this.config = {
       showCopyright: true,
-      copyrightText: 'created by <a href="https://www.inqwise.com" target="_blank" rel="noopener noreferrer">inqwise</a>',
+      copyrightText: 'created by inqwise',
       showNavigation: true,
       navigationLinks: [
         { href: '/create-bug-report', title: 'Report a Bug', text: 'Report a Bug' }

@@ -323,21 +323,45 @@ export class SimpleMobileMenu {
           transform: scale(0.95) !important;
         }
         
-        /* Footer on mobile - full width */
+        /* Footer on mobile - full width with proper sizing */
         .app-footer {
           width: 100% !important;
           margin-left: 0 !important;
+          min-height: 60px !important;
+          height: auto !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          background: #f8f9fa !important;
+          border-top: 1px solid #dee2e6 !important;
+          box-sizing: border-box !important;
+          padding: 15px 0 !important;
         }
         
         .app-footer .footer-container {
           margin-left: 0 !important;
           padding: 0 20px !important;
+          width: 100% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
         
         .footer-content {
           flex-direction: column !important;
           text-align: center !important;
           gap: 15px !important;
+          width: 100% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        
+        .footer-copyright-text {
+          font-size: 12px !important;
+          color: #6c757d !important;
+          margin: 0 !important;
+          line-height: 1.4 !important;
         }
       }
       
@@ -676,20 +700,27 @@ export class SimpleMobileMenu {
         /* Footer positioning for desktop with sidebar */
         .app-footer {
           position: relative !important;
-          width: calc(100vw - 280px) !important;
+          width: calc(100% - 280px) !important;
+          max-width: calc(100vw - 280px) !important;
           margin-left: 280px !important;
           background: #f8f9fa !important;
           border-top: 1px solid #dee2e6 !important;
           margin-top: auto !important;
           box-sizing: border-box !important;
           transition: all 0.3s ease !important;
+          min-height: 60px !important;
+          height: auto !important;
+          display: flex !important;
+          align-items: center !important;
+          overflow: hidden !important;
         }
         
         /* Adjust footer for compact sidebar mode */
         .app-sidebar.sidebar-compact ~ * .app-footer,
         body:has(.app-sidebar.sidebar-compact) .app-footer,
         body[data-sidebar-state="compact"] .app-footer {
-          width: calc(100vw - 80px) !important;
+          width: calc(100% - 80px) !important;
+          max-width: calc(100vw - 80px) !important;
           margin-left: 80px !important;
         }
         
@@ -700,6 +731,38 @@ export class SimpleMobileMenu {
           width: 100% !important;
           max-width: none !important;
           box-sizing: border-box !important;
+        }
+        
+        /* Match sidebar footer height to app footer on desktop */
+        #app_sidebar .sidebar-footer {
+          min-height: 60px !important;
+          height: 60px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 20px !important;
+          box-sizing: border-box !important;
+          border-right: 1px solid #e0e6ed !important;
+          background: #fff !important;
+        }
+        
+        /* Sidebar footer content alignment */
+        #app_sidebar .sidebar-footer .copyright-text {
+          font-size: 12px !important;
+          color: #6c757d !important;
+          margin: 0 !important;
+          line-height: 1.4 !important;
+          text-align: center !important;
+        }
+        
+        /* Compact mode sidebar footer adjustments */
+        #app_sidebar.sidebar-compact .sidebar-footer {
+          padding: 0 10px !important;
+          justify-content: center !important;
+        }
+        
+        #app_sidebar.sidebar-compact .sidebar-footer .copyright-text {
+          display: none !important;
         }
       }
     `;
