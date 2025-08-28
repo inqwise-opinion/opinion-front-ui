@@ -3,30 +3,235 @@
  * App header, user menu, breadcrumbs, and navigation
  */
 
-// Always Visible Header Styles (Connected to Sidebar)
+@use '../variables' as *;
+
+// Always Visible Header Styles (Connected to Sidebar) - Enhanced Desktop Design
 .app-header {
   position: fixed;
   top: 0;
   left: 280px; // Start from right border of sidebar
   right: 0;
-  height: 60px;
-  background: #fff;
-  border-bottom: 1px solid #dee2e6; // Border for definition
+  height: 64px; // Slightly taller for better proportions
+  background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   border-left: none; // Remove left border to connect seamlessly with sidebar
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); // Subtle shadow below header
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 2px 8px rgba(0, 0, 0, 0.03),
+    0 4px 16px rgba(0, 0, 0, 0.01);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   z-index: 1010; // Higher than sidebar to stay above it
-  transition: left 0.3s ease; // Smooth transition when sidebar toggles
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  justify-content: space-between;
   
-  
-  .header-container {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: 0;
-    max-width: none;
+  // Subtle top highlight
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 20%, rgba(255, 255, 255, 0.8) 80%, transparent 100%);
+    z-index: 1;
   }
   
-  // Left section - App logo area
+  // Header container styling
+  .header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+  }
+  
+  // Header left section - mobile toggle
+  .header-left {
+    display: flex;
+    align-items: center;
+    min-width: 48px;
+    
+    .mobile-menu-toggle {
+      // Show on mobile and tablet (up to 1024px), hide only on desktop
+      @media (min-width: 1025px) {
+        display: none !important;
+      }
+      
+      // Make sure it's visible on tablet and mobile
+      @media (max-width: 1024px) {
+        display: block !important;
+      }
+    }
+  }
+  
+  // Header center section - Enhanced breadcrumbs
+  .header-center {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin: 0 24px;
+    
+    .header-breadcrumbs {
+      .breadcrumb-list {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        gap: 8px;
+        
+        .breadcrumb-item {
+          display: flex;
+          align-items: center;
+          
+          &.breadcrumb-brand {
+            .breadcrumb-brand-link {
+              display: flex;
+              align-items: center;
+              text-decoration: none;
+              padding: 8px 12px;
+              border-radius: 8px;
+              background: linear-gradient(135deg, rgba($primary-color, 0.08) 0%, rgba($primary-color, 0.12) 100%);
+              border: 1px solid rgba($primary-color, 0.15);
+              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+              position: relative;
+              overflow: hidden;
+              
+              &:hover {
+                background: linear-gradient(135deg, rgba($primary-color, 0.12) 0%, rgba($primary-color, 0.18) 100%);
+                border-color: rgba($primary-color, 0.25);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba($primary-color, 0.15);
+              }
+              
+              .brand-icon {
+                font-size: 20px;
+                margin-right: 8px;
+                filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+              }
+              
+              .brand-text {
+                font-weight: 700;
+                font-size: 16px;
+                background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 15%) 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                letter-spacing: -0.02em;
+              }
+            }
+          }
+          
+          &.breadcrumb-current {
+            .breadcrumb-text {
+              font-weight: 600;
+              font-size: 18px;
+              color: $dark-color;
+              background: linear-gradient(135deg, $dark-color 0%, lighten($dark-color, 20%) 100%);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+              letter-spacing: -0.01em;
+            }
+          }
+        }
+        
+        .breadcrumb-separator {
+          display: flex;
+          align-items: center;
+          color: rgba($secondary-color, 0.6);
+          margin: 0 4px;
+          
+          svg {
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+          }
+        }
+      }
+    }
+  }
+  
+  // Header right section - Enhanced actions and user menu
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: fit-content;
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      
+      .header-action-btn {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 249, 250, 0.9) 100%);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        color: $secondary-color;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        
+        &:hover {
+          background: linear-gradient(135deg, rgba($primary-color, 0.08) 0%, rgba($primary-color, 0.12) 100%);
+          border-color: rgba($primary-color, 0.2);
+          color: $primary-color;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba($primary-color, 0.15);
+        }
+        
+        &:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 6px rgba($primary-color, 0.2);
+        }
+        
+        svg {
+          transition: all 0.2s ease;
+        }
+        
+        .notification-badge {
+          position: absolute;
+          top: -2px;
+          right: -2px;
+          min-width: 18px;
+          height: 18px;
+          background: linear-gradient(135deg, $danger-color 0%, darken($danger-color, 10%) 100%);
+          color: white;
+          border-radius: 9px;
+          font-size: 11px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid white;
+          box-shadow: 0 2px 6px rgba($danger-color, 0.3);
+          animation: subtle-pulse 2s infinite;
+        }
+      }
+    }
+    
+    .header-divider {
+      width: 1px;
+      height: 24px;
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.1) 20%, rgba(0, 0, 0, 0.1) 80%, transparent 100%);
+      margin: 0 4px;
+    }
+  }
+}
+  
+  // Left section - App logo area (legacy)
   .header-left-section {
     flex: 1;
     max-width: 260px; // Leave space for menu button near separator
@@ -191,7 +396,6 @@
       white-space: nowrap;
     }
   }
-}
 
 // Header position adjustments based on sidebar state
 body.sidebar-closed .app-header,
@@ -207,6 +411,19 @@ body.sidebar-closed .app-header,
   
   .app-sidebar:not(.sidebar-collapsed) ~ * .app-header {
     left: 280px;
+  }
+  
+  // Compact sidebar header adjustments - multiple selectors for reliability
+  .app-sidebar.sidebar-compact ~ * .app-header,
+  body:has(.app-sidebar.sidebar-compact) .app-header,
+  body[data-sidebar-state="compact"] .app-header {
+    left: 80px !important; // Adjust header position for compact sidebar
+  }
+  
+  // Alternative selector approach for compact mode
+  .sidebar-compact + * .app-header,
+  .sidebar-compact ~ * .app-header {
+    left: 80px !important;
   }
 }
 
@@ -467,5 +684,39 @@ body.sidebar-closed .app-header,
   to {
     opacity: 0;
     transform: translateY(-8px);
+  }
+}
+
+// Subtle pulse animation for notification badges
+@keyframes subtle-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba($danger-color, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 3px 8px rgba($danger-color, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba($danger-color, 0.3);
+  }
+}
+
+// Hide quick actions on mobile to save space
+@media (max-width: 767px) {
+  .app-header {
+    height: 58px;
+    padding: 0 16px;
+    
+    .header-right {
+      .header-actions {
+        display: none;
+      }
+      
+      .header-divider {
+        display: none;
+      }
+    }
   }
 }

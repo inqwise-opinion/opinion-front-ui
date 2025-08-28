@@ -3,6 +3,9 @@
  * App sidebar, navigation, toggles, and floating menu
  */
 
+@use 'sass:color';
+@use '../variables' as *;
+
 // Responsive visibility classes
 .mobile-only {
   display: none !important;
@@ -102,7 +105,7 @@
   border-right: none; // Remove border to connect seamlessly with header
   z-index: 1001;
   transform: translateX(0);
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease; // Transition both transform and width
   overflow: hidden;
   box-shadow: none; // Remove general shadow
   
@@ -111,6 +114,129 @@
   
   &.sidebar-collapsed {
     transform: translateX(-280px);
+  }
+  
+  // Compact sidebar mode (reduced size)
+  &.sidebar-compact {
+    width: 80px; // Reduced width for compact mode
+    
+    .sidebar-header {
+      padding: 0 10px; // Reduced padding
+      justify-content: center; // Center content in compact mode
+      
+      .sidebar-brand {
+        display: none; // Hide entire brand section in compact mode
+      }
+      
+      .sidebar-controls {
+        gap: 2px; // Reduced gap between buttons in compact mode
+        justify-content: center; // Center controls
+      }
+      
+      .sidebar-toggle,
+      .sidebar-compact-toggle {
+        padding: 8px; // Smaller padding
+        min-width: 36px;
+        min-height: 36px;
+        
+        .material-icons,
+        .hamburger-icon,
+        .compact-icon {
+          font-size: 18px; // Smaller icons in compact mode
+        }
+      }
+      
+      .sidebar-toggle {
+        .material-icons {
+          font-size: 20px; // Slightly larger close icon
+        }
+      }
+    }
+    
+    .sidebar-navigation {
+      // Keep border for visual separation in compact mode
+      border-right: 1px solid #e0e6ed;
+      // Shadow removed - handled by main content shadow in layout.scss
+      
+      .nav-section {
+        padding: 8px 0;
+        
+        .nav-list {
+          .nav-item {
+            margin: 2px 4px; // Reduced margins
+            
+            .nav-link {
+              padding: 12px 8px; // Centered padding
+              justify-content: center; // Center the icon
+              position: relative;
+              
+              .nav-icon {
+                margin-right: 0; // Remove right margin
+                font-size: 18px; // Slightly smaller icon
+              }
+              
+              .nav-text {
+                display: none; // Hide text in compact mode
+              }
+              
+              .nav-badge {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                font-size: 10px;
+                min-width: 16px;
+                height: 16px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              
+              // Tooltip for nav text on hover
+              &::after {
+                content: attr(data-title);
+                position: absolute;
+                left: 100%;
+                top: 50%;
+                transform: translateY(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.2s ease;
+                margin-left: 10px;
+                z-index: 1000;
+                pointer-events: none;
+              }
+              
+              &:hover::after {
+                opacity: 1;
+                visibility: visible;
+              }
+            }
+          }
+          
+          // Hide expandable items in compact mode
+          .nav-item-expandable {
+            display: none;
+          }
+        }
+      }
+    }
+    
+    .sidebar-footer {
+      padding: 10px; // Reduced padding
+      border-right: 1px solid #e0e6ed; // Maintain right border in compact mode
+      // Shadow removed - handled by main content shadow in layout.scss
+      
+      .copyright-text {
+        display: none; // Hide copyright text in compact mode
+      }
+    }
   }
   
   .sidebar-wrapper {
@@ -127,7 +253,7 @@
     justify-content: space-between;
     padding: 0 20px;
     background: #fff;
-    border-bottom: 1px solid #f1f3f5; // Light separator to match main header
+    border-bottom: 0; // Remove bottom border
     height: 60px; // Match main header height exactly
     min-height: 60px;
     flex-shrink: 0;
@@ -138,6 +264,24 @@
       display: flex;
       align-items: center;
       justify-content: flex-start;
+      
+      .brand-title-link {
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        transition: opacity 0.2s ease;
+        
+        &:hover {
+          opacity: 0.8;
+          text-decoration: none;
+        }
+        
+        &:focus {
+          outline: 2px solid $primary-color;
+          outline-offset: 2px;
+          border-radius: 4px;
+        }
+      }
       
       .brand-title {
         margin: 0;
@@ -150,60 +294,52 @@
       }
     }
     
-    .sidebar-toggle {
-      background: none;
+    // Sidebar controls container - holds compact toggle
+    .sidebar-controls {
+      display: flex;
+      align-items: center;
+    }
+    
+    // Simple compact toggle button styling
+    .sidebar-compact-toggle {
+      background: transparent;
       border: none;
       cursor: pointer;
-      padding: 12px; // Increased from 8px
+      padding: 8px;
       border-radius: $border-radius;
-      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: $secondary-color;
-      min-width: 44px; // Added minimum touch target
-      min-height: 44px; // Added minimum touch target
-      position: relative; // For icon positioning
+      color: #666;
+      min-width: 32px;
+      min-height: 32px;
+      font-size: 16px;
+      opacity: 0.7;
+      position: relative;
       
       &:hover {
-        background: rgba($primary-color, 0.1);
-        color: $primary-color;
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.05);
       }
       
       &:focus {
-        outline: 2px solid $primary-color;
-        outline-offset: 2px;
+        opacity: 1;
+        outline: 1px solid $primary-color;
+        outline-offset: 1px;
       }
-
-      .material-icons,
-      .hamburger-icon {
-        font-size: 26px; // Increased from 20px
-        transition: transform 0.2s ease;
+      
+      // Ensure perfect centering of the icon
+      .compact-icon {
+        font-weight: bold;
+        line-height: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-      }
-      
-      .hamburger-icon {
-        font-size: 20px !important;
-        font-family: 'Arial', monospace !important;
-        line-height: 1 !important;
-        text-decoration: none !important;
-        color: inherit !important;
-      }
-      
-      &[aria-expanded="false"] .material-icons {
-        transform: rotate(0deg);
-      }
-      
-      &[aria-expanded="true"] .material-icons {
-        transform: rotate(180deg);
-      }
-      
-      // Don't rotate the hamburger icon
-      &[aria-expanded="false"] .hamburger-icon,
-      &[aria-expanded="true"] .hamburger-icon {
-        transform: none;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
       }
     }
   }
@@ -214,7 +350,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     border-right: 1px solid #e0e6ed; // Right border for separation
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08); // Shadow extending to the right
+    // Shadow removed - handled by main content shadow in layout.scss
     
     .nav-section {
       padding: 8px 0;
@@ -448,12 +584,25 @@
   // Sidebar Footer
   .sidebar-footer {
     flex-shrink: 0;
-    padding: 20px; // Simple padding like original footer
+    height: 60px; // Fixed height to match wrapper-footer
+    padding: 20px; // Same padding as wrapper-footer
     border-top: 1px solid #dee2e6; // Match wrapper-footer border style
     border-right: 1px solid #e0e6ed; // Right border to match navigation
     background: #f8f9fa; // Match wrapper-footer background
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08); // Shadow extending to the right
+    // Shadow removed - handled by main content shadow in layout.scss
+    box-sizing: border-box; // Ensure padding and borders are included in height
+    display: flex;
+    align-items: center;
+    justify-content: center;
     
+    .copyright-text {
+      color: $secondary-color;
+      font-size: 12px;
+      margin: 0;
+      line-height: 1;
+    }
+    
+    // Legacy support for footer navigation
     .footer-navigation-left-panel {
       ul.ld {
         list-style: none;

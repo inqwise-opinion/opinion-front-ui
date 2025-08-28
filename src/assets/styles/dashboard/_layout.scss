@@ -3,6 +3,8 @@
  * Structural layout, wrappers, and grid system
  */
 
+@use '../variables' as *;
+
 // Layout and structure
 .wrapper-constructed {
   min-height: 100vh;
@@ -14,10 +16,10 @@
   flex: 1;
 }
 
-// App Layout to accommodate fixed header
+// App Layout to accommodate fixed header and footer
 .app-layout {
   padding-top: 60px; // Match header height
-  min-height: 100vh;
+  min-height: calc(100vh - 60px); // Account for header
   display: flex;
   flex-direction: column;
 }
@@ -25,52 +27,116 @@
 .layout-content {
   flex: 1;
   display: flex;
+  flex-direction: column;
+}
+
+// CSS custom properties for dynamic shadow positioning
+:root {
+  --sidebar-width: 280px;
+  --shadow-position: 280px;
 }
 
 // Main Content Layout - Fixed for proper toggle
 .main-content {
-  margin-left: 280px; // Default margin for visible sidebar
+  margin-left: var(--sidebar-width); // Use CSS variable for sidebar width
   transition: margin-left 0.3s ease;
   background: #fafafa; // Light background to make shadow more visible
   min-height: calc(100vh - 60px); // Full height minus header
   position: relative; // For pseudo-element positioning
   
-  // Create visible left shadow using pseudo-element
+  // Create visible left shadow using fixed pseudo-element that doesn't move with content
   &::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: fixed; // Fixed position so it doesn't move with draggable content
+    top: 60px; // Start below the header
+    left: var(--shadow-position); // Use CSS variable for shadow position
     width: 8px; // Shadow width
-    height: 100%;
+    height: calc(100vh - 60px); // Full height minus header
     background: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
     pointer-events: none; // Don't interfere with content interaction
-    z-index: 1;
+    z-index: 999; // Below header and sidebar but above content
+    transition: left 0.3s ease; // Transition when sidebar toggles
   }
 }
 
-// When sidebar is collapsed, remove margin
+// When sidebar is collapsed, remove margin and adjust shadow
 .app-sidebar.sidebar-collapsed ~ .main-content {
   margin-left: 0;
+  
+  &::before {
+    left: 0; // Move shadow to left edge when sidebar is hidden
+  }
 }
 
 // Body classes for sidebar state
 body.sidebar-closed .main-content {
   margin-left: 0;
+  
+  &::before {
+    left: 0; // Move shadow to left edge when sidebar is hidden
+  }
 }
 
 body.sidebar-open .main-content {
   margin-left: 0; // On mobile, no margin when overlay is used
+  
+  &::before {
+    left: 0; // Move shadow to left edge on mobile when overlay is used
+  }
 }
 
-// Desktop: ensure proper margin when sidebar is visible
+// Desktop: ensure proper margin when sidebar is visible and position shadow correctly
 @media (min-width: 1025px) {
   body:not(.sidebar-closed) .main-content {
     margin-left: 280px;
+    
+    &::before {
+      left: 280px; // Keep shadow at right edge of sidebar
+    }
   }
   
   .app-sidebar:not(.sidebar-collapsed) ~ .main-content {
     margin-left: 280px;
+    
+    &::before {
+      left: 280px; // Keep shadow at right edge of sidebar
+    }
+  }
+  
+  // Compact sidebar adjustments - using body class for more reliable selection
+  .app-sidebar.sidebar-compact ~ .main-content,
+  body:has(.app-sidebar.sidebar-compact) .main-content {
+    margin-left: 80px; // Reduced margin for compact sidebar
+    
+    &::before {
+      left: 80px !important; // Move shadow to compact sidebar edge (force override)
+    }
+  }
+}
+
+// Alternative selector approach for compact mode - ensures cross-browser compatibility
+.sidebar-compact + * .main-content,
+.sidebar-compact ~ * .main-content {
+  margin-left: 80px;
+  
+  &::before {
+    left: 80px !important;
+  }
+}
+
+// Additional fallback for when inline styles override CSS
+body[data-sidebar-state="compact"] .main-content {
+  margin-left: 80px !important;
+  
+  &::before {
+    left: 80px !important;
+  }
+}
+
+// Mobile: shadow should be hidden when sidebar is not visible
+@media (max-width: 1024px) {
+  .main-content::before {
+    display: none; // Hide shadow on mobile since sidebar is overlay
   }
 }
 
@@ -197,23 +263,63 @@ body.sidebar-open .main-content {
 .wrapper-footer {
   background: #f8f9fa;
   border-top: 1px solid #dee2e6;
-  padding: 20px 0;
+  height: 60px; // Fixed height to match sidebar-footer
+  padding: 20px;
   margin-top: auto;
   margin-left: 280px; // Start after sidebar
   transition: margin-left 0.3s ease; // Smooth transition when sidebar toggles
+  max-width: 1200px;
+  margin-right: auto;
+  box-sizing: border-box; // Ensure padding and borders are included in height
+  display: flex;
+  justify-content: space-between;
+  align-items: center; // Center items vertically to match sidebar-footer
+  position: relative; // For pseudo-element positioning
   
-  .footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+  // Shadow removed - handled by main content shadow in layout.scss
+  
+  .footer-navigation-left-panel {
+    ul.ld {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+      
+      li {
+        a {
+          color: $secondary-color;
+          text-decoration: none;
+          font-size: 14px;
+          line-height: 1; // Match sidebar-footer line-height
+          
+          &:hover {
+            color: $primary-color;
+            text-decoration: underline;
+          }
+        }
+      }
+    }
   }
   
-  // Navigation links removed - moved to sidebar footer
-  
   .footer-copyright {
-    margin-top: 15px;
     font-size: 12px;
     color: $secondary-color;
+    margin: 0;
+    line-height: 1; // Match sidebar-footer line-height
+  }
+  
+  // Footer copyright section for compact/mobile mode
+  .footer-copyright-section {
+    display: flex;
+    align-items: center;
+    
+    .footer-copyright-text {
+      font-size: 12px;
+      color: $secondary-color;
+      margin: 0;
+      line-height: 1;
+    }
   }
 }
 
@@ -224,9 +330,150 @@ body.sidebar-closed .wrapper-footer {
   padding-left: 20px; // Normal padding when sidebar is hidden
 }
 
+// Compact sidebar adjustments for footer - multiple selectors for reliability
+.app-sidebar.sidebar-compact ~ * .wrapper-footer,
+body:has(.app-sidebar.sidebar-compact) .wrapper-footer,
+body[data-sidebar-state="compact"] .wrapper-footer {
+  margin-left: 80px !important; // Reduced margin for compact sidebar
+}
+
+// Alternative selector approach for compact mode
+.sidebar-compact + * .wrapper-footer,
+.sidebar-compact ~ * .wrapper-footer {
+  margin-left: 80px !important;
+}
+
+// Desktop: ensure proper footer positioning when sidebar is visible
+@media (min-width: 1025px) {
+  // Compact sidebar adjustments for footer on desktop - multiple selectors
+  .app-sidebar.sidebar-compact ~ * .wrapper-footer,
+  body:has(.app-sidebar.sidebar-compact) .wrapper-footer,
+  body[data-sidebar-state="compact"] .wrapper-footer {
+    margin-left: 80px !important; // Reduced margin for compact sidebar
+  }
+  
+  // Alternative selector approach for compact mode on desktop
+  .sidebar-compact + * .wrapper-footer,
+  .sidebar-compact ~ * .wrapper-footer {
+    margin-left: 80px !important;
+  }
+}
+
 // Mobile: footer should not extend under sidebar
 @media (max-width: 1024px) {
   .wrapper-footer {
+    margin-left: 0 !important;
+    padding-left: 20px !important;
+  }
+}
+
+// AppFooter component styles (positioned at bottom of page)
+.app-footer {
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  height: 60px;
+  padding: 15px 20px;
+  margin-left: 280px; // Start after full sidebar
+  transition: margin-left 0.3s ease;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: auto; // Let it take remaining width naturally
+  margin-top: 0; // No extra top margin
+  clear: both; // Ensure it appears below all content
+  
+  .footer-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .footer-content {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+  
+  .footer-navigation-left-panel {
+    ul.ld {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+      
+      li {
+        a {
+          color: $secondary-color;
+          text-decoration: none;
+          font-size: 14px;
+          line-height: 1;
+          
+          &:hover {
+            color: $primary-color;
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+  
+  .footer-copyright-section {
+    display: flex;
+    align-items: center;
+    
+    .footer-copyright-text {
+      font-size: 12px;
+      color: $secondary-color;
+      margin: 0;
+      line-height: 1;
+    }
+  }
+  
+  // Responsive adjustments
+  &.footer-sidebar-collapsed {
+    margin-left: 0;
+    width: 100%; // Full width when sidebar is collapsed
+    padding-left: 20px;
+  }
+  
+  &.footer-sidebar-compact {
+    margin-left: 80px !important;
+    width: calc(100% - 80px) !important; // Full width minus compact sidebar
+  }
+  
+  &.footer-mobile {
+    margin-left: 0 !important;
+    width: 100% !important; // Full width on mobile
+    padding-left: 20px !important;
+  }
+}
+
+// Body data attribute selectors for AppFooter
+body[data-sidebar-state="compact"] .app-footer {
+  margin-left: 80px !important;
+  width: calc(100% - 80px) !important;
+}
+
+body.sidebar-closed .app-footer {
+  margin-left: 0;
+  width: 100% !important;
+  padding-left: 20px;
+}
+
+// Desktop specific rules for AppFooter
+@media (min-width: 1025px) {
+  body[data-sidebar-state="compact"] .app-footer {
+    margin-left: 80px !important;
+  }
+}
+
+// Mobile specific rules for AppFooter
+@media (max-width: 1024px) {
+  .app-footer {
     margin-left: 0 !important;
     padding-left: 20px !important;
   }

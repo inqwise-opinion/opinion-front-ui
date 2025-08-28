@@ -5,6 +5,8 @@
 
 import { MockApiService, ChartData, AuthenticationInfo } from '../services/MockApiService';
 import { Opinion, User } from '../types';
+import Layout from '../components/Layout';
+import { DashboardPageComponent } from './DashboardPageComponent';
 
 export interface DashboardState {
   user?: User;
@@ -29,9 +31,30 @@ export class Dashboard {
   private chartInstance: any; // Will be Highcharts instance
   private loader: any;
   private apiService: MockApiService;
+  private layout: Layout;
+  private pageComponent: DashboardPageComponent;
 
   constructor(apiService: MockApiService) {
     this.apiService = apiService;
+    this.layout = new Layout({
+      header: {
+        enabled: true,
+        brandTitle: 'Opinion',
+        brandHref: '/dashboard'
+      },
+      sidebar: {
+        enabled: true
+      },
+      footer: {
+        enabled: true,
+        showCopyright: true,
+        copyrightText: '© 2024 Inqwise Ltd',
+        showNavigation: true,
+        navigationLinks: [
+          { href: '/create-bug-report', title: 'Report a Bug', text: 'Report a Bug' }
+        ]
+      }
+    });
     this.state = {
       surveys: [],
       selectedSurveyId: 0,
@@ -52,6 +75,15 @@ export class Dashboard {
       // Show loader
       this.showLoader();
 
+      // Initialize layout (which includes header, sidebar, and footer)
+      await this.layout.init();
+      console.log('Dashboard - Layout initialized, footer should be visible');
+      
+      // Initialize page component with layout
+      this.pageComponent = new DashboardPageComponent({ layout: this.layout });
+      await this.pageComponent.init();
+      console.log('Dashboard - Page component initialized');
+
       // Authenticate user
       const auth = await this.authenticateUser();
       this.state.user = auth.userInfo;
@@ -68,7 +100,7 @@ export class Dashboard {
       // Initialize date range (default to today)
       this.initializeDateRange();
       
-      // Set up event listeners
+      // Set up dashboard-specific event listeners (data-driven)
       this.setupEventListeners();
       
       // Load initial chart data
@@ -76,6 +108,9 @@ export class Dashboard {
       
       // Show welcome message if needed
       this.checkWelcomeMessage();
+      
+      // Final check: Ensure footer still exists after all data loading
+      this.ensureFooterExists();
 
       console.log('Dashboard - Ready');
     } catch (error) {
@@ -302,7 +337,7 @@ export class Dashboard {
   }
 
   /**
-   * Setup event listeners
+   * Setup dashboard-specific event listeners (not UI-related)
    */
   private setupEventListeners(): void {
     // Survey selection change
@@ -321,86 +356,6 @@ export class Dashboard {
       createButton.addEventListener('click', () => {
         window.location.href = '/surveys/create';
       });
-    }
-    
-    // User menu dropdown
-    this.setupUserMenu();
-    
-    // Sidebar toggle
-    this.setupSidebar();
-  }
-  
-  /**
-   * Setup user menu dropdown functionality
-   */
-  private setupUserMenu(): void {
-    const userMenuTrigger = document.getElementById('user_menu_trigger');
-    const userMenuDropdown = document.getElementById('user_menu_dropdown');
-    
-    if (!userMenuTrigger || !userMenuDropdown) return;
-    
-    // Toggle dropdown on trigger click
-    userMenuTrigger.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const isOpen = userMenuDropdown.style.display === 'block';
-      
-      if (isOpen) {
-        this.closeUserMenu();
-      } else {
-        this.openUserMenu();
-      }
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (!userMenuTrigger.contains(target) && !userMenuDropdown.contains(target)) {
-        this.closeUserMenu();
-      }
-    });
-    
-    // Close dropdown on escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        this.closeUserMenu();
-      }
-    });
-  }
-  
-  /**
-   * Open user menu dropdown
-   */
-  private openUserMenu(): void {
-    const userMenuTrigger = document.getElementById('user_menu_trigger');
-    const userMenuDropdown = document.getElementById('user_menu_dropdown');
-    
-    if (userMenuTrigger && userMenuDropdown) {
-      userMenuTrigger.classList.add('active');
-      userMenuDropdown.style.display = 'block';
-      userMenuDropdown.classList.remove('hide');
-      userMenuDropdown.classList.add('show');
-    }
-  }
-  
-  /**
-   * Close user menu dropdown
-   */
-  private closeUserMenu(): void {
-    const userMenuTrigger = document.getElementById('user_menu_trigger');
-    const userMenuDropdown = document.getElementById('user_menu_dropdown');
-    
-    if (userMenuTrigger && userMenuDropdown) {
-      userMenuTrigger.classList.remove('active');
-      userMenuDropdown.classList.remove('show');
-      userMenuDropdown.classList.add('hide');
-      
-      // Hide after animation completes
-      setTimeout(() => {
-        userMenuDropdown.style.display = 'none';
-        userMenuDropdown.classList.remove('hide');
-      }, 200);
     }
   }
 
@@ -444,17 +399,11 @@ export class Dashboard {
   private updateUserInterface(): void {
     if (!this.state.user) return;
 
-    // Update username in trigger
-    const usernameElement = document.getElementById('label_username');
-    if (usernameElement) {
-      usernameElement.textContent = this.state.user.username;
-    }
-    
-    // Update username in dropdown header
-    const userMenuName = document.getElementById('user_menu_name');
-    if (userMenuName) {
-      userMenuName.textContent = this.state.user.username;
-    }
+    // Update user info across all layout components
+    this.layout.updateUser({
+      username: this.state.user.username,
+      email: this.state.user.email || 'demo@example.com'
+    });
     
     // Update sidebar survey counts
     this.updateSidebarCounts();
@@ -534,147 +483,7 @@ export class Dashboard {
   }
   
   /**
-   * Setup sidebar toggle functionality
-   */
-  private setupSidebar(): void {
-    const sidebarToggle = document.getElementById('sidebar_toggle');
-    const sidebar = document.getElementById('app_sidebar');
-    const overlay = document.getElementById('sidebar_overlay');
-    
-    if (!sidebarToggle || !sidebar || !overlay) return;
-    
-    // Setup toggle button
-    sidebarToggle.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const isClosed = sidebar.classList.contains('sidebar-collapsed');
-      
-      if (isClosed) {
-        this.openSidebar();
-      } else {
-        this.closeSidebar();
-      }
-    });
-    
-    // Close sidebar when clicking overlay
-    overlay.addEventListener('click', () => {
-      this.closeSidebar();
-    });
-    
-    // Close sidebar on escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        this.closeSidebar();
-      }
-    });
-    
-    // Handle window resize - reset sidebar state for desktop
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 1024) {
-        // Desktop: sidebar should be open by default
-        this.resetSidebarForDesktop();
-      } else if (window.innerWidth <= 768) {
-        // Mobile: ensure sidebar is closed
-        this.closeSidebar();
-      }
-    });
-    
-    // Set initial state based on screen size
-    this.initializeSidebarState();
-  }
-  
-  /**
-   * Initialize sidebar state based on screen size
-   */
-  private initializeSidebarState(): void {
-    if (window.innerWidth > 1024) {
-      // Desktop: sidebar open by default
-      this.resetSidebarForDesktop();
-    } else {
-      // Mobile/Tablet: sidebar closed by default
-      this.closeSidebar();
-    }
-  }
-  
-  /**
-   * Reset sidebar for desktop view
-   */
-  private resetSidebarForDesktop(): void {
-    const sidebar = document.getElementById('app_sidebar');
-    const overlay = document.getElementById('sidebar_overlay');
-    const sidebarToggle = document.getElementById('sidebar_toggle');
-    
-    if (sidebar) {
-      sidebar.classList.remove('sidebar-collapsed');
-    }
-    
-    if (overlay) {
-      overlay.classList.remove('active');
-    }
-    
-    if (sidebarToggle) {
-      sidebarToggle.classList.remove('active');
-    }
-    
-    document.body.classList.remove('sidebar-open', 'sidebar-closed');
-  }
-  
-  /**
-   * Open sidebar (remove closed class)
-   */
-  private openSidebar(): void {
-    const sidebar = document.getElementById('app_sidebar');
-    const overlay = document.getElementById('sidebar_overlay');
-    const sidebarToggle = document.getElementById('sidebar_toggle');
-    
-    if (sidebar) {
-      sidebar.classList.remove('sidebar-collapsed');
-    }
-    
-    // Show overlay for mobile/tablet
-    if (window.innerWidth <= 1024 && overlay) {
-      overlay.classList.add('active');
-      document.body.classList.add('sidebar-open');
-    }
-    
-    // Update button state
-    if (sidebarToggle) {
-      sidebarToggle.setAttribute('aria-expanded', 'true');
-    }
-    
-    // Remove closed state from body
-    document.body.classList.remove('sidebar-closed');
-  }
-  
-  /**
-   * Close sidebar (add closed class)
-   */
-  private closeSidebar(): void {
-    const sidebar = document.getElementById('app_sidebar');
-    const overlay = document.getElementById('sidebar_overlay');
-    const sidebarToggle = document.getElementById('sidebar_toggle');
-    
-    if (sidebar) {
-      sidebar.classList.add('sidebar-collapsed');
-    }
-    
-    // Hide overlay
-    if (overlay) {
-      overlay.classList.remove('active');
-    }
-    
-    document.body.classList.remove('sidebar-open');
-    document.body.classList.add('sidebar-closed');
-    
-    // Update button state
-    if (sidebarToggle) {
-      sidebarToggle.setAttribute('aria-expanded', 'false');
-    }
-  }
-  
-  /**
-   * Update sidebar counts
+   * Update sidebar counts (data-only, not UI)
    */
   private updateSidebarCounts(): void {
     // Update total surveys count
@@ -690,7 +499,7 @@ export class Dashboard {
   }
   
   /**
-   * Update recent surveys in sidebar
+   * Update recent surveys in sidebar (data-only, not UI)
    */
   private updateRecentSurveysSidebar(): void {
     const recentSurveysSection = document.getElementById('recent_surveys_sidebar');
@@ -720,6 +529,23 @@ export class Dashboard {
       `;
       recentSurveysList.appendChild(li);
     });
+  }
+  
+  /**
+   * Ensure footer still exists after data loading - recreate if missing
+   */
+  private ensureFooterExists(): void {
+    const existingFooter = document.querySelector('.app-footer');
+    if (!existingFooter) {
+      console.log('Dashboard - Footer missing after data load, recreating...');
+      const footer = this.layout.getFooter();
+      if (footer) {
+        footer.init(); // Reinitialize the footer
+        console.log('Dashboard - Footer recreated successfully');
+      }
+    } else {
+      console.log('Dashboard - Footer exists and is visible');
+    }
   }
 }
 

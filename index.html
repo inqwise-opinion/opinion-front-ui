@@ -6,6 +6,7 @@
   <title>Opinion - Survey Management Platform</title>
   <meta name="description" content="Opinion - Modern survey management platform for creating, managing and analyzing surveys">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     /* Basic loading styles */
     body, html {
@@ -35,7 +36,7 @@
     
     @keyframes spin {
       0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      100% { transform: rotate(364deg); }
     }
     
     .loading-text {
@@ -43,16 +44,111 @@
       font-size: 16px;
       font-weight: 400;
     }
+    
+    /* Layout wrapper structure - provides container for AppHeader */
+    .wrapper-constructed {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .wrapper-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Base header styles - will be enhanced by AppHeader component */
+    .app-header {
+      flex-shrink: 0;
+    }
+    
+    /* Main app content area */
+    #app {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Footer styling */
+    .app-footer {
+      flex-shrink: 0;
+      background: #f8f9fa;
+      border-top: 1px solid #dee2e6;
+      padding: 20px;
+      width: 100%;
+      position: relative;
+    }
+    
+    .footer-container {
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .footer-navigation-left-panel ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
+    
+    .footer-navigation-left-panel a {
+      color: #6c757d;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    
+    .footer-navigation-left-panel a:hover {
+      color: #007bff;
+      text-decoration: underline;
+    }
+    
+    .footer-copyright-text {
+      color: #6c757d;
+      font-size: 12px;
+      margin: 0;
+    }
+    
+    .footer-copyright-text a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    
+    .footer-copyright-text a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
-  <div id="app">
-    <div class="loader-container">
-      <div class="loader"></div>
-      <p class="loading-text">Loading Opinion Front UI...</p>
+  <!-- Global layout wrapper structure that AppHeader expects -->
+  <div class="wrapper-constructed">
+    <div class="wrapper-content">
+      <!-- Header will be inserted here by AppHeader component -->
+      
+      <!-- Main app content -->
+      <div id="app">
+        <div class="loader-container">
+          <div class="loader"></div>
+          <p class="loading-text">Loading Opinion Front UI...</p>
+        </div>
+      </div>
+      
+      <!-- Footer placeholder (if needed) -->
+      <!-- <div class="app-footer"></div> -->
     </div>
   </div>
-
+  
+  <!-- Sidebar will be created/managed by SimpleMobileMenu component -->
+  
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

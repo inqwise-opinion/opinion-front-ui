@@ -3,6 +3,9 @@
  * Buttons, forms, tables, dropdowns, and other reusable UI elements
  */
 
+@use 'sass:color';
+@use '../variables' as *;
+
 // Buttons - Updated to match admin-ui styling
 .button-green,
 .btn-add {

@@ -1,33 +1,70 @@
 /**
  * Main application class for Opinion Front UI
- * Handles routing and page management
+ * Handles routing and page management with global layout
  */
 
 import { MockApiService } from './services/MockApiService';
 import DashboardPage from './pages/DashboardPage';
+import DebugPage from './pages/DebugPage';
+import AppHeader from './components/AppHeader';
+import AppFooter from './components/AppFooter';
+import SimpleMobileMenu from './components/SimpleMobileMenu';
 
 export class OpinionApp {
   private initialized: boolean = false;
   private currentPage: any = null;
   private apiService: MockApiService;
+  
+  // Global layout components
+  private appHeader: AppHeader | null = null;
+  private appFooter: AppFooter | null = null;
+  private mobileMenu: SimpleMobileMenu | null = null;
 
   constructor() {
-    console.log('Opinion Front UI - Initializing...');
-    this.apiService = new MockApiService();
+    console.log('🎯 APP.TS - Constructor START');
+    try {
+      console.log('🎯 APP.TS - Creating MockApiService...');
+      this.apiService = new MockApiService();
+      console.log('✅ APP.TS - Constructor completed successfully');
+    } catch (error) {
+      console.error('❌ APP.TS - Constructor failed:', error);
+      throw error;
+    }
+    console.log('🎯 APP.TS - Constructor END');
   }
 
   public async init(): Promise<void> {
-    if (this.initialized) {
-      console.warn('Application already initialized');
-      return;
-    }
+    console.log('🎯 APP.TS - init() START');
+    try {
+      if (this.initialized) {
+        console.warn('🎯 APP.TS - Application already initialized');
+        return;
+      }
 
-    this.setupEventListeners();
-    await this.loadInitialData();
-    await this.initializeRouting();
-    this.initialized = true;
-    
-    console.log('Opinion Front UI - Ready');
+      console.log('🎯 APP.TS - Setting up event listeners...');
+      this.setupEventListeners();
+      console.log('✅ APP.TS - Event listeners setup complete');
+      
+      console.log('🎯 APP.TS - Loading initial data...');
+      await this.loadInitialData();
+      console.log('✅ APP.TS - Initial data loaded');
+      
+      console.log('🎯 APP.TS - Initializing global layout...');
+      await this.initializeGlobalLayout();
+      console.log('✅ APP.TS - Global layout initialized');
+      
+      console.log('🎯 APP.TS - Initializing routing...');
+      await this.initializeRouting();
+      console.log('✅ APP.TS - Routing initialized');
+      
+      this.initialized = true;
+      console.log('✅ APP.TS - Opinion Front UI - Ready');
+    } catch (error) {
+      console.error('❌ APP.TS - init() failed:', error);
+      console.error('❌ APP.TS - Error stack:', error.stack);
+      throw error;
+    }
+    console.log('🎯 APP.TS - init() END');
   }
 
   private setupEventListeners(): void {
@@ -51,6 +88,41 @@ export class OpinionApp {
       console.error('Failed to load initial data:', error);
     }
   }
+  
+  /**
+   * Initialize global layout components (header, sidebar, footer)
+   */
+  private async initializeGlobalLayout(): Promise<void> {
+    try {
+      console.log('🏗️ APP.TS - Initializing global AppHeader...');
+      this.appHeader = new AppHeader();
+      this.appHeader.init();
+      
+      // Set a test user
+      this.appHeader.updateUser({
+        username: 'Demo User',
+        email: 'demo@opinion.app'
+      });
+      
+      console.log('✅ APP.TS - Global AppHeader initialized');
+      
+      // Initialize AppFooter
+      console.log('🏗️ APP.TS - Initializing global AppFooter...');
+      this.appFooter = new AppFooter({ 
+        showCopyright: true, 
+        showNavigation: true,
+        copyrightText: '&copy; 2024 Opinion - created by <a href="https://www.inqwise.com" target="_blank" rel="noopener noreferrer">inqwise</a>'
+      });
+      this.appFooter.init();
+      console.log('✅ APP.TS - Global AppFooter initialized');
+      
+      // Note: Sidebar is managed by SimpleMobileMenu, which is initialized by AppHeader
+      
+    } catch (error) {
+      console.error('❌ APP.TS - Failed to initialize global layout:', error);
+      throw error;
+    }
+  }
 
   /**
    * Initialize routing and load appropriate page
@@ -72,16 +144,28 @@ export class OpinionApp {
    * Handle specific route and load appropriate page
    */
   private async handleRoute(path: string): Promise<void> {
-    // Clean up current page if exists
-    if (this.currentPage && typeof this.currentPage.destroy === 'function') {
-      this.currentPage.destroy();
-    }
-
+    console.log(`🎯 APP.TS - handleRoute('${path}') START`);
     try {
+      // Clean up current page if exists
+      if (this.currentPage && typeof this.currentPage.destroy === 'function') {
+        console.log('🎯 APP.TS - Destroying current page...');
+        this.currentPage.destroy();
+        console.log('✅ APP.TS - Current page destroyed');
+      }
+
       // Route to appropriate page based on path
-      if (path === '/' || path === '/dashboard') {
-        this.currentPage = new DashboardPage(this.apiService);
+      if (path === '/') {
+        console.log('🎯 APP.TS - Creating DebugPage for root path...');
+        this.currentPage = new DebugPage();
+        console.log('🎯 APP.TS - Initializing DebugPage...');
         await this.currentPage.init();
+        console.log('✅ APP.TS - DebugPage initialized successfully');
+      } else if (path === '/dashboard') {
+        console.log('🎯 APP.TS - Creating DashboardPage...');
+        this.currentPage = new DashboardPage(this.apiService);
+        console.log('🎯 APP.TS - Initializing DashboardPage...');
+        await this.currentPage.init();
+        console.log('✅ APP.TS - DashboardPage initialized successfully');
       }
       // Add more routes here as needed
       // else if (path === '/surveys') {
@@ -89,15 +173,20 @@ export class OpinionApp {
       //   await this.currentPage.init();
       // }
       else {
-        console.warn(`Unknown route: ${path}`);
-        // Fallback to dashboard
-        this.currentPage = new DashboardPage(this.apiService);
+        console.warn(`⚠️ APP.TS - Unknown route: ${path}`);
+        console.log('🎯 APP.TS - Fallback: Creating DebugPage...');
+        this.currentPage = new DebugPage();
+        console.log('🎯 APP.TS - Initializing fallback DebugPage...');
         await this.currentPage.init();
+        console.log('✅ APP.TS - Fallback DebugPage initialized successfully');
       }
     } catch (error) {
-      console.error(`Failed to load page for route ${path}:`, error);
+      console.error(`❌ APP.TS - Failed to load page for route ${path}:`, error);
+      console.error(`❌ APP.TS - Route error stack:`, error.stack);
       // Show error page or fallback
+      throw error;
     }
+    console.log(`🎯 APP.TS - handleRoute('${path}') END`);
   }
 
   /**

@@ -15,6 +15,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <!-- Styles are imported via Vite in main.ts -->
+    <!-- JavaScript moved to bottom for proper loading order -->
     <style>
         /* Critical inline styles to ensure the button works */
         .header-sidebar-toggle {
@@ -50,10 +51,161 @@
             position: relative !important;
         }
         
-        /* Ensure Material Icons don't interfere */
-        .material-icons {
-            pointer-events: none !important;
+        /* Simple compact toggle button styling */
+        .sidebar-compact-toggle {
+            background: transparent !important;
+            border: none !important;
+            opacity: 0.7 !important;
+            padding: 8px !important;
+            min-width: 32px !important;
+            min-height: 32px !important;
+            cursor: pointer !important;
+            font-size: 16px !important;
+            color: #666 !important;
+            border-radius: 4px !important;
+        }
+        
+        .sidebar-compact-toggle:hover {
+            opacity: 1 !important;
+            background: rgba(0, 0, 0, 0.05) !important;
+        }
+        
+        /* Add compact sidebar CSS directly inline to ensure it works */
+        .app-sidebar {
+            transition: width 0.3s ease !important;
+            overflow: hidden !important;
+        }
+        
+        .app-sidebar.sidebar-compact {
+            width: 80px !important;
+            min-width: 80px !important;
+            max-width: 80px !important;
+        }
+        
+        /* Force all child elements to stay within compact width */
+        .app-sidebar.sidebar-compact * {
+            max-width: 80px !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* Hide text elements in compact mode */
+        .app-sidebar.sidebar-compact .nav-text {
+            display: none !important;
+        }
+        
+        .app-sidebar.sidebar-compact .brand-title {
+            display: none !important;
+        }
+        
+        .app-sidebar.sidebar-compact .nav-badge {
+            display: none !important;
+        }
+        
+        .app-sidebar.sidebar-compact .copyright-text {
+            display: none !important;
+        }
+        
+        /* Constrain sidebar wrapper */
+        .app-sidebar.sidebar-compact .sidebar-wrapper {
+            width: 80px !important;
+            max-width: 80px !important;
+            overflow: hidden !important;
+        }
+        
+        /* Center and constrain header */
+        .app-sidebar.sidebar-compact .sidebar-header {
+            width: 80px !important;
+            padding: 16px 0 !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
+        .app-sidebar.sidebar-compact .sidebar-brand {
+            display: none !important;
+        }
+        
+        .app-sidebar.sidebar-compact .sidebar-controls {
+            display: flex !important;
+            justify-content: center !important;
+            width: 100% !important;
+        }
+        
+        /* Constrain navigation */
+        .app-sidebar.sidebar-compact .sidebar-navigation {
+            width: 80px !important;
+            max-width: 80px !important;
+        }
+        
+        .app-sidebar.sidebar-compact .nav-section {
+            width: 80px !important;
+            max-width: 80px !important;
+        }
+        
+        .app-sidebar.sidebar-compact .nav-list {
+            width: 80px !important;
+            max-width: 80px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+        }
+        
+        .app-sidebar.sidebar-compact .nav-item {
+            width: 80px !important;
+            max-width: 80px !important;
+            display: flex !important;
+            justify-content: center !important;
+        }
+        
+        .app-sidebar.sidebar-compact .nav-link {
+            width: 60px !important;
+            max-width: 60px !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 12px 0 !important;
+            margin: 0 auto !important;
+        }
+        
+        .app-sidebar.sidebar-compact .nav-icon {
+            margin: 0 !important;
             font-size: 20px !important;
+            display: block !important;
+        }
+        
+        /* Constrain footer */
+        .app-sidebar.sidebar-compact .sidebar-footer {
+            width: 80px !important;
+            max-width: 80px !important;
+            padding: 8px 0 !important;
+            display: flex !important;
+            justify-content: center !important;
+        }
+        
+        .app-sidebar.sidebar-compact .footer-content {
+            width: 100% !important;
+            text-align: center !important;
+            display: none !important; /* Hide footer completely in compact mode */
+        }
+        
+        /* Adjust main content margin for compact sidebar */
+        .app-sidebar.sidebar-compact ~ .layout-content .main-content {
+            margin-left: 80px !important;
+        }
+        
+        .app-sidebar.sidebar-compact ~ .layout-content .main-content::before {
+            left: 80px !important;
+        }
+        
+        /* Ensure main content adjusts on desktop when compact */
+        @media (min-width: 1025px) {
+            .app-sidebar.sidebar-compact ~ .layout-content .main-content {
+                margin-left: 80px !important;
+            }
+            
+            .app-sidebar.sidebar-compact ~ .layout-content .main-content::before {
+                left: 80px !important;
+            }
         }
         
         /* Debug: Make button area very visible */
@@ -110,7 +262,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="javascript:;" onclick="feedback()" class="user-menu-item">
+                            <a href="javascript:;" class="user-menu-item" data-action="feedback">
                                 <i class="menu-icon">💬</i>
                                 <span>Send Feedback</span>
                             </a>
@@ -141,11 +293,11 @@
                     <div class="sidebar-brand">
                         <h1 class="brand-title">Opinion</h1>
                     </div>
-                    <button class="sidebar-toggle" id="sidebar_toggle" type="button" aria-label="Close Sidebar" aria-expanded="true">
-                        <span class="material-icons">close</span>
-                        <!-- Fallback close icon -->
-                        <span class="hamburger-icon" style="display: none;">✕</span>
-                    </button>
+                    <div class="sidebar-controls">
+                        <button class="sidebar-compact-toggle" id="sidebar_compact_toggle" type="button" aria-label="Toggle Compact Mode" title="Toggle Compact Mode">
+                            ⟷
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Sidebar Navigation ---->
@@ -154,7 +306,7 @@
                         <ul class="nav-list" role="menubar">
                             <!-- Dashboard -->
                             <li class="nav-item" role="none">
-                                <a href="/dashboard" class="nav-link nav-link-active" role="menuitem" aria-current="page">
+                                <a href="/dashboard" class="nav-link nav-link-active" role="menuitem" aria-current="page" data-title="Dashboard">
                                     <span class="nav-icon" aria-hidden="true">📊</span>
                                     <span class="nav-text">Dashboard</span>
                                 </a>
@@ -162,7 +314,7 @@
                             
                             <!-- Surveys -->
                             <li class="nav-item" role="none">
-                                <a href="/surveys" class="nav-link" role="menuitem">
+                                <a href="/surveys" class="nav-link" role="menuitem" data-title="Surveys">
                                     <span class="nav-icon" aria-hidden="true">📋</span>
                                     <span class="nav-text">Surveys</span>
                                     <span class="nav-badge" id="sidebar_surveys_count" aria-label="Total surveys">5</span>
@@ -358,415 +510,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <div class="wrapper-footer XcO">
-        <div class="footer-container">
-            <div>
-                <div class="footer-navigation-left-panel">
-                    <ul class="ld">
-                        <li class="first-item last-item">
-                            <a href="/create-bug-report" title="Report a Bug">Report a Bug</a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="footer-navigation-right-panel"></div>
-            </div>
-            <div class="footer-copyright">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                    <tbody>
-                        <tr>
-                            <td valign="top">Copyright © 2011-2025 Inqwise Ltd. All rights reserved.</td>
-                            <td valign="top" style="text-align: right"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Enhanced Sidebar Elements
-            const appSidebar = document.getElementById('app_sidebar');
-            const headerSidebarToggle = document.getElementById('header_sidebar_toggle');
-            const sidebarToggle = document.getElementById('sidebar_toggle');
-            const overlay = document.getElementById('sidebar_overlay');
-            const mainContent = document.getElementById('main_content');
-            
-            console.log('DOM loaded, elements found:', {
-                appSidebar: !!appSidebar,
-                headerSidebarToggle: !!headerSidebarToggle,
-                overlay: !!overlay,
-                mainContent: !!mainContent
-            });
-            
-            
-            // Enhanced Sidebar toggle handler
-            function toggleSidebar() {
-                console.log('toggleSidebar called');
-                const isMobile = window.innerWidth <= 1024;
-                const isSidebarOpen = document.body.classList.contains('sidebar-open');
-                
-                console.log('Toggle state:', { isMobile, isSidebarOpen, windowWidth: window.innerWidth });
-                
-                if (isMobile) {
-                    // Mobile behavior: use overlay mode
-                    if (isSidebarOpen) {
-                        // Hide sidebar
-                        console.log('Mobile: Hiding sidebar');
-                        document.body.classList.remove('sidebar-open');
-                        document.body.classList.add('sidebar-closed');
-                        if (overlay) overlay.classList.remove('active');
-                        if (headerSidebarToggle) headerSidebarToggle.setAttribute('aria-expanded', 'false');
-                    } else {
-                        // Show sidebar as overlay
-                        console.log('Mobile: Showing sidebar');
-                        document.body.classList.add('sidebar-open');
-                        document.body.classList.remove('sidebar-closed');
-                        if (overlay) overlay.classList.add('active');
-                        if (headerSidebarToggle) headerSidebarToggle.setAttribute('aria-expanded', 'true');
-                    }
-                } else {
-                    // Desktop behavior: use collapsed/expanded mode
-                    const isCollapsed = appSidebar.classList.contains('sidebar-collapsed');
-                    console.log('Desktop: isCollapsed =', isCollapsed);
-                    
-                    if (isCollapsed) {
-                        // Show sidebar
-                        console.log('Desktop: Showing sidebar');
-                        appSidebar.classList.remove('sidebar-collapsed');
-                        if (headerSidebarToggle) headerSidebarToggle.setAttribute('aria-expanded', 'true');
-                        document.body.classList.remove('sidebar-closed');
-                    } else {
-                        // Hide sidebar
-                        console.log('Desktop: Hiding sidebar');
-                        appSidebar.classList.add('sidebar-collapsed');
-                        if (headerSidebarToggle) headerSidebarToggle.setAttribute('aria-expanded', 'false');
-                        document.body.classList.add('sidebar-closed');
-                    }
-                    // No overlay on desktop
-                    if (overlay) overlay.classList.remove('active');
-                    document.body.classList.remove('sidebar-open');
-                }
-                
-                console.log('After toggle - body classes:', document.body.className);
-            }
-            
-            
-            // Accessibility: Handle keyboard navigation
-            function handleKeyboardNavigation(event) {
-                if (event.key === 'Escape') {
-                    const isMobile = window.innerWidth <= 1024;
-                    
-                    // Close sidebar on Escape key
-                    if (isMobile) {
-                        // Mobile: check if sidebar is open via body class
-                        if (document.body.classList.contains('sidebar-open')) {
-                            toggleSidebar();
-                        }
-                    } else {
-                        // Desktop: check if sidebar is not collapsed
-                        if (!appSidebar.classList.contains('sidebar-collapsed')) {
-                            toggleSidebar();
-                        }
-                    }
-                    
-                    // Close user menu if open
-                    const userMenuDropdown = document.getElementById('user_menu_dropdown');
-                    const userMenuTrigger = document.getElementById('user_menu_trigger');
-                    if (userMenuDropdown && userMenuDropdown.style.display === 'block') {
-                        userMenuDropdown.style.display = 'none';
-                        userMenuTrigger.classList.remove('active');
-                    }
-                }
-            }
-            
-            // Event listeners with more debugging
-            if (headerSidebarToggle) {
-                console.log('Adding click listener to button');
-                
-                // Primary event listener
-                headerSidebarToggle.addEventListener('click', function(e) {
-                    console.log('Button clicked! Event:', e);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleSidebar();
-                });
-                
-                // Add mousedown event for better debugging
-                headerSidebarToggle.addEventListener('mousedown', function(e) {
-                    console.log('Button mousedown detected');
-                });
-                
-                // Add mouseover event for debugging hover state
-                headerSidebarToggle.addEventListener('mouseover', function(e) {
-                    console.log('Button hover detected');
-                });
-            } else {
-                console.error('Header sidebar toggle button not found!');
-            }
-            
-            // Add event listener for sidebar close button
-            if (sidebarToggle) {
-                console.log('Adding click listener to sidebar close button');
-                
-                sidebarToggle.addEventListener('click', function(e) {
-                    console.log('Sidebar close button clicked! Event:', e);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleSidebar();
-                });
-                
-                // Add hover effects
-                sidebarToggle.addEventListener('mouseover', function(e) {
-                    console.log('Sidebar close button hover detected');
-                });
-            } else {
-                console.error('Sidebar close button not found!');
-            }
-            
-            if (overlay) {
-                overlay.addEventListener('click', function() {
-                    const isMobile = window.innerWidth <= 1024;
-                    
-                    if (isMobile) {
-                        // Mobile: close if sidebar is open
-                        if (document.body.classList.contains('sidebar-open')) {
-                            toggleSidebar();
-                        }
-                    } else {
-                        // Desktop: close if sidebar is not collapsed
-                        if (!appSidebar.classList.contains('sidebar-collapsed')) {
-                            toggleSidebar();
-                        }
-                    }
-                });
-            }
-            
-            
-            // Add keyboard event listener
-            document.addEventListener('keydown', handleKeyboardNavigation);
-            
-            // User menu dropdown functionality
-            const userMenuTrigger = document.getElementById('user_menu_trigger');
-            const userMenuDropdown = document.getElementById('user_menu_dropdown');
-            
-            function toggleUserMenu() {
-                const isVisible = userMenuDropdown.style.display === 'block';
-                
-                if (isVisible) {
-                    userMenuDropdown.style.display = 'none';
-                    userMenuDropdown.classList.remove('show');
-                    userMenuDropdown.classList.add('hide');
-                    userMenuTrigger.classList.remove('active');
-                } else {
-                    userMenuDropdown.style.display = 'block';
-                    userMenuDropdown.classList.remove('hide');
-                    userMenuDropdown.classList.add('show');
-                    userMenuTrigger.classList.add('active');
-                }
-            }
-            
-            if (userMenuTrigger) {
-                userMenuTrigger.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleUserMenu();
-                });
-            }
-            
-            // Close user menu when clicking outside
-            document.addEventListener('click', function(e) {
-                if (userMenuDropdown && userMenuTrigger && 
-                    !userMenuTrigger.contains(e.target) && 
-                    !userMenuDropdown.contains(e.target)) {
-                    userMenuDropdown.style.display = 'none';
-                    userMenuDropdown.classList.remove('show');
-                    userMenuTrigger.classList.remove('active');
-                }
-            });
-            
-            // Enhanced responsive behavior
-            function handleResize() {
-                const isMobile = window.innerWidth <= 1024;
-                const isTablet = window.innerWidth <= 768;
-                
-                if (isMobile) {
-                    // Mobile/Tablet: hide sidebar by default
-                    appSidebar.classList.add('sidebar-collapsed');
-                    headerSidebarToggle.setAttribute('aria-expanded', 'false');
-                    overlay.classList.remove('active');
-                    document.body.classList.remove('sidebar-open');
-                    document.body.classList.add('sidebar-closed');
-                } else {
-                    // Desktop: show sidebar by default
-                    appSidebar.classList.remove('sidebar-collapsed');
-                    headerSidebarToggle.setAttribute('aria-expanded', 'true');
-                    overlay.classList.remove('active');
-                    document.body.classList.remove('sidebar-open', 'sidebar-closed');
-                }
-            }
-            
-            // Initialize responsive behavior
-            handleResize();
-            
-            // Listen for window resize with debouncing
-            let resizeTimeout;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(handleResize, 100);
-            });
-            
-            // Navigation link active state management
-            function updateActiveNavigation() {
-                const currentPath = window.location.pathname;
-                const navLinks = document.querySelectorAll('.nav-link, .nav-sublink');
-                
-                navLinks.forEach(link => {
-                    const linkPath = link.getAttribute('href');
-                    if (linkPath === currentPath) {
-                        link.classList.add('nav-link-active');
-                        link.setAttribute('aria-current', 'page');
-                        
-                        // If it's a submenu item, expand the parent menu
-                        if (link.classList.contains('nav-sublink')) {
-                            const parentMenu = link.closest('.nav-item-expandable');
-                            if (parentMenu) {
-                                const trigger = parentMenu.querySelector('.nav-link-expandable');
-                                const submenu = parentMenu.querySelector('.nav-submenu');
-                                if (trigger && submenu) {
-                                    trigger.setAttribute('aria-expanded', 'true');
-                                    submenu.setAttribute('aria-expanded', 'true');
-                                    parentMenu.classList.add('nav-item-expanded');
-                                }
-                            }
-                        }
-                    } else {
-                        link.classList.remove('nav-link-active');
-                        link.removeAttribute('aria-current');
-                    }
-                });
-            }
-            
-            // Initialize navigation state
-            updateActiveNavigation();
-            
-            // Load username (mock data for now)
-            const usernameElements = document.querySelectorAll('#label_username, #user_menu_name');
-            usernameElements.forEach(el => {
-                el.textContent = 'Demo User';
-            });
-            
-            // Mock survey count - already set in HTML, but ensure it's visible
-            const surveyCountElement = document.getElementById('total_surveys_count');
-            if (surveyCountElement && surveyCountElement.textContent === '0') {
-                surveyCountElement.textContent = '5';
-            }
-            
-            // Initialize date range (mock)
-            const dateRangeValue = document.getElementById('datepicker_date_range_value');
-            if (dateRangeValue) {
-                const today = new Date().toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-                dateRangeValue.textContent = today;
-            }
-            
-            // Add smooth transitions for better UX
-            appSidebar.style.transition = 'transform 0.3s ease';
-            overlay.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
-            mainContent.style.transition = 'margin-left 0.3s ease';
-        });
-        
-        // Enhanced feedback function with better UX
-        function feedback() {
-            const message = 'Thank you for your interest in providing feedback!\n\n' +
-                           'This would typically open a feedback form or modal dialog ' +
-                           'where you could submit your comments and suggestions.';
-            
-            if (confirm(message + '\n\nWould you like to be redirected to our feedback page?')) {
-                // In a real implementation, this would redirect to the actual feedback page
-                console.log('Redirecting to feedback page...');
-            }
-        }
-        
-        // Fallback function for direct onclick handler
-        window.toggleSidebarFallback = function() {
-            console.log('Fallback toggle called');
-            const headerSidebarToggle = document.getElementById('header_sidebar_toggle');
-            if (headerSidebarToggle) {
-                // Trigger the main toggle function
-                const clickEvent = new Event('click');
-                headerSidebarToggle.dispatchEvent(clickEvent);
-            }
-        };
-        
-        // Direct toggle function that works immediately
-        window.directToggleSidebar = function() {
-            console.log('Direct toggle function called');
-            
-            const appSidebar = document.getElementById('app_sidebar');
-            const overlay = document.getElementById('sidebar_overlay');
-            const headerSidebarToggle = document.getElementById('header_sidebar_toggle');
-            
-            if (!appSidebar) {
-                console.error('Sidebar not found!');
-                return;
-            }
-            
-            const isMobile = window.innerWidth <= 1024;
-            const isSidebarOpen = document.body.classList.contains('sidebar-open');
-            const isCollapsed = appSidebar.classList.contains('sidebar-collapsed');
-            
-            console.log('Direct toggle state:', { isMobile, isSidebarOpen, isCollapsed, windowWidth: window.innerWidth });
-            
-            if (isMobile) {
-                // Mobile behavior: use overlay mode
-                if (isSidebarOpen) {
-                    // Hide sidebar
-                    console.log('Direct Mobile: Hiding sidebar');
-                    document.body.classList.remove('sidebar-open');
-                    document.body.classList.add('sidebar-closed');
-                    if (overlay) overlay.classList.remove('active');
-                    if (headerSidebarToggle) headerSidebarToggle.setAttribute('aria-expanded', 'false');
-                } else {
-                    // Show sidebar as overlay
-                    console.log('Direct Mobile: Showing sidebar');
-                    document.body.classList.add('sidebar-open');
-                    document.body.classList.remove('sidebar-closed');
-                    if (overlay) overlay.classList.add('active');
-                    if (headerSidebarToggle) headerSidebarToggle.setAttribute('aria-expanded', 'true');
-                }
-            } else {
-                // Desktop behavior: use collapsed/expanded mode
-                if (isCollapsed) {
-                    // Show sidebar
-                    console.log('Direct Desktop: Showing sidebar');
-                    appSidebar.classList.remove('sidebar-collapsed');
-                    if (headerSidebarToggle) headerSidebarToggle.setAttribute('aria-expanded', 'true');
-                    document.body.classList.remove('sidebar-closed');
-                } else {
-                    // Hide sidebar
-                    console.log('Direct Desktop: Hiding sidebar');
-                    appSidebar.classList.add('sidebar-collapsed');
-                    if (headerSidebarToggle) headerSidebarToggle.setAttribute('aria-expanded', 'false');
-                    document.body.classList.add('sidebar-closed');
-                }
-                // No overlay on desktop
-                if (overlay) overlay.classList.remove('active');
-                document.body.classList.remove('sidebar-open');
-            }
-            
-            console.log('Direct toggle completed - body classes:', document.body.className);
-        };
-        
-        // Export functions for potential external use
-        window.OpinionDashboard = {
-            toggleSidebar: function() {
-                window.directToggleSidebar();
-            },
-        };
-    </script>
+    <!-- Footer will be created by AppFooter component -->
+    <!-- JavaScript functionality now handled by TypeScript components -->
 </body>
 </html>

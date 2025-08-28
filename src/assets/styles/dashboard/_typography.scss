@@ -3,6 +3,8 @@
  * Font imports, typography rules, and text element styling
  */
 
+@use '../variables' as *;
+
 /* Material Icons - Clean approach */
 .material-icon,
 .material-icons {

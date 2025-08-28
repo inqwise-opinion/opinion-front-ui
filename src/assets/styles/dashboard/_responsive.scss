@@ -3,6 +3,8 @@
  * Media queries and responsive behavior for different screen sizes
  */
 
+@use '../variables' as *;
+
 // Responsive design
 @media (max-width: 1024px) {
   // Hide the visual separator line on mobile
