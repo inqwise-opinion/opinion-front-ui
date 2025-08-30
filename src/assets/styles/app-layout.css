@@ -149,6 +149,17 @@ html, body {
   .app-layout.sidebar-compact {
     grid-template-columns: 72px 1fr;
   }
+  
+  .app-sidebar {
+    /* Reset mobile transform */
+    position: relative !important;
+    transform: none !important;
+    width: 320px;
+  }
+  
+  .app-sidebar.sidebar-compact {
+    width: 72px;
+  }
 }
 
 /* Standard Desktop (1200px+) */
@@ -159,6 +170,17 @@ html, body {
   
   .app-layout.sidebar-compact {
     grid-template-columns: 72px 1fr;
+  }
+  
+  .app-sidebar {
+    /* Reset mobile transform */
+    position: relative !important;
+    transform: none !important;
+    width: 280px;
+  }
+  
+  .app-sidebar.sidebar-compact {
+    width: 72px;
   }
 }
 
@@ -171,6 +193,17 @@ html, body {
   .app-layout.sidebar-compact {
     grid-template-columns: 72px 1fr;
   }
+  
+  .app-sidebar {
+    /* Reset mobile transform */
+    position: relative !important;
+    transform: none !important;
+    width: 260px;
+  }
+  
+  .app-sidebar.sidebar-compact {
+    width: 72px;
+  }
 }
 
 /* Tablet Layout */
@@ -182,6 +215,13 @@ html, body {
   
   .app-layout.sidebar-compact {
     grid-template-columns: 64px 1fr;
+  }
+  
+  .app-sidebar {
+    /* Reset mobile transform - sidebar should be visible inline in tablet mode */
+    position: relative !important;
+    transform: none !important;
+    width: 240px;
   }
   
   .app-sidebar.sidebar-compact {
