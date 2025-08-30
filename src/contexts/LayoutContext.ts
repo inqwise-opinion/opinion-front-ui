@@ -158,7 +158,7 @@ export class LayoutContext {
   }
 
   /**
-   * Handle viewport changes
+   * Handle viewport changes - Pure event-driven approach
    */
   private handleViewportChange(): void {
     const width = window.innerWidth;
@@ -176,16 +176,25 @@ export class LayoutContext {
       oldViewport.isTablet !== isTablet ||
       oldViewport.isDesktop !== isDesktop;
 
-    // Update viewport state
+    // Update viewport state only
     this.state.viewport = newViewport;
 
-    // Update sidebar state for viewport transitions
+    console.log(`LayoutContext - Viewport changed: ${width}x${height} (${
+      isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
+    })`);
+
+    // Update responsive mode first (this will trigger responsive-mode-change event)
+    this.updateResponsiveMode();
+
+    // For mobile transitions, we need to handle sidebar visibility directly
+    // since mobile sidebar is fundamentally different (overlay vs inline)
     if (viewportTypeChanged) {
       const oldSidebarState = { ...this.state.sidebar };
-      
-      // Handle mobile transitions
+      let sidebarStateChanged = false;
+
       if (isMobile && !oldViewport.isMobile) {
-        // Any mode -> Mobile: Hide sidebar
+        // Any mode -> Mobile: Hide sidebar (CSS/layout concern)
+        console.log('LayoutContext - Transitioning to mobile: hiding sidebar for overlay mode');
         this.state.sidebar = {
           ...this.state.sidebar,
           width: 0,
@@ -193,62 +202,37 @@ export class LayoutContext {
           isMobile: true,
           isVisible: false
         };
+        sidebarStateChanged = true;
       } else if (!isMobile && oldViewport.isMobile) {
-        // Mobile -> Non-mobile: Show sidebar with appropriate dimensions
-        const compactWidth = isTablet ? 64 : 80; // Tablet uses smaller compact width
-        const defaultWidth = isTablet ? 240 : 280; // Tablet uses smaller default width
-        
+        // Mobile -> Non-mobile: Show sidebar, but let sidebar component calculate dimensions
+        console.log('LayoutContext - Transitioning from mobile: showing sidebar for inline mode');
         this.state.sidebar = {
           ...this.state.sidebar,
-          width: this.state.sidebar.isCompact ? compactWidth : defaultWidth,
-          rightBorder: this.state.sidebar.isCompact ? compactWidth : defaultWidth,
           isMobile: false,
           isVisible: true
+          // Note: width and rightBorder will be set by sidebar component via responsive-mode-change
         };
-      } else if (!isMobile && !oldViewport.isMobile) {
-        // Non-mobile -> Non-mobile (desktop ↔ tablet): Adjust sidebar dimensions
-        const compactWidth = isTablet ? 64 : 80;
-        const defaultWidth = isTablet ? 240 : 280;
-        
-        const newWidth = this.state.sidebar.isCompact ? compactWidth : defaultWidth;
-        
-        this.state.sidebar = {
-          ...this.state.sidebar,
-          width: newWidth,
-          rightBorder: newWidth,
-          isMobile: false,
-          isVisible: true
-        };
+        sidebarStateChanged = true;
+      } else {
+        // Non-mobile -> Non-mobile transitions: Let sidebar component handle dimension changes
+        console.log('LayoutContext - Non-mobile transition: sidebar component will handle dimension changes');
       }
 
-      // Emit sidebar dimensions change if sidebar state changed
-      if (JSON.stringify(oldSidebarState) !== JSON.stringify(this.state.sidebar)) {
-        console.log('LayoutContext - Sidebar state changed for viewport transition:', {
+      // Only emit sidebar change for mobile transitions (layout-level changes)
+      if (sidebarStateChanged) {
+        console.log('LayoutContext - Layout-level sidebar state changed:', {
           from: `${oldViewport.isMobile ? 'mobile' : oldViewport.isTablet ? 'tablet' : 'desktop'}`,
           to: `${isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'}`,
           oldDimensions: oldSidebarState,
           newDimensions: this.state.sidebar
         });
         
-        // Update CSS Grid variables when sidebar state changes due to viewport
         this.updateCSSGridVariables();
         this.emit('sidebar-dimensions-change', this.state.sidebar);
       }
     }
-
-    // Update CSS Grid variables for viewport changes
-    if (viewportTypeChanged) {
-      this.updateCSSGridVariables();
-    }
-
-    // Update responsive mode
-    this.updateResponsiveMode();
-
-    console.log(`LayoutContext - Viewport changed: ${width}x${height} (${
-      isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
-    })`);
     
-    // Emit layout mode change event
+    // Always emit layout mode change event
     this.emitLayoutModeChange();
   }
 
