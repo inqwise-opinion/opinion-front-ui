@@ -569,7 +569,7 @@ export class LayoutContext {
       sidebarBehavior: {
         isVisible: !isMobile, // Visible on both tablet and desktop
         canToggle: !isMobile, // Can toggle on both tablet and desktop
-        defaultWidth: 280,
+        defaultWidth: isTablet ? 240 : 280, // Tablet uses smaller default width
         compactWidth: isTablet ? 64 : 80 // Smaller compact width on tablet
       }
     };
