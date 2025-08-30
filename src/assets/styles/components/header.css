@@ -1,0 +1,251 @@
+/**
+ * Header Component Styles - Desktop Optimized
+ * Component-scoped CSS with enhanced layout and responsive design
+ */
+
+/* Header container - positioned by CSS Grid, internal layout uses Flexbox */
+.app-header {
+  /* CSS Grid positioning is handled by app-layout.css */
+  /* Internal layout uses Flexbox */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 64px;
+  position: relative;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Page Title */
+.page-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* User Menu */
+.user-menu {
+  position: relative;
+}
+
+.user-menu-trigger {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-menu-trigger:hover {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+/* Mobile Menu Toggle (hidden by default) */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  color: #6b7280;
+}
+
+.mobile-menu-toggle:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+/* Sidebar Compact Mode Toggle Button */
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+  margin-right: 16px;
+}
+
+.sidebar-toggle:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.sidebar-toggle:active {
+  background-color: #e2e8f0;
+  transform: scale(0.98);
+}
+
+.sidebar-toggle .material-icons {
+  font-size: 20px;
+}
+
+/* Breadcrumb Support */
+.header-breadcrumb {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.breadcrumb-separator {
+  margin: 0 8px;
+  color: #cbd5e1;
+}
+
+.breadcrumb-item {
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-item:hover {
+  color: #3b82f6;
+}
+
+.breadcrumb-item.current {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* Search Bar (if needed) */
+.header-search {
+  position: relative;
+  margin-left: 16px;
+}
+
+.header-search-input {
+  width: 240px;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.header-search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.header-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 16px;
+}
+
+/* Desktop Layout Enhancements */
+@media (min-width: 1200px) {
+  .app-header {
+    padding: 0 32px;
+  }
+  
+  .page-title {
+    font-size: 20px;
+  }
+  
+  .header-search-input {
+    width: 300px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1199px) {
+  .header-search-input {
+    width: 200px;
+  }
+}
+
+/* Mobile and Tablet Responsive */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 16px;
+    height: 56px;
+  }
+  
+  .mobile-menu-toggle {
+    display: block;
+  }
+  
+  .sidebar-toggle {
+    display: none;
+  }
+  
+  .header-center {
+    justify-content: flex-start;
+    margin-left: 16px;
+  }
+  
+  .header-search {
+    display: none;
+  }
+  
+  .page-title {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: 0 12px;
+  }
+  
+  .user-name {
+    display: none;
+  }
+  
+  .user-menu-trigger {
+    padding: 8px;
+  }
+}

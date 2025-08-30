@@ -14,8 +14,9 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/main.ts'
   ],
-  moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts']
 };

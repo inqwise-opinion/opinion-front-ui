@@ -1,0 +1,244 @@
+/**
+ * Footer Component Styles - Desktop Optimized
+ * Component-scoped CSS - enhanced CSS Grid integration with desktop polish
+ */
+
+/* Main footer container - positioned by CSS Grid, internal layout uses Flexbox */
+.app-footer {
+  /* CSS Grid positioning is handled by app-layout.css */
+  /* Internal layout uses Flexbox */
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 16px 20px; /* Match sidebar footer padding */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Remove fixed min-height to match sidebar footer natural height */
+  font-size: 12px; /* Match sidebar footer font size */
+  color: #9ca3af; /* Match sidebar footer text color */
+  position: static; /* Static positioning to flow naturally after content */
+  z-index: 5;
+}
+
+/* Footer content wrapper */
+.footer-container {
+  width: 100%;
+  max-width: none;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Footer Navigation */
+.footer-navigation {
+  display: flex;
+  align-items: center;
+}
+
+.footer-navigation-left-panel {
+  display: flex;
+  align-items: center;
+}
+
+.footer-navigation-right-panel {
+  /* Reserved for future use */
+}
+
+.footer-nav-list {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-nav-item {
+  display: flex;
+  align-items: center;
+}
+
+.footer-nav-link {
+  text-decoration: none;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.footer-nav-link:hover {
+  color: #374151;
+  background-color: #f9fafb;
+}
+
+.footer-nav-link:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Copyright Section */
+.footer-copyright-section {
+  display: flex;
+  align-items: center;
+}
+
+.footer-copyright-text {
+  margin: 0;
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.2;
+}
+
+/* Sidebar compact mode support */
+.app-layout.sidebar-compact .app-footer {
+  padding: 12px 20px; /* Match sidebar footer compact mode */
+}
+
+/* Desktop Layout Enhancements - maintain sidebar consistency */
+@media (min-width: 1400px) {
+  .app-footer {
+    padding: 16px 20px; /* Keep consistent with sidebar */
+  }
+  
+  .footer-nav-list {
+    gap: 24px;
+  }
+  
+  .footer-nav-link {
+    padding: 6px 10px;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .app-footer {
+    padding: 16px 20px; /* Keep consistent with sidebar */
+  }
+  
+  .footer-nav-list {
+    gap: 22px;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1199px) {
+  .app-footer {
+    padding: 16px 20px; /* Keep consistent with sidebar */
+  }
+}
+
+/* Tablet adjustments - match sidebar responsive behavior */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .app-footer {
+    padding: 16px 20px; /* Keep consistent with sidebar */
+  }
+  
+  .footer-nav-list {
+    gap: 18px;
+  }
+  
+  /* Compact mode on tablet */
+  .app-layout.sidebar-compact .app-footer {
+    padding: 12px 20px;
+  }
+}
+
+/* Mobile responsive behavior */
+@media (max-width: 768px) {
+  .app-footer {
+    padding: 12px 16px; /* Mobile specific padding */
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .footer-navigation {
+    order: 2;
+  }
+  
+  .footer-copyright-section {
+    order: 1;
+  }
+  
+  .footer-nav-list {
+    gap: 16px;
+  }
+  
+  .footer-nav-link {
+    font-size: 13px;
+    padding: 3px 6px;
+  }
+}
+
+/* Additional footer utilities */
+.footer-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #10b981;
+  margin-left: 16px;
+}
+
+.footer-status-indicator::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.footer-version {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-left: 12px;
+}
+
+@media (max-width: 768px) {
+  .footer-status-indicator,
+  .footer-version {
+    display: none;
+  }
+}
+
+/* Dark mode support - DISABLED for consistent light theme */
+/* @media (prefers-color-scheme: dark) {
+  .app-footer {
+    background-color: #1f2937;
+    border-top-color: #374151;
+    color: #9ca3af;
+  }
+  
+  .footer-nav-link {
+    color: #9ca3af;
+  }
+  
+  .footer-nav-link:hover {
+    color: #d1d5db;
+    background-color: #374151;
+  }
+  
+  .footer-copyright-text {
+    color: #6b7280;
+  }
+} */

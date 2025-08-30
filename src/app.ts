@@ -8,7 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import DebugPage from './pages/DebugPage';
 import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
-import SimpleMobileMenu from './components/SimpleMobileMenu';
+import MainContent from './components/MainContent';
 
 export class OpinionApp {
   private initialized: boolean = false;
@@ -18,7 +18,7 @@ export class OpinionApp {
   // Global layout components
   private appHeader: AppHeader | null = null;
   private appFooter: AppFooter | null = null;
-  private mobileMenu: SimpleMobileMenu | null = null;
+  private mainContent: MainContent | null = null;
 
   constructor() {
     console.log('🎯 APP.TS - Constructor START');
@@ -90,13 +90,15 @@ export class OpinionApp {
   }
   
   /**
-   * Initialize global layout components (header, sidebar, footer)
+   * Initialize global layout components in semantic order (header, main, footer)
+   * Note: Sidebar is self-contained and initialized by AppHeader
    */
   private async initializeGlobalLayout(): Promise<void> {
     try {
+      // 1. Initialize AppHeader first (includes Sidebar)
       console.log('🏗️ APP.TS - Initializing global AppHeader...');
       this.appHeader = new AppHeader();
-      this.appHeader.init();
+      await this.appHeader.init();
       
       // Set a test user
       this.appHeader.updateUser({
@@ -106,7 +108,17 @@ export class OpinionApp {
       
       console.log('✅ APP.TS - Global AppHeader initialized');
       
-      // Initialize AppFooter
+      // 2. Initialize MainContent area (now just manages existing element)
+      console.log('🏗️ APP.TS - Initializing MainContent...');
+      this.mainContent = new MainContent({
+        className: 'main-content',
+        id: 'app', // Keep existing ID for compatibility
+        ariaLabel: 'Main application content'
+      });
+      this.mainContent.init();
+      console.log('✅ APP.TS - MainContent initialized');
+      
+      // 3. Initialize AppFooter last
       console.log('🏗️ APP.TS - Initializing global AppFooter...');
       this.appFooter = new AppFooter({ 
         showCopyright: true, 
@@ -116,7 +128,11 @@ export class OpinionApp {
       this.appFooter.init();
       console.log('✅ APP.TS - Global AppFooter initialized');
       
-      // Note: Sidebar is managed by SimpleMobileMenu, which is initialized by AppHeader
+      // Semantic structure is now complete:
+      // <nav class="app-sidebar"> (created by AppHeader)
+      // <header class="app-header">
+      // <main class="main-content">
+      // <footer class="app-footer">
       
     } catch (error) {
       console.error('❌ APP.TS - Failed to initialize global layout:', error);
@@ -154,15 +170,16 @@ export class OpinionApp {
       }
 
       // Route to appropriate page based on path
+      // Pages will now render their content inside the semantic <main> element
       if (path === '/') {
         console.log('🎯 APP.TS - Creating DebugPage for root path...');
-        this.currentPage = new DebugPage();
+        this.currentPage = new DebugPage(this.mainContent);
         console.log('🎯 APP.TS - Initializing DebugPage...');
         await this.currentPage.init();
         console.log('✅ APP.TS - DebugPage initialized successfully');
       } else if (path === '/dashboard') {
         console.log('🎯 APP.TS - Creating DashboardPage...');
-        this.currentPage = new DashboardPage(this.apiService);
+        this.currentPage = new DashboardPage(this.apiService, this.mainContent);
         console.log('🎯 APP.TS - Initializing DashboardPage...');
         await this.currentPage.init();
         console.log('✅ APP.TS - DashboardPage initialized successfully');
@@ -175,7 +192,7 @@ export class OpinionApp {
       else {
         console.warn(`⚠️ APP.TS - Unknown route: ${path}`);
         console.log('🎯 APP.TS - Fallback: Creating DebugPage...');
-        this.currentPage = new DebugPage();
+        this.currentPage = new DebugPage(this.mainContent);
         console.log('🎯 APP.TS - Initializing fallback DebugPage...');
         await this.currentPage.init();
         console.log('✅ APP.TS - Fallback DebugPage initialized successfully');

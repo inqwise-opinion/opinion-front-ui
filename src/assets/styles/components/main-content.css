@@ -1,0 +1,407 @@
+/**
+ * Main Content Component Styles - Desktop Optimized
+ * Component-scoped CSS - enhanced Flexbox layout for desktop experience
+ */
+
+/* Main content container - positioned by CSS Grid, internal layout uses Flexbox */
+.app-main.main-content {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 32px;
+  background-color: #f8fafc;
+  position: relative;
+  
+  /* Enhanced scrollbar styling for desktop */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+  
+  /* Flexbox layout for internal content organization */
+  gap: 20px;
+}
+
+/* Webkit scrollbar styling for better desktop experience */
+.main-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Content sections within main */
+.main-content-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Headers within main content */
+.main-content h1,
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content h5,
+.main-content h6 {
+  margin: 0;
+  line-height: 1.2;
+  color: #111827;
+}
+
+.main-content h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.main-content h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.main-content h3 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Paragraphs and text content */
+.main-content p {
+  margin: 0;
+  line-height: 1.5;
+  color: #374151;
+}
+
+/* Flexible content containers */
+.main-content-flex {
+  display: flex;
+  gap: 16px;
+}
+
+.main-content-flex-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.main-content-flex-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.main-content-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+/* Cards and panels within main content */
+.main-content-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading states */
+.main-content.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 10;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error states */
+.main-content.error {
+  position: relative;
+}
+
+.error-message {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fef2f2;
+  z-index: 10;
+}
+
+.error-content {
+  text-align: center;
+  padding: 24px;
+  background-color: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.error-content h2 {
+  color: #dc2626;
+  margin-bottom: 12px;
+}
+
+.error-content p {
+  color: #991b1b;
+  margin-bottom: 16px;
+}
+
+.retry-button {
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+  background-color: #b91c1c;
+}
+
+.retry-button:focus {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* Desktop Layout Enhancements */
+@media (min-width: 1400px) {
+  .app-main.main-content {
+    padding: 32px 40px;
+    gap: 24px;
+  }
+  
+  .main-content h1 {
+    font-size: 28px;
+  }
+  
+  .main-content h2 {
+    font-size: 24px;
+  }
+  
+  .main-content-card {
+    padding: 24px;
+  }
+  
+  .main-content-flex {
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .app-main.main-content {
+    padding: 28px 36px;
+    gap: 22px;
+  }
+  
+  .main-content h1 {
+    font-size: 26px;
+  }
+  
+  .main-content-card {
+    padding: 20px;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1199px) {
+  .app-main.main-content {
+    padding: 24px 32px;
+  }
+  
+  .main-content-card {
+    padding: 18px;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .app-main.main-content {
+    padding: 20px 24px;
+    gap: 18px;
+  }
+  
+  .main-content h1 {
+    font-size: 22px;
+  }
+  
+  .main-content-card {
+    padding: 16px;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .app-main.main-content {
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .main-content-flex-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .main-content h1 {
+    font-size: 20px;
+  }
+  
+  .main-content h2 {
+    font-size: 18px;
+  }
+  
+  .main-content-card {
+    padding: 12px;
+  }
+  
+  /* Hide scrollbars on mobile for cleaner look */
+  .main-content::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .app-main.main-content {
+    scrollbar-width: none;
+  }
+}
+
+/* Content spacing and layout utilities */
+.main-content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.main-content-wide {
+  max-width: none;
+}
+
+.main-content-narrow {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.main-content-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+@media (min-width: 1200px) {
+  .main-content-grid {
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+}
+
+.main-content-2col {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.main-content-3col {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 1024px) {
+  .main-content-2col,
+  .main-content-3col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1199px) {
+  .main-content-3col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Dark mode support - DISABLED for consistent light theme */
+/* @media (prefers-color-scheme: dark) {
+  .app-main.main-content {
+    background-color: #111827;
+    color: #f9fafb;
+  }
+  
+  .main-content h1,
+  .main-content h2,
+  .main-content h3,
+  .main-content h4,
+  .main-content h5,
+  .main-content h6 {
+    color: #f9fafb;
+  }
+  
+  .main-content p {
+    color: #d1d5db;
+  }
+  
+  .main-content-card {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .loading-indicator {
+    background-color: rgba(17, 24, 39, 0.9);
+  }
+  
+  .error-content {
+    background-color: #1f2937;
+    border-color: #f87171;
+  }
+} */

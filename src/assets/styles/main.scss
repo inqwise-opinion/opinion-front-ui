@@ -3,6 +3,9 @@
  * TypeScript migration styles
  */
 
+// Import CSS Grid layout system
+@import './app-layout.css';
+
 // Reset and base styles
 * {
   box-sizing: border-box;

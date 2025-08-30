@@ -1,18 +1,21 @@
 /**
  * Dashboard Page Integration
- * Integrates dashboard with main application structure
+ * Integrates dashboard with semantic main content structure
  */
 
 import Dashboard from './Dashboard';
 import { MockApiService } from '../services/MockApiService';
+import MainContent from '../components/MainContent';
 import '../assets/styles/dashboard.scss';
 
 export class DashboardPage {
   private dashboard: Dashboard;
   private apiService: MockApiService;
+  private mainContent: MainContent | null = null;
 
-  constructor(apiService: MockApiService) {
+  constructor(apiService: MockApiService, mainContent: MainContent | null = null) {
     this.apiService = apiService;
+    this.mainContent = mainContent;
     this.dashboard = new Dashboard(this.apiService);
   }
 
@@ -58,7 +61,7 @@ export class DashboardPage {
   }
 
   /**
-   * Load HTML template into page
+   * Load HTML template into semantic main element
    */
   private async loadTemplate(): Promise<void> {
     try {
@@ -70,16 +73,25 @@ export class DashboardPage {
       
       const templateHtml = await response.text();
       
-      // Replace the loading content with dashboard content
-      const appElement = document.getElementById('app');
-      if (appElement) {
+      // Use MainContent component if available, otherwise fallback to #app
+      const targetElement = this.mainContent?.getElement() || document.getElementById('app');
+      
+      if (targetElement) {
         // Extract the body content from the template
         const parser = new DOMParser();
         const doc = parser.parseFromString(templateHtml, 'text/html');
         const bodyContent = doc.body.innerHTML;
         
-        // Replace app content with dashboard template
-        appElement.innerHTML = bodyContent;
+        // Set content using appropriate method
+        if (this.mainContent) {
+          this.mainContent.setContent(bodyContent);
+          console.log('Dashboard template loaded into semantic <main> element');
+        } else {
+          targetElement.innerHTML = bodyContent;
+          console.log('Dashboard template loaded into fallback #app element');
+        }
+      } else {
+        throw new Error('No target element found for dashboard content');
       }
       
       console.log('Dashboard template loaded');

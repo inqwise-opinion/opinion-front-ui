@@ -111,10 +111,8 @@
 
 // Desktop override (1025px+) - Fix SimpleMobileMenu CSS interference
 @media (min-width: 1025px) {
-  .app-header, #app_header {
-    left: 280px !important; // Maintain proper desktop positioning with sidebar
-    width: calc(100vw - 280px) !important; // Proper width calculation
-  }
+  // Remove fixed positioning - let CSS Grid/Flexbox handle header layout
+  // Header will now use width: 100% from CSS classes
   
   // Hide mobile toggle container completely on desktop using display:none
   .app-header .header-container .header-left,

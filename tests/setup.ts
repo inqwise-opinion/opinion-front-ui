@@ -17,6 +17,10 @@ beforeAll(() => {
     if (typeof args[0] === 'string' && args[0].includes('Warning:')) {
       return;
     }
+    // Suppress JSDOM navigation errors in tests
+    if (args[0] && args[0].message && args[0].message.includes('Not implemented: navigation')) {
+      return;
+    }
     originalConsoleError.call(console, ...args);
   };
 });

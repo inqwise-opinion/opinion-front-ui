@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout Debug - Opinion</title>
+    <style>
+        /* Import our CSS Grid layout */
+        * {
+          box-sizing: border-box;
+        }
+
+        html, body {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', sans-serif;
+          background-color: #f8fafc;
+          color: #1e293b;
+          line-height: 1.5;
+        }
+
+        /* Main App Layout Grid - Desktop Optimized */
+        .app-layout {
+          display: grid;
+          height: 100vh;
+          width: 100vw;
+          grid-template-areas: 
+            "sidebar header"
+            "sidebar main"
+            "sidebar footer";
+          grid-template-columns: 280px 1fr;
+          grid-template-rows: 64px 1fr auto;
+          background-color: #f8fafc;
+          overflow: hidden;
+        }
+
+        /* Grid Area Assignments with Enhanced Styling */
+        .app-sidebar {
+          grid-area: sidebar;
+          background: #ffffff;
+          border-right: 1px solid #e2e8f0;
+          box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+          z-index: 10;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          color: #64748b;
+        }
+
+        .app-header {
+          grid-area: header;
+          background: #ffffff;
+          border-bottom: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+          z-index: 5;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          padding: 0 24px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 18px;
+          font-weight: 600;
+        }
+
+        .app-main {
+          grid-area: main;
+          background: #f8fafc;
+          overflow: hidden;
+          position: relative;
+          padding: 24px 32px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .app-footer {
+          grid-area: footer;
+          background: #ffffff;
+          border-top: 1px solid #e2e8f0;
+          min-height: 52px;
+          z-index: 5;
+          padding: 16px 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          color: #9ca3af;
+        }
+
+        .debug-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .status-good { color: #10b981; }
+        .status-bad { color: #ef4444; }
+        
+        .grid-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        .grid-outline.show {
+            outline: 3px dashed #3b82f6;
+        }
+        
+        .sidebar-outline { 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            outline: 2px dashed #ef4444;
+            pointer-events: none;
+            z-index: 9998;
+        }
+        
+        .header-outline {
+            position: fixed;
+            top: 0;
+            left: 280px;
+            right: 0;
+            height: 64px;
+            outline: 2px dashed #10b981;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .test-button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="app-sidebar">
+            <div>
+                <strong>SIDEBAR</strong><br>
+                <small>280px width</small><br>
+                <small>Grid area: sidebar</small>
+            </div>
+        </div>
+        
+        <div class="app-header">
+            <div>Header Area</div>
+            <div><small>64px height</small></div>
+        </div>
+        
+        <div class="app-main">
+            <div class="debug-info">
+                <h2>🔍 Layout Debug Tool</h2>
+                <p>If you see this layout correctly, the CSS Grid is working:</p>
+                
+                <div style="margin: 20px 0;">
+                    <div>✅ <strong>Sidebar:</strong> <span class="status-good">Left side, 280px wide</span></div>
+                    <div>✅ <strong>Header:</strong> <span class="status-good">Top right, 64px tall</span></div>
+                    <div>✅ <strong>Main:</strong> <span class="status-good">Center area (this content)</span></div>
+                    <div>✅ <strong>Footer:</strong> <span class="status-good">Bottom, 52px min height</span></div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <button class="test-button" onclick="toggleOutlines()">Toggle Grid Outlines</button>
+                    <button class="test-button" onclick="openMainApp()">Open Main App</button>
+                </div>
+                
+                <div style="margin: 20px 0; font-size: 12px; color: #64748b;">
+                    <div>Viewport: <span id="viewport">Loading...</span></div>
+                    <div>Grid Support: <span id="grid-support">Checking...</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="app-footer">
+            © 2024 Opinion - Layout Debug Tool
+        </div>
+    </div>
+    
+    <!-- Debug overlays -->
+    <div class="sidebar-outline" id="sidebar-outline" style="display: none;"></div>
+    <div class="header-outline" id="header-outline" style="display: none;"></div>
+    
+    <script>
+        let outlinesVisible = false;
+        
+        function toggleOutlines() {
+            outlinesVisible = !outlinesVisible;
+            const sidebarOutline = document.getElementById('sidebar-outline');
+            const headerOutline = document.getElementById('header-outline');
+            
+            if (outlinesVisible) {
+                sidebarOutline.style.display = 'block';
+                headerOutline.style.display = 'block';
+            } else {
+                sidebarOutline.style.display = 'none';
+                headerOutline.style.display = 'none';
+            }
+        }
+        
+        function openMainApp() {
+            window.open('http://localhost:3001/', '_blank');
+        }
+        
+        function updateDebugInfo() {
+            // Update viewport info
+            const viewport = document.getElementById('viewport');
+            viewport.textContent = `${window.innerWidth}px × ${window.innerHeight}px`;
+            
+            // Check CSS Grid support
+            const gridSupport = document.getElementById('grid-support');
+            const testEl = document.createElement('div');
+            testEl.style.display = 'grid';
+            if (testEl.style.display === 'grid') {
+                gridSupport.textContent = '✅ Supported';
+                gridSupport.className = 'status-good';
+            } else {
+                gridSupport.textContent = '❌ Not Supported';
+                gridSupport.className = 'status-bad';
+            }
+        }
+        
+        updateDebugInfo();
+        window.addEventListener('resize', updateDebugInfo);
+        
+        // Check if layout is working
+        setTimeout(() => {
+            const sidebar = document.querySelector('.app-sidebar');
+            const header = document.querySelector('.app-header');
+            const main = document.querySelector('.app-main');
+            const footer = document.querySelector('.app-footer');
+            
+            console.log('🔍 Layout Debug Results:');
+            console.log('Sidebar position:', sidebar.getBoundingClientRect());
+            console.log('Header position:', header.getBoundingClientRect());
+            console.log('Main position:', main.getBoundingClientRect());
+            console.log('Footer position:', footer.getBoundingClientRect());
+            
+            // Test if elements are positioned correctly
+            const sidebarRect = sidebar.getBoundingClientRect();
+            const headerRect = header.getBoundingClientRect();
+            
+            if (sidebarRect.width > 250 && headerRect.left > 250) {
+                console.log('✅ CSS Grid layout is working correctly!');
+            } else {
+                console.log('❌ CSS Grid layout issue detected');
+                console.log('Expected: Sidebar ~280px wide, Header starting after sidebar');
+                console.log('Actual: Sidebar ' + sidebarRect.width + 'px, Header starts at ' + headerRect.left + 'px');
+            }
+        }, 100);
+    </script>
+</body>
+</html>

@@ -1,7 +1,12 @@
 /**
- * App Footer Component
+ * App Footer Component - Clean CSS Grid Integration
  * Manages the application footer and copyright functionality
  */
+
+// Import component-scoped CSS
+import '../assets/styles/components/footer.css';
+// Import layout context
+import LayoutContext, { LayoutEvent, SidebarDimensions } from '../contexts/LayoutContext.js';
 
 export interface FooterConfig {
   showCopyright?: boolean;
@@ -24,6 +29,8 @@ export class AppFooter {
     copyrightSection?: HTMLElement;
     copyrightText?: HTMLElement;
   } = {};
+  private layoutContext: LayoutContext;
+  private layoutUnsubscribers: Array<() => void> = [];
 
   constructor(config: FooterConfig = {}) {
     this.config = {
@@ -35,6 +42,8 @@ export class AppFooter {
       ],
       ...config
     };
+    
+    this.layoutContext = LayoutContext.getInstance();
   }
 
   /**
@@ -52,50 +61,58 @@ export class AppFooter {
     // Setup event listeners
     this.setupEventListeners();
     
+    // Subscribe to layout context events
+    this.subscribeToLayoutContext();
+    
     console.log('AppFooter - Ready');
   }
 
   /**
-   * Create the footer HTML structure
+   * Use existing footer element and populate content
    */
   private createFooter(): void {
-    // Check if footer already exists
-    let existingFooter = document.querySelector('.app-footer');
-    if (existingFooter) {
-      this.container = existingFooter as HTMLElement;
-      return;
-    }
-
-    // Create footer element
-    const footer = document.createElement('footer');
-    footer.className = 'app-footer';
-    footer.id = 'app_footer';
-
-    // Build footer content with wrapper structure to match expected CSS
-    const footerHtml = this.buildFooterHtml();
-    footer.innerHTML = footerHtml;
-
-    // Insert footer at the bottom of the wrapper-constructed, after wrapper-content
-    const wrapperConstructed = document.querySelector('.wrapper-constructed');
+    // Find existing footer element
+    this.container = document.getElementById('app-footer');
     
-    if (wrapperConstructed) {
-      // Insert as the last child of wrapper-constructed (after wrapper-content)
-      wrapperConstructed.appendChild(footer);
-      console.log('AppFooter - Inserted at bottom of .wrapper-constructed');
-    } else {
-      // Fallback: try wrapper-content
-      const wrapperContent = document.querySelector('.wrapper-content');
-      if (wrapperContent) {
-        wrapperContent.appendChild(footer);
-        console.log('AppFooter - Fallback: Inserted into .wrapper-content');
-      } else {
-        // Last resort: append to body
-        document.body.appendChild(footer);
-        console.log('AppFooter - Last resort: Inserted into body');
-      }
+    if (!this.container) {
+      throw new Error('AppFooter: Could not find existing #app-footer element');
     }
-    console.log('AppFooter - Footer inserted successfully', footer);
-    this.container = footer;
+    
+    console.log('AppFooter - Using existing element');
+    
+    // Populate the existing structure with dynamic content
+    this.populateContent();
+    
+    console.log('AppFooter - Content populated successfully');
+  }
+  
+  /**
+   * Populate footer content into existing HTML structure
+   */
+  private populateContent(): void {
+    if (!this.container) return;
+    
+    // Find footer container
+    const footerContainer = this.container.querySelector('.footer-container');
+    if (!footerContainer) return;
+    
+    // Build and populate footer content
+    footerContainer.innerHTML = this.buildFooterContent();
+  }
+  
+  /**
+   * Build footer content HTML
+   */
+  private buildFooterContent(): string {
+    const navigationHtml = this.config.showNavigation ? this.buildNavigationHtml() : '';
+    const copyrightHtml = this.config.showCopyright ? this.buildCopyrightHtml() : '';
+    
+    return `
+      <div class="footer-content">
+        ${navigationHtml}
+        ${copyrightHtml}
+      </div>
+    `;
   }
 
   /**
@@ -123,18 +140,20 @@ export class AppFooter {
 
     const linksHtml = this.config.navigationLinks
       .map(link => `
-        <li class="first-item last-item">
-          <a href="${link.href}" title="${link.title}">${link.text}</a>
+        <li class="footer-nav-item">
+          <a class="footer-nav-link" href="${link.href}" title="${link.title}">${link.text}</a>
         </li>
       `).join('');
 
     return `
-      <div class="footer-navigation-left-panel">
-        <ul class="ld">
-          ${linksHtml}
-        </ul>
-      </div>
-      <div class="footer-navigation-right-panel"></div>
+      <nav class="footer-navigation" aria-label="Footer">
+        <div class="footer-navigation-left-panel">
+          <ul class="footer-nav-list">
+            ${linksHtml}
+          </ul>
+        </div>
+        <div class="footer-navigation-right-panel"></div>
+      </nav>
     `;
   }
 
@@ -279,7 +298,79 @@ export class AppFooter {
   }
 
   /**
+   * Subscribe to layout context events
+   */
+  private subscribeToLayoutContext(): void {
+    console.log('AppFooter - Subscribing to layout context events...');
+
+    // Subscribe to sidebar dimension changes
+    const sidebarDimensionsUnsubscribe = this.layoutContext.subscribe(
+      'sidebar-dimensions-change',
+      this.handleSidebarDimensionsChange.bind(this)
+    );
+    this.layoutUnsubscribers.push(sidebarDimensionsUnsubscribe);
+
+    // Note: No longer subscribing to viewport-change - sidebar-dimensions-change is sufficient
+    // The sidebar dimensions already encode all the viewport information we need
+
+    // Set initial layout based on current state
+    const currentState = this.layoutContext.getState();
+    this.updateFooterLayout(currentState.sidebar);
+
+    console.log('AppFooter - Successfully subscribed to layout context events ✅');
+  }
+
+  /**
+   * Handle sidebar dimension changes from layout context
+   */
+  private handleSidebarDimensionsChange(event: LayoutEvent): void {
+    const dimensions = event.data as SidebarDimensions;
+    console.log('AppFooter - Received sidebar dimensions change:', dimensions);
+    this.updateFooterLayout(dimensions);
+  }
+
+
+  /**
+   * Update footer layout based on sidebar dimensions
+   */
+  private updateFooterLayout(dimensions: SidebarDimensions): void {
+    if (!this.container) return;
+
+    console.log('AppFooter - Updating layout for sidebar dimensions:', dimensions);
+
+    // Update CSS classes based on sidebar state for layout adjustments
+    this.container.classList.toggle('footer-sidebar-compact', dimensions.isCompact && !dimensions.isMobile);
+    this.container.classList.toggle('footer-sidebar-normal', !dimensions.isCompact && !dimensions.isMobile);
+    this.container.classList.toggle('footer-mobile', dimensions.isMobile);
+
+    // Remove any inline positioning - let CSS Grid handle layout
+    this.container.style.left = '';
+    this.container.style.width = '';
+    this.container.style.marginLeft = '';
+
+    // Always show copyright text
+    if (this.elements.copyrightText) {
+      this.elements.copyrightText.style.display = 'block';
+    }
+
+    // Dispatch custom event for other components that might need to know
+    const event = new CustomEvent('footer-layout-updated', {
+      detail: {
+        dimensions,
+        footerElement: this.container
+      }
+    });
+    document.dispatchEvent(event);
+
+    console.log('AppFooter - Layout updated:', {
+      dimensions,
+      cssClasses: Array.from(this.container.classList).filter(cls => cls.startsWith('footer-'))
+    });
+  }
+
+  /**
    * Update footer position/layout based on sidebar state
+   * @deprecated - Use layout context instead
    */
   updateLayout(sidebarState: { compact: boolean, collapsed: boolean, mobile: boolean }): void {
     if (!this.container) return;
@@ -317,6 +408,16 @@ export class AppFooter {
    */
   destroy(): void {
     console.log('AppFooter - Destroying...');
+    
+    // Unsubscribe from layout context events
+    this.layoutUnsubscribers.forEach(unsubscribe => {
+      try {
+        unsubscribe();
+      } catch (error) {
+        console.error('AppFooter - Error unsubscribing from layout context:', error);
+      }
+    });
+    this.layoutUnsubscribers = [];
     
     // Remove event listeners and cleanup resources
     if (this.container) {

@@ -5,6 +5,7 @@
 
 import './assets/styles/main.scss';
 import './assets/styles/dashboard.scss';
+import './assets/styles/app-layout.css';
 import { OpinionApp } from './app';
 
 // Add global error handlers

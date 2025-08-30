@@ -6,40 +6,15 @@
 @use '../variables' as *;
 @use 'sass:color';
 
-// Always Visible Header Styles (Connected to Sidebar) - Enhanced Desktop Design
+// Basic header styles
 .app-header {
-  position: fixed;
-  top: 0;
-  left: 280px; // Start from right border of sidebar
-  right: 0;
-  height: 64px; // Slightly taller for better proportions
-  background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  border-left: none; // Remove left border to connect seamlessly with sidebar
-  box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.05),
-    0 2px 8px rgba(0, 0, 0, 0.03),
-    0 4px 16px rgba(0, 0, 0, 0.01);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 1010; // Higher than sidebar to stay above it
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  height: 60px;
   display: flex;
   align-items: center;
-  padding: 0; // Remove padding to allow title to reach left border
+  padding: 0 20px;
   justify-content: space-between;
-  
-  // Subtle top highlight
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 20%, rgba(255, 255, 255, 0.8) 80%, transparent 100%);
-    z-index: 1;
-  }
   
   // Header container styling
   .header-container {
@@ -375,42 +350,9 @@
     }
   }
 
-// Header position adjustments based on sidebar state
-body.sidebar-closed .app-header,
-.app-sidebar.sidebar-collapsed ~ * .app-header {
-  left: 0; // Move header to start from left edge when sidebar is hidden
-}
-
-// Desktop: ensure proper header positioning when sidebar is visible
-@media (min-width: 1025px) {
-  body:not(.sidebar-closed) .app-header {
-    left: 280px;
-  }
-  
-  .app-sidebar:not(.sidebar-collapsed) ~ * .app-header {
-    left: 280px;
-  }
-  
-  // Compact sidebar header adjustments - multiple selectors for reliability
-  .app-sidebar.sidebar-compact ~ * .app-header,
-  body:has(.app-sidebar.sidebar-compact) .app-header,
-  body[data-sidebar-state="compact"] .app-header {
-    left: 80px !important; // Adjust header position for compact sidebar
-  }
-  
-  // Alternative selector approach for compact mode
-  .sidebar-compact + * .app-header,
-  .sidebar-compact ~ * .app-header {
-    left: 80px !important;
-  }
-}
-
-// Mobile: header should always start from left edge
-@media (max-width: 1024px) {
-  .app-header {
-    left: 0 !important;
-  }
-}
+// Header positioning is now handled by CSS Grid/Flexbox layout
+// Remove all fixed left positioning - let CSS classes and layout handle it
+// The header uses width: 100% and positioning is managed by the parent layout container
 
 .login-bar ul.lg {
   list-style: none;

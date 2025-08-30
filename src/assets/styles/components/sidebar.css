@@ -1,0 +1,442 @@
+/**
+ * Sidebar Component Styles - Desktop Optimized
+ * Component-scoped CSS with compact mode support
+ */
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  width: 280px; /* Default expanded width */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Sidebar Controls */
+.sidebar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Compact Toggle Button */
+.compact-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.compact-toggle-btn:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.compact-toggle-btn:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.compact-toggle-btn:active {
+  background-color: #f3f4f6;
+  transform: scale(0.95);
+}
+
+.compact-toggle-btn .compact-icon {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.compact-toggle-btn:hover .compact-icon {
+  transform: scale(1.1);
+}
+
+/* Compact mode button styling */
+.compact-toggle-btn[data-compact="true"] {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.compact-toggle-btn[data-compact="true"]:hover {
+  background-color: #dbeafe;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.sidebar-brand {
+  flex: 1;
+}
+
+.brand-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.brand-title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-title-link:hover {
+  color: #3b82f6;
+}
+
+/* Sidebar Navigation */
+.sidebar-navigation {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.nav-section {
+  margin-bottom: 24px;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 12px;
+}
+
+.nav-item {
+  margin-bottom: 4px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #6b7280;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.nav-link-active {
+  background-color: #eff6ff;
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.nav-icon {
+  margin-right: 12px;
+  font-size: 20px;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Allow text to truncate if needed */
+}
+
+.nav-text {
+  font-weight: 500;
+  color: inherit;
+  line-height: 1.3;
+}
+
+.nav-caption {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.2;
+  margin-top: 2px;
+  display: block;
+}
+
+.nav-link:hover .nav-caption {
+  color: #6b7280;
+}
+
+.nav-link-active .nav-caption {
+  color: #93c5fd; /* Lighter blue for active state */
+}
+
+.nav-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.copyright-text {
+  margin: 0;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Compact Mode Styles */
+.app-sidebar.sidebar-compact {
+  width: 80px;
+}
+
+.app-sidebar.sidebar-compact .sidebar-header {
+  padding: 16px 12px;
+  justify-content: center;
+}
+
+.app-sidebar.sidebar-compact .sidebar-brand {
+  display: none;
+}
+
+.app-sidebar.sidebar-compact .sidebar-controls {
+  display: flex;
+}
+
+.app-sidebar.sidebar-compact .compact-toggle-btn {
+  width: 28px;
+  height: 28px;
+}
+
+.app-sidebar.sidebar-compact .nav-list {
+  padding: 0 8px;
+}
+
+.app-sidebar.sidebar-compact .nav-link {
+  padding: 12px;
+  justify-content: center;
+  border-radius: 12px;
+  position: relative;
+}
+
+.app-sidebar.sidebar-compact .nav-content {
+  display: none;
+}
+
+.app-sidebar.sidebar-compact .nav-text {
+  display: none;
+}
+
+.app-sidebar.sidebar-compact .nav-caption {
+  display: none;
+}
+
+.app-sidebar.sidebar-compact .nav-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  margin: 0;
+  min-width: 16px;
+  height: 16px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  border-radius: 50%;
+}
+
+.app-sidebar.sidebar-compact .sidebar-footer {
+  padding: 12px;
+}
+
+.app-sidebar.sidebar-compact .copyright-text {
+  display: none;
+}
+
+/* Hover tooltips for compact mode */
+.app-sidebar.sidebar-compact .nav-link {
+  position: relative;
+}
+
+.app-sidebar.sidebar-compact .nav-link::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: normal; /* Allow text wrapping */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  max-width: 280px; /* Generous width for captions */
+  line-height: 1.3;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Add shadow for better visibility */
+}
+
+.app-sidebar.sidebar-compact .nav-link::before {
+  content: "";
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: #1f2937;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+}
+
+.app-sidebar.sidebar-compact .nav-link:hover::after,
+.app-sidebar.sidebar-compact .nav-link:focus::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(4px);
+}
+
+.app-sidebar.sidebar-compact .nav-link:hover::before,
+.app-sidebar.sidebar-compact .nav-link:focus::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Locked sidebar styling */
+.app-sidebar[data-locked-expanded="true"] .compact-toggle-btn {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.app-sidebar[data-locked-expanded="true"] .compact-toggle-btn:hover {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+  transform: none;
+}
+
+.app-sidebar[data-locked-expanded="true"] .compact-toggle-btn::after {
+  content: "Locked in expanded mode";
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #374151;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+.app-sidebar[data-locked-expanded="true"] .compact-toggle-btn:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Enhanced tooltips for regular mode */
+.nav-link[title]:not(.nav-link-expandable) {
+  position: relative;
+}
+
+/* Improve tooltip positioning and styling for all menu items */
+.nav-link[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+.nav-link[title]:hover::before {
+  content: "";
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #1f2937;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+}
+
+.nav-link[title]:hover::after,
+.nav-link[title]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Animation for tooltip */
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/* Responsive adjustments for compact mode */
+@media (max-width: 1024px) {
+  .app-sidebar.sidebar-compact {
+    width: 64px;
+  }
+  
+  .app-sidebar.sidebar-compact .nav-link {
+    padding: 10px;
+  }
+  
+  .app-sidebar.sidebar-compact .nav-icon {
+    font-size: 18px;
+  }
+}

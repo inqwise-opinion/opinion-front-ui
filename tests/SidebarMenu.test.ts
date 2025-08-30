@@ -21,14 +21,11 @@ describe('Sidebar Menu', () => {
     });
 
     // Mock window.location for SPA routing tests
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      configurable: true,
-      value: {
-        origin: 'http://localhost:3000',
-        href: 'http://localhost:3000/dashboard'
-      }
-    });
+    delete (window as any).location;
+    window.location = {
+      origin: 'http://localhost:3000',
+      href: 'http://localhost:3000/dashboard'
+    } as any;
     
     // Mock console methods to avoid noise in tests
     jest.spyOn(console, 'log').mockImplementation(() => {});

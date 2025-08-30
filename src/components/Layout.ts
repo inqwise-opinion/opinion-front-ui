@@ -5,6 +5,8 @@
 
 import AppHeader, { HeaderUser } from './AppHeader';
 import AppFooter, { FooterConfig } from './AppFooter';
+// Import layout context
+import LayoutContext, { LayoutEvent, LayoutMode, LayoutModeType } from '../contexts/LayoutContext.js';
 
 export interface LayoutConfig {
   header?: {
@@ -25,6 +27,8 @@ export class Layout {
   private footer: AppFooter;
   private config: LayoutConfig;
   private isInitialized: boolean = false;
+  private layoutContext: LayoutContext;
+  private layoutUnsubscribers: Array<() => void> = [];
 
   constructor(config: LayoutConfig = {}) {
     this.config = {
@@ -47,6 +51,9 @@ export class Layout {
       }
     };
 
+    // Initialize layout context
+    this.layoutContext = LayoutContext.getInstance();
+    
     // Initialize components
     this.header = new AppHeader();
     this.footer = new AppFooter(this.config.footer);
@@ -101,6 +108,14 @@ export class Layout {
       console.log('🏢 LAYOUT - Setting up responsive behavior...');
       this.setupResponsiveBehavior();
       console.log('✅ LAYOUT - Responsive behavior setup complete');
+      
+      // Subscribe to layout context events
+      console.log('🏢 LAYOUT - Subscribing to layout context events...');
+      this.subscribeToLayoutContext();
+      console.log('✅ LAYOUT - Layout context subscription complete');
+      
+      // Mark layout as ready
+      this.layoutContext.markReady();
 
       this.isInitialized = true;
       console.log('✅ LAYOUT - Layout initialization completed successfully!');
@@ -117,42 +132,48 @@ export class Layout {
    * Setup coordination between components
    */
   private setupComponentCoordination(): void {
-    // Note: Sidebar coordination is now handled by the page component
-    // The Layout only manages header and footer coordination
-    console.log('Layout - Component coordination setup complete');
+    // Note: Component coordination is now handled by the layout context
+    // All components subscribe to layout context events for coordination
+    console.log('Layout - Component coordination delegated to layout context');
   }
 
   /**
    * Setup responsive behavior for the entire layout
    */
   private setupResponsiveBehavior(): void {
-    let resizeTimeout: NodeJS.Timeout;
-    
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        this.handleResize();
-      }, 100);
+    // Subscribe to layout context responsive mode changes
+    this.layoutContext.subscribe('responsive-mode-change', (event) => {
+      this.handleResponsiveModeChange(event.data);
     });
 
-    // Initial resize handling
-    this.handleResize();
+    // Initial responsive setup based on current mode
+    const currentMode = this.layoutContext.getResponsiveMode();
+    this.handleResponsiveModeChange(currentMode);
   }
 
   /**
-   * Handle window resize events
+   * Handle responsive mode changes from LayoutContext
    */
-  private handleResize(): void {
-    const width = window.innerWidth;
-    const isMobile = width <= 768;
-    const isTablet = width <= 1024;
-
+  private handleResponsiveModeChange(mode: any): void {
+    console.log(`Layout - Responsive mode changed to: ${mode.type}`, mode);
+    
     // Update body classes for CSS targeting
-    document.body.classList.toggle('mobile-layout', isMobile);
-    document.body.classList.toggle('tablet-layout', isTablet && !isMobile);
-    document.body.classList.toggle('desktop-layout', !isTablet);
-
-    console.log(`Layout - Responsive update: ${isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'} (${width}px)`);
+    document.body.classList.toggle('mobile-layout', mode.isMobile);
+    document.body.classList.toggle('tablet-layout', mode.isTablet);
+    document.body.classList.toggle('desktop-layout', mode.isDesktop);
+    
+    // Update components based on responsive mode
+    if (this.config.header?.enabled) {
+      // Header might need responsive updates
+      console.log('Layout - Updating header for responsive mode');
+    }
+    
+    if (this.config.footer?.enabled) {
+      // Footer might need responsive updates
+      console.log('Layout - Updating footer for responsive mode');
+    }
+    
+    console.log(`Layout - Responsive mode update complete for ${mode.type}`);
   }
 
   /**
@@ -271,12 +292,205 @@ export class Layout {
 
     console.log('Layout - Copyright text updated:', text);
   }
+  
+  /**
+   * Subscribe to layout context events
+   */
+  private subscribeToLayoutContext(): void {
+    console.log('Layout - Subscribing to layout context events...');
+    
+    // Subscribe to layout ready events
+    const layoutReadyUnsubscribe = this.layoutContext.subscribe(
+      'layout-ready',
+      this.handleLayoutReady.bind(this)
+    );
+    this.layoutUnsubscribers.push(layoutReadyUnsubscribe);
+    
+    // Subscribe to sidebar dimension changes for coordination
+    const sidebarDimensionsUnsubscribe = this.layoutContext.subscribe(
+      'sidebar-dimensions-change',
+      this.handleSidebarDimensionsChange.bind(this)
+    );
+    this.layoutUnsubscribers.push(sidebarDimensionsUnsubscribe);
+    
+    // Subscribe to layout mode changes for CSS class management
+    const layoutModeUnsubscribe = this.layoutContext.subscribe(
+      'layout-mode-change',
+      this.handleLayoutModeChange.bind(this)
+    );
+    this.layoutUnsubscribers.push(layoutModeUnsubscribe);
+    
+    console.log('Layout - Successfully subscribed to layout context events ✅');
+  }
+  
+  /**
+   * Handle layout ready event
+   */
+  private handleLayoutReady(event: any): void {
+    console.log('Layout - Layout context marked as ready:', event.data);
+    
+    // Perform any final coordination between components
+    this.finalizeComponentCoordination();
+  }
+  
+  /**
+   * Handle sidebar dimension changes for global coordination
+   */
+  private handleSidebarDimensionsChange(event: any): void {
+    const dimensions = event.data;
+    console.log('Layout - Received sidebar dimensions change for coordination:', dimensions);
+    
+    // Layout component can perform any global coordination here
+    // Individual components already handle their own layout updates
+    
+    // Example: Could update global CSS variables or dispatch custom events
+    document.documentElement.style.setProperty('--sidebar-width', `${dimensions.width}px`);
+    document.documentElement.style.setProperty('--content-margin-left', `${dimensions.rightBorder}px`);
+  }
+  
+  /**
+   * Finalize component coordination after layout is ready
+   */
+  private finalizeComponentCoordination(): void {
+    console.log('Layout - Finalizing component coordination...');
+    
+    // Ensure all components are properly positioned
+    const layoutState = this.layoutContext.getState();
+    
+    // Set global CSS variables for consistent layout
+    const root = document.documentElement;
+    root.style.setProperty('--sidebar-width', `${layoutState.sidebar.width}px`);
+    root.style.setProperty('--sidebar-right-border', `${layoutState.sidebar.rightBorder}px`);
+    root.style.setProperty('--viewport-width', `${layoutState.viewport.width}px`);
+    root.style.setProperty('--viewport-height', `${layoutState.viewport.height}px`);
+    
+    console.log('Layout - Component coordination finalized ✅');
+  }
+  
+  /**
+   * Handle layout mode changes and update component CSS classes
+   */
+  private handleLayoutModeChange(event: LayoutEvent): void {
+    const layoutMode = event.data as LayoutMode;
+    console.log('Layout - Received layout mode change:', layoutMode);
+    
+    this.updateComponentCSSClasses(layoutMode);
+  }
+  
+  /**
+   * Update CSS classes for all layout components based on layout mode
+   */
+  private updateComponentCSSClasses(layoutMode: LayoutMode): void {
+    const { type, isCompact, isMobile, isTablet, isDesktop } = layoutMode;
+    
+    console.log(`Layout - Updating component CSS classes for mode: ${type}`);
+    
+    // Get all layout components
+    const components = {
+      layout: document.querySelector('.app-layout') as HTMLElement,
+      sidebar: document.querySelector('.app-sidebar') as HTMLElement,
+      header: document.querySelector('.app-header') as HTMLElement,
+      content: document.querySelector('.app-content-scroll, .app-main') as HTMLElement,
+      footer: document.querySelector('.app-footer') as HTMLElement
+    };
+    
+    // Define CSS class mappings for each mode
+    const modeClasses = {
+      mobile: 'layout-mode-mobile',
+      tablet: 'layout-mode-tablet',
+      desktop: 'layout-mode-desktop',
+      'desktop-compact': 'layout-mode-desktop-compact'
+    };
+    
+    const stateClasses = {
+      compact: 'layout-compact',
+      mobile: 'layout-mobile',
+      tablet: 'layout-tablet',
+      desktop: 'layout-desktop'
+    };
+    
+    // Remove all existing layout mode classes and add current ones
+    Object.values(components).forEach(element => {
+      if (element) {
+        // Remove all previous layout mode classes
+        Object.values(modeClasses).forEach(className => {
+          element.classList.remove(className);
+        });
+        Object.values(stateClasses).forEach(className => {
+          element.classList.remove(className);
+        });
+        
+        // Add current layout mode class
+        element.classList.add(modeClasses[type]);
+        
+        // Add state-based classes
+        if (isCompact) element.classList.add(stateClasses.compact);
+        if (isMobile) element.classList.add(stateClasses.mobile);
+        if (isTablet) element.classList.add(stateClasses.tablet);
+        if (isDesktop) element.classList.add(stateClasses.desktop);
+      }
+    });
+    
+    // Update body classes for global CSS targeting
+    const body = document.body;
+    Object.values(modeClasses).forEach(className => {
+      body.classList.remove(className);
+    });
+    Object.values(stateClasses).forEach(className => {
+      body.classList.remove(className);
+    });
+    
+    body.classList.add(modeClasses[type]);
+    if (isCompact) body.classList.add(stateClasses.compact);
+    if (isMobile) body.classList.add(stateClasses.mobile);
+    if (isTablet) body.classList.add(stateClasses.tablet);
+    if (isDesktop) body.classList.add(stateClasses.desktop);
+    
+    // Set CSS custom properties for mode-specific styling
+    const root = document.documentElement;
+    root.style.setProperty('--layout-mode', type);
+    root.style.setProperty('--is-compact', isCompact ? '1' : '0');
+    root.style.setProperty('--is-mobile', isMobile ? '1' : '0');
+    root.style.setProperty('--is-tablet', isTablet ? '1' : '0');
+    root.style.setProperty('--is-desktop', isDesktop ? '1' : '0');
+    
+    console.log('Layout - CSS classes updated:', {
+      mode: type,
+      addedClasses: [
+        modeClasses[type],
+        ...(isCompact ? [stateClasses.compact] : []),
+        ...(isMobile ? [stateClasses.mobile] : []),
+        ...(isTablet ? [stateClasses.tablet] : []),
+        ...(isDesktop ? [stateClasses.desktop] : [])
+      ],
+      components: Object.keys(components).filter(key => components[key as keyof typeof components] !== null)
+    });
+    
+    // Dispatch custom event for other parts of the application
+    const customEvent = new CustomEvent('layout-mode-updated', {
+      detail: {
+        layoutMode,
+        components
+      }
+    });
+    document.dispatchEvent(customEvent);
+  }
 
   /**
    * Cleanup when layout is destroyed
    */
   destroy(): void {
     console.log('Layout - Destroying...');
+    
+    // Unsubscribe from layout context events
+    this.layoutUnsubscribers.forEach(unsubscribe => {
+      try {
+        unsubscribe();
+      } catch (error) {
+        console.error('Layout - Error unsubscribing from layout context:', error);
+      }
+    });
+    this.layoutUnsubscribers = [];
 
     // Destroy all components
     if (this.header) {
@@ -288,6 +502,28 @@ export class Layout {
     }
 
     // Note: Sidebar destruction is now handled by the page component
+
+    // Clean up global CSS variables
+    const root = document.documentElement;
+    root.style.removeProperty('--sidebar-width');
+    root.style.removeProperty('--sidebar-right-border');
+    root.style.removeProperty('--content-margin-left');
+    root.style.removeProperty('--viewport-width');
+    root.style.removeProperty('--viewport-height');
+    root.style.removeProperty('--layout-mode');
+    root.style.removeProperty('--is-compact');
+    root.style.removeProperty('--is-mobile');
+    root.style.removeProperty('--is-tablet');
+    root.style.removeProperty('--is-desktop');
+    
+    // Clean up layout mode classes from body
+    const layoutModeClasses = [
+      'layout-mode-mobile', 'layout-mode-tablet', 'layout-mode-desktop', 'layout-mode-desktop-compact',
+      'layout-compact', 'layout-mobile', 'layout-tablet', 'layout-desktop'
+    ];
+    layoutModeClasses.forEach(className => {
+      document.body.classList.remove(className);
+    });
 
     // Remove window event listeners
     // Note: In a real app, you'd want to keep track of listeners to remove them properly

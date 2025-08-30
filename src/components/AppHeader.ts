@@ -1,10 +1,16 @@
 /**
- * App Header Component
- * Manages the application header, user menu, and related functionality
+ * App Header Component - Clean CSS Grid Integration
+ * Basic header functionality with clean layout integration
  */
 
-import UserMenu, { User } from './UserMenu';
-import SimpleMobileMenu from './SimpleMobileMenu';
+// Import component-scoped CSS
+import '../assets/styles/components/header.css';
+
+// Import required components
+import { UserMenu } from './UserMenu.js';
+import { Sidebar } from './Sidebar.js';
+// Import layout context
+import LayoutContext, { LayoutEvent, SidebarDimensions } from '../contexts/LayoutContext.js';
 
 export interface HeaderUser {
   username: string;
@@ -14,9 +20,20 @@ export interface HeaderUser {
 
 export class AppHeader {
   private container: HTMLElement | null = null;
-  private user: HeaderUser | null = null;
+  private isInitialized: boolean = false;
+  private currentPageTitle: string = 'Dashboard';
+  private currentUser: HeaderUser | null = null;
   private userMenu: UserMenu | null = null;
-  private mobileMenu: SimpleMobileMenu | null = null;
+  private sidebar: Sidebar | null = null;
+  private user: HeaderUser | null = null;
+  private resizeTimeout: number | null = null;
+  private layoutContext: LayoutContext;
+  private layoutUnsubscribers: Array<() => void> = [];
+
+  constructor() {
+    console.log('AppHeader - Creating clean header...');
+    this.layoutContext = LayoutContext.getInstance();
+  }
 
   /**
    * Initialize the header component
@@ -25,7 +42,10 @@ export class AppHeader {
     console.log('AppHeader - Initializing...');
     
     try {
-      // Create header if it doesn't exist
+      // Initialize sidebar component FIRST so header can be positioned correctly
+      await this.initSidebar();
+      
+      // Create header after sidebar exists
       this.createHeader();
       
       // Wait for DOM to be ready and elements to be available
@@ -36,11 +56,11 @@ export class AppHeader {
       // Initialize user menu component (desktop only)
       await this.initUserMenu();
       
-      // Initialize mobile menu component
-      await this.initMobileMenu();
-      
       // Setup event listeners
       this.setupEventListeners();
+      
+      // Subscribe to layout context events
+      this.subscribeToLayoutContext();
       
       console.log('AppHeader - Ready');
     } catch (error) {
@@ -50,132 +70,129 @@ export class AppHeader {
   }
 
   /**
-   * Create the header HTML structure
+   * Use existing header element and populate content
    */
   private createHeader(): void {
-    // Check if header already exists
-    let existingHeader = document.querySelector('.app-header');
-    if (existingHeader) {
-      this.container = existingHeader as HTMLElement;
-      return;
-    }
-
-    // Create header element
-    const header = document.createElement('header');
-    header.className = 'app-header';
-    header.id = 'app_header';
-
-    // Always include mobile toggle container for DOM consistency
-    // CSS will handle visibility and sizing based on viewport
+    // Find existing header element
+    this.container = document.getElementById('app-header');
     
-    header.innerHTML = `
-      <div class="header-container">
-        <!-- Left section: Mobile toggle button -->
-        <div class="header-left">
-          <button class="mobile-menu-toggle" id="mobile_menu_toggle" style="
-            display: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 4px;
-            color: #212529;
-            transition: all 0.2s ease;
-            font-size: 16px;
-            line-height: 1;
-          " aria-label="Toggle Menu" title="Toggle Menu">
-            <span class="menu-icon" style="
+    if (!this.container) {
+      throw new Error('AppHeader: Could not find existing #app-header element');
+    }
+    
+    console.log('AppHeader - Using existing element');
+    
+    // Populate the existing structure with dynamic content
+    this.populateContent();
+    
+    console.log('AppHeader - Content populated successfully');
+  }
+  
+  /**
+   * Populate header content into existing HTML structure
+   */
+  private populateContent(): void {
+    if (!this.container) return;
+    
+    // Find header container
+    const headerContainer = this.container.querySelector('.header-container');
+    if (!headerContainer) return;
+    
+    // Populate header content
+    headerContainer.innerHTML = `
+      <!-- Left section: Mobile toggle button -->
+      <div class="header-left">
+        <button class="mobile-menu-toggle" id="mobile_menu_toggle" style="
+          display: none;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 4px;
+          color: #212529;
+          transition: all 0.2s ease;
+          font-size: 16px;
+          line-height: 1;
+        " aria-label="Toggle Menu" title="Toggle Menu">
+          <span class="menu-icon" style="
+            display: block;
+            width: 18px;
+            height: 18px;
+            position: relative;
+          ">
+            <span style="
               display: block;
-              width: 18px;
-              height: 18px;
-              position: relative;
-            ">
-              <span style="
-                display: block;
-                position: absolute;
-                height: 2px;
-                width: 100%;
-                background: currentColor;
-                border-radius: 1px;
-                opacity: 1;
-                left: 0;
-                transform: rotate(0deg);
-                transition: .25s ease-in-out;
-                top: 2px;
-              "></span>
-              <span style="
-                display: block;
-                position: absolute;
-                height: 2px;
-                width: 100%;
-                background: currentColor;
-                border-radius: 1px;
-                opacity: 1;
-                left: 0;
-                transform: rotate(0deg);
-                transition: .25s ease-in-out;
-                top: 8px;
-              "></span>
-              <span style="
-                display: block;
-                position: absolute;
-                height: 2px;
-                width: 100%;
-                background: currentColor;
-                border-radius: 1px;
-                opacity: 1;
-                left: 0;
-                transform: rotate(0deg);
-                transition: .25s ease-in-out;
-                top: 14px;
-              "></span>
-            </span>
-          </button>
-        </div>
-        
-        <!-- Center section: Enhanced breadcrumbs and page title -->
-        <div class="header-center" style="${window.innerWidth <= 767 ? 'padding-left: 16px;' : 'padding-left: 0;'}">
-          <nav class="header-breadcrumbs" aria-label="Breadcrumb">
-            <ol class="breadcrumb-list">
-              <!-- Current Page (Menu Item) -->
-              <li class="breadcrumb-item breadcrumb-current" aria-current="page">
-                <span class="breadcrumb-text" id="current_page_title">Dashboard</span>
-              </li>
-              
-              <!-- Separator (for future sub-pages) -->
-              <li class="breadcrumb-separator" aria-hidden="true" id="breadcrumb_separator" style="display: none;">
-                <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L4.5 5L1 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </li>
-              
-              <!-- Sub-page (dynamically added when needed) -->
-              <li class="breadcrumb-item breadcrumb-subpage" id="breadcrumb_subpage" style="display: none;">
-                <span class="breadcrumb-text" id="subpage_title"></span>
-              </li>
-            </ol>
-          </nav>
-        </div>
-        
-        <!-- Right section: User menu only -->
-        <div class="header-right">
-          <!-- User Menu -->
-          <div id="user_menu_container"></div>
-        </div>
+              position: absolute;
+              height: 2px;
+              width: 100%;
+              background: currentColor;
+              border-radius: 1px;
+              opacity: 1;
+              left: 0;
+              transform: rotate(0deg);
+              transition: .25s ease-in-out;
+              top: 2px;
+            "></span>
+            <span style="
+              display: block;
+              position: absolute;
+              height: 2px;
+              width: 100%;
+              background: currentColor;
+              border-radius: 1px;
+              opacity: 1;
+              left: 0;
+              transform: rotate(0deg);
+              transition: .25s ease-in-out;
+              top: 8px;
+            "></span>
+            <span style="
+              display: block;
+              position: absolute;
+              height: 2px;
+              width: 100%;
+              background: currentColor;
+              border-radius: 1px;
+              opacity: 1;
+              left: 0;
+              transform: rotate(0deg);
+              transition: .25s ease-in-out;
+              top: 14px;
+            "></span>
+          </span>
+        </button>
+      </div>
+      
+      <!-- Center section: Enhanced breadcrumbs and page title -->
+      <div class="header-center" style="${window.innerWidth <= 767 ? 'padding-left: 16px;' : 'padding-left: 0;'}">
+        <nav class="header-breadcrumbs" aria-label="Breadcrumb">
+          <ol class="breadcrumb-list">
+            <!-- Current Page (Menu Item) -->
+            <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+              <span class="breadcrumb-text" id="current_page_title">Dashboard</span>
+            </li>
+            
+            <!-- Separator (for future sub-pages) -->
+            <li class="breadcrumb-separator" aria-hidden="true" id="breadcrumb_separator" style="display: none;">
+              <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L4.5 5L1 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </li>
+            
+            <!-- Sub-page (dynamically added when needed) -->
+            <li class="breadcrumb-item breadcrumb-subpage" id="breadcrumb_subpage" style="display: none;">
+              <span class="breadcrumb-text" id="subpage_title"></span>
+            </li>
+          </ol>
+        </nav>
+      </div>
+      
+      <!-- Right section: User menu only -->
+      <div class="header-right">
+        <!-- User Menu -->
+        <div id="user_menu_container"></div>
       </div>
     `;
-
-    // Insert header into page
-    const body = document.body;
-    const wrapper = body.querySelector('.wrapper-constructed .wrapper-content');
-    if (wrapper) {
-      wrapper.insertBefore(header, wrapper.firstChild);
-    } else {
-      // Fallback: insert after body opening
-      body.insertBefore(header, body.firstChild);
-    }
-
-    this.container = header;
   }
 
   /**
@@ -193,12 +210,13 @@ export class AppHeader {
   }
 
   /**
-   * Initialize mobile menu component
+   * Initialize sidebar component
    */
-  private async initMobileMenu(): Promise<void> {
-    this.mobileMenu = new SimpleMobileMenu();
-    await this.mobileMenu.init();
-    console.log('AppHeader - MobileMenu component initialized');
+  private async initSidebar(): Promise<void> {
+    this.sidebar = new Sidebar();
+    await this.sidebar.init();
+    
+    console.log('AppHeader - Sidebar component initialized');
   }
 
   /**
@@ -220,18 +238,35 @@ export class AppHeader {
       }
     });
     
-    // Handle window resize to update header structure
+    // Handle window resize to update header structure with debouncing
     window.addEventListener('resize', () => {
-      this.handleResize();
+      this.handleResizeDebounced();
     });
   }
   
   /**
-   * Handle window resize events to update header styling
+   * Handle window resize events with debouncing for better performance
+   */
+  private handleResizeDebounced(): void {
+    // Clear previous timeout
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout);
+    }
+    
+    // Debounce resize handling to improve performance
+    this.resizeTimeout = setTimeout(() => {
+      this.handleResize();
+    }, 100); // 100ms debounce
+  }
+  
+  /**
+   * Handle window resize events to update header styling and position
    */
   private handleResize(): void {
     const currentWidth = window.innerWidth;
     const headerCenter = this.container?.querySelector('.header-center') as HTMLElement;
+    
+    console.log(`🪟 AppHeader - handleResize triggered for ${currentWidth}px viewport`);
     
     if (headerCenter) {
       // Apply mobile styles only on phone screens, desktop/tablet get no padding
@@ -240,8 +275,12 @@ export class AppHeader {
       } else {
         headerCenter.style.cssText = 'padding-left: 0;'; // No padding on tablet/desktop
       }
-      console.log(`AppHeader - Updated header-center styling for ${currentWidth}px viewport`);
+      console.log(`📐 AppHeader - Updated header-center styling for ${currentWidth}px viewport`);
     }
+    
+    // Update header position based on current sidebar state
+    console.log(`🔄 AppHeader - Updating position due to resize...`);
+    this.updatePosition();
   }
   
   /**
@@ -416,10 +455,10 @@ export class AppHeader {
   }
 
   /**
-   * Get mobile menu instance for external access
+   * Get sidebar instance for external access
    */
-  getMobileMenu(): SimpleMobileMenu | null {
-    return this.mobileMenu;
+  getSidebar(): Sidebar | null {
+    return this.sidebar;
   }
 
   /**
@@ -524,10 +563,263 @@ export class AppHeader {
   }
 
   /**
+   * Subscribe to layout context events
+   */
+  private subscribeToLayoutContext(): void {
+    console.log('AppHeader - Subscribing to layout context events...');
+
+    // Subscribe to sidebar dimension changes
+    const sidebarDimensionsUnsubscribe = this.layoutContext.subscribe(
+      'sidebar-dimensions-change',
+      this.handleSidebarDimensionsChange.bind(this)
+    );
+    this.layoutUnsubscribers.push(sidebarDimensionsUnsubscribe);
+
+    // Note: No longer subscribing to viewport-change - sidebar-dimensions-change is sufficient
+    // The sidebar dimensions already encode all the viewport information we need
+
+    // Set initial position based on current layout state
+    const currentState = this.layoutContext.getState();
+    this.updateHeaderLayout(currentState.sidebar);
+
+    console.log('AppHeader - Successfully subscribed to layout context events ✅');
+  }
+
+
+  /**
+   * Handle sidebar dimension changes from layout context
+   */
+  private handleSidebarDimensionsChange(event: LayoutEvent): void {
+    const dimensions = event.data as SidebarDimensions;
+    console.log('AppHeader - Received sidebar dimensions change:', dimensions);
+    this.updateHeaderLayout(dimensions);
+  }
+
+
+  /**
+   * Update header layout based on sidebar dimensions
+   */
+  private updateHeaderLayout(dimensions: SidebarDimensions): void {
+    if (!this.container) {
+      console.warn('AppHeader - Cannot update layout: container not available');
+      return;
+    }
+
+    console.log(`🎯 AppHeader - Updating layout for sidebar dimensions:`, dimensions);
+
+    // Remove all positioning inline styles - let CSS handle layout
+    this.container.style.left = '';
+    this.container.style.width = '';
+    this.container.style.right = '';
+
+    // Update CSS classes based on sidebar state
+    this.container.classList.toggle('header-sidebar-compact', dimensions.isCompact && !dimensions.isMobile);
+    this.container.classList.toggle('header-sidebar-normal', !dimensions.isCompact && !dimensions.isMobile);
+    this.container.classList.toggle('header-mobile', dimensions.isMobile);
+
+    // Dispatch custom event for other components
+    const event = new CustomEvent('header-layout-updated', {
+      detail: {
+        dimensions,
+        headerElement: this.container
+      }
+    });
+    document.dispatchEvent(event);
+
+    console.log(`✅ AppHeader - Layout updated:`, {
+      dimensions,
+      cssClasses: Array.from(this.container.classList).filter(cls => cls.startsWith('header-'))
+    });
+  }
+
+  /**
+   * Handle sidebar compact mode changes (event-driven)
+   * @deprecated - Use layout context instead
+   * This method is called whenever the sidebar compact mode state changes
+   * @param isCompact - The new compact mode state from the sidebar event
+   */
+  private handleSidebarCompactModeChange(isCompact: boolean): void {
+    if (!this.container) {
+      console.warn('AppHeader - Cannot update position: container not available');
+      return;
+    }
+
+    console.log(`🎯 AppHeader - Handling compact mode change event: ${isCompact ? 'COMPACT' : 'NORMAL'}`);
+
+    // Calculate sidebar dimensions and position based on the event data
+    const sidebarInfo = this.calculateSidebarDimensions(isCompact);
+    
+    // Update header position based on sidebar right border coordinates
+    this.updateHeaderPosition(sidebarInfo);
+    
+    console.log(`✅ AppHeader - Position updated for ${isCompact ? 'compact' : 'normal'} sidebar:`, {
+      rightBorder: sidebarInfo.rightBorder,
+      headerLeft: this.container.style.left,
+      headerWidth: this.container.style.width,
+      cssClasses: Array.from(this.container.classList).filter(cls => cls.startsWith('header-'))
+    });
+  }
+
+  /**
+   * Calculate sidebar dimensions and coordinates
+   */
+  private calculateSidebarDimensions(isCompact: boolean): {
+    width: number;
+    rightBorder: number;
+    isCompact: boolean;
+    isMobile: boolean;
+  } {
+    const isMobile = window.innerWidth < 768;
+    
+    if (isMobile) {
+      // On mobile, sidebar is overlay/hidden, so header should be full width
+      return {
+        width: 0,
+        rightBorder: 0,
+        isCompact: false, // Compact mode doesn't apply on mobile
+        isMobile: true
+      };
+    }
+
+    // Desktop sidebar dimensions
+    const normalWidth = 280;
+    const compactWidth = 80;
+    const currentWidth = isCompact ? compactWidth : normalWidth;
+    let actualRightBorder = currentWidth;
+    
+    // Get actual sidebar element for precise measurements if available
+    const sidebarElement = document.getElementById('app_sidebar');
+    
+    if (sidebarElement) {
+      try {
+        const rect = sidebarElement.getBoundingClientRect();
+        
+        // Only use actual measurements if rect exists and values seem valid (not zero)
+        if (rect && (rect.right > 0 || rect.width > 0)) {
+          // If sidebar is positioned from left edge (rect.left === 0), use its width
+          // Otherwise use its right coordinate
+          actualRightBorder = rect.left === 0 ? rect.width : rect.right;
+          
+          // Fallback to calculated width if the measured value seems incorrect
+          if (actualRightBorder <= 0) {
+            actualRightBorder = currentWidth;
+          }
+        }
+      } catch (error) {
+        // getBoundingClientRect failed, use calculated width
+        console.warn('AppHeader - getBoundingClientRect failed, using calculated width:', error);
+        actualRightBorder = currentWidth;
+      }
+    }
+
+    return {
+      width: currentWidth,
+      rightBorder: actualRightBorder,
+      isCompact,
+      isMobile: false
+    };
+  }
+
+  /**
+   * Update header position based on sidebar coordinates
+   */
+  private updateHeaderPosition(sidebarInfo: {
+    width: number;
+    rightBorder: number;
+    isCompact: boolean;
+    isMobile: boolean;
+  }): void {
+    if (!this.container) return;
+
+    const { isCompact, isMobile } = sidebarInfo;
+
+    // Remove all inline positioning styles - let CSS handle layout
+    this.container.style.left = '';
+    this.container.style.width = '';
+    this.container.style.right = '';
+
+    // Add CSS class for styling hooks - CSS will handle width: 100%
+    this.container.classList.toggle('header-sidebar-compact', isCompact && !isMobile);
+    this.container.classList.toggle('header-sidebar-normal', !isCompact && !isMobile);
+    this.container.classList.toggle('header-mobile', isMobile);
+
+    // Trigger custom event for other components that might need to know
+    const event = new CustomEvent('header-position-updated', {
+      detail: {
+        sidebarInfo,
+        isCompact,
+        isMobile
+      }
+    });
+    
+    document.dispatchEvent(event);
+  }
+
+  /**
+   * Get current sidebar information (useful for other components)
+   */
+  public getSidebarInfo(): {
+    width: number;
+    rightBorder: number;
+    isCompact: boolean;
+    isMobile: boolean;
+  } | null {
+    if (!this.sidebar) return null;
+    
+    const isCompact = this.sidebar.isCompactMode();
+    return this.calculateSidebarDimensions(isCompact);
+  }
+
+  /**
+   * Get current header position information
+   */
+  public getHeaderPosition(): {
+    left: number;
+    width: number;
+    right: number;
+  } | null {
+    if (!this.container) return null;
+    
+    const rect = this.container.getBoundingClientRect();
+    return {
+      left: rect.left,
+      width: rect.width,
+      right: rect.right
+    };
+  }
+
+  /**
+   * Force update header position (useful after window resize)
+   * Note: This method queries the sidebar state directly for cases like window resize,
+   * but normal compact mode changes should go through the event system.
+   */
+  public updatePosition(): void {
+    if (!this.sidebar) {
+      console.warn('AppHeader - Cannot update position: sidebar not available');
+      return;
+    }
+    
+    console.log('🔄 AppHeader - Force updating position (manual trigger)');
+    const isCompact = this.sidebar.isCompactMode();
+    console.log(`🔄 AppHeader - Current sidebar state: ${isCompact ? 'compact' : 'normal'}`);
+    this.handleSidebarCompactModeChange(isCompact);
+  }
+
+  /**
    * Cleanup when component is destroyed
    */
   destroy(): void {
     console.log('AppHeader - Destroying...');
+    
+    // Unsubscribe from layout context events
+    this.layoutUnsubscribers.forEach(unsubscribe => {
+      try {
+        unsubscribe();
+      } catch (error) {
+        console.error('AppHeader - Error unsubscribing from layout context:', error);
+      }
+    });
+    this.layoutUnsubscribers = [];
     
     // Destroy user menu component
     if (this.userMenu) {
@@ -535,10 +827,16 @@ export class AppHeader {
       this.userMenu = null;
     }
     
-    // Destroy mobile menu component
-    if (this.mobileMenu) {
-      this.mobileMenu.destroy();
-      this.mobileMenu = null;
+    // Destroy sidebar component
+    if (this.sidebar) {
+      this.sidebar.destroy();
+      this.sidebar = null;
+    }
+    
+    // Clean up resize timeout
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = null;
     }
     
     // Remove event listeners and cleanup resources
