@@ -110,10 +110,16 @@ export class LayoutContext {
     const isTablet = width > 768 && width <= 1024;
     const isDesktop = width > 1024;
 
+    // Calculate initial sidebar width based on viewport
+    let sidebarWidth = 0;
+    if (!isMobile) {
+      sidebarWidth = isTablet ? 240 : 280; // Tablet uses smaller width
+    }
+
     return {
       sidebar: {
-        width: isMobile ? 0 : 280, // Default normal width, 0 for mobile
-        rightBorder: isMobile ? 0 : 280,
+        width: sidebarWidth,
+        rightBorder: sidebarWidth,
         isCompact: false,
         isMobile,
         isVisible: !isMobile
@@ -173,13 +179,13 @@ export class LayoutContext {
     // Update viewport state
     this.state.viewport = newViewport;
 
-    // Update sidebar state for mobile/desktop changes
+    // Update sidebar state for viewport transitions
     if (viewportTypeChanged) {
       const oldSidebarState = { ...this.state.sidebar };
       
-      // Adjust sidebar for mobile
+      // Handle mobile transitions
       if (isMobile && !oldViewport.isMobile) {
-        // Desktop -> Mobile: Hide sidebar
+        // Any mode -> Mobile: Hide sidebar
         this.state.sidebar = {
           ...this.state.sidebar,
           width: 0,
@@ -188,11 +194,28 @@ export class LayoutContext {
           isVisible: false
         };
       } else if (!isMobile && oldViewport.isMobile) {
-        // Mobile -> Desktop: Show sidebar with last known state
+        // Mobile -> Non-mobile: Show sidebar with appropriate dimensions
+        const compactWidth = isTablet ? 64 : 80; // Tablet uses smaller compact width
+        const defaultWidth = isTablet ? 240 : 280; // Tablet uses smaller default width
+        
         this.state.sidebar = {
           ...this.state.sidebar,
-          width: this.state.sidebar.isCompact ? 80 : 280,
-          rightBorder: this.state.sidebar.isCompact ? 80 : 280,
+          width: this.state.sidebar.isCompact ? compactWidth : defaultWidth,
+          rightBorder: this.state.sidebar.isCompact ? compactWidth : defaultWidth,
+          isMobile: false,
+          isVisible: true
+        };
+      } else if (!isMobile && !oldViewport.isMobile) {
+        // Non-mobile -> Non-mobile (desktop ↔ tablet): Adjust sidebar dimensions
+        const compactWidth = isTablet ? 64 : 80;
+        const defaultWidth = isTablet ? 240 : 280;
+        
+        const newWidth = this.state.sidebar.isCompact ? compactWidth : defaultWidth;
+        
+        this.state.sidebar = {
+          ...this.state.sidebar,
+          width: newWidth,
+          rightBorder: newWidth,
           isMobile: false,
           isVisible: true
         };
@@ -200,6 +223,13 @@ export class LayoutContext {
 
       // Emit sidebar dimensions change if sidebar state changed
       if (JSON.stringify(oldSidebarState) !== JSON.stringify(this.state.sidebar)) {
+        console.log('LayoutContext - Sidebar state changed for viewport transition:', {
+          from: `${oldViewport.isMobile ? 'mobile' : oldViewport.isTablet ? 'tablet' : 'desktop'}`,
+          to: `${isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'}`,
+          oldDimensions: oldSidebarState,
+          newDimensions: this.state.sidebar
+        });
+        
         // Update CSS Grid variables when sidebar state changes due to viewport
         this.updateCSSGridVariables();
         this.emit('sidebar-dimensions-change', this.state.sidebar);
@@ -515,8 +545,8 @@ export class LayoutContext {
       sidebarBehavior: {
         isVisible: !isMobile, // Visible on both tablet and desktop
         canToggle: !isMobile, // Can toggle on both tablet and desktop
-        defaultWidth: 280,
-        compactWidth: 80
+        defaultWidth: isTablet ? 240 : 280, // Tablet uses smaller default width
+        compactWidth: isTablet ? 64 : 80 // Tablet uses smaller compact width
       }
     };
   }
