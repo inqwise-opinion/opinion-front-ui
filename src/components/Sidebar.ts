@@ -869,12 +869,35 @@ export class Sidebar {
     console.log(`  - Compact Width: ${mode.sidebarBehavior.compactWidth}px`);
     
     // Update sidebar visibility
+    console.log(`🔍 Sidebar - Setting visibility for ${mode.type} mode: ${mode.sidebarBehavior.isVisible}`);
     if (mode.sidebarBehavior.isVisible) {
+      console.log('  ✅ Showing sidebar: display=flex, removing .sidebar-hidden');
       this.sidebar.style.display = 'flex';
       this.sidebar.classList.remove('sidebar-hidden');
     } else {
+      console.log('  ❌ Hiding sidebar: display=none, adding .sidebar-hidden');
       this.sidebar.style.display = 'none';
       this.sidebar.classList.add('sidebar-hidden');
+    }
+    
+    // Debug: Log actual computed styles after setting
+    const computedStyle = getComputedStyle(this.sidebar);
+    console.log(`🎨 Sidebar - Computed styles after update:`);
+    console.log(`   display: ${computedStyle.display}`);
+    console.log(`   visibility: ${computedStyle.visibility}`);
+    console.log(`   opacity: ${computedStyle.opacity}`);
+    console.log(`   width: ${computedStyle.width}`);
+    console.log(`   transform: ${computedStyle.transform}`);
+    console.log(`   classes: ${this.sidebar.className}`);
+    
+    // Check if any parent element might be hiding us
+    let parent = this.sidebar.parentElement;
+    while (parent) {
+      const parentStyle = getComputedStyle(parent);
+      if (parentStyle.display === 'none' || parentStyle.visibility === 'hidden') {
+        console.log(`🚨 Parent element ${parent.tagName}.${parent.className} is hidden!`);
+      }
+      parent = parent.parentElement;
     }
     
     // Update toggle button availability
