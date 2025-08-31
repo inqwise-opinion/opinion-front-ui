@@ -209,8 +209,11 @@ html, body {
 /* Tablet Layout - Use CSS variables for dynamic updates */
 @media (min-width: 769px) and (max-width: 1024px) {
   .app-layout {
+    /* Set default tablet CSS variables */
+    --sidebar-width: 240px;
+    --sidebar-compact-width: 64px;
     /* Use CSS variables that can be updated by JavaScript */
-    grid-template-columns: var(--sidebar-width, 240px) 1fr;
+    grid-template-columns: var(--sidebar-width) 1fr !important;
     grid-template-rows: 56px 1fr auto;
   }
   
@@ -218,18 +221,12 @@ html, body {
     /* Reset mobile transform - sidebar should be visible inline in tablet mode */
     position: relative !important;
     transform: none !important;
-    /* Use CSS variable for width that matches grid */
-    width: var(--sidebar-width, 240px);
-  }
-  
-  /* Set default tablet CSS variables */
-  .app-layout {
-    --sidebar-width: 240px;
-    --sidebar-compact-width: 64px;
+    /* Use CSS variable for width that matches grid - force override */
+    width: var(--sidebar-width) !important;
   }
   
   /* Compact mode override */
   .app-layout.sidebar-compact {
-    --sidebar-width: var(--sidebar-compact-width, 64px);
+    --sidebar-width: var(--sidebar-compact-width) !important;
   }
 }

@@ -8,7 +8,7 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  width: 280px; /* Default expanded width */
+  /* Width controlled by CSS Grid layout and CSS variables */
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -207,7 +207,7 @@
 
 /* Compact Mode Styles */
 .app-sidebar.sidebar-compact {
-  width: 80px;
+  /* Width controlled by CSS Grid layout and CSS variables */
 }
 
 .app-sidebar.sidebar-compact .sidebar-header {
@@ -428,10 +428,6 @@
 
 /* Responsive adjustments for compact mode */
 @media (max-width: 1024px) {
-  .app-sidebar.sidebar-compact {
-    width: 64px;
-  }
-  
   .app-sidebar.sidebar-compact .nav-link {
     padding: 10px;
   }
