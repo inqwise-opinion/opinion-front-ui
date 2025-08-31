@@ -155,18 +155,22 @@
   }
   
   .footer-copyright-text {
-    font-size: 11px; /* Smaller copyright text */
+    font-size: 10px; /* Even smaller copyright text for tablet */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 140px; /* Smaller limit for tablet to prevent right overflow */
-    flex-shrink: 1; /* Allow copyright to shrink more */
+    max-width: 100px; /* Much smaller limit for tablet */
   }
   
   .footer-copyright-section {
-    /* Make copyright section more flexible */
+    /* Make copyright section take minimal space */
     min-width: 0;
-    flex-shrink: 2; /* Copyright section can shrink more than navigation */
+    flex: 0 1 auto; /* Don't grow, can shrink, auto basis */
+  }
+  
+  .footer-navigation {
+    /* Give navigation priority for space */
+    flex: 1 0 auto; /* Can grow, don't shrink, auto basis */
   }
   
   /* Compact mode on tablet */
