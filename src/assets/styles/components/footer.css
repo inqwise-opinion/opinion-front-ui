@@ -159,7 +159,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 200px; /* Limit copyright text width */
+    max-width: 140px; /* Smaller limit for tablet to prevent right overflow */
+    flex-shrink: 1; /* Allow copyright to shrink more */
+  }
+  
+  .footer-copyright-section {
+    /* Make copyright section more flexible */
+    min-width: 0;
+    flex-shrink: 2; /* Copyright section can shrink more than navigation */
   }
   
   /* Compact mode on tablet */
