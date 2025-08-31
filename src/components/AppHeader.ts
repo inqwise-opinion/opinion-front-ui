@@ -59,8 +59,8 @@ export class AppHeader {
       // Setup event listeners
       this.setupEventListeners();
       
-      // Subscribe to layout context events
-      this.subscribeToLayoutContext();
+      // Header is now fully CSS-based - no dynamic layout subscriptions needed
+      // this.subscribeToLayoutContext();
       
       console.log('AppHeader - Ready');
     } catch (error) {
@@ -238,10 +238,7 @@ export class AppHeader {
       }
     });
     
-    // Handle window resize to update header structure with debouncing
-    window.addEventListener('resize', () => {
-      this.handleResizeDebounced();
-    });
+    // Header positioning is now fully CSS-based - no dynamic resize handling needed
   }
   
   /**
