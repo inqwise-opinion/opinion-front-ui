@@ -159,7 +159,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 160px; /* Reasonable limit for tablet */
   }
   
   .footer-navigation {
