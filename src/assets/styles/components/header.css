@@ -189,7 +189,7 @@
 /* Desktop Layout Enhancements */
 @media (min-width: 1200px) {
   .app-header {
-    padding: 0 32px;
+    padding: 0 16px; /* Consistent with tablet mode */
   }
   
   .page-title {
