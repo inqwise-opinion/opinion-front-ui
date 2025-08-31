@@ -420,17 +420,27 @@ export class LayoutContext {
           "content"
         `;
       } else {
-        // Desktop: update sidebar width in grid
+        // Desktop: update sidebar width in grid using CSS variables
         const sidebarWidth = `${sidebar.width}px`;
-        appLayout.style.gridTemplateColumns = `${sidebarWidth} 1fr`;
+        const compactWidth = `${sidebar.isCompact ? 
+          this.getResponsiveMode().sidebarBehavior.compactWidth : 
+          this.getResponsiveMode().sidebarBehavior.defaultWidth}px`;
+        
+        // Set CSS custom properties on the layout element (higher specificity than media queries)
+        appLayout.style.setProperty('--sidebar-width', sidebarWidth);
+        appLayout.style.setProperty('--sidebar-compact-width', compactWidth);
+        appLayout.style.setProperty('--sidebar-right-border', `${sidebar.rightBorder}px`);
+        
+        // Also update root for other components
+        root.style.setProperty('--sidebar-width', sidebarWidth);
+        root.style.setProperty('--sidebar-right-border', `${sidebar.rightBorder}px`);
+        
+        // Let CSS handle grid template columns via variables
+        appLayout.style.gridTemplateColumns = '';
         appLayout.style.gridTemplateAreas = `
           "sidebar header"
           "sidebar content"
         `;
-        
-        // Update CSS custom properties for other components to use
-        root.style.setProperty('--sidebar-width', sidebarWidth);
-        root.style.setProperty('--sidebar-right-border', `${sidebar.rightBorder}px`);
       }
       
       // Update layout classes for CSS hooks

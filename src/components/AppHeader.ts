@@ -681,10 +681,13 @@ export class AppHeader {
       };
     }
 
-    // Desktop sidebar dimensions
-    const normalWidth = 280;
-    const compactWidth = 80;
+    // Get responsive sidebar dimensions from layout context
+    const responsiveMode = this.layoutContext.getResponsiveMode();
+    const normalWidth = responsiveMode.sidebarBehavior.defaultWidth;  // 240px for tablet, 280px for desktop
+    const compactWidth = responsiveMode.sidebarBehavior.compactWidth;  // 64px for tablet, 80px for desktop
     const currentWidth = isCompact ? compactWidth : normalWidth;
+    
+    console.log(`📏 AppHeader - Using responsive dimensions: ${normalWidth}px normal, ${compactWidth}px compact (${responsiveMode.type} mode)`);
     let actualRightBorder = currentWidth;
     
     // Get actual sidebar element for precise measurements if available
@@ -790,19 +793,17 @@ export class AppHeader {
 
   /**
    * Force update header position (useful after window resize)
-   * Note: This method queries the sidebar state directly for cases like window resize,
-   * but normal compact mode changes should go through the event system.
+   * Uses current layout context state instead of deprecated sidebar querying
    */
   public updatePosition(): void {
-    if (!this.sidebar) {
-      console.warn('AppHeader - Cannot update position: sidebar not available');
-      return;
-    }
-    
     console.log('🔄 AppHeader - Force updating position (manual trigger)');
-    const isCompact = this.sidebar.isCompactMode();
-    console.log(`🔄 AppHeader - Current sidebar state: ${isCompact ? 'compact' : 'normal'}`);
-    this.handleSidebarCompactModeChange(isCompact);
+    
+    // Use current layout context state instead of querying sidebar directly
+    const currentSidebarDimensions = this.layoutContext.getSidebarDimensions();
+    console.log(`🔄 AppHeader - Using layout context dimensions:`, currentSidebarDimensions);
+    
+    // Update header layout using the current sidebar dimensions from layout context
+    this.updateHeaderLayout(currentSidebarDimensions);
   }
 
   /**

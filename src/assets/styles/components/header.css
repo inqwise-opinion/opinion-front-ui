@@ -201,9 +201,40 @@
   }
 }
 
+/* Tablet and Small Desktop (769px - 1199px) */
 @media (min-width: 769px) and (max-width: 1199px) {
   .header-search-input {
-    width: 200px;
+    width: 150px; /* Smaller search bar for tablet */
+    min-width: 120px; /* Prevent it from getting too small */
+  }
+  
+  .app-header {
+    padding: 0 16px; /* Smaller padding in tablet mode */
+  }
+  
+  .header-center {
+    /* Ensure header content doesn't overflow under sidebar */
+    min-width: 0; /* Allow flex items to shrink */
+    overflow: hidden; /* Prevent overflow */
+  }
+  
+  .page-title {
+    font-size: 16px; /* Smaller title */
+    white-space: nowrap; /* Prevent title wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .header-breadcrumbs {
+    min-width: 0; /* Allow breadcrumbs to shrink */
+    overflow: hidden;
+  }
+  
+  .breadcrumb-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; /* Limit breadcrumb text width */
   }
 }
 

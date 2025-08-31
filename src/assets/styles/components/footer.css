@@ -134,16 +134,37 @@
 /* Tablet adjustments - match sidebar responsive behavior */
 @media (min-width: 769px) and (max-width: 1024px) {
   .app-footer {
-    padding: 16px 20px; /* Keep consistent with sidebar */
+    padding: 16px 16px; /* Smaller padding to prevent overflow */
+  }
+  
+  .footer-content {
+    /* Prevent footer content from overflowing under sidebar */
+    min-width: 0; /* Allow flex items to shrink */
+    overflow: hidden; /* Prevent horizontal overflow */
   }
   
   .footer-nav-list {
-    gap: 18px;
+    gap: 12px; /* Smaller gap for tablet */
+    flex-wrap: wrap; /* Allow wrapping if needed */
+  }
+  
+  .footer-nav-link {
+    font-size: 13px; /* Smaller font for tablet */
+    padding: 3px 6px; /* Smaller padding */
+    white-space: nowrap; /* Prevent link text wrapping */
+  }
+  
+  .footer-copyright-text {
+    font-size: 11px; /* Smaller copyright text */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; /* Limit copyright text width */
   }
   
   /* Compact mode on tablet */
   .app-layout.sidebar-compact .app-footer {
-    padding: 12px 20px;
+    padding: 12px 16px;
   }
 }
 

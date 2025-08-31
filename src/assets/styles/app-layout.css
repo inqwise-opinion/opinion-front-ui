@@ -143,88 +143,93 @@ html, body {
 /* Large Desktop (1400px+) */
 @media (min-width: 1400px) {
   .app-layout {
-    grid-template-columns: 320px 1fr;
+    /* Set default large desktop variables */
+    --sidebar-width: 320px;
+    --sidebar-compact-width: 72px;
+    /* Use CSS variables for grid */
+    grid-template-columns: var(--sidebar-width) 1fr;
   }
   
   .app-layout.sidebar-compact {
-    grid-template-columns: 72px 1fr;
+    --sidebar-width: var(--sidebar-compact-width);
   }
   
   .app-sidebar {
     /* Reset mobile transform */
     position: relative !important;
     transform: none !important;
-    width: 320px;
-  }
-  
-  .app-sidebar.sidebar-compact {
-    width: 72px;
+    width: var(--sidebar-width);
   }
 }
 
 /* Standard Desktop (1200px+) */
 @media (min-width: 1200px) and (max-width: 1399px) {
   .app-layout {
-    grid-template-columns: 280px 1fr;
+    /* Set default standard desktop variables */
+    --sidebar-width: 280px;
+    --sidebar-compact-width: 72px;
+    /* Use CSS variables for grid */
+    grid-template-columns: var(--sidebar-width) 1fr;
   }
   
   .app-layout.sidebar-compact {
-    grid-template-columns: 72px 1fr;
+    --sidebar-width: var(--sidebar-compact-width);
   }
   
   .app-sidebar {
     /* Reset mobile transform */
     position: relative !important;
     transform: none !important;
-    width: 280px;
-  }
-  
-  .app-sidebar.sidebar-compact {
-    width: 72px;
+    width: var(--sidebar-width);
   }
 }
 
 /* Small Desktop (1025px+) */
 @media (min-width: 1025px) and (max-width: 1199px) {
   .app-layout {
-    grid-template-columns: 260px 1fr;
+    /* Set default small desktop variables */
+    --sidebar-width: 260px;
+    --sidebar-compact-width: 72px;
+    /* Use CSS variables for grid */
+    grid-template-columns: var(--sidebar-width) 1fr;
   }
   
   .app-layout.sidebar-compact {
-    grid-template-columns: 72px 1fr;
+    --sidebar-width: var(--sidebar-compact-width);
   }
   
   .app-sidebar {
     /* Reset mobile transform */
     position: relative !important;
     transform: none !important;
-    width: 260px;
-  }
-  
-  .app-sidebar.sidebar-compact {
-    width: 72px;
+    width: var(--sidebar-width);
   }
 }
 
-/* Tablet Layout */
+/* Tablet Layout - Use CSS variables for dynamic updates */
 @media (min-width: 769px) and (max-width: 1024px) {
   .app-layout {
-    grid-template-columns: 240px 1fr;
+    /* Use CSS variables that can be updated by JavaScript */
+    grid-template-columns: var(--sidebar-width, 240px) 1fr;
     grid-template-rows: 56px 1fr auto;
-  }
-  
-  .app-layout.sidebar-compact {
-    grid-template-columns: 64px 1fr;
   }
   
   .app-sidebar {
     /* Reset mobile transform - sidebar should be visible inline in tablet mode */
     position: relative !important;
     transform: none !important;
-    width: 240px;
+    /* Use CSS variable for width that matches grid */
+    width: var(--sidebar-width, 240px);
   }
   
-  .app-sidebar.sidebar-compact {
-    width: 64px;
+  /* Set default tablet CSS variables */
+  .app-layout {
+    --sidebar-width: 240px;
+    --sidebar-compact-width: 64px;
+  }
+  
+  /* Compact mode override */
+  .app-layout.sidebar-compact {
+    --sidebar-width: var(--sidebar-compact-width, 64px);
   }
 }
