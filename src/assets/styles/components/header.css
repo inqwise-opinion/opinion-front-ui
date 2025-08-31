@@ -10,8 +10,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 64px;
+  padding: 0 16px; /* Consistent padding across all viewports */
+  height: 64px; /* Consistent height across all viewports */
   position: relative;
 }
 
@@ -186,32 +186,8 @@
   font-size: 16px;
 }
 
-/* Desktop Layout Enhancements */
-@media (min-width: 1200px) {
-  .app-header {
-    padding: 0 16px; /* Consistent with tablet mode */
-  }
-  
-  .page-title {
-    font-size: 20px;
-  }
-  
-  .header-search-input {
-    width: 300px;
-  }
-}
-
-/* Tablet and Small Desktop (769px - 1199px) */
+/* Tablet and Small Desktop - Only overflow protection, no dimension changes */
 @media (min-width: 769px) and (max-width: 1199px) {
-  .header-search-input {
-    width: 150px; /* Smaller search bar for tablet */
-    min-width: 120px; /* Prevent it from getting too small */
-  }
-  
-  .app-header {
-    padding: 0 16px; /* Smaller padding in tablet mode */
-  }
-  
   .header-center {
     /* Ensure header content doesn't overflow under sidebar */
     min-width: 0; /* Allow flex items to shrink */
@@ -219,7 +195,6 @@
   }
   
   .page-title {
-    font-size: 16px; /* Smaller title */
     white-space: nowrap; /* Prevent title wrapping */
     overflow: hidden;
     text-overflow: ellipsis;
@@ -236,15 +211,14 @@
     text-overflow: ellipsis;
     max-width: 200px; /* Limit breadcrumb text width */
   }
+  
+  .header-search-input {
+    min-width: 180px; /* Ensure search stays usable */
+  }
 }
 
-/* Mobile and Tablet Responsive */
+/* Mobile Responsive - Only for very narrow screens */
 @media (max-width: 768px) {
-  .app-header {
-    padding: 0 16px;
-    height: 56px;
-  }
-  
   .mobile-menu-toggle {
     display: block;
   }
@@ -260,10 +234,6 @@
   
   .header-search {
     display: none;
-  }
-  
-  .page-title {
-    font-size: 16px;
   }
 }
 
