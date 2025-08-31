@@ -33,9 +33,9 @@ html, body {
   grid-template-columns: var(--sidebar-width, 280px) 1fr;
   grid-template-rows: var(--header-height, 64px) 1fr;
   
-  /* Layout variables */
+  /* Layout variables - strict widths */
   --sidebar-width: 280px;
-  --sidebar-compact-width: 72px;
+  --sidebar-compact-width: 80px;
   --header-height: 64px;
   --header-mobile-height: 60px;
   
@@ -140,35 +140,12 @@ html, body {
 
 /* Desktop Layout Breakpoints */
 
-/* Large Desktop (1400px+) */
-@media (min-width: 1400px) {
+/* Desktop Layout (1025px+) - Consolidated all desktop breakpoints */
+@media (min-width: 1025px) {
   .app-layout {
-    /* Set default large desktop variables */
-    --sidebar-width: 320px;
-    --sidebar-compact-width: 72px;
-    /* Use CSS variables for grid */
-    grid-template-columns: var(--sidebar-width) 1fr;
-  }
-  
-  .app-layout.sidebar-compact {
-    --sidebar-width: var(--sidebar-compact-width);
-  }
-  
-  .app-sidebar {
-    /* Reset mobile transform */
-    position: relative !important;
-    transform: none !important;
-    width: var(--sidebar-width);
-  }
-}
-
-/* Standard Desktop (1200px+) */
-@media (min-width: 1200px) and (max-width: 1399px) {
-  .app-layout {
-    /* Set default standard desktop variables */
+    /* CSS strict widths - consistent across all desktop sizes */
     --sidebar-width: 280px;
-    --sidebar-compact-width: 72px;
-    /* Use CSS variables for grid */
+    --sidebar-compact-width: 80px;
     grid-template-columns: var(--sidebar-width) 1fr;
   }
   
@@ -180,38 +157,16 @@ html, body {
     /* Reset mobile transform */
     position: relative !important;
     transform: none !important;
-    width: var(--sidebar-width);
-  }
-}
-
-/* Small Desktop (1025px+) */
-@media (min-width: 1025px) and (max-width: 1199px) {
-  .app-layout {
-    /* Set default small desktop variables */
-    --sidebar-width: 260px;
-    --sidebar-compact-width: 72px;
-    /* Use CSS variables for grid */
-    grid-template-columns: var(--sidebar-width) 1fr;
-  }
-  
-  .app-layout.sidebar-compact {
-    --sidebar-width: var(--sidebar-compact-width);
-  }
-  
-  .app-sidebar {
-    /* Reset mobile transform */
-    position: relative !important;
-    transform: none !important;
-    width: var(--sidebar-width);
+    /* Sidebar width handled by sidebar.css, grid uses CSS variables */
   }
 }
 
 /* Tablet Layout - Use CSS variables for dynamic updates */
 @media (min-width: 769px) and (max-width: 1024px) {
   .app-layout {
-    /* Set default tablet CSS variables */
-    --sidebar-width: 240px;
-    --sidebar-compact-width: 64px;
+    /* Set default tablet CSS variables - using strict widths */
+    --sidebar-width: 280px;
+    --sidebar-compact-width: 80px;
     /* Use CSS variables that can be updated by JavaScript */
     grid-template-columns: var(--sidebar-width) 1fr !important;
     grid-template-rows: 56px 1fr auto;

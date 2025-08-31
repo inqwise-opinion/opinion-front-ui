@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* Remove fixed min-height to match sidebar footer natural height */
+  height: 60px; /* Fixed footer height */
   font-size: 12px; /* Match sidebar footer font size */
   color: #9ca3af; /* Match sidebar footer text color */
   position: static; /* Static positioning to flow naturally after content */

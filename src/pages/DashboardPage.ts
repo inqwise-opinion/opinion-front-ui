@@ -135,15 +135,9 @@ export class DashboardPage {
    * Setup responsive behavior handlers
    */
   private setupResponsiveHandlers(): void {
-    // Handle window resize for responsive layout
-    let resizeTimeout: NodeJS.Timeout;
-    
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        this.handleResize();
-      }, 250);
-    });
+    // Responsive behavior is now handled by LayoutContext centrally
+    // Page components should rely on CSS-based responsive design
+    console.log('DashboardPage - Responsive behavior delegated to LayoutContext');
   }
 
   /**

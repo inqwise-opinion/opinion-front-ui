@@ -6,13 +6,29 @@
   <title>Opinion - Survey Management Platform</title>
   <meta name="description" content="Opinion - Modern survey management platform for creating, managing and analyzing surveys">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Load critical CSS directly for Vite compatibility -->
+  <link rel="stylesheet" href="/src/assets/styles/app-layout.css">
+  <link rel="stylesheet" href="/src/assets/styles/components/sidebar.css">
+  
+  <!-- Material Icons with font-display swap to prevent layout shift -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" rel="stylesheet">
+  
   <style>
-    /* Basic reset and foundation */
+    /* Basic reset and foundation - prevent FOUC */
     body, html {
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+    
+    /* Fix H1 styling warning for sectioned h1 elements */
+    .brand-title {
+      margin: 0 !important;
+      font-size: 20px !important;
+      font-weight: 600 !important;
+      color: #111827 !important;
+      line-height: 1.2 !important;
     }
     
     .loader-container {
@@ -90,6 +106,7 @@
     </div>
   </div>
   
+  <!-- Load main script with DOM ready check -->
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

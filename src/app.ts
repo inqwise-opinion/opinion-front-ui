@@ -9,6 +9,7 @@ import DebugPage from './pages/DebugPage';
 import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
 import MainContent from './components/MainContent';
+import Layout from './components/Layout';
 
 export class OpinionApp {
   private initialized: boolean = false;
@@ -19,6 +20,7 @@ export class OpinionApp {
   private appHeader: AppHeader | null = null;
   private appFooter: AppFooter | null = null;
   private mainContent: MainContent | null = null;
+  private layout: Layout | null = null;
 
   constructor() {
     console.log('🎯 APP.TS - Constructor START');
@@ -95,10 +97,14 @@ export class OpinionApp {
    */
   private async initializeGlobalLayout(): Promise<void> {
     try {
-      // 1. Initialize AppHeader first (includes Sidebar)
-      console.log('🏗️ APP.TS - Initializing global AppHeader...');
-      this.appHeader = new AppHeader();
-      await this.appHeader.init();
+      // 0. Initialize Layout component first (manages CSS classes and coordination)
+      console.log('🏗️ APP.TS - Initializing Layout coordinator...');
+      this.layout = new Layout();
+      await this.layout.init();
+      console.log('✅ APP.TS - Layout coordinator initialized');
+      
+      // Layout already initializes AppHeader, so we just get the reference
+      this.appHeader = this.layout.getHeader();
       
       // Set a test user
       this.appHeader.updateUser({

@@ -632,9 +632,8 @@ export class Sidebar {
     
     // Use responsive mode to determine if sidebar should be visible
     if (responsiveMode.sidebarBehavior.isVisible) {
-      const compactWidth = responsiveMode.sidebarBehavior.compactWidth;
-      const defaultWidth = responsiveMode.sidebarBehavior.defaultWidth;
-      width = this.compactMode ? compactWidth : defaultWidth;
+      // Use CSS strict widths instead of responsive mode calculated widths
+      width = this.compactMode ? 80 : 280; // CSS strict widths: 280px normal, 80px compact
       rightBorder = width;
     }
 
@@ -662,30 +661,22 @@ export class Sidebar {
     const responsiveMode = this.layoutContext.getResponsiveMode();
     const rect = this.sidebar.getBoundingClientRect();
     
-    // Calculate expected dimensions based on responsive mode and current state
+    // Calculate expected dimensions using CSS strict widths
     let width = 0;
     let rightBorder = 0;
     
     if (responsiveMode.sidebarBehavior.isVisible) {
-      // Use responsive mode dimensions - handles tablet/desktop differences
-      const compactWidth = responsiveMode.sidebarBehavior.compactWidth;
-      const defaultWidth = responsiveMode.sidebarBehavior.defaultWidth;
-      const expectedWidth = this.compactMode ? compactWidth : defaultWidth;
+      // Use CSS strict widths: 280px normal, 80px compact (same across all screen sizes)
+      const expectedWidth = this.compactMode ? 80 : 280;
       width = expectedWidth;
       rightBorder = width; // For left-aligned sidebar, right border = width
       
-      // Only use DOM measurements if they seem reasonable and match expected state
+      // Use DOM measurements if available and reasonable (for position calculations)
       if (rect.width > 0) {
-        const tolerance = 20; // Allow some tolerance for CSS transitions
-        
-        // If DOM width is close to expected width, use it. Otherwise stick with calculated.
-        if (Math.abs(rect.width - expectedWidth) <= tolerance) {
-          width = Math.round(rect.width);
-          rightBorder = rect.left === 0 ? width : Math.round(rect.right);
-          console.log(`   📍 Using DOM measurements: ${width}px (matches expected ${expectedWidth}px)`);
-        } else {
-          console.log(`   🧮 Using calculated dimensions: DOM shows ${rect.width.toFixed(1)}px but expected ${expectedWidth}px (${responsiveMode.type} mode)`);
-        }
+        rightBorder = rect.left === 0 ? width : Math.round(rect.right);
+        console.log(`   📍 Using CSS strict width: ${width}px, DOM position: ${rightBorder}px`);
+      } else {
+        console.log(`   🧮 Using CSS strict width: ${width}px (DOM not yet available)`);
       }
     }
 
@@ -698,7 +689,7 @@ export class Sidebar {
     };
 
     console.log('📡 Sidebar - Publishing dimensions to layout context:');
-    console.log(`   Width: ${dimensions.width}px`);
+    console.log(`   Width: ${dimensions.width}px (CSS strict)`);
     console.log(`   Right Border: ${dimensions.rightBorder}px`);
     console.log(`   Mode: ${dimensions.isCompact ? 'Compact' : 'Expanded'}`);
     console.log(`   Responsive Mode: ${responsiveMode.type}`);
@@ -720,16 +711,14 @@ export class Sidebar {
       isMobile: responsiveMode.isMobile
     };
     
-    // Calculate expected dimensions based on current state (not DOM measurements)
+    // Calculate expected dimensions using CSS strict widths
     let width = 0;
     let rightBorder = 0;
     
     // Use responsive mode to determine if sidebar should be visible
     if (responsiveMode.sidebarBehavior.isVisible) {
-      // Use responsive mode dimensions - tablet and desktop both get sidebar
-      const compactWidth = responsiveMode.sidebarBehavior.compactWidth;
-      const defaultWidth = responsiveMode.sidebarBehavior.defaultWidth;
-      width = this.compactMode ? compactWidth : defaultWidth;
+      // Use CSS strict widths: 280px normal, 80px compact (consistent across all screen sizes)
+      width = this.compactMode ? 80 : 280;
       rightBorder = width; // For left-aligned sidebar, right border = width
     }
 
@@ -742,7 +731,7 @@ export class Sidebar {
     };
 
     console.log('📡 Sidebar - Publishing expected dimensions immediately:');
-    console.log(`   Expected Width: ${dimensions.width}px`);
+    console.log(`   Expected Width: ${dimensions.width}px (CSS strict)`);
     console.log(`   Expected Right Border: ${dimensions.rightBorder}px`);
     console.log(`   Mode: ${dimensions.isCompact ? 'Compact' : 'Expanded'}`);
     console.log(`   Viewport: ${viewport.width}x${viewport.height} (${viewport.isMobile ? 'Mobile' : 'Desktop'})`);

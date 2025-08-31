@@ -61,8 +61,8 @@ export class AppFooter {
     // Setup event listeners
     this.setupEventListeners();
     
-    // Subscribe to layout context events
-    this.subscribeToLayoutContext();
+      // Footer is now fully CSS-based - no dynamic layout subscriptions needed
+      // this.subscribeToLayoutContext();
     
     console.log('AppFooter - Ready');
   }

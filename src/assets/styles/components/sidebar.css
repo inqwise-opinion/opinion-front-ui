@@ -8,8 +8,10 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  /* Width controlled by CSS Grid layout and CSS variables */
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 280px; /* CSS strict width */
+  min-width: 280px; /* Prevent shrinking */
+  max-width: 280px; /* Prevent growing */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Sidebar Header */
@@ -207,7 +209,9 @@
 
 /* Compact Mode Styles */
 .app-sidebar.sidebar-compact {
-  /* Width controlled by CSS Grid layout and CSS variables */
+  width: 80px; /* CSS strict compact width */
+  min-width: 80px; /* Prevent shrinking */
+  max-width: 80px; /* Prevent growing */
 }
 
 .app-sidebar.sidebar-compact .sidebar-header {
@@ -426,13 +430,34 @@
   }
 }
 
-/* Responsive adjustments for compact mode */
-@media (max-width: 1024px) {
+/* Tablet responsive widths - CSS strict widths consistent with desktop */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .app-sidebar {
+    width: 280px !important; /* Override any conflicting responsive CSS */
+    min-width: 280px !important;
+    max-width: 280px !important;
+  }
+  
+  .app-sidebar.sidebar-compact {
+    width: 80px !important; /* Override any conflicting responsive CSS */
+    min-width: 80px !important;
+    max-width: 80px !important;
+  }
+  
   .app-sidebar.sidebar-compact .nav-link {
     padding: 10px;
   }
   
   .app-sidebar.sidebar-compact .nav-icon {
     font-size: 18px;
+  }
+}
+
+/* Mobile responsive behavior */
+@media (max-width: 768px) {
+  .app-sidebar {
+    width: 280px; /* CSS strict width when overlay is shown */
+    min-width: 280px;
+    max-width: 280px;
   }
 }

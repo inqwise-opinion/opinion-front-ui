@@ -113,7 +113,7 @@ export class LayoutContext {
     // Calculate initial sidebar width based on viewport
     let sidebarWidth = 0;
     if (!isMobile) {
-      sidebarWidth = isTablet ? 240 : 280; // Tablet uses smaller width
+      sidebarWidth = 280; // CSS strict width - consistent across all screen sizes
     }
 
     return {
@@ -179,11 +179,14 @@ export class LayoutContext {
     // Update viewport state only
     this.state.viewport = newViewport;
 
-    console.log(`LayoutContext - Viewport changed: ${width}x${height} (${
-      isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
-    })`);
+    // Only log if viewport type changed, not every pixel change
+    if (viewportTypeChanged) {
+      console.log(`LayoutContext - Viewport type changed: ${width}x${height} (${
+        isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
+      })`);
+    }
 
-    // Update responsive mode first (this will trigger responsive-mode-change event)
+    // Update responsive mode first (this will trigger responsive-mode-change event only if type changed)
     this.updateResponsiveMode();
 
     // For mobile transitions, we need to handle sidebar visibility directly
@@ -230,10 +233,10 @@ export class LayoutContext {
         this.updateCSSGridVariables();
         this.emit('sidebar-dimensions-change', this.state.sidebar);
       }
+      
+      // Only emit layout mode change event when viewport type actually changes
+      this.emitLayoutModeChange();
     }
-    
-    // Always emit layout mode change event
-    this.emitLayoutModeChange();
   }
 
   /**
@@ -280,7 +283,10 @@ export class LayoutContext {
         }
       });
     } else {
-      console.log(`LayoutContext - No listeners for ${eventType}, event ignored:`, data);
+      // Only log on first occurrence or important events to reduce console noise
+      if (eventType === 'layout-ready' || eventType === 'responsive-mode-change') {
+        console.log(`LayoutContext - No listeners for ${eventType}, event ignored`);
+      }
     }
   }
 
@@ -291,10 +297,26 @@ export class LayoutContext {
     const oldDimensions = { ...this.state.sidebar };
     
     // Update sidebar state
-    this.state.sidebar = {
+    const newSidebar = {
       ...this.state.sidebar,
       ...dimensions
     };
+    
+    // Check if dimensions actually changed (prevent unnecessary events)
+    const dimensionsChanged = (
+      oldDimensions.width !== newSidebar.width ||
+      oldDimensions.rightBorder !== newSidebar.rightBorder ||
+      oldDimensions.isCompact !== newSidebar.isCompact ||
+      oldDimensions.isMobile !== newSidebar.isMobile ||
+      oldDimensions.isVisible !== newSidebar.isVisible
+    );
+    
+    if (!dimensionsChanged) {
+      console.log('LayoutContext - Sidebar dimensions unchanged, skipping events');
+      return;
+    }
+    
+    this.state.sidebar = newSidebar;
 
     console.log('LayoutContext - Sidebar dimensions updated:', {
       old: oldDimensions,
@@ -539,8 +561,8 @@ export class LayoutContext {
       sidebarBehavior: {
         isVisible: !isMobile, // Visible on both tablet and desktop
         canToggle: !isMobile, // Can toggle on both tablet and desktop
-        defaultWidth: isTablet ? 240 : 280, // Tablet uses smaller default width
-        compactWidth: isTablet ? 64 : 80 // Tablet uses smaller compact width
+        defaultWidth: 280, // CSS strict width - consistent across all screen sizes
+        compactWidth: 80 // CSS strict width - consistent across all screen sizes
       }
     };
   }
@@ -579,8 +601,8 @@ export class LayoutContext {
       sidebarBehavior: {
         isVisible: !isMobile, // Visible on both tablet and desktop
         canToggle: !isMobile, // Can toggle on both tablet and desktop
-        defaultWidth: isTablet ? 240 : 280, // Tablet uses smaller default width
-        compactWidth: isTablet ? 64 : 80 // Smaller compact width on tablet
+        defaultWidth: 280, // CSS strict width - consistent across all screen sizes
+        compactWidth: 80 // CSS strict width - consistent across all screen sizes
       }
     };
 
@@ -588,10 +610,8 @@ export class LayoutContext {
     if (modeTypeChanged) {
       console.log(`LayoutContext - Responsive mode TYPE changed: ${oldMode.type} → ${type}`);
       this.emit('responsive-mode-change', this.responsiveMode);
-    } else {
-      // Just a viewport size change within the same mode - no event needed
-      console.log(`LayoutContext - Viewport size changed within ${type} mode: ${width}x${height}`);
     }
+    // Note: Viewport size changes within the same mode are tracked silently (no logging/events)
   }
 
   /**

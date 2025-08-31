@@ -41,8 +41,7 @@
 }
 
 .layout-mode-tablet .app-sidebar {
-  /* Tablet sidebar slightly smaller */
-  width: 240px;
+  /* Tablet sidebar width defined in sidebar.css */
 }
 
 .layout-mode-tablet .app-main {
@@ -58,8 +57,7 @@
 }
 
 .layout-mode-desktop .app-sidebar {
-  /* Full desktop sidebar */
-  width: 280px;
+  /* Desktop sidebar width defined in sidebar.css */
 }
 
 .layout-mode-desktop .app-main {
@@ -69,8 +67,7 @@
 
 /* Desktop Compact Layout Mode */
 .layout-mode-desktop-compact .app-sidebar {
-  /* Compact sidebar width */
-  width: 80px;
+  /* Compact sidebar width defined in sidebar.css */
 }
 
 .layout-mode-desktop-compact .app-sidebar .nav-text,

@@ -7,16 +7,21 @@
 import { Sidebar, CompactModeChangeHandler } from '../components/Sidebar';
 import { AppHeader } from '../components/AppHeader';
 import MainContent from '../components/MainContent';
+import LayoutContext, { LayoutEvent, ResponsiveMode, LayoutMode } from '../contexts/LayoutContext';
 
 export class DebugPage {
   private isInitialized: boolean = false;
   private sidebarDebugUnsubscribe: (() => void) | null = null;
   private headerDebugUnsubscribe: (() => void) | null = null;
+  private responsiveModeUnsubscribe: (() => void) | null = null;
+  private layoutModeUnsubscribe: (() => void) | null = null;
   private mainContent: MainContent | null = null;
+  private layoutContext: LayoutContext;
 
   constructor(mainContent: MainContent | null = null) {
     console.log('🏗️ DEBUGPAGE - Constructor START');
     this.mainContent = mainContent;
+    this.layoutContext = LayoutContext.getInstance();
     console.log('✅ DEBUGPAGE - Constructor completed successfully');
     console.log('🏗️ DEBUGPAGE - Constructor END');
   }
@@ -177,8 +182,9 @@ export class DebugPage {
     // Setup test controls
     this.setupTestControls();
     
-    // Update viewport info initially
-    this.updateViewportInfo();
+    // Update viewport info initially using LayoutContext data
+    const currentResponsiveMode = this.layoutContext.getResponsiveMode();
+    this.updateViewportInfoFromContext(currentResponsiveMode);
     this.updateLayoutStatus();
     
     // Setup responsive behavior
@@ -456,17 +462,48 @@ export class DebugPage {
    * Setup responsive behavior handlers
    */
   private setupResponsiveHandlers(): void {
-    // Handle window resize for responsive debug info
-    let resizeTimeout: NodeJS.Timeout;
+    console.log('🎯 DebugPage - Setting up responsive mode subscriptions...');
     
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        this.updateViewportInfo();
-        this.updateLayoutStatus();
-        this.logToConsole(`📐 Viewport changed: ${window.innerWidth}x${window.innerHeight}`);
-      }, 250);
+    // Subscribe to responsive mode changes
+    this.responsiveModeUnsubscribe = this.layoutContext.subscribe('responsive-mode-change', (event: LayoutEvent) => {
+      const responsiveMode = event.data as ResponsiveMode;
+      const timestamp = new Date().toLocaleTimeString();
+      
+      // Update viewport info display
+      this.updateViewportInfoFromContext(responsiveMode);
+      
+      // Log the responsive mode change
+      this.logToConsole(`<span style="color: #e67e22; font-weight: bold;">[${timestamp}] 📱 RESPONSIVE MODE CHANGE</span>`);
+      this.logToConsole(`└─ Mode: ${responsiveMode.type.toUpperCase()}`);
+      this.logToConsole(`└─ Viewport: ${responsiveMode.viewport.width}x${responsiveMode.viewport.height}`);
+      this.logToConsole(`└─ Breakpoints: Mobile≤${responsiveMode.breakpoints.mobile}px, Tablet≤${responsiveMode.breakpoints.tablet}px`);
+      this.logToConsole(`└─ Sidebar: ${responsiveMode.sidebarBehavior.isVisible ? 'visible' : 'hidden'}, ${responsiveMode.sidebarBehavior.canToggle ? 'toggleable' : 'fixed'}`);
     });
+    
+    // Subscribe to layout mode changes  
+    this.layoutModeUnsubscribe = this.layoutContext.subscribe('layout-mode-change', (event: LayoutEvent) => {
+      const layoutMode = event.data as LayoutMode;
+      const timestamp = new Date().toLocaleTimeString();
+      
+      // Update layout status display
+      this.updateLayoutStatus();
+      
+      // Log the layout mode change
+      this.logToConsole(`<span style="color: #8e44ad; font-weight: bold;">[${timestamp}] 🏗️ LAYOUT MODE CHANGE</span>`);
+      this.logToConsole(`└─ Type: ${layoutMode.type.toUpperCase()}`);
+      this.logToConsole(`└─ Compact: ${layoutMode.isCompact ? 'YES' : 'NO'}`);
+      this.logToConsole(`└─ Sidebar: ${layoutMode.sidebar.width}px ${layoutMode.sidebar.isVisible ? '(visible)' : '(hidden)'}`);
+      this.logToConsole(`└─ Viewport: ${layoutMode.viewport.width}x${layoutMode.viewport.height}`);
+    });
+    
+    // Initial state logging
+    const currentResponsiveMode = this.layoutContext.getResponsiveMode();
+    const currentLayoutMode = this.layoutContext.getLayoutMode();
+    
+    this.logToConsole('✅ Subscribed to LayoutContext responsive mode changes');
+    this.logToConsole('✅ Subscribed to LayoutContext layout mode changes');
+    this.logToConsole(`📊 Initial responsive mode: ${currentResponsiveMode.type}`);
+    this.logToConsole(`📊 Initial layout mode: ${currentLayoutMode.type}${currentLayoutMode.isCompact ? ' (compact)' : ''}`);
   }
   
   /**
@@ -485,6 +522,36 @@ export class DebugPage {
         Height: ${height}px<br>
         Device: ${isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop'}<br>
         Ratio: ${(width / height).toFixed(2)}
+      `;
+    }
+  }
+  
+  /**
+   * Update viewport information from LayoutContext responsive mode data
+   */
+  private updateViewportInfoFromContext(responsiveMode: ResponsiveMode): void {
+    const viewportInfo = document.getElementById('viewport_info');
+    if (viewportInfo) {
+      const { viewport, type, breakpoints, sidebarBehavior } = responsiveMode;
+      
+      viewportInfo.innerHTML = `
+        <div style="color: #e67e22; font-weight: bold; margin-bottom: 8px;">📱 ${type.toUpperCase()} MODE</div>
+        Width: ${viewport.width}px<br>
+        Height: ${viewport.height}px<br>
+        Ratio: ${(viewport.width / viewport.height).toFixed(2)}<br>
+        <hr style="margin: 8px 0; border: none; border-top: 1px solid #ddd;">
+        <div style="font-size: 11px; color: #666;">
+          Breakpoints:<br>
+          Mobile: ≤${breakpoints.mobile}px<br>
+          Tablet: ≤${breakpoints.tablet}px<br>
+          Desktop: >${breakpoints.tablet}px<br>
+          <br>
+          Sidebar Behavior:<br>
+          Visible: ${sidebarBehavior.isVisible ? '✅' : '❌'}<br>
+          Toggleable: ${sidebarBehavior.canToggle ? '✅' : '❌'}<br>
+          Default: ${sidebarBehavior.defaultWidth}px<br>
+          Compact: ${sidebarBehavior.compactWidth}px
+        </div>
       `;
     }
   }
@@ -532,19 +599,35 @@ export class DebugPage {
   destroy(): void {
     console.log('DebugPage - Destroying...');
     
+    // Unsubscribe from LayoutContext events
+    if (this.responsiveModeUnsubscribe) {
+      this.responsiveModeUnsubscribe();
+      this.responsiveModeUnsubscribe = null;
+      console.log('DebugPage - Unsubscribed from responsive mode changes');
+    }
+    
+    if (this.layoutModeUnsubscribe) {
+      this.layoutModeUnsubscribe();
+      this.layoutModeUnsubscribe = null;
+      console.log('DebugPage - Unsubscribed from layout mode changes');
+    }
+    
     // Unsubscribe from sidebar events
     if (this.sidebarDebugUnsubscribe) {
       this.sidebarDebugUnsubscribe();
       this.sidebarDebugUnsubscribe = null;
+      console.log('DebugPage - Unsubscribed from sidebar debug events');
     }
     
     // Unsubscribe from header events
     if (this.headerDebugUnsubscribe) {
       this.headerDebugUnsubscribe();
       this.headerDebugUnsubscribe = null;
+      console.log('DebugPage - Unsubscribed from header debug events');
     }
     
     this.isInitialized = false;
+    console.log('✅ DebugPage - Cleanup completed');
   }
 }
 

@@ -177,6 +177,20 @@ export class Layout {
   }
 
   /**
+   * Get header component reference
+   */
+  getHeader(): AppHeader {
+    return this.header;
+  }
+  
+  /**
+   * Get footer component reference
+   */
+  getFooter(): AppFooter {
+    return this.footer;
+  }
+
+  /**
    * Update user information across all components
    */
   updateUser(user: HeaderUser): void {
@@ -234,16 +248,8 @@ export class Layout {
   }
 
   /**
-   * Get component references
+   * Get component references (duplicate methods removed)
    */
-  getHeader(): AppHeader {
-    return this.header;
-  }
-
-  getFooter(): AppFooter {
-    return this.footer;
-  }
-
   getSidebar(): any | null {
     // Note: Sidebar is now managed by the page component, not Layout
     return null;

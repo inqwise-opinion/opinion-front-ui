@@ -107,8 +107,8 @@ export class DashboardPageComponent extends PageComponent {
       this.addEventListener(this.overlay, 'click', () => this.closeSidebarOverlay());
     }
     
-    // Window resize for responsive behavior
-    this.addEventListener(window, 'resize', () => this.debounceResize());
+    // Responsive behavior is now handled by LayoutContext centrally
+    // this.addEventListener(window, 'resize', () => this.debounceResize());
     
     // Close user menu when clicking outside
     this.addEventListener(document, 'click', (e) => this.handleDocumentClick(e));
