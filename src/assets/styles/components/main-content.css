@@ -17,6 +17,14 @@
   
   /* Flexbox layout for internal content organization */
   gap: 20px;
+  
+  /* Ensure proper sizing and positioning */
+  width: 100%;
+  box-sizing: border-box;
+  
+  /* Support for PageComponent content */
+  overflow-y: visible; /* Allow content to flow naturally */
+  overflow-x: hidden;
 }
 
 /* Webkit scrollbar styling for better desktop experience */
@@ -315,6 +323,49 @@
   .app-main.main-content {
     scrollbar-width: none;
   }
+}
+
+/* Layout State Classes for MainContent */
+.main-content.content-sidebar-compact {
+  /* Adjustments when sidebar is in compact mode */
+}
+
+.main-content.content-sidebar-normal {
+  /* Adjustments when sidebar is in normal mode */
+}
+
+.main-content.content-mobile {
+  /* Mobile-specific main content adjustments */
+  padding: 16px !important;
+}
+
+/* PageComponent positioning and layout */
+.main-content .debug-page-content,
+.main-content .page-content,
+.main-content .dashboard-content {
+  /* Ensure page content takes full available space */
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  
+  /* Remove any conflicting margins from page content */
+  margin: 0;
+  
+  /* Allow natural content flow */
+  display: block;
+  
+  /* Ensure content doesn't overflow horizontally */
+  overflow-x: hidden;
+  word-wrap: break-word;
+}
+
+.main-content .page-container {
+  /* Standard page container for consistent content width */
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  position: relative;
 }
 
 /* Content spacing and layout utilities */

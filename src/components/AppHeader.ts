@@ -42,11 +42,8 @@ export class AppHeader {
     console.log('AppHeader - Initializing...');
     
     try {
-      // Initialize sidebar component FIRST so header can be positioned correctly
-      await this.initSidebar();
-      
-      // Create header after sidebar exists
-      this.createHeader();
+      // Create header first - it should exist independently
+      await this.createHeader();
       
       // Wait for DOM to be ready and elements to be available
       await this.waitForDOMReady();
@@ -55,6 +52,14 @@ export class AppHeader {
       
       // Initialize user menu component (desktop only)
       await this.initUserMenu();
+      
+      // Initialize sidebar component (can fail without breaking header)
+      try {
+        await this.initSidebar();
+      } catch (sidebarError) {
+        console.warn('AppHeader - Sidebar initialization failed, continuing without sidebar:', sidebarError);
+        this.sidebar = null;
+      }
       
       // Setup event listeners
       this.setupEventListeners();
@@ -72,16 +77,36 @@ export class AppHeader {
   /**
    * Use existing header element and populate content
    */
-  private createHeader(): void {
+  private async createHeader(): Promise<void> {
     // Find existing header element
     this.container = document.getElementById('app-header');
     
     if (!this.container) {
-      throw new Error('AppHeader: Could not find existing #app-header element');
+      // Wait a bit and try again in case DOM is still loading
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          this.container = document.getElementById('app-header');
+          if (!this.container) {
+            console.error('AppHeader: #app-header element not found in DOM. Available elements:', 
+              Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+            reject(new Error('AppHeader: Could not find existing #app-header element'));
+            return;
+          }
+          this.finalizeHeaderCreation();
+          resolve();
+        }, 100);
+      });
     }
     
     console.log('AppHeader - Using existing element');
     
+    this.finalizeHeaderCreation();
+  }
+  
+  /**
+   * Finalize header creation after element is found
+   */
+  private finalizeHeaderCreation(): void {
     // Populate the existing structure with dynamic content
     this.populateContent();
     
@@ -102,64 +127,12 @@ export class AppHeader {
     headerContainer.innerHTML = `
       <!-- Left section: Mobile toggle button -->
       <div class="header-left">
-        <button class="mobile-menu-toggle" id="mobile_menu_toggle" style="
-          display: none;
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: 8px;
-          border-radius: 4px;
-          color: #212529;
-          transition: all 0.2s ease;
-          font-size: 16px;
-          line-height: 1;
-        " aria-label="Toggle Menu" title="Toggle Menu">
-          <span class="menu-icon" style="
-            display: block;
-            width: 18px;
-            height: 18px;
-            position: relative;
-          ">
-            <span style="
-              display: block;
-              position: absolute;
-              height: 2px;
-              width: 100%;
-              background: currentColor;
-              border-radius: 1px;
-              opacity: 1;
-              left: 0;
-              transform: rotate(0deg);
-              transition: .25s ease-in-out;
-              top: 2px;
-            "></span>
-            <span style="
-              display: block;
-              position: absolute;
-              height: 2px;
-              width: 100%;
-              background: currentColor;
-              border-radius: 1px;
-              opacity: 1;
-              left: 0;
-              transform: rotate(0deg);
-              transition: .25s ease-in-out;
-              top: 8px;
-            "></span>
-            <span style="
-              display: block;
-              position: absolute;
-              height: 2px;
-              width: 100%;
-              background: currentColor;
-              border-radius: 1px;
-              opacity: 1;
-              left: 0;
-              transform: rotate(0deg);
-              transition: .25s ease-in-out;
-              top: 14px;
-            "></span>
-          </span>
+        <button class="mobile-menu-toggle" id="mobile_menu_toggle" aria-label="Toggle Menu" title="Toggle Menu">
+          <div class="hamburger-icon">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+          </div>
         </button>
       </div>
       
@@ -237,6 +210,9 @@ export class AppHeader {
         this.handleAction(action, actionElement);
       }
     });
+    
+    // Mobile menu toggle handler
+    this.setupMobileMenuHandler();
     
     // Header positioning is now fully CSS-based - no dynamic resize handling needed
   }
@@ -320,6 +296,40 @@ export class AppHeader {
       if (this.userMenu) {
         this.userMenu.close();
       }
+    }
+  }
+
+  /**
+   * Setup mobile menu toggle handler
+   */
+  private setupMobileMenuHandler(): void {
+    const mobileMenuToggle = document.getElementById('mobile_menu_toggle');
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('📱 AppHeader - Mobile menu toggle clicked');
+        
+        // Check if we're in mobile mode
+        const isMobile = window.innerWidth <= 768;
+        if (!isMobile) {
+          console.log('⚠️ AppHeader - Not in mobile mode, ignoring mobile menu click');
+          return;
+        }
+        
+        // Toggle mobile sidebar visibility
+        if (this.sidebar) {
+          console.log('🔄 AppHeader - Triggering sidebar mobile toggle...');
+          this.sidebar.toggleMobileVisibility();
+        } else {
+          console.warn('❌ AppHeader - Sidebar not available for mobile toggle');
+        }
+      });
+      
+      console.log('✅ AppHeader - Mobile menu toggle handler setup complete');
+    } else {
+      console.warn('⚠️ AppHeader - Mobile menu toggle button not found');
     }
   }
 

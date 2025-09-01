@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Sidebar Mobile</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    .debug-info {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      z-index: 9999;
+    }
+    .test-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      z-index: 9999;
+    }
+    
+    /* Sidebar CSS - simplified test version */
+    .app-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      background: white;
+      border-right: 2px solid #ccc;
+      z-index: 1000;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .app-sidebar.visible {
+      transform: translateX(0);
+    }
+    
+    .sidebar-content {
+      padding: 20px;
+    }
+    
+    /* Backdrop */
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .backdrop.show {
+      opacity: 1;
+      visibility: visible;
+    }
+  </style>
+</head>
+<body>
+  <div class="debug-info" id="debugInfo"></div>
+  
+  <div class="app-sidebar" id="sidebar">
+    <div class="sidebar-content">
+      <h2>Sidebar Menu</h2>
+      <ul>
+        <li>Dashboard</li>
+        <li>Surveys</li>
+        <li>Settings</li>
+        <li>Logout</li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="backdrop" id="backdrop"></div>
+  
+  <button class="test-button" onclick="toggleSidebar()">Toggle Sidebar</button>
+  
+  <h1>Debug Sidebar Test</h1>
+  <p>This page tests if sidebar shows on mobile. Resize window to < 768px and click toggle.</p>
+  
+  <script>
+    let sidebarVisible = false;
+    
+    function updateDebugInfo() {
+      const debugInfo = document.getElementById('debugInfo');
+      const sidebar = document.getElementById('sidebar');
+      const isMobile = window.innerWidth <= 768;
+      
+      debugInfo.innerHTML = `
+        Viewport: ${window.innerWidth}x${window.innerHeight}<br>
+        Mobile: ${isMobile}<br>
+        Sidebar Visible: ${sidebarVisible}<br>
+        Classes: ${sidebar.className}<br>
+        Transform: ${getComputedStyle(sidebar).transform}
+      `;
+    }
+    
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('backdrop');
+      
+      console.log('Toggle clicked, current state:', sidebarVisible);
+      
+      if (sidebarVisible) {
+        // Hide
+        sidebar.classList.remove('visible');
+        backdrop.classList.remove('show');
+        sidebarVisible = false;
+        console.log('Hiding sidebar');
+      } else {
+        // Show
+        sidebar.classList.add('visible');
+        backdrop.classList.add('show');
+        sidebarVisible = true;
+        console.log('Showing sidebar');
+      }
+      
+      updateDebugInfo();
+    }
+    
+    // Update debug info on resize
+    window.addEventListener('resize', updateDebugInfo);
+    updateDebugInfo();
+    
+    // Click backdrop to close
+    document.getElementById('backdrop').addEventListener('click', () => {
+      if (sidebarVisible) {
+        toggleSidebar();
+      }
+    });
+  </script>
+</body>
+</html>

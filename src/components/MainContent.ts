@@ -47,8 +47,8 @@ export class MainContent {
     // Create the main content element (will use existing app-main if available)
     this.createMainElement();
     
-    // MainContent is now fully CSS-based - no dynamic layout subscriptions needed
-    // this.subscribeToLayoutContext();
+    // Subscribe to layout changes to ensure proper content positioning
+    this.subscribeToLayoutContext();
     
     this.isInitialized = true;
     console.log('MainContent - Ready ✅');

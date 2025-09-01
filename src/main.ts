@@ -21,11 +21,28 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error('🚨 GLOBAL ERROR - Promise:', event.promise);
 });
 
-// Initialize the application when DOM is ready
+// Initialize the application when DOM and resources are ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp);
+  document.addEventListener('DOMContentLoaded', waitForResourcesAndInit);
+} else if (document.readyState === 'interactive') {
+  waitForResourcesAndInit();
 } else {
+  // Document is already complete
   initApp();
+}
+
+// Wait for critical resources to load before initializing
+function waitForResourcesAndInit() {
+  // Wait a bit for stylesheets to load and apply
+  if (document.readyState !== 'complete') {
+    window.addEventListener('load', () => {
+      // Give an additional moment for layout to stabilize
+      setTimeout(initApp, 50);
+    });
+  } else {
+    // Already loaded, but give a moment for layout to stabilize
+    setTimeout(initApp, 10);
+  }
 }
 
 async function initApp() {

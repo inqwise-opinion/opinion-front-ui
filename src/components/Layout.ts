@@ -71,7 +71,7 @@ export class Layout {
       // Initialize header
       if (this.config.header?.enabled) {
         console.log('🏢 LAYOUT - Header enabled, initializing...');
-        this.header.init();
+        await this.header.init();
         console.log('✅ LAYOUT - Header initialized successfully');
         
         // Update brand if configured
@@ -93,7 +93,7 @@ export class Layout {
       // Initialize footer
       if (this.config.footer?.enabled) {
         console.log('🏢 LAYOUT - Footer enabled, initializing...');
-        this.footer.init();
+        await this.footer.init();
         console.log('✅ LAYOUT - Footer initialized successfully');
       } else {
         console.log('⚠️ LAYOUT - Footer disabled in config');

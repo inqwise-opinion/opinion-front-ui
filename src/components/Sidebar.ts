@@ -105,11 +105,28 @@ export class Sidebar {
     this.sidebar = document.getElementById('app-sidebar');
     
     if (!this.sidebar) {
-      throw new Error('Sidebar: Could not find existing #app-sidebar element');
+      // Wait a bit and try again in case DOM is still loading
+      setTimeout(() => {
+        this.sidebar = document.getElementById('app-sidebar');
+        if (!this.sidebar) {
+          console.error('Sidebar: #app-sidebar element not found in DOM. Available elements:', 
+            Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+          throw new Error('Sidebar: Could not find existing #app-sidebar element');
+        }
+        this.finalizeSidebarCreation();
+      }, 100);
+      return;
     }
     
     console.log('Sidebar - Using existing element');
     
+    this.finalizeSidebarCreation();
+  }
+  
+  /**
+   * Finalize sidebar creation after element is found
+   */
+  private finalizeSidebarCreation(): void {
     // Populate the existing structure with dynamic content
     this.populateContent();
     
@@ -122,7 +139,7 @@ export class Sidebar {
   private populateContent(): void {
     if (!this.sidebar) return;
     
-    // Update brand title link and add compact toggle button
+    // Update brand title link and add compact toggle button + mobile close button
     const sidebarHeader = this.sidebar.querySelector('.sidebar-header');
     if (sidebarHeader) {
       sidebarHeader.innerHTML = `
@@ -132,6 +149,7 @@ export class Sidebar {
           </a>
         </div>
         <div class="sidebar-controls">
+          <!-- Desktop/Tablet compact toggle button -->
           <button class="compact-toggle-btn" 
                   type="button" 
                   title="${this.compactMode ? 'Expand sidebar' : 'Compact sidebar'}"
@@ -140,6 +158,14 @@ export class Sidebar {
             <span class="material-icons compact-icon">
               ${this.compactMode ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left'}
             </span>
+          </button>
+          
+          <!-- Mobile close button -->
+          <button class="mobile-close-btn" 
+                  type="button" 
+                  title="Close menu"
+                  aria-label="Close menu">
+            <span class="material-icons" style="font-size: 20px;">close</span>
           </button>
         </div>
       `;
@@ -281,6 +307,20 @@ export class Sidebar {
       }
     });
 
+    // Handle mobile close button clicks
+    this.sidebar.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const closeButton = target.closest('.mobile-close-btn') as HTMLButtonElement;
+      
+      if (closeButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('📱 Sidebar - Mobile close button clicked');
+        this.toggleMobileVisibility();
+        return;
+      }
+    });
+
     // Handle navigation clicks for SPA routing
     this.sidebar.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
@@ -394,6 +434,13 @@ export class Sidebar {
    * Set compact mode state
    */
   public setCompactMode(compact: boolean): void {
+    // Block compact mode on mobile - mobile uses overlay mode instead
+    const responsiveMode = this.layoutContext.getResponsiveMode();
+    if (responsiveMode.isMobile) {
+      console.log('📱 Sidebar - Compact mode blocked on mobile (uses overlay mode instead)');
+      return;
+    }
+    
     if (this.compactMode !== compact) {
       // Log the dimension change start
       const previousDimensions = this.getCurrentDimensions();
@@ -787,6 +834,106 @@ export class Sidebar {
   }
 
 
+  /**
+   * Toggle mobile sidebar visibility (overlay mode)
+   */
+  public toggleMobileVisibility(): void {
+    if (!this.sidebar) {
+      console.warn('❌ Sidebar - Cannot toggle mobile visibility: sidebar element not found');
+      return;
+    }
+    
+    // Use direct viewport check instead of relying on LayoutContext
+    const isMobile = window.innerWidth <= 768;
+    console.log(`📱 Sidebar - Direct viewport check: ${window.innerWidth}px (mobile: ${isMobile})`);
+    
+    if (!isMobile) {
+      console.warn('⚠️ Sidebar - toggleMobileVisibility called but not in mobile viewport (≤768px)');
+      return;
+    }
+    
+    const isCurrentlyVisible = !this.sidebar.classList.contains('sidebar-hidden');
+    console.log(`📱 Sidebar - Toggling mobile visibility: ${isCurrentlyVisible} → ${!isCurrentlyVisible}`);
+    console.log(`📱 Sidebar - Current classes: ${this.sidebar.className}`);
+    
+    if (isCurrentlyVisible) {
+      // Hide mobile sidebar overlay
+      console.log('📱 Sidebar - Hiding mobile sidebar overlay');
+      this.sidebar.classList.add('sidebar-hidden');
+      this.sidebar.classList.remove('sidebar-mobile-visible');
+      
+      // Remove body class for blur effect
+      document.body.classList.remove('sidebar-mobile-open');
+      
+      // Remove backdrop if it exists
+      const backdrop = document.querySelector('.mobile-sidebar-backdrop');
+      if (backdrop) {
+        backdrop.classList.remove('show');
+        // Remove after transition
+        setTimeout(() => {
+          backdrop.remove();
+        }, 300);
+      }
+    } else {
+      // Show mobile sidebar overlay
+      console.log('📱 Sidebar - Showing mobile sidebar overlay');
+      this.sidebar.classList.remove('sidebar-hidden');
+      this.sidebar.classList.add('sidebar-mobile-visible');
+      
+      // CRITICAL: Remove inline display:none that was set by responsive mode
+      this.sidebar.style.display = '';
+      console.log('📱 Sidebar - Removed inline display:none style');
+      
+      // Add body class for blur effect
+      document.body.classList.add('sidebar-mobile-open');
+      
+      // Add backdrop for mobile overlay
+      this.createMobileBackdrop();
+      
+      // Debug: Log the sidebar's computed styles
+      const computedStyle = getComputedStyle(this.sidebar);
+      console.log('📱 Sidebar - After show - computed styles:');
+      console.log(`   display: ${computedStyle.display}`);
+      console.log(`   visibility: ${computedStyle.visibility}`);
+      console.log(`   opacity: ${computedStyle.opacity}`);
+      console.log(`   transform: ${computedStyle.transform}`);
+      console.log(`   z-index: ${computedStyle.zIndex}`);
+    }
+    
+    console.log(`✅ Sidebar - Mobile visibility toggled to: ${!isCurrentlyVisible}`);
+    console.log(`📱 Sidebar - Final classes: ${this.sidebar.className}`);
+  }
+  
+  /**
+   * Create mobile backdrop for overlay sidebar
+   */
+  private createMobileBackdrop(): void {
+    // Remove existing backdrop
+    const existingBackdrop = document.querySelector('.mobile-sidebar-backdrop');
+    if (existingBackdrop) {
+      existingBackdrop.remove();
+    }
+    
+    // Create new backdrop with blur effects
+    const backdrop = document.createElement('div');
+    backdrop.className = 'mobile-sidebar-backdrop';
+    
+    // Add backdrop to document body
+    document.body.appendChild(backdrop);
+    
+    // Animate backdrop in with show class
+    requestAnimationFrame(() => {
+      backdrop.classList.add('show');
+    });
+    
+    // Close sidebar when backdrop is clicked
+    backdrop.addEventListener('click', () => {
+      this.toggleMobileVisibility();
+    });
+    
+    console.log('📱 Sidebar - Mobile backdrop created with blur effects');
+  }
+  
   /**
    * Get current sidebar dimensions for layout context
    */

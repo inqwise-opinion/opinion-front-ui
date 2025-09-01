@@ -24,14 +24,13 @@ html, body {
   height: 100vh;
   width: 100vw;
   
-  /* Grid areas: sidebar + header + scrollable content area */
+  /* Grid areas: sidebar + scrollable content area (header is inside content) */
   grid-template-areas: 
-    "sidebar header"
     "sidebar content";
     
   /* CSS Custom Properties for flexible theming */
   grid-template-columns: var(--sidebar-width, 280px) 1fr;
-  grid-template-rows: var(--header-height, 64px) 1fr;
+  grid-template-rows: 1fr;
   
   /* Layout variables - strict widths */
   --sidebar-width: 280px;
@@ -64,12 +63,16 @@ html, body {
 }
 
 .app-header {
-  grid-area: header !important;
+  /* Inside scrollable flex container, not grid area */
   background: #ffffff;
   border-bottom: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   z-index: 5;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: var(--header-height, 64px);
+  flex-shrink: 0; /* Don't shrink header */
+  display: flex;
+  align-items: center;
 }
 
 .app-main {
@@ -98,11 +101,11 @@ html, body {
 @media (max-width: 768px) {
   .app-layout {
     --header-height: var(--header-mobile-height);
+    /* Single content area on mobile - header and footer are inside content */
     grid-template-areas: 
-      "header"
       "content";
     grid-template-columns: 1fr;
-    grid-template-rows: var(--header-height) 1fr;
+    grid-template-rows: 1fr;
   }
   
   .app-sidebar {
@@ -169,7 +172,7 @@ html, body {
     --sidebar-compact-width: 80px;
     /* Use CSS variables that can be updated by JavaScript */
     grid-template-columns: var(--sidebar-width) 1fr !important;
-    grid-template-rows: 56px 1fr auto;
+    grid-template-rows: 1fr;
   }
   
   .app-sidebar {

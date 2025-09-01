@@ -635,7 +635,152 @@
     }
     
     .header-right {
-      padding-right: 16px; // Mobile right padding
+      padding-right: 0; // Remove right padding on mobile
     }
+  }
+}
+
+// Unified Mobile Button Styles - Make hamburger menu and user menu buttons identical
+@media (max-width: 767px) {
+  // Base styles for both mobile buttons
+  .mobile-menu-toggle,
+  .user-menu-trigger {
+    // Unified size and spacing
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    padding: 9px !important;
+    margin: 0 !important;
+    
+    // Unified background and border
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border: 1px solid #e3e6ea !important;
+    border-radius: 8px !important;
+    
+    // Unified box shadow for subtle elevation
+    box-shadow: 
+      0 2px 4px rgba(0,0,0,0.08),
+      0 4px 12px rgba(0,0,0,0.05),
+      inset 0 1px 0 rgba(255,255,255,0.8) !important;
+    
+    // Unified display and centering
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    // Unified interactions
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    backdrop-filter: blur(10px) !important;
+    
+    // Remove any inherited spacing
+    text-decoration: none !important;
+    
+    // Hover state - identical for both buttons
+    &:hover {
+      background: linear-gradient(145deg, #f8f9ff 0%, #e3f2fd 100%) !important;
+      border-color: #007bff !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 
+        0 3px 6px rgba(0,123,255,0.15),
+        0 6px 16px rgba(0,123,255,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.9) !important;
+    }
+    
+    // Active/focus state - identical for both buttons
+    &:active,
+    &:focus {
+      outline: none !important;
+      transform: translateY(0) !important;
+      box-shadow: 
+        0 1px 3px rgba(0,123,255,0.2),
+        0 2px 8px rgba(0,123,255,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.7) !important;
+    }
+  }
+  
+  // Hamburger menu specific styles
+  .mobile-menu-toggle {
+    // Ensure hamburger icon is properly centered
+    .hamburger-icon {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 18px !important;
+      height: 14px !important;
+      gap: 3px !important;
+      
+      .hamburger-line {
+        width: 18px !important;
+        height: 2px !important;
+        background: #495057 !important;
+        border-radius: 2px !important;
+        transition: all 0.2s ease !important;
+        display: block !important;
+        margin: 0 !important;
+      }
+    }
+    
+    &:hover .hamburger-icon .hamburger-line {
+      background: #007bff !important;
+    }
+  }
+  
+  // User menu specific styles
+  .user-menu-trigger {
+    // Hide text elements on mobile - handled by UserMenu component CSS
+    .user-info {
+      display: none !important;
+    }
+    
+    // Center and style user avatar/icon for mobile
+    .user-avatar {
+      margin: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      
+      .user-icon {
+        font-size: 18px !important;
+        font-style: normal !important;
+        color: #495057 !important;
+        transition: color 0.2s ease !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+      }
+    }
+    
+    &:hover .user-avatar .user-icon {
+      color: #007bff !important;
+    }
+  }
+}
+
+// Very small screens (< 480px) - increase button size slightly for better touch targets
+@media (max-width: 480px) {
+  .mobile-menu-toggle,
+  .user-menu-trigger {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 10px !important;
+  }
+  
+  .mobile-menu-toggle .hamburger-icon {
+    width: 20px !important;
+    height: 16px !important;
+    
+    .hamburger-line {
+      width: 20px !important;
+      height: 2.5px !important;
+    }
+  }
+  
+  .user-menu-trigger .user-avatar .user-icon {
+    font-size: 20px !important;
   }
 }

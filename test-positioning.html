@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MainContent Positioning Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: #f0f0f0;
+    }
+    
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .test-header {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .test-content {
+      padding: 20px;
+    }
+    
+    .test-section {
+      margin-bottom: 24px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #28a745;
+    }
+    
+    .test-viewport {
+      margin: 20px 0;
+      padding: 20px;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .status-success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <h1>🎯 MainContent Positioning Test</h1>
+      <p>Testing PageComponent positioning within MainContent across different viewports</p>
+    </div>
+    
+    <div class="test-content">
+      <div class="test-section">
+        <h2>Test Status</h2>
+        <div id="overall-status">
+          <p>⏳ Running positioning tests...</p>
+        </div>
+      </div>
+      
+      <div class="test-section">
+        <h2>Layout Structure Validation</h2>
+        <div id="structure-tests">
+          <div class="test-case">
+            <span>✓ CSS Grid Layout:</span>
+            <span id="grid-status" class="status-indicator">Checking...</span>
+          </div>
+          <div class="test-case">
+            <span>✓ Header in Content Scroll:</span>
+            <span id="header-status" class="status-indicator">Checking...</span>
+          </div>
+          <div class="test-case">
+            <span>✓ Main Content Flexbox:</span>
+            <span id="main-status" class="status-indicator">Checking...</span>
+          </div>
+          <div class="test-case">
+            <span>✓ Page Content Positioning:</span>
+            <span id="content-status" class="status-indicator">Checking...</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="test-section">
+        <h2>Viewport Tests</h2>
+        <div id="viewport-tests">
+          <!-- Viewport test results will be populated here -->
+        </div>
+      </div>
+      
+      <div class="test-section">
+        <h2>Live Preview</h2>
+        <iframe 
+          src="/index.html" 
+          style="width: 100%; height: 600px; border: 1px solid #dee2e6; border-radius: 8px;">
+        </iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Test runner for MainContent positioning
+    class PositioningTest {
+      constructor() {
+        this.results = {
+          grid: false,
+          header: false,
+          main: false,
+          content: false,
+          viewports: {}
+        };
+      }
+      
+      async runTests() {
+        console.log('🎯 Starting MainContent positioning tests...');
+        
+        // Test 1: CSS Grid Layout Structure
+        await this.testGridLayout();
+        
+        // Test 2: Header Position
+        await this.testHeaderPosition();
+        
+        // Test 3: Main Content Flexbox
+        await this.testMainContentLayout();
+        
+        // Test 4: Page Content Positioning
+        await this.testPageContentPositioning();
+        
+        // Test 5: Viewport Responsiveness
+        await this.testViewportResponsiveness();
+        
+        this.updateResults();
+      }
+      
+      async testGridLayout() {
+        try {
+          const response = await fetch('/index.html');
+          const html = await response.text();
+          
+          // Check if app-layout has proper structure
+          const hasAppLayout = html.includes('class="app-layout"');
+          const hasContentScroll = html.includes('class="app-content-scroll"');
+          const hasCorrectStructure = html.includes('<!-- Scrollable content area containing header + main + footer -->');
+          
+          this.results.grid = hasAppLayout && hasContentScroll && hasCorrectStructure;
+          this.updateStatus('grid-status', this.results.grid);
+          
+          console.log('✓ CSS Grid Layout test:', this.results.grid ? 'PASS' : 'FAIL');
+        } catch (error) {
+          console.error('❌ CSS Grid Layout test failed:', error);
+          this.updateStatus('grid-status', false);
+        }
+      }
+      
+      async testHeaderPosition() {
+        try {
+          const response = await fetch('/index.html');
+          const html = await response.text();
+          
+          // Check if header is inside app-content-scroll
+          const contentScrollSection = html.match(/<div class="app-content-scroll">(.*?)<\/div>/s);
+          if (contentScrollSection) {
+            const hasHeaderInside = contentScrollSection[1].includes('<header class="app-header"');
+            this.results.header = hasHeaderInside;
+          }
+          
+          this.updateStatus('header-status', this.results.header);
+          console.log('✓ Header position test:', this.results.header ? 'PASS' : 'FAIL');
+        } catch (error) {
+          console.error('❌ Header position test failed:', error);
+          this.updateStatus('header-status', false);
+        }
+      }
+      
+      async testMainContentLayout() {
+        try {
+          // Test main content CSS classes
+          const response = await fetch('/src/assets/styles/components/main-content.css');
+          const css = await response.text();
+          
+          const hasFlexLayout = css.includes('display: flex');
+          const hasProperPadding = css.includes('padding: 24px 32px');
+          const hasPageComponentStyles = css.includes('debug-page-content');
+          
+          this.results.main = hasFlexLayout && hasProperPadding && hasPageComponentStyles;
+          this.updateStatus('main-status', this.results.main);
+          
+          console.log('✓ Main content layout test:', this.results.main ? 'PASS' : 'FAIL');
+        } catch (error) {
+          console.error('❌ Main content layout test failed:', error);
+          this.updateStatus('main-status', false);
+        }
+      }
+      
+      async testPageContentPositioning() {
+        try {
+          // Test if page content has proper positioning CSS
+          const response = await fetch('/src/assets/styles/components/main-content.css');
+          const css = await response.text();
+          
+          const hasPageContentStyles = css.includes('.debug-page-content') && 
+                                      css.includes('width: 100%') &&
+                                      css.includes('box-sizing: border-box');
+          
+          this.results.content = hasPageContentStyles;
+          this.updateStatus('content-status', this.results.content);
+          
+          console.log('✓ Page content positioning test:', this.results.content ? 'PASS' : 'FAIL');
+        } catch (error) {
+          console.error('❌ Page content positioning test failed:', error);
+          this.updateStatus('content-status', false);
+        }
+      }
+      
+      async testViewportResponsiveness() {
+        const viewports = [
+          { name: 'Mobile', width: 375, height: 667 },
+          { name: 'Tablet', width: 768, height: 1024 },
+          { name: 'Desktop', width: 1024, height: 768 },
+          { name: 'Large Desktop', width: 1440, height: 900 }
+        ];
+        
+        const viewportTestsContainer = document.getElementById('viewport-tests');
+        
+        for (const viewport of viewports) {
+          const testResult = await this.testViewport(viewport);
+          this.results.viewports[viewport.name] = testResult;
+          
+          const testDiv = document.createElement('div');
+          testDiv.className = 'test-viewport';
+          testDiv.innerHTML = `
+            <h4>${viewport.name} (${viewport.width}x${viewport.height})</h4>
+            <span class="status-indicator ${testResult ? 'status-success' : 'status-error'}">
+              ${testResult ? 'PASS' : 'FAIL'}
+            </span>
+            <p>Layout should adapt correctly for ${viewport.name.toLowerCase()} devices</p>
+          `;
+          
+          viewportTestsContainer.appendChild(testDiv);
+          console.log(`✓ ${viewport.name} viewport test:`, testResult ? 'PASS' : 'FAIL');
+        }
+      }
+      
+      async testViewport(viewport) {
+        // Simple test - check if CSS has responsive breakpoints
+        try {
+          const response = await fetch('/src/assets/styles/app-layout.css');
+          const css = await response.text();
+          
+          // Check for mobile, tablet, and desktop media queries
+          const hasMobileQuery = css.includes('@media (max-width: 768px)');
+          const hasTabletQuery = css.includes('@media (min-width: 769px) and (max-width: 1024px)');
+          const hasDesktopQuery = css.includes('@media (min-width: 1025px)');
+          
+          return hasMobileQuery && hasTabletQuery && hasDesktopQuery;
+        } catch (error) {
+          console.error(`❌ ${viewport.name} viewport test failed:`, error);
+          return false;
+        }
+      }
+      
+      updateStatus(elementId, success) {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = success ? 'PASS' : 'FAIL';
+          element.className = `status-indicator ${success ? 'status-success' : 'status-error'}`;
+        }
+      }
+      
+      updateResults() {
+        const overallStatus = document.getElementById('overall-status');
+        const allTests = [
+          this.results.grid,
+          this.results.header,
+          this.results.main,
+          this.results.content
+        ];
+        
+        const viewportResults = Object.values(this.results.viewports);
+        const allPassed = allTests.every(test => test) && viewportResults.every(test => test);
+        
+        const passedCount = allTests.filter(test => test).length + viewportResults.filter(test => test).length;
+        const totalCount = allTests.length + viewportResults.length;
+        
+        overallStatus.innerHTML = `
+          <p><strong>${allPassed ? '✅' : '⚠️'} Overall Result: ${passedCount}/${totalCount} tests passed</strong></p>
+          <p>MainContent positioning is ${allPassed ? 'working correctly' : 'partially working'}!</p>
+          ${!allPassed ? '<p style="color: #856404;">Some tests failed. Check console for details.</p>' : ''}
+        `;
+        
+        console.log(`🎯 Test Summary: ${passedCount}/${totalCount} passed`);
+        console.log('📊 Detailed Results:', this.results);
+      }
+    }
+    
+    // Run tests when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      const tester = new PositioningTest();
+      tester.runTests();
+    });
+  </script>
+</body>
+</html>

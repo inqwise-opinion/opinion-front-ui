@@ -49,11 +49,11 @@ export class AppFooter {
   /**
    * Initialize the footer component
    */
-  init(): void {
+  async init(): Promise<void> {
     console.log('AppFooter - Initializing...');
     
     // Create footer if it doesn't exist
-    this.createFooter();
+    await this.createFooter();
     
     // Cache DOM elements
     this.cacheElements();
@@ -70,16 +70,36 @@ export class AppFooter {
   /**
    * Use existing footer element and populate content
    */
-  private createFooter(): void {
+  private async createFooter(): Promise<void> {
     // Find existing footer element
     this.container = document.getElementById('app-footer');
     
     if (!this.container) {
-      throw new Error('AppFooter: Could not find existing #app-footer element');
+      // Wait a bit and try again in case DOM is still loading
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          this.container = document.getElementById('app-footer');
+          if (!this.container) {
+            console.error('AppFooter: #app-footer element not found in DOM. Available elements:', 
+              Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+            reject(new Error('AppFooter: Could not find existing #app-footer element'));
+            return;
+          }
+          this.finalizeFooterCreation();
+          resolve();
+        }, 100);
+      });
     }
     
     console.log('AppFooter - Using existing element');
     
+    this.finalizeFooterCreation();
+  }
+  
+  /**
+   * Finalize footer creation after element is found
+   */
+  private finalizeFooterCreation(): void {
     // Populate the existing structure with dynamic content
     this.populateContent();
     

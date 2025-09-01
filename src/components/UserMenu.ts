@@ -119,119 +119,10 @@ export class UserMenu {
           font-style: normal !important;
         }
         
-        /* Position dropdown for mobile - center on screen with high specificity */
-        body .user-menu-dropdown {
-          position: fixed !important;
-          top: 50% !important;
-          left: 50% !important;
-          right: auto !important;
-          bottom: auto !important;
-          transform: translate(-50%, -50%) !important;
-          min-width: 280px !important;
-          max-width: 380px !important;
-          width: calc(100vw - 32px) !important;
-          margin: 0 !important;
-          border-radius: 16px !important;
-          box-shadow: 0 25px 80px rgba(0,0,0,0.35), 0 10px 40px rgba(0,0,0,0.2) !important;
-          z-index: 99999 !important;
-          border: 1px solid rgba(255,255,255,0.2) !important;
-          backdrop-filter: blur(10px) !important;
-        }
-        
-        /* Mobile-optimized menu header */
-        .user-menu-header {
-          padding: 24px 20px !important;
-          background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
-          border-bottom: 1px solid rgba(0,0,0,0.06) !important;
-          border-radius: 16px 16px 0 0 !important;
-        }
-        
-        .user-menu-avatar .user-icon-large {
-          font-size: 48px !important;
-          font-style: normal !important;
-          filter: drop-shadow(0 2px 4px rgba(0,123,255,0.2)) !important;
-        }
-        
-        .user-menu-name {
-          font-size: 20px !important;
-          font-weight: 700 !important;
-          margin-bottom: 8px !important;
-          color: #1a1a1a !important;
-        }
-        
-        .user-menu-email {
-          font-size: 16px !important;
-          color: #6c757d !important;
-          font-weight: 500 !important;
-        }
-        
-        /* Mobile-optimized menu items - match main sidebar style */
-        .user-menu-item {
-          padding: 12px 20px !important;
-          font-size: 15px !important;
-          font-weight: 500 !important;
-          transition: all 0.2s ease !important;
-          border-radius: 0 !important;
-          margin: 0 !important;
-          color: #495057 !important;
-          min-height: 48px !important;
-          position: relative !important;
-        }
-        
-        .user-menu-item:hover {
-          background: #f8f9fa !important;
-          transform: none !important;
-        }
-        
-        .user-menu-item:hover .nav-icon {
-          color: #007bff !important;
-        }
-        
-        .user-menu-item.user-menu-signout {
-          color: #dc3545 !important;
-        }
-        
-        .user-menu-item.user-menu-signout:hover {
-          background: #fff5f5 !important;
-        }
-        
-        .user-menu-item.user-menu-signout:hover .nav-icon {
-          color: #dc3545 !important;
-        }
-        
-        .user-menu-item .nav-icon {
-          font-size: 20px !important;
-          margin-right: 16px !important;
-          width: 24px !important;
-          color: #6c757d !important;
-          transition: color 0.2s ease !important;
-        }
-        
-        /* Close button styles - show on mobile */
-        .user-menu-close {
-          display: block !important;
-          position: absolute !important;
-          top: 12px !important;
-          right: 12px !important;
-          background: rgba(255,255,255,0.9) !important;
-          border: 1px solid rgba(0,0,0,0.1) !important;
-          border-radius: 50% !important;
-          width: 36px !important;
-          height: 36px !important;
-          font-size: 18px !important;
-          cursor: pointer !important;
-          color: #6c757d !important;
-          transition: all 0.2s ease !important;
-          z-index: 10 !important;
-          backdrop-filter: blur(5px) !important;
-        }
-        
-        .user-menu-close:hover {
-          background: rgba(248,249,250,0.95) !important;
-          color: #dc3545 !important;
-          border-color: rgba(220,53,69,0.2) !important;
-          transform: scale(1.05) !important;
-        }
+        /* Note: Mobile dropdown positioning and styling is now handled 
+           by createMobileDropdown() method using inline styles to avoid 
+           CSS conflicts. The styles below are kept for reference but 
+           are no longer used on mobile. */
       }
       
       /* Hide close button on desktop and tablet */
@@ -409,7 +300,9 @@ export class UserMenu {
       </div>
     `;
 
-    this.container.innerHTML = userMenuHtml;
+    if (this.container) {
+      this.container.innerHTML = userMenuHtml;
+    }
   }
 
   /**
@@ -525,25 +418,15 @@ export class UserMenu {
       // Prevent body scrolling on mobile
       document.body.style.overflow = 'hidden';
       
-      // Force mobile positioning by overriding inline styles
-      this.elements.dropdown.style.position = 'fixed';
-      this.elements.dropdown.style.top = '50%';
-      this.elements.dropdown.style.left = '50%';
-      this.elements.dropdown.style.right = 'auto';
-      this.elements.dropdown.style.bottom = 'auto';
-      this.elements.dropdown.style.transform = 'translate(-50%, -50%)';
-      this.elements.dropdown.style.width = 'calc(100vw - 32px)';
-      this.elements.dropdown.style.minWidth = '280px';
-      this.elements.dropdown.style.maxWidth = '380px';
-      this.elements.dropdown.style.margin = '0';
-      this.elements.dropdown.style.borderRadius = '16px';
-      this.elements.dropdown.style.boxShadow = '0 25px 80px rgba(0,0,0,0.35), 0 10px 40px rgba(0,0,0,0.2)';
-      this.elements.dropdown.style.zIndex = '99999';
-      this.elements.dropdown.style.border = '1px solid rgba(255,255,255,0.2)';
-      this.elements.dropdown.style.backdropFilter = 'blur(10px)';
+      // Create a completely new dropdown element for mobile to avoid CSS conflicts
+      this.createMobileDropdown();
+    } else {
+      // Desktop mode - use the original dropdown
+      this.elements.dropdown.style.display = 'block';
+      this.elements.dropdown.style.visibility = 'visible';
+      this.elements.dropdown.style.opacity = '1';
     }
     
-    this.elements.dropdown.style.display = 'block';
     this.elements.trigger.style.background = '#f8f9fa';
     this.elements.trigger.style.borderColor = '#007bff';
 
@@ -564,6 +447,8 @@ export class UserMenu {
 
     console.log('UserMenu - Closing dropdown');
     this.isOpen = false;
+    
+    // Hide desktop dropdown
     this.elements.dropdown.style.display = 'none';
     this.elements.trigger.style.background = 'white';
     this.elements.trigger.style.borderColor = '#dee2e6';
@@ -582,6 +467,13 @@ export class UserMenu {
     this.elements.dropdown.style.borderRadius = '6px';
     this.elements.dropdown.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
     this.elements.dropdown.style.zIndex = '9999';
+    
+    // Remove mobile dropdown if it exists
+    const mobileDropdown = document.querySelector('.user-menu-mobile-dropdown');
+    if (mobileDropdown) {
+      mobileDropdown.remove();
+      console.log('📱 UserMenu - Removed mobile dropdown');
+    }
     
     // Remove mobile backdrop and restore body scroll
     this.removeMobileBackdrop();
@@ -622,71 +514,289 @@ export class UserMenu {
   }
 
   /**
-   * Show mobile backdrop overlay (reuse existing sidebar overlay)
+   * Create a fresh mobile dropdown to avoid CSS conflicts
    */
-  private createMobileBackdrop(): void {
-    const existingOverlay = document.getElementById('sidebar_overlay');
-    if (existingOverlay) {
-      // Reuse the existing overlay from Sidebar
-      existingOverlay.style.display = 'block';
-      existingOverlay.style.zIndex = '999'; // Keep original z-index since dropdown will be much higher
+  private createMobileDropdown(): void {
+    console.log('📱 UserMenu - Creating fresh mobile dropdown...');
+    
+    // Remove any existing mobile dropdown to avoid duplicates
+    const existingMobileDropdown = document.querySelector('.user-menu-mobile-dropdown');
+    if (existingMobileDropdown) {
+      existingMobileDropdown.remove();
+      console.log('📱 UserMenu - Removed existing mobile dropdown');
+    }
+
+    // Create completely new dropdown element for mobile
+    const mobileDropdown = document.createElement('div');
+    mobileDropdown.className = 'user-menu-mobile-dropdown';
+    mobileDropdown.id = 'user_menu_mobile_dropdown';
+    
+    // Use inline styles with !important to avoid any CSS conflicts
+    mobileDropdown.setAttribute('style', `
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: calc(100vw - 32px) !important;
+      min-width: 280px !important;
+      max-width: 380px !important;
+      background: white !important;
+      border: 1px solid rgba(255,255,255,0.2) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.35), 0 10px 40px rgba(0,0,0,0.2) !important;
+      z-index: 99999 !important;
+      overflow: hidden !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      backdrop-filter: blur(10px) !important;
+    `);
+    
+    const user = this.getUser();
+    const username = user?.username || 'Guest User';
+    const email = user?.email || 'guest@example.com';
+    
+    mobileDropdown.innerHTML = `
+      <div class="user-menu-header" style="
+        padding: 24px 20px !important;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+        border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+        border-radius: 16px 16px 0 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+      ">
+        <div class="user-menu-avatar">
+          <span class="user-icon-large" style="
+            font-size: 48px !important;
+            color: #007bff !important;
+            font-style: normal !important;
+            filter: drop-shadow(0 2px 4px rgba(0,123,255,0.2)) !important;
+          ">👤</span>
+        </div>
+        <div class="user-menu-details">
+          <div class="user-menu-name" style="
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            margin-bottom: 8px !important;
+            color: #1a1a1a !important;
+          ">${username}</div>
+          <div class="user-menu-email" style="
+            font-size: 16px !important;
+            color: #6c757d !important;
+            font-weight: 500 !important;
+          ">${email}</div>
+        </div>
+        <button class="user-menu-mobile-close" style="
+          position: absolute !important;
+          top: 12px !important;
+          right: 12px !important;
+          background: rgba(255,255,255,0.9) !important;
+          border: 1px solid rgba(0,0,0,0.1) !important;
+          border-radius: 50% !important;
+          width: 36px !important;
+          height: 36px !important;
+          font-size: 18px !important;
+          cursor: pointer !important;
+          color: #6c757d !important;
+          transition: all 0.2s ease !important;
+          z-index: 10 !important;
+          backdrop-filter: blur(5px) !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        " title="Close menu">✕</button>
+      </div>
       
-      // Add click handler to close user menu (but preserve any existing handlers)
-      const closeHandler = (e: Event) => {
-        // Only close if clicking the overlay itself, not its children
-        if (e.target === existingOverlay) {
-          this.close();
-        }
-      };
+      <ul class="user-menu-items" style="
+        list-style: none !important;
+        margin: 0 !important;
+        padding: 16px 0 8px 0 !important;
+      ">
+        <li>
+          <a href="/account" class="user-menu-item" style="
+            display: flex !important;
+            align-items: center !important;
+            padding: 12px 20px !important;
+            color: #495057 !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            min-height: 48px !important;
+          ">
+            <span class="material-icons nav-icon" style="
+              margin-right: 16px !important;
+              font-size: 20px !important;
+              width: 24px !important;
+              color: #6c757d !important;
+              transition: color 0.2s ease !important;
+            ">settings</span>
+            <span class="nav-text">Account Settings</span>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:;" class="user-menu-item" data-action="feedback" style="
+            display: flex !important;
+            align-items: center !important;
+            padding: 12px 20px !important;
+            color: #495057 !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            min-height: 48px !important;
+          ">
+            <span class="material-icons nav-icon" style="
+              margin-right: 16px !important;
+              font-size: 20px !important;
+              width: 24px !important;
+              color: #6c757d !important;
+              transition: color 0.2s ease !important;
+            ">feedback</span>
+            <span class="nav-text">Send Feedback</span>
+          </a>
+        </li>
+        <li style="height: 1px !important; background: #e9ecef !important; margin: 8px 16px !important;"></li>
+        <li>
+          <a href="/logout" class="user-menu-item user-menu-signout" style="
+            display: flex !important;
+            align-items: center !important;
+            padding: 12px 20px !important;
+            color: #dc3545 !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            min-height: 48px !important;
+          ">
+            <span class="material-icons nav-icon" style="
+              margin-right: 16px !important;
+              font-size: 20px !important;
+              width: 24px !important;
+              color: #dc3545 !important;
+              transition: color 0.2s ease !important;
+            ">logout</span>
+            <span class="nav-text">Sign Out</span>
+          </a>
+        </li>
+      </ul>
+    `;
+    
+    // Add to document body to escape container constraints
+    document.body.appendChild(mobileDropdown);
+    
+    // Add hover effects to new menu items
+    const menuItems = mobileDropdown.querySelectorAll('.user-menu-item');
+    menuItems.forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        (item as HTMLElement).style.setProperty('background', '#f8f9fa', 'important');
+      });
+      item.addEventListener('mouseleave', () => {
+        (item as HTMLElement).style.setProperty('background', 'transparent', 'important');
+      });
       
-      // Store the handler reference for later removal
-      (existingOverlay as any).__userMenuCloseHandler = closeHandler;
-      existingOverlay.addEventListener('click', closeHandler);
-    } else {
-      // Fallback: create our own backdrop if Sidebar overlay doesn't exist
-      const backdrop = document.createElement('div');
-      backdrop.id = 'user_menu_backdrop_fallback';
-      backdrop.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 10001;
-        display: block;
-      `;
-      
-      backdrop.addEventListener('click', () => {
+      // Add click handling for menu items
+      item.addEventListener('click', (e) => {
+        console.log('📱 UserMenu - Mobile menu item clicked:', (e.currentTarget as HTMLElement).textContent?.trim());
+      });
+    });
+    
+    // Add close button event
+    const closeButton = mobileDropdown.querySelector('.user-menu-mobile-close');
+    if (closeButton) {
+      closeButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('📱 UserMenu - Mobile close button clicked');
         this.close();
       });
       
-      document.body.appendChild(backdrop);
+      // Add hover effect to close button
+      closeButton.addEventListener('mouseenter', () => {
+        (closeButton as HTMLElement).style.setProperty('background', 'rgba(220, 53, 69, 0.1)', 'important');
+        (closeButton as HTMLElement).style.setProperty('color', '#dc3545', 'important');
+      });
+      closeButton.addEventListener('mouseleave', () => {
+        (closeButton as HTMLElement).style.setProperty('background', 'rgba(255,255,255,0.9)', 'important');
+        (closeButton as HTMLElement).style.setProperty('color', '#6c757d', 'important');
+      });
     }
+    
+    // Log detailed computed styles for debugging
+    const computedStyles = window.getComputedStyle(mobileDropdown);
+    console.log('📱 UserMenu - Fresh mobile dropdown created and added to body', {
+      position: computedStyles.position,
+      top: computedStyles.top,
+      left: computedStyles.left,
+      transform: computedStyles.transform,
+      zIndex: computedStyles.zIndex,
+      display: computedStyles.display,
+      visibility: computedStyles.visibility,
+      opacity: computedStyles.opacity,
+      width: computedStyles.width,
+      height: computedStyles.height,
+      backgroundColor: computedStyles.backgroundColor
+    });
+  }
+
+  /**
+   * Show mobile backdrop overlay (reuse existing sidebar overlay)
+   */
+  private createMobileBackdrop(): void {
+    // Add body class for blur effect
+    document.body.classList.add('user-menu-mobile-open');
+    
+    // Remove any existing user menu backdrop
+    const existingBackdrop = document.querySelector('.user-menu-backdrop');
+    if (existingBackdrop) {
+      existingBackdrop.remove();
+    }
+    
+    // Create new user menu backdrop with blur effects
+    const backdrop = document.createElement('div');
+    backdrop.className = 'user-menu-backdrop';
+    
+    // Add backdrop to document body
+    document.body.appendChild(backdrop);
+    
+    // Animate backdrop in with show class
+    requestAnimationFrame(() => {
+      backdrop.classList.add('show');
+    });
+    
+    // Close user menu when backdrop is clicked
+    backdrop.addEventListener('click', () => {
+      this.close();
+    });
+    
+    console.log('📱 UserMenu - Mobile backdrop created with blur effects');
   }
   
   /**
    * Hide mobile backdrop overlay
    */
   private removeMobileBackdrop(): void {
-    const existingOverlay = document.getElementById('sidebar_overlay');
-    if (existingOverlay) {
-      // Hide the existing overlay and clean up our event handler
-      existingOverlay.style.display = 'none';
-      
-      // Remove our click handler if it exists
-      const closeHandler = (existingOverlay as any).__userMenuCloseHandler;
-      if (closeHandler) {
-        existingOverlay.removeEventListener('click', closeHandler);
-        delete (existingOverlay as any).__userMenuCloseHandler;
-      }
-    } else {
-      // Remove fallback backdrop if it exists
-      const fallbackBackdrop = document.getElementById('user_menu_backdrop_fallback');
-      if (fallbackBackdrop) {
-        fallbackBackdrop.remove();
-      }
+    // Remove body class for blur effect
+    document.body.classList.remove('user-menu-mobile-open');
+    
+    // Remove user menu backdrop if it exists
+    const backdrop = document.querySelector('.user-menu-backdrop');
+    if (backdrop) {
+      backdrop.classList.remove('show');
+      // Remove after transition
+      setTimeout(() => {
+        backdrop.remove();
+      }, 300);
     }
+    
+    console.log('📱 UserMenu - Mobile backdrop removed with blur effects cleanup');
   }
 
   /**
