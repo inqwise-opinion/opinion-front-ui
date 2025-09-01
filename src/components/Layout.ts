@@ -6,7 +6,7 @@
 import AppHeader, { HeaderUser } from './AppHeader';
 import AppFooter, { FooterConfig } from './AppFooter';
 // Import layout context
-import LayoutContext, { LayoutEvent, LayoutMode, LayoutModeType } from '../contexts/LayoutContext.js';
+import { getLayoutContext, type LayoutContext, type LayoutEvent, type LayoutMode, type LayoutModeType } from '../contexts/index.js';
 
 export interface LayoutConfig {
   header?: {
@@ -52,7 +52,7 @@ export class Layout {
     };
 
     // Initialize layout context
-    this.layoutContext = LayoutContext.getInstance();
+    this.layoutContext = getLayoutContext();
     
     // Initialize components
     this.header = new AppHeader();

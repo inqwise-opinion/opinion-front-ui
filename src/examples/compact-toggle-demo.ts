@@ -6,7 +6,7 @@
  */
 
 import { Sidebar } from '../components/Sidebar.js';
-import LayoutContext from '../contexts/LayoutContext.js';
+import LayoutContextImpl from '../contexts/LayoutContextImpl.js';
 
 /**
  * Demo: Compact toggle button functionality
@@ -14,7 +14,7 @@ import LayoutContext from '../contexts/LayoutContext.js';
 export function demonstrateCompactToggle() {
   console.log('=== Compact Toggle Button Demo ===');
   
-  const layoutContext = LayoutContext.getInstance();
+  const layoutContext = LayoutContextImpl.getInstance();
   const sidebar = new Sidebar();
   
   // Initialize sidebar

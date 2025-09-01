@@ -4,7 +4,7 @@
  * Order: Sidebar Header > App Header > Sidebar Menu > Sidebar Footer > Page Content
  */
 
-import { Sidebar } from './Sidebar';
+import SidebarComponent from './SidebarComponent';
 import AppHeader from './AppHeader';
 import AppFooter from './AppFooter';
 
@@ -26,7 +26,7 @@ export interface ComponentLoaderConfig {
 
 export class ComponentLoader {
   private config: ComponentLoaderConfig;
-  private sidebar: Sidebar | null = null;
+  private sidebar: SidebarComponent | null = null;
   private header: AppHeader | null = null;
   private footer: AppFooter | null = null;
   private loadingStages: string[] = [];
@@ -97,7 +97,7 @@ export class ComponentLoader {
 
     try {
       // Create sidebar instance but only initialize the header part
-      this.sidebar = new Sidebar();
+      this.sidebar = new SidebarComponent();
       
       // Create temporary sidebar header element if it doesn't exist
       this.createSidebarHeaderIfNeeded();
@@ -166,7 +166,7 @@ export class ComponentLoader {
       if (this.sidebar) {
         await this.sidebar.init();
       } else {
-        this.sidebar = new Sidebar();
+        this.sidebar = new SidebarComponent();
         await this.sidebar.init();
       }
       
@@ -352,7 +352,7 @@ export class ComponentLoader {
   /**
    * Get loaded components
    */
-  getLoadedComponents(): { sidebar: Sidebar | null; header: AppHeader | null; footer: AppFooter | null } {
+  getLoadedComponents(): { sidebar: SidebarComponent | null; header: AppHeader | null; footer: AppFooter | null } {
     return {
       sidebar: this.sidebar,
       header: this.header,

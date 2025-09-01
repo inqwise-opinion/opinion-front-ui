@@ -5,7 +5,7 @@
  * that automatically manages CSS classes for all layout components.
  */
 
-import LayoutContext, { LayoutEvent, LayoutMode, LayoutModeType } from '../contexts/LayoutContext.js';
+import LayoutContextImpl, { LayoutEvent, LayoutMode, LayoutModeType } from '../contexts/LayoutContextImpl.js';
 import { Layout } from '../components/Layout.js';
 import { Sidebar } from '../components/Sidebar.js';
 
@@ -15,7 +15,7 @@ import { Sidebar } from '../components/Sidebar.js';
 export function demonstrateLayoutModeChanges() {
   console.log('=== Layout Mode Change System Demo ===');
   
-  const layoutContext = LayoutContext.getInstance();
+  const layoutContext = LayoutContextImpl.getInstance();
   
   // Subscribe to layout mode changes to observe the system
   const unsubscribe = layoutContext.subscribe('layout-mode-change', (event: LayoutEvent) => {
@@ -50,7 +50,7 @@ export function demonstrateLayoutModeChanges() {
 function testDesktopModes() {
   console.log('🖥️  Testing Desktop Modes...');
   
-  const layoutContext = LayoutContext.getInstance();
+  const layoutContext = LayoutContextImpl.getInstance();
   
   // Test desktop normal mode
   layoutContext.updateSidebarDimensions({
@@ -170,12 +170,12 @@ function showAppliedCSSClasses(layoutMode: LayoutMode) {
  */
 export class ResponsiveComponent {
   private element: HTMLElement;
-  private layoutContext: LayoutContext;
+  private layoutContext: LayoutContextImpl;
   private unsubscribe: (() => void) | null = null;
   
   constructor(element: HTMLElement) {
     this.element = element;
-    this.layoutContext = LayoutContext.getInstance();
+    this.layoutContext = LayoutContextImpl.getInstance();
   }
   
   init() {

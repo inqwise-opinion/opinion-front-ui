@@ -9,7 +9,7 @@
  */
 
 import { Sidebar } from '../components/Sidebar.js';
-import LayoutContext from '../contexts/LayoutContext.js';
+import LayoutContextImpl from '../contexts/LayoutContextImpl.js';
 
 /**
  * Demo: Sidebar tooltips and expand/lock functionality
@@ -17,7 +17,7 @@ import LayoutContext from '../contexts/LayoutContext.js';
 export function demonstrateSidebarTooltips() {
   console.log('=== Sidebar Tooltips & Expand/Lock Demo ===');
   
-  const layoutContext = LayoutContext.getInstance();
+  const layoutContext = LayoutContextImpl.getInstance();
   const sidebar = new Sidebar();
   
   // Initialize sidebar

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" width="1400" height="1000">
+  <defs>
+    <style>
+      .title { font: bold 24px Arial; fill: #2d3748; }
+      .subtitle { font: bold 16px Arial; fill: #4a5568; }
+      .section-title { font: bold 14px Arial; fill: #4a5568; }
+      .context-hub { fill: #fef5e7; stroke: #d69e2e; stroke-width: 3; rx: 12; }
+      .component-box { fill: #edf2f7; stroke: #4299e1; stroke-width: 2; rx: 8; }
+      .dom-box { fill: #f0fff4; stroke: #38b2ac; stroke-width: 2; rx: 8; }
+      .user-box { fill: #fdf2f8; stroke: #d53f8a; stroke-width: 2; rx: 8; }
+      .component-text { font: 12px Arial; fill: #2d3748; font-weight: 600; }
+      .event-text { font: 10px Arial; fill: #718096; }
+      
+      /* Event flow lines */
+      .context-emission { stroke: #d69e2e; stroke-width: 3; fill: none; marker-end: url(#contextArrow); }
+      .component-emission { stroke: #4299e1; stroke-width: 2; fill: none; marker-end: url(#componentArrow); }
+      .dom-event { stroke: #38b2ac; stroke-width: 2; fill: none; marker-end: url(#domArrow); stroke-dasharray: 4,2; }
+      .user-interaction { stroke: #d53f8a; stroke-width: 2; fill: none; marker-end: url(#userArrow); stroke-dasharray: 6,3; }
+      .bidirectional { stroke: #805ad5; stroke-width: 2; fill: none; }
+      
+      .legend-text { font: 11px Arial; fill: #4a5568; }
+      .event-label { font: 9px Arial; fill: #2d3748; }
+      .event-name { font: 8px Arial; fill: #4a5568; font-style: italic; }
+    </style>
+    
+    <!-- Arrow markers -->
+    <defs>
+      <marker id="contextArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#d69e2e"/>
+      </marker>
+      <marker id="componentArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#4299e1"/>
+      </marker>
+      <marker id="domArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#38b2ac"/>
+      </marker>
+      <marker id="userArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#d53f8a"/>
+      </marker>
+      <marker id="bidirectionalArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#805ad5"/>
+      </marker>
+    </defs>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1400" height="1000" fill="#ffffff"/>
+  
+  <!-- Title -->
+  <text x="700" y="30" class="title" text-anchor="middle">Event System &amp; Communication Map</text>
+  <text x="700" y="55" class="subtitle" text-anchor="middle">Opinion Front UI Event-Driven Architecture</text>
+  
+  <!-- Central LayoutContext Hub -->
+  <ellipse cx="700" cy="300" rx="140" ry="80" class="context-hub"/>
+  <text x="700" y="280" class="component-text" text-anchor="middle">LayoutContext</text>
+  <text x="700" y="295" class="event-text" text-anchor="middle">Central Event Hub</text>
+  <text x="700" y="310" class="event-text" text-anchor="middle">&amp; State Manager</text>
+  <text x="700" y="325" class="event-text" text-anchor="middle">Singleton Instance</text>
+  
+  <!-- Components positioned around the hub -->
+  
+  <!-- Sidebar (Left) -->
+  <rect x="150" y="250" width="120" height="100" class="component-box"/>
+  <text x="210" y="275" class="component-text" text-anchor="middle">Sidebar</text>
+  <text x="210" y="290" class="event-text" text-anchor="middle">• Compact toggle</text>
+  <text x="210" y="305" class="event-text" text-anchor="middle">• Dimension changes</text>
+  <text x="210" y="320" class="event-text" text-anchor="middle">• Navigation state</text>
+  <text x="210" y="335" class="event-text" text-anchor="middle">• Mobile visibility</text>
+  
+  <!-- AppHeader (Top Left) -->
+  <rect x="300" y="100" width="120" height="80" class="component-box"/>
+  <text x="360" y="125" class="component-text" text-anchor="middle">AppHeader</text>
+  <text x="360" y="140" class="event-text" text-anchor="middle">• Breadcrumb updates</text>
+  <text x="360" y="155" class="event-text" text-anchor="middle">• User menu state</text>
+  <text x="360" y="170" class="event-text" text-anchor="middle">• Mobile menu toggle</text>
+  
+  <!-- UserMenu (Top) -->
+  <rect x="640" y="80" width="120" height="80" class="component-box"/>
+  <text x="700" y="105" class="component-text" text-anchor="middle">UserMenu</text>
+  <text x="700" y="120" class="event-text" text-anchor="middle">• User actions</text>
+  <text x="700" y="135" class="event-text" text-anchor="middle">• Dropdown state</text>
+  <text x="700" y="150" class="event-text" text-anchor="middle">• Authentication</text>
+  
+  <!-- Layout (Top Right) -->
+  <rect x="980" y="100" width="120" height="80" class="component-box"/>
+  <text x="1040" y="125" class="component-text" text-anchor="middle">Layout</text>
+  <text x="1040" y="140" class="event-text" text-anchor="middle">• Layout ready</text>
+  <text x="1040" y="155" class="event-text" text-anchor="middle">• Component coord</text>
+  <text x="1040" y="170" class="event-text" text-anchor="middle">• Responsive setup</text>
+  
+  <!-- MainContent (Right) -->
+  <rect x="1130" y="250" width="120" height="100" class="component-box"/>
+  <text x="1190" y="275" class="component-text" text-anchor="middle">MainContent</text>
+  <text x="1190" y="290" class="event-text" text-anchor="middle">• Content updates</text>
+  <text x="1190" y="305" class="event-text" text-anchor="middle">• Layout resize</text>
+  <text x="1190" y="320" class="event-text" text-anchor="middle">• Page transitions</text>
+  <text x="1190" y="335" class="event-text" text-anchor="middle">• Scroll events</text>
+  
+  <!-- AppFooter (Bottom Right) -->
+  <rect x="980" y="450" width="120" height="80" class="component-box"/>
+  <text x="1040" y="475" class="component-text" text-anchor="middle">AppFooter</text>
+  <text x="1040" y="490" class="event-text" text-anchor="middle">• Layout updates</text>
+  <text x="1040" y="505" class="event-text" text-anchor="middle">• Link navigation</text>
+  <text x="1040" y="520" class="event-text" text-anchor="middle">• Footer state</text>
+  
+  <!-- Page Components (Bottom) -->
+  <rect x="640" y="480" width="120" height="100" class="component-box"/>
+  <text x="700" y="505" class="component-text" text-anchor="middle">Page Components</text>
+  <text x="700" y="520" class="event-text" text-anchor="middle">• Dashboard</text>
+  <text x="700" y="535" class="event-text" text-anchor="middle">• Debug</text>
+  <text x="700" y="550" class="event-text" text-anchor="middle">• Surveys (future)</text>
+  <text x="700" y="565" class="event-text" text-anchor="middle">• Page-specific events</text>
+  
+  <!-- DOM/User Interaction Sources -->
+  <rect x="300" y="450" width="120" height="80" class="dom-box"/>
+  <text x="360" y="475" class="component-text" text-anchor="middle">DOM Events</text>
+  <text x="360" y="490" class="event-text" text-anchor="middle">• Click handlers</text>
+  <text x="360" y="505" class="event-text" text-anchor="middle">• Resize events</text>
+  <text x="360" y="520" class="event-text" text-anchor="middle">• Keyboard nav</text>
+  
+  <rect x="150" y="400" width="120" height="80" class="user-box"/>
+  <text x="210" y="425" class="component-text" text-anchor="middle">User Interactions</text>
+  <text x="210" y="440" class="event-text" text-anchor="middle">• Button clicks</text>
+  <text x="210" y="455" class="event-text" text-anchor="middle">• Menu toggles</text>
+  <text x="210" y="470" class="event-text" text-anchor="middle">• Navigation</text>
+  
+  <!-- Event Flow Lines with Labels -->
+  
+  <!-- LayoutContext emissions (central hub out) -->
+  <path d="M 580 280 Q 500 200 420 140" class="context-emission"/>
+  <text x="480" y="200" class="event-label">responsive-mode-change</text>
+  
+  <path d="M 700 220 L 700 160" class="context-emission"/>
+  <text x="710" y="190" class="event-label">layout-ready</text>
+  
+  <path d="M 820 280 Q 900 200 980 140" class="context-emission"/>
+  <text x="920" y="200" class="event-label">layout-mode-change</text>
+  
+  <path d="M 830 320 L 1130 280" class="context-emission"/>
+  <text x="980" y="310" class="event-label">sidebar-dimensions-change</text>
+  
+  <path d="M 820 360 Q 900 420 980 470" class="context-emission"/>
+  <text x="920" y="430" class="event-label">layout-updates</text>
+  
+  <path d="M 700 380 L 700 480" class="context-emission"/>
+  <text x="710" y="430" class="event-label">all-events</text>
+  
+  <!-- Component emissions to LayoutContext -->
+  <path d="M 270 300 L 580 300" class="component-emission"/>
+  <text x="400" y="290" class="event-label">updateSidebarDimensions()</text>
+  
+  <path d="M 420 180 Q 520 220 580 260" class="component-emission"/>
+  <text x="480" y="240" class="event-label">headerEvents</text>
+  
+  <path d="M 760 160 Q 800 200 820 240" class="component-emission"/>
+  <text x="800" y="210" class="event-label">userMenuEvents</text>
+  
+  <path d="M 1100 180 Q 1000 220 840 260" class="component-emission"/>
+  <text x="960" y="240" class="event-label">layoutReady()</text>
+  
+  <path d="M 1130 320 L 840 320" class="component-emission"/>
+  <text x="980" y="310" class="event-label">contentEvents</text>
+  
+  <!-- DOM Event flows -->
+  <path d="M 300 490 L 270 350" class="dom-event"/>
+  <text x="220" y="420" class="event-label" transform="rotate(-60, 220, 420)">DOM click</text>
+  
+  <path d="M 360 450 Q 460 380 580 320" class="dom-event"/>
+  <text x="450" y="380" class="event-label">resize events</text>
+  
+  <path d="M 420 490 Q 520 420 640 160" class="dom-event"/>
+  <text x="500" y="350" class="event-label">keyboard nav</text>
+  
+  <!-- User Interaction flows -->
+  <path d="M 210 400 L 210 350" class="user-interaction"/>
+  <text x="150" y="375" class="event-label">toggles</text>
+  
+  <path d="M 270 440 Q 350 380 640 120" class="user-interaction"/>
+  <text x="400" y="340" class="event-label">menu actions</text>
+  
+  <path d="M 270 460 Q 450 420 640 520" class="user-interaction"/>
+  <text x="450" y="500" class="event-label">page nav</text>
+  
+  <!-- Bidirectional communications -->
+  <path d="M 560 300 Q 480 340 270 340" class="bidirectional" marker-end="url(#bidirectionalArrow)" marker-start="url(#bidirectionalArrow)"/>
+  <text x="400" y="330" class="event-label">two-way sync</text>
+  
+  <!-- Event Types Legend -->
+  <g transform="translate(50, 650)">
+    <text x="0" y="0" class="section-title">Event System Legend</text>
+    
+    <!-- LayoutContext Events -->
+    <text x="0" y="30" class="legend-text">LayoutContext Central Events:</text>
+    <line x1="0" y1="45" x2="30" y2="45" class="context-emission"/>
+    <text x="40" y="50" class="event-name">responsive-mode-change</text>
+    <text x="200" y="50" class="event-text">→ All components when viewport changes</text>
+    
+    <line x1="0" y1="65" x2="30" y2="65" class="context-emission"/>
+    <text x="40" y="70" class="event-name">sidebar-dimensions-change</text>
+    <text x="200" y="70" class="event-text">→ MainContent, AppHeader for layout calc</text>
+    
+    <line x1="0" y1="85" x2="30" y2="85" class="context-emission"/>
+    <text x="40" y="90" class="event-name">layout-mode-change</text>
+    <text x="200" y="90" class="event-text">→ Components for compact/normal modes</text>
+    
+    <line x1="0" y1="105" x2="30" y2="105" class="context-emission"/>
+    <text x="40" y="110" class="event-name">layout-ready</text>
+    <text x="200" y="110" class="event-text">→ All components when layout initialized</text>
+    
+    <!-- Component Events -->
+    <text x="0" y="140" class="legend-text">Component to Context:</text>
+    <line x1="0" y1="155" x2="30" y2="155" class="component-emission"/>
+    <text x="40" y="160" class="event-name">updateSidebarDimensions()</text>
+    <text x="200" y="160" class="event-text">← Sidebar publishes size changes</text>
+    
+    <line x1="0" y1="175" x2="30" y2="175" class="component-emission"/>
+    <text x="40" y="180" class="event-name">markReady()</text>
+    <text x="200" y="180" class="event-text">← Layout signals initialization complete</text>
+    
+    <!-- DOM Events -->
+    <text x="0" y="210" class="legend-text">DOM Events:</text>
+    <line x1="0" y1="225" x2="30" y2="225" class="dom-event"/>
+    <text x="40" y="230" class="event-name">click, resize, keydown</text>
+    <text x="200" y="230" class="event-text">← Browser DOM events</text>
+    
+    <!-- User Interactions -->
+    <text x="0" y="260" class="legend-text">User Interactions:</text>
+    <line x1="0" y1="275" x2="30" y2="275" class="user-interaction"/>
+    <text x="40" y="280" class="event-name">button clicks, menu toggles</text>
+    <text x="200" y="280" class="event-text">← Direct user actions</text>
+    
+    <!-- Bidirectional -->
+    <text x="0" y="310" class="legend-text">Bidirectional:</text>
+    <line x1="0" y1="325" x2="30" y2="325" class="bidirectional" marker-end="url(#bidirectionalArrow)" marker-start="url(#bidirectionalArrow)"/>
+    <text x="40" y="330" class="event-name">state synchronization</text>
+    <text x="200" y="330" class="event-text">↔ Two-way communication</text>
+  </g>
+  
+  <!-- Key Benefits -->
+  <g transform="translate(700, 650)">
+    <text x="0" y="0" class="section-title">Key Benefits of Event-Driven Architecture</text>
+    
+    <text x="0" y="30" class="event-text">🔗 <tspan class="legend-text">Loose Coupling:</tspan> Components don't directly depend on each other</text>
+    <text x="0" y="50" class="event-text">📡 <tspan class="legend-text">Centralized Communication:</tspan> All events flow through LayoutContext</text>
+    <text x="0" y="70" class="event-text">🎯 <tspan class="legend-text">Single Source of Truth:</tspan> Layout state managed in one place</text>
+    <text x="0" y="90" class="event-text">🔄 <tspan class="legend-text">Reactive Updates:</tspan> Components automatically respond to state changes</text>
+    <text x="0" y="110" class="event-text">📱 <tspan class="legend-text">Responsive Design:</tspan> Viewport changes propagate to all components</text>
+    <text x="0" y="130" class="event-text">⚡ <tspan class="legend-text">Performance:</tspan> Event batching and debouncing for smooth UX</text>
+    <text x="0" y="150" class="event-text">🧪 <tspan class="legend-text">Testability:</tspan> Easy to mock events and test component behavior</text>
+    <text x="0" y="170" class="event-text">🔧 <tspan class="legend-text">Maintainability:</tspan> Clean separation of concerns</text>
+    <text x="0" y="190" class="event-text">📈 <tspan class="legend-text">Scalability:</tspan> Easy to add new components and events</text>
+    
+    <!-- Event Flow Patterns -->
+    <text x="0" y="230" class="section-title">Common Event Flow Patterns</text>
+    
+    <text x="0" y="260" class="legend-text">1. User Action → DOM Event → Component → LayoutContext → Other Components</text>
+    <text x="20" y="280" class="event-text">Example: User clicks sidebar toggle → Sidebar updates → All components reflow</text>
+    
+    <text x="0" y="310" class="legend-text">2. Viewport Change → LayoutContext → Responsive Mode → All Components</text>
+    <text x="20" y="330" class="event-text">Example: Window resize → Mobile mode → Sidebar hides, header adjusts</text>
+    
+    <text x="0" y="360" class="legend-text">3. Component Init → LayoutContext → Layout Ready → Page Load</text>
+    <text x="20" y="380" class="event-text">Example: All components initialized → Layout ready → Page content loads</text>
+  </g>
+  
+</svg>

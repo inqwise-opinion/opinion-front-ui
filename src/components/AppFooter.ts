@@ -6,7 +6,8 @@
 // Import component-scoped CSS
 import '../assets/styles/components/footer.css';
 // Import layout context
-import LayoutContext, { LayoutEvent, SidebarDimensions } from '../contexts/LayoutContext.js';
+import { getLayoutContext } from '../contexts/index.js';
+import type { LayoutEvent, SidebarDimensions, LayoutContext } from '../contexts/LayoutContext.js';
 
 export interface FooterConfig {
   showCopyright?: boolean;
@@ -43,7 +44,7 @@ export class AppFooter {
       ...config
     };
     
-    this.layoutContext = LayoutContext.getInstance();
+    this.layoutContext = getLayoutContext();
   }
 
   /**

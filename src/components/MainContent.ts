@@ -6,7 +6,7 @@
 // Import component-scoped CSS
 import '../assets/styles/components/main-content.css';
 // Import layout context
-import LayoutContext, { LayoutEvent, SidebarDimensions } from '../contexts/LayoutContext.js';
+import { getLayoutContext, type LayoutContext, type LayoutEvent, type SidebarDimensions } from '../contexts/index.js';
 
 export interface MainContentConfig {
   className?: string;
@@ -29,7 +29,7 @@ export class MainContent {
       ...config
     };
     
-    this.layoutContext = LayoutContext.getInstance();
+    this.layoutContext = getLayoutContext();
     console.log('MainContent - Creating clean component with Flexbox layout...');
   }
 

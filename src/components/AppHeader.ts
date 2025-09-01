@@ -9,8 +9,10 @@ import '../assets/styles/components/header.css';
 // Import required components
 import { UserMenu } from './UserMenu.js';
 import { Sidebar } from './Sidebar.js';
+import SidebarComponent from './SidebarComponent.js';
 // Import layout context
-import LayoutContext, { LayoutEvent, SidebarDimensions } from '../contexts/LayoutContext.js';
+import { getLayoutContext } from '../contexts/index.js';
+import type { LayoutEvent, SidebarDimensions, LayoutContext } from '../contexts/LayoutContext.js';
 
 export interface HeaderUser {
   username: string;
@@ -24,7 +26,7 @@ export class AppHeader {
   private currentPageTitle: string = 'Dashboard';
   private currentUser: HeaderUser | null = null;
   private userMenu: UserMenu | null = null;
-  private sidebar: Sidebar | null = null;
+  private sidebar: SidebarComponent | null = null;
   private user: HeaderUser | null = null;
   private resizeTimeout: number | null = null;
   private layoutContext: LayoutContext;
@@ -32,7 +34,7 @@ export class AppHeader {
 
   constructor() {
     console.log('AppHeader - Creating clean header...');
-    this.layoutContext = LayoutContext.getInstance();
+    this.layoutContext = getLayoutContext();
   }
 
   /**
@@ -186,10 +188,13 @@ export class AppHeader {
    * Initialize sidebar component
    */
   private async initSidebar(): Promise<void> {
-    this.sidebar = new Sidebar();
+    this.sidebar = new SidebarComponent();
     await this.sidebar.init();
     
-    console.log('AppHeader - Sidebar component initialized');
+    // Register sidebar with LayoutContext for centralized access
+    this.layoutContext.registerSidebar(this.sidebar);
+    
+    console.log('AppHeader - Sidebar component initialized and registered with LayoutContext');
   }
 
   /**
@@ -806,7 +811,12 @@ export class AppHeader {
     console.log('🔄 AppHeader - Force updating position (manual trigger)');
     
     // Use current layout context state instead of querying sidebar directly
-    const currentSidebarDimensions = this.layoutContext.getSidebarDimensions();
+    const sidebar = this.layoutContext.getSidebar();
+    const currentSidebarDimensions = sidebar?.getDimensions();
+    if (!currentSidebarDimensions) {
+      console.warn('🔄 AppHeader - No sidebar instance available for dimensions');
+      return;
+    }
     console.log(`🔄 AppHeader - Using layout context dimensions:`, currentSidebarDimensions);
     
     // Update header layout using the current sidebar dimensions from layout context
@@ -835,8 +845,9 @@ export class AppHeader {
       this.userMenu = null;
     }
     
-    // Destroy sidebar component
+    // Destroy sidebar component and unregister from LayoutContext
     if (this.sidebar) {
+      this.layoutContext.unregisterSidebar();
       this.sidebar.destroy();
       this.sidebar = null;
     }

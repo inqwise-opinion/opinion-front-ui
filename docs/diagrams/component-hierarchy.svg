@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <style>
+      .title { font: bold 24px Arial; fill: #2d3748; }
+      .subtitle { font: bold 16px Arial; fill: #4a5568; }
+      .component-box { fill: #edf2f7; stroke: #4299e1; stroke-width: 2; rx: 8; }
+      .context-box { fill: #fef5e7; stroke: #d69e2e; stroke-width: 2; rx: 8; }
+      .page-box { fill: #e6fffa; stroke: #38b2ac; stroke-width: 2; rx: 8; }
+      .component-text { font: 14px Arial; fill: #2d3748; font-weight: 600; }
+      .responsibility-text { font: 11px Arial; fill: #718096; }
+      .connection-line { stroke: #a0aec0; stroke-width: 2; fill: none; }
+      .direct-line { stroke: #4299e1; stroke-width: 3; fill: none; }
+      .indirect-line { stroke: #38b2ac; stroke-width: 2; stroke-dasharray: 5,3; fill: none; }
+      .arrow { fill: #4299e1; }
+      .legend-text { font: 12px Arial; fill: #4a5568; }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#ffffff"/>
+  
+  <!-- Title -->
+  <text x="600" y="30" class="title" text-anchor="middle">Component Hierarchy &amp; Responsibility Scope</text>
+  <text x="600" y="55" class="subtitle" text-anchor="middle">Opinion Front UI Architecture Overview</text>
+  
+  <!-- OpinionApp (Root) -->
+  <rect x="500" y="80" width="200" height="80" class="component-box"/>
+  <text x="600" y="110" class="component-text" text-anchor="middle">OpinionApp</text>
+  <text x="600" y="125" class="responsibility-text" text-anchor="middle">Application Root</text>
+  <text x="600" y="140" class="responsibility-text" text-anchor="middle">Routing &amp; Lifecycle</text>
+  <text x="600" y="155" class="responsibility-text" text-anchor="middle">Global Initialization</text>
+  
+  <!-- LayoutContext (Global State Manager) -->
+  <rect x="50" y="200" width="200" height="100" class="context-box"/>
+  <text x="150" y="230" class="component-text" text-anchor="middle">LayoutContext</text>
+  <text x="150" y="245" class="responsibility-text" text-anchor="middle">Global State Manager</text>
+  <text x="150" y="260" class="responsibility-text" text-anchor="middle">Event System</text>
+  <text x="150" y="275" class="responsibility-text" text-anchor="middle">Responsive Mode</text>
+  <text x="150" y="290" class="responsibility-text" text-anchor="middle">Sidebar Dimensions</text>
+  
+  <!-- Layout (Coordinator) -->
+  <rect x="350" y="200" width="200" height="100" class="component-box"/>
+  <text x="450" y="230" class="component-text" text-anchor="middle">Layout</text>
+  <text x="450" y="245" class="responsibility-text" text-anchor="middle">Component Coordinator</text>
+  <text x="450" y="260" class="responsibility-text" text-anchor="middle">CSS Grid Manager</text>
+  <text x="450" y="275" class="responsibility-text" text-anchor="middle">Header &amp; Footer Init</text>
+  <text x="450" y="290" class="responsibility-text" text-anchor="middle">Responsive Behavior</text>
+  
+  <!-- MainContent (Content Container) -->
+  <rect x="650" y="200" width="200" height="100" class="component-box"/>
+  <text x="750" y="230" class="component-text" text-anchor="middle">MainContent</text>
+  <text x="750" y="245" class="responsibility-text" text-anchor="middle">Content Container</text>
+  <text x="750" y="260" class="responsibility-text" text-anchor="middle">Page Rendering</text>
+  <text x="750" y="275" class="responsibility-text" text-anchor="middle">Layout Events</text>
+  <text x="750" y="290" class="responsibility-text" text-anchor="middle">Semantic Structure</text>
+  
+  <!-- AppHeader -->
+  <rect x="200" y="350" width="180" height="80" class="component-box"/>
+  <text x="290" y="380" class="component-text" text-anchor="middle">AppHeader</text>
+  <text x="290" y="395" class="responsibility-text" text-anchor="middle">Header UI &amp; Navigation</text>
+  <text x="290" y="410" class="responsibility-text" text-anchor="middle">Breadcrumbs &amp; User Menu</text>
+  <text x="290" y="425" class="responsibility-text" text-anchor="middle">Sidebar Initialization</text>
+  
+  <!-- AppFooter -->
+  <rect x="450" y="350" width="180" height="80" class="component-box"/>
+  <text x="540" y="380" class="component-text" text-anchor="middle">AppFooter</text>
+  <text x="540" y="395" class="responsibility-text" text-anchor="middle">Footer UI</text>
+  <text x="540" y="410" class="responsibility-text" text-anchor="middle">Copyright &amp; Links</text>
+  <text x="540" y="425" class="responsibility-text" text-anchor="middle">Layout Integration</text>
+  
+  <!-- Sidebar (Under AppHeader) -->
+  <rect x="50" y="480" width="180" height="80" class="component-box"/>
+  <text x="140" y="510" class="component-text" text-anchor="middle">Sidebar</text>
+  <text x="140" y="525" class="responsibility-text" text-anchor="middle">Navigation Menu</text>
+  <text x="140" y="540" class="responsibility-text" text-anchor="middle">Compact Mode</text>
+  <text x="140" y="555" class="responsibility-text" text-anchor="middle">Dimension Publishing</text>
+  
+  <!-- UserMenu (Under AppHeader) -->
+  <rect x="270" y="480" width="180" height="80" class="component-box"/>
+  <text x="360" y="510" class="component-text" text-anchor="middle">UserMenu</text>
+  <text x="360" y="525" class="responsibility-text" text-anchor="middle">User Actions</text>
+  <text x="360" y="540" class="responsibility-text" text-anchor="middle">Dropdown Menu</text>
+  <text x="360" y="555" class="responsibility-text" text-anchor="middle">Authentication UI</text>
+  
+  <!-- Page Components -->
+  <rect x="700" y="350" width="180" height="80" class="page-box"/>
+  <text x="790" y="380" class="component-text" text-anchor="middle">PageComponents</text>
+  <text x="790" y="395" class="responsibility-text" text-anchor="middle">DashboardPage</text>
+  <text x="790" y="410" class="responsibility-text" text-anchor="middle">DebugPage</text>
+  <text x="790" y="425" class="responsibility-text" text-anchor="middle">SurveysPage (Future)</text>
+  
+  <!-- Connection Lines -->
+  
+  <!-- OpinionApp to Layout -->
+  <path d="M 600 160 Q 600 180 525 200" class="direct-line"/>
+  <polygon points="520,195 525,200 520,205 512,200" class="arrow"/>
+  
+  <!-- OpinionApp to MainContent -->
+  <path d="M 600 160 Q 600 180 675 200" class="direct-line"/>
+  <polygon points="670,195 675,200 670,205 662,200" class="arrow"/>
+  
+  <!-- Layout to LayoutContext (bidirectional) -->
+  <path d="M 350 250 Q 300 250 250 250" class="connection-line"/>
+  <polygon points="255,245 250,250 255,255 263,250" class="arrow"/>
+  
+  <!-- Layout to AppHeader -->
+  <path d="M 400 300 Q 400 325 345 350" class="direct-line"/>
+  <polygon points="340,345 345,350 340,355 332,350" class="arrow"/>
+  
+  <!-- Layout to AppFooter -->
+  <path d="M 500 300 Q 500 325 540 350" class="direct-line"/>
+  <polygon points="535,345 540,350 535,355 527,350" class="arrow"/>
+  
+  <!-- AppHeader to Sidebar (indirect) -->
+  <path d="M 230 430 Q 200 450 170 480" class="indirect-line"/>
+  <polygon points="165,475 170,480 165,485 157,480" class="arrow" fill="#38b2ac"/>
+  
+  <!-- AppHeader to UserMenu (indirect) -->
+  <path d="M 320 430 Q 340 450 360 480" class="indirect-line"/>
+  <polygon points="355,475 360,480 355,485 347,480" class="arrow" fill="#38b2ac"/>
+  
+  <!-- MainContent to PageComponents -->
+  <path d="M 750 300 Q 750 325 790 350" class="direct-line"/>
+  <polygon points="785,345 790,350 785,355 777,350" class="arrow"/>
+  
+  <!-- LayoutContext event lines (dashed, to all components) -->
+  <path d="M 150 300 Q 150 360 140 480" class="connection-line" stroke-dasharray="3,2"/>
+  <path d="M 150 300 Q 150 360 360 480" class="connection-line" stroke-dasharray="3,2"/>
+  <path d="M 150 300 Q 150 360 290 350" class="connection-line" stroke-dasharray="3,2"/>
+  <path d="M 150 300 Q 150 360 540 350" class="connection-line" stroke-dasharray="3,2"/>
+  
+  <!-- Legend -->
+  <g transform="translate(920, 100)">
+    <text x="0" y="0" class="subtitle">Legend</text>
+    
+    <rect x="0" y="20" width="15" height="10" class="component-box"/>
+    <text x="25" y="30" class="legend-text">Core Components</text>
+    
+    <rect x="0" y="45" width="15" height="10" class="context-box"/>
+    <text x="25" y="55" class="legend-text">Context/State Manager</text>
+    
+    <rect x="0" y="70" width="15" height="10" class="page-box"/>
+    <text x="25" y="80" class="legend-text">Page Components</text>
+    
+    <line x1="0" y1="100" x2="20" y2="100" class="direct-line"/>
+    <text x="25" y="105" class="legend-text">Direct Relationship</text>
+    
+    <line x1="0" y1="120" x2="20" y2="120" class="indirect-line"/>
+    <text x="25" y="125" class="legend-text">Indirect/Delegated</text>
+    
+    <line x1="0" y1="140" x2="20" y2="140" class="connection-line" stroke-dasharray="3,2"/>
+    <text x="25" y="145" class="legend-text">Event Communication</text>
+  </g>
+  
+  <!-- Notes -->
+  <g transform="translate(50, 600)">
+    <text x="0" y="0" class="subtitle">Architecture Notes</text>
+    <text x="0" y="25" class="responsibility-text">• OpinionApp manages application lifecycle and routing</text>
+    <text x="0" y="45" class="responsibility-text">• LayoutContext provides centralized state management and event system</text>
+    <text x="0" y="65" class="responsibility-text">• Layout coordinates header/footer initialization and responsive behavior</text>
+    <text x="0" y="85" class="responsibility-text">• AppHeader initializes both Sidebar and UserMenu components</text>
+    <text x="0" y="105" class="responsibility-text">• MainContent serves as container for dynamically loaded page components</text>
+    <text x="0" y="125" class="responsibility-text">• All components subscribe to LayoutContext for responsive and layout changes</text>
+  </g>
+  
+</svg>

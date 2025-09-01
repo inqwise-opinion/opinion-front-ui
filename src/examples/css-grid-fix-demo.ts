@@ -5,7 +5,7 @@
  * to ensure proper positioning of header, content, and footer components.
  */
 
-import LayoutContext from '../contexts/LayoutContext.js';
+import LayoutContextImpl from '../contexts/LayoutContextImpl.js';
 import { Sidebar } from '../components/Sidebar.js';
 
 /**
@@ -14,7 +14,7 @@ import { Sidebar } from '../components/Sidebar.js';
 export function demonstrateCSSGridFix() {
   console.log('=== CSS Grid Layout Fix Demo ===');
   
-  const layoutContext = LayoutContext.getInstance();
+  const layoutContext = LayoutContextImpl.getInstance();
   
   // Simulate the issue: CSS Grid wasn't updating when sidebar dimensions changed
   console.log('🔍 Problem: Before fix, CSS Grid template columns stayed static');
@@ -156,7 +156,7 @@ export async function testCompleteIntegration() {
   console.log('=== Complete Integration Test ===');
   
   // Initialize layout context (normally done by Layout component)
-  const layoutContext = LayoutContext.getInstance();
+  const layoutContext = LayoutContextImpl.getInstance();
   
   // Initialize sidebar (this will publish initial dimensions)
   const sidebar = new Sidebar();

@@ -5,9 +5,10 @@
  */
 
 import { Sidebar, CompactModeChangeHandler } from '../components/Sidebar';
+import SidebarComponent from '../components/SidebarComponent';
 import { AppHeader } from '../components/AppHeader';
 import MainContent from '../components/MainContent';
-import LayoutContext, { LayoutEvent, ResponsiveMode, LayoutMode } from '../contexts/LayoutContext';
+import LayoutContextImpl, { LayoutEvent, ResponsiveMode, LayoutMode } from '../contexts/LayoutContextImpl';
 
 export class DebugPage {
   private isInitialized: boolean = false;
@@ -16,12 +17,12 @@ export class DebugPage {
   private responsiveModeUnsubscribe: (() => void) | null = null;
   private layoutModeUnsubscribe: (() => void) | null = null;
   private mainContent: MainContent | null = null;
-  private layoutContext: LayoutContext;
+  private layoutContext: LayoutContextImpl;
 
   constructor(mainContent: MainContent | null = null) {
     console.log('🏗️ DEBUGPAGE - Constructor START');
     this.mainContent = mainContent;
-    this.layoutContext = LayoutContext.getInstance();
+    this.layoutContext = LayoutContextImpl.getInstance();
     console.log('✅ DEBUGPAGE - Constructor completed successfully');
     console.log('🏗️ DEBUGPAGE - Constructor END');
   }

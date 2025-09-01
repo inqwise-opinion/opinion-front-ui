@@ -5,7 +5,7 @@
  * coordinating sidebar dimensions across all layout components.
  */
 
-import LayoutContext, { LayoutEvent, SidebarDimensions } from '../contexts/LayoutContext.js';
+import LayoutContextImpl, { LayoutEvent, SidebarDimensions } from '../contexts/LayoutContextImpl.js';
 import { Sidebar } from '../components/Sidebar.js';
 import { AppHeader } from '../components/AppHeader.js';
 import { AppFooter } from '../components/AppFooter.js';
@@ -18,7 +18,7 @@ export function basicLayoutContextUsage() {
   console.log('=== Layout Context Basic Usage Example ===');
   
   // Get the singleton layout context instance
-  const layoutContext = LayoutContext.getInstance();
+  const layoutContext = LayoutContextImpl.getInstance();
   
   // Subscribe to sidebar dimension changes
   const unsubscribe = layoutContext.subscribe(
@@ -103,7 +103,7 @@ export function completeLayoutInitialization() {
   // This is how the system works in practice:
   
   // 1. Layout context is created (singleton)
-  const layoutContext = LayoutContext.getInstance();
+  const layoutContext = LayoutContextImpl.getInstance();
   
   // 2. Components are initialized in order
   const sidebar = new Sidebar();
@@ -142,11 +142,11 @@ export function completeLayoutInitialization() {
  * Example: Custom component subscribing to layout context
  */
 export class CustomLayoutComponent {
-  private layoutContext: LayoutContext;
+  private layoutContext: LayoutContextImpl;
   private layoutUnsubscribers: Array<() => void> = [];
   
   constructor() {
-    this.layoutContext = LayoutContext.getInstance();
+    this.layoutContext = LayoutContextImpl.getInstance();
   }
   
   init() {
@@ -226,14 +226,14 @@ export class CustomLayoutComponent {
 export function responsiveLayoutExample() {
   console.log('=== Responsive Layout Example ===');
   
-  const layoutContext = LayoutContext.getInstance();
+  const layoutContext = LayoutContextImpl.getInstance();
   
   // Get current viewport info
   const viewport = layoutContext.getViewport();
   console.log('Current viewport:', viewport);
   
   // Get current sidebar dimensions
-  const sidebar = layoutContext.getSidebarDimensions();
+  const sidebar = layoutContext.getSidebar()?.getDimensions();
   console.log('Current sidebar:', sidebar);
   
   // Calculate content area dimensions

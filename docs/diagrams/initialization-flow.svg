@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" width="1400" height="900">
+  <defs>
+    <style>
+      .title { font: bold 24px Arial; fill: #2d3748; }
+      .subtitle { font: bold 16px Arial; fill: #4a5568; }
+      .actor-box { fill: #edf2f7; stroke: #4299e1; stroke-width: 2; rx: 6; }
+      .actor-text { font: 12px Arial; fill: #2d3748; font-weight: 600; }
+      .lifeline { stroke: #cbd5e0; stroke-width: 2; stroke-dasharray: 5,3; }
+      .activation { fill: #bee3f8; stroke: #4299e1; stroke-width: 1; }
+      .message-line { stroke: #4299e1; stroke-width: 2; fill: none; }
+      .async-line { stroke: #38b2ac; stroke-width: 2; fill: none; }
+      .return-line { stroke: #a0aec0; stroke-width: 1; stroke-dasharray: 3,2; fill: none; }
+      .message-text { font: 11px Arial; fill: #2d3748; }
+      .note-box { fill: #fef5e7; stroke: #d69e2e; stroke-width: 1; rx: 4; }
+      .note-text { font: 10px Arial; fill: #744210; }
+      .arrow { fill: #4299e1; }
+      .async-arrow { fill: #38b2ac; }
+      .return-arrow { fill: #a0aec0; }
+      .phase-separator { stroke: #e2e8f0; stroke-width: 2; }
+      .phase-text { font: bold 14px Arial; fill: #4a5568; }
+      .step-number { font: bold 12px Arial; fill: #ffffff; }
+      .step-circle { fill: #4299e1; }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1400" height="900" fill="#ffffff"/>
+  
+  <!-- Title -->
+  <text x="700" y="30" class="title" text-anchor="middle">Initialization Flow Sequence Diagram</text>
+  <text x="700" y="55" class="subtitle" text-anchor="middle">Opinion Front UI Startup Process</text>
+  
+  <!-- Actors -->
+  <g id="actors" transform="translate(0, 80)">
+    <!-- Browser -->
+    <rect x="50" y="0" width="80" height="40" class="actor-box"/>
+    <text x="90" y="25" class="actor-text" text-anchor="middle">Browser</text>
+    
+    <!-- main.ts -->
+    <rect x="180" y="0" width="80" height="40" class="actor-box"/>
+    <text x="220" y="25" class="actor-text" text-anchor="middle">main.ts</text>
+    
+    <!-- OpinionApp -->
+    <rect x="310" y="0" width="100" height="40" class="actor-box"/>
+    <text x="360" y="25" class="actor-text" text-anchor="middle">OpinionApp</text>
+    
+    <!-- LayoutContext -->
+    <rect x="460" y="0" width="110" height="40" class="actor-box"/>
+    <text x="515" y="25" class="actor-text" text-anchor="middle">LayoutContext</text>
+    
+    <!-- Layout -->
+    <rect x="620" y="0" width="80" height="40" class="actor-box"/>
+    <text x="660" y="25" class="actor-text" text-anchor="middle">Layout</text>
+    
+    <!-- AppHeader -->
+    <rect x="750" y="0" width="90" height="40" class="actor-box"/>
+    <text x="795" y="25" class="actor-text" text-anchor="middle">AppHeader</text>
+    
+    <!-- Sidebar -->
+    <rect x="890" y="0" width="80" height="40" class="actor-box"/>
+    <text x="930" y="25" class="actor-text" text-anchor="middle">Sidebar</text>
+    
+    <!-- UserMenu -->
+    <rect x="1020" y="0" width="90" height="40" class="actor-box"/>
+    <text x="1065" y="25" class="actor-text" text-anchor="middle">UserMenu</text>
+    
+    <!-- AppFooter -->
+    <rect x="1160" y="0" width="90" height="40" class="actor-box"/>
+    <text x="1205" y="25" class="actor-text" text-anchor="middle">AppFooter</text>
+    
+    <!-- MainContent -->
+    <rect x="1300" y="0" width="90" height="40" class="actor-box"/>
+    <text x="1345" y="25" class="actor-text" text-anchor="middle">MainContent</text>
+  </g>
+  
+  <!-- Lifelines -->
+  <g id="lifelines">
+    <line x1="90" y1="120" x2="90" y2="820" class="lifeline"/>
+    <line x1="220" y1="120" x2="220" y2="820" class="lifeline"/>
+    <line x1="360" y1="120" x2="360" y2="820" class="lifeline"/>
+    <line x1="515" y1="120" x2="515" y2="820" class="lifeline"/>
+    <line x1="660" y1="120" x2="660" y2="820" class="lifeline"/>
+    <line x1="795" y1="120" x2="795" y2="820" class="lifeline"/>
+    <line x1="930" y1="120" x2="930" y2="820" class="lifeline"/>
+    <line x1="1065" y1="120" x2="1065" y2="820" class="lifeline"/>
+    <line x1="1205" y1="120" x2="1205" y2="820" class="lifeline"/>
+    <line x1="1345" y1="120" x2="1345" y2="820" class="lifeline"/>
+  </g>
+  
+  <!-- Phase 1: DOM Ready & Initial Trigger -->
+  <g id="phase1">
+    <text x="50" y="150" class="phase-text">Phase 1: DOM Ready & Application Bootstrap</text>
+    <line x1="50" y1="155" x2="1350" y2="155" class="phase-separator"/>
+    
+    <!-- Step 1: DOM Ready -->
+    <circle cx="35" cy="175" r="12" class="step-circle"/>
+    <text x="35" y="180" class="step-number" text-anchor="middle">1</text>
+    <path d="M 90 170 L 220 170" class="message-line"/>
+    <polygon points="215,165 220,170 215,175 207,170" class="arrow"/>
+    <text x="155" y="165" class="message-text" text-anchor="middle">DOMContentLoaded</text>
+    
+    <!-- Step 2: Create OpinionApp -->
+    <circle cx="35" cy="205" r="12" class="step-circle"/>
+    <text x="35" y="210" class="step-number" text-anchor="middle">2</text>
+    <path d="M 220 200 L 360 200" class="message-line"/>
+    <polygon points="355,195 360,200 355,205 347,200" class="arrow"/>
+    <text x="290" y="195" class="message-text" text-anchor="middle">new OpinionApp()</text>
+    
+    <!-- Activation for OpinionApp -->
+    <rect x="355" y="200" width="10" height="180" class="activation"/>
+    
+    <!-- Step 3: OpinionApp.init() -->
+    <circle cx="35" cy="235" r="12" class="step-circle"/>
+    <text x="35" y="240" class="step-number" text-anchor="middle">3</text>
+    <path d="M 220 230 L 360 230" class="message-line"/>
+    <polygon points="355,225 360,230 355,235 347,230" class="arrow"/>
+    <text x="290" y="225" class="message-text" text-anchor="middle">await app.init()</text>
+  </g>
+  
+  <!-- Phase 2: Layout Context & Global Layout -->
+  <g id="phase2">
+    <text x="50" y="270" class="phase-text">Phase 2: Layout Context & Global Layout Initialization</text>
+    <line x1="50" y1="275" x2="1350" y2="275" class="phase-separator"/>
+    
+    <!-- Step 4: Get LayoutContext -->
+    <circle cx="35" cy="295" r="12" class="step-circle"/>
+    <text x="35" y="300" class="step-number" text-anchor="middle">4</text>
+    <path d="M 360 290 L 515 290" class="message-line"/>
+    <polygon points="510,285 515,290 510,295 502,290" class="arrow"/>
+    <text x="437" y="285" class="message-text" text-anchor="middle">getInstance()</text>
+    
+    <!-- Activation for LayoutContext -->
+    <rect x="510" y="290" width="10" height="450" class="activation"/>
+    
+    <!-- Step 5: Create Layout -->
+    <circle cx="35" cy="325" r="12" class="step-circle"/>
+    <text x="35" y="330" class="step-number" text-anchor="middle">5</text>
+    <path d="M 360 320 L 660 320" class="message-line"/>
+    <polygon points="655,315 660,320 655,325 647,320" class="arrow"/>
+    <text x="510" y="315" class="message-text" text-anchor="middle">new Layout()</text>
+    
+    <!-- Activation for Layout -->
+    <rect x="655" y="320" width="10" height="300" class="activation"/>
+    
+    <!-- Step 6: Layout.init() -->
+    <circle cx="35" cy="355" r="12" class="step-circle"/>
+    <text x="35" y="360" class="step-number" text-anchor="middle">6</text>
+    <path d="M 360 350 L 660 350" class="message-line"/>
+    <polygon points="655,345 660,350 655,355 647,350" class="arrow"/>
+    <text x="510" y="345" class="message-text" text-anchor="middle">await layout.init()</text>
+  </g>
+  
+  <!-- Phase 3: Header & Sidebar Initialization -->
+  <g id="phase3">
+    <text x="50" y="390" class="phase-text">Phase 3: Header & Sidebar Initialization</text>
+    <line x1="50" y1="395" x2="1350" y2="395" class="phase-separator"/>
+    
+    <!-- Step 7: Create AppHeader -->
+    <circle cx="35" cy="415" r="12" class="step-circle"/>
+    <text x="35" y="420" class="step-number" text-anchor="middle">7</text>
+    <path d="M 660 410 L 795 410" class="message-line"/>
+    <polygon points="790,405 795,410 790,415 782,410" class="arrow"/>
+    <text x="727" y="405" class="message-text" text-anchor="middle">new AppHeader()</text>
+    
+    <!-- Activation for AppHeader -->
+    <rect x="790" y="410" width="10" height="200" class="activation"/>
+    
+    <!-- Step 8: AppHeader.init() -->
+    <circle cx="35" cy="445" r="12" class="step-circle"/>
+    <text x="35" y="450" class="step-number" text-anchor="middle">8</text>
+    <path d="M 660 440 L 795 440" class="message-line"/>
+    <polygon points="790,435 795,440 790,445 782,440" class="arrow"/>
+    <text x="727" y="435" class="message-text" text-anchor="middle">await header.init()</text>
+    
+    <!-- Step 9: Create & Init Sidebar -->
+    <circle cx="35" cy="475" r="12" class="step-circle"/>
+    <text x="35" y="480" class="step-number" text-anchor="middle">9</text>
+    <path d="M 795 470 L 930 470" class="async-line"/>
+    <polygon points="925,465 930,470 925,475 917,470" class="async-arrow"/>
+    <text x="862" y="465" class="message-text" text-anchor="middle">await sidebar.init()</text>
+    
+    <!-- Activation for Sidebar -->
+    <rect x="925" y="470" width="10" height="60" class="activation"/>
+    
+    <!-- Step 10: Create & Init UserMenu -->
+    <circle cx="35" cy="505" r="12" class="step-circle"/>
+    <text x="35" y="510" class="step-number" text-anchor="middle">10</text>
+    <path d="M 795 500 L 1065 500" class="async-line"/>
+    <polygon points="1060,495 1065,500 1060,505 1052,500" class="async-arrow"/>
+    <text x="930" y="495" class="message-text" text-anchor="middle">await userMenu.init()</text>
+    
+    <!-- Activation for UserMenu -->
+    <rect x="1060" y="500" width="10" height="40" class="activation"/>
+    
+    <!-- Sidebar publishes dimensions -->
+    <path d="M 930 530 L 515 530" class="return-line"/>
+    <polygon points="520,525 515,530 520,535 528,530" class="return-arrow"/>
+    <text x="722" y="525" class="message-text" text-anchor="middle">publishDimensions()</text>
+  </g>
+  
+  <!-- Phase 4: Footer & MainContent -->
+  <g id="phase4">
+    <text x="50" y="570" class="phase-text">Phase 4: Footer & MainContent Initialization</text>
+    <line x1="50" y1="575" x2="1350" y2="575" class="phase-separator"/>
+    
+    <!-- Step 11: Create & Init AppFooter -->
+    <circle cx="35" cy="595" r="12" class="step-circle"/>
+    <text x="35" y="600" class="step-number" text-anchor="middle">11</text>
+    <path d="M 660 590 L 1205 590" class="message-line"/>
+    <polygon points="1200,585 1205,590 1200,595 1192,590" class="arrow"/>
+    <text x="932" y="585" class="message-text" text-anchor="middle">await footer.init()</text>
+    
+    <!-- Activation for AppFooter -->
+    <rect x="1200" y="590" width="10" height="30" class="activation"/>
+    
+    <!-- Layout markReady -->
+    <path d="M 660 620 L 515 620" class="return-line"/>
+    <polygon points="520,615 515,620 520,625 528,620" class="return-arrow"/>
+    <text x="587" y="615" class="message-text" text-anchor="middle">markReady()</text>
+  </g>
+  
+  <!-- Phase 5: MainContent & Page Loading -->
+  <g id="phase5">
+    <text x="50" y="660" class="phase-text">Phase 5: MainContent & Page Component Loading</text>
+    <line x1="50" y1="665" x2="1350" y2="665" class="phase-separator"/>
+    
+    <!-- Step 12: Create MainContent -->
+    <circle cx="35" cy="685" r="12" class="step-circle"/>
+    <text x="35" y="690" class="step-number" text-anchor="middle">12</text>
+    <path d="M 360 680 L 1345 680" class="message-line"/>
+    <polygon points="1340,675 1345,680 1340,685 1332,680" class="arrow"/>
+    <text x="852" y="675" class="message-text" text-anchor="middle">new MainContent() & init()</text>
+    
+    <!-- Activation for MainContent -->
+    <rect x="1340" y="680" width="10" height="90" class="activation"/>
+    
+    <!-- Step 13: Subscribe to Layout Events -->
+    <path d="M 1345 710 L 515 710" class="return-line"/>
+    <polygon points="520,705 515,710 520,715 528,710" class="return-arrow"/>
+    <text x="930" y="705" class="message-text" text-anchor="middle">subscribe('layout-ready')</text>
+    
+    <!-- Step 14: Initialize Routing & Load Page -->
+    <circle cx="35" cy="745" r="12" class="step-circle"/>
+    <text x="35" y="750" class="step-number" text-anchor="middle">13</text>
+    <path d="M 360 740 L 1345 740" class="message-line"/>
+    <polygon points="1340,735 1345,740 1340,745 1332,740" class="arrow"/>
+    <text x="852" y="735" class="message-text" text-anchor="middle">initializeRouting() & loadPage()</text>
+  </g>
+  
+  <!-- Notes -->
+  <g id="notes">
+    <!-- Note 1: Async Operations -->
+    <rect x="900" y="140" width="200" height="50" class="note-box"/>
+    <text x="1000" y="155" class="note-text" text-anchor="middle">All init() operations are</text>
+    <text x="1000" y="170" class="note-text" text-anchor="middle">async and properly awaited</text>
+    <text x="1000" y="185" class="note-text" text-anchor="middle">for clean initialization order</text>
+    
+    <!-- Note 2: Layout Context -->
+    <rect x="300" y="760" width="220" height="50" class="note-box"/>
+    <text x="410" y="775" class="note-text" text-anchor="middle">LayoutContext manages all component</text>
+    <text x="410" y="790" class="note-text" text-anchor="middle">communication and responsive behavior</text>
+    <text x="410" y="805" class="note-text" text-anchor="middle">throughout the entire application lifecycle</text>
+    
+    <!-- Note 3: Event-Driven -->
+    <rect x="700" y="760" width="200" height="50" class="note-box"/>
+    <text x="800" y="775" class="note-text" text-anchor="middle">Components use event system</text>
+    <text x="800" y="790" class="note-text" text-anchor="middle">for loose coupling and clean</text>
+    <text x="800" y="805" class="note-text" text-anchor="middle">separation of concerns</text>
+  </g>
+  
+  <!-- Timeline indicator -->
+  <g id="timeline">
+    <text x="20" y="140" class="phase-text" transform="rotate(-90, 20, 140)" text-anchor="middle">Time →</text>
+    <path d="M 35 130 L 35 810" class="message-line" stroke-width="3"/>
+    <polygon points="30,815 35,820 40,815 35,805" class="arrow"/>
+  </g>
+  
+</svg>
