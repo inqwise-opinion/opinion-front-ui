@@ -3,37 +3,33 @@
  * Provides a centralized event system for layout components
  */
 
-import type { Dimensions, Sidebar } from '../components/Sidebar.js';
+import type { Dimensions, Sidebar } from "../components/Sidebar.js";
 import type {
   LayoutContext,
   LayoutContextFactory,
-  SidebarDimensions,
-  SidebarState,
   LayoutState,
   LayoutEventType,
-  ResponsiveModeType,
   LayoutModeType,
-  ResponsiveMode,
   LayoutMode,
   LayoutEvent,
-  LayoutEventListener
-} from './LayoutContext.js';
+  LayoutEventListener,
+} from "./LayoutContext.js";
 
 export class LayoutContextImpl implements LayoutContext {
   private static instance: LayoutContextImpl | null = null;
   private listeners: Map<LayoutEventType, Set<LayoutEventListener>> = new Map();
   private state: LayoutState;
-  private responsiveMode: ResponsiveMode;
+  private layoutMode: LayoutMode;
   private resizeObserver: ResizeObserver | null = null;
-  private resizeTimeout: number | null = null;
+  private resizeTimeout: NodeJS.Timeout | null = null;
   private sidebarInstance: Sidebar | null = null;
 
-  private constructor() {
+  public constructor() {
     this.state = this.getInitialState();
-    this.responsiveMode = this.getInitialResponsiveMode();
+    this.layoutMode = this.getInitialLayoutMode();
     this.setupViewportObserver();
-    console.log('LayoutContext - Initialized with state:', this.state);
-    console.log('LayoutContext - Initialized responsive mode:', this.responsiveMode);
+    console.log("LayoutContext - Initialized with state:", this.state);
+    console.log("LayoutContext - Initialized layout mode:", this.layoutMode);
   }
 
   /**
@@ -55,19 +51,23 @@ export class LayoutContextImpl implements LayoutContext {
     const isMobile = width <= 768;
     const isTablet = width > 768 && width <= 1024;
     const isDesktop = width > 1024;
+    
+    // Determine initial layout mode type
+    let layoutModeType: LayoutModeType;
+    if (isMobile) {
+      layoutModeType = "mobile";
+    } else if (isTablet) {
+      layoutModeType = "tablet";
+    } else {
+      layoutModeType = "desktop"; // Default to non-compact desktop
+    }
 
     return {
+      layoutModeType,
       viewport: {
         width,
         height,
-        isMobile,
-        isTablet,
-        isDesktop
       },
-      sidebar: {
-        width: isMobile ? 0 : 280,  // Default sidebar width, 0 for mobile
-        isVisible: !isMobile        // Hidden on mobile by default
-      }
     };
   }
 
@@ -77,14 +77,14 @@ export class LayoutContextImpl implements LayoutContext {
   private setupViewportObserver(): void {
     // Use ResizeObserver for better performance if available
     if (window.ResizeObserver) {
-      this.resizeObserver = new ResizeObserver(entries => {
+      this.resizeObserver = new ResizeObserver((entries) => {
         this.handleViewportChange();
       });
       this.resizeObserver.observe(document.body);
     }
 
     // Fallback to resize event listener
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
       if (this.resizeTimeout) {
         clearTimeout(this.resizeTimeout);
       }
@@ -100,58 +100,56 @@ export class LayoutContextImpl implements LayoutContext {
   private handleViewportChange(): void {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const isMobile = width <= 768;
-    const isTablet = width > 768 && width <= 1024;
-    const isDesktop = width > 1024;
-
-    const oldViewport = this.state.viewport;
-    const newViewport = { width, height, isMobile, isTablet, isDesktop };
-
-    // Check if viewport type changed (mobile/tablet/desktop)
-    const viewportTypeChanged = 
-      oldViewport.isMobile !== isMobile ||
-      oldViewport.isTablet !== isTablet ||
-      oldViewport.isDesktop !== isDesktop;
+    
+    // Calculate new layout mode type from viewport dimensions
+    const newLayoutModeType = this.getLayoutModeTypeFromViewport(width);
+    const oldLayoutModeType = this.state.layoutModeType;
 
     // Update viewport state only
-    this.state.viewport = newViewport;
+    this.state.viewport = { width, height };
 
-    // Only log if viewport type changed, not every pixel change
-    if (viewportTypeChanged) {
-      console.log(`LayoutContext - Viewport type changed: ${width}x${height} (${
-        isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
-      })`);
+    // Check if layout mode type changed
+    const layoutModeTypeChanged = oldLayoutModeType !== newLayoutModeType;
+
+    // Only log if layout mode type changed, not every pixel change
+    if (layoutModeTypeChanged) {
+      console.log(
+        `LayoutContext - Viewport type changed: ${width}x${height} (${oldLayoutModeType} → ${newLayoutModeType})`,
+      );
     }
 
-    // Update responsive mode first (this will trigger responsive-mode-change event only if type changed)
-    this.updateResponsiveMode();
+    // Update layout mode first (this will trigger layout-mode-change event only if type changed)
+    this.updateLayoutMode();
 
-    // For mobile transitions, update CSS and emit events based on current sidebar instance state
-    if (viewportTypeChanged) {
+    // For layout mode transitions, update CSS and emit events based on current sidebar instance state
+    if (layoutModeTypeChanged) {
       const oldSidebarState = this.getSidebarDimensionsInternal();
-      
-      console.log('LayoutContext - Viewport type changed:', {
-        from: `${oldViewport.isMobile ? 'mobile' : oldViewport.isTablet ? 'tablet' : 'desktop'}`,
-        to: `${isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'}`,
-        sidebarState: oldSidebarState
+
+      console.log("LayoutContext - Layout mode type changed:", {
+        from: oldLayoutModeType,
+        to: newLayoutModeType,
+        sidebarState: oldSidebarState,
       });
-      
+
       // Update CSS Grid variables based on current sidebar state
       this.updateCSSGridVariables();
-      
+
       // Get current sidebar dimensions after viewport change (might be different due to mobile/desktop differences)
       const newSidebarState = this.getSidebarDimensionsInternal();
-      
+
       // Emit sidebar dimensions change if the calculated dimensions changed
       if (JSON.stringify(oldSidebarState) !== JSON.stringify(newSidebarState)) {
-        console.log('LayoutContext - Sidebar dimensions changed due to viewport transition:', {
-          old: oldSidebarState,
-          new: newSidebarState
-        });
-        this.emit('sidebar-dimensions-change', newSidebarState);
+        console.log(
+          "LayoutContext - Sidebar dimensions changed due to layout mode transition:",
+          {
+            old: oldSidebarState,
+            new: newSidebarState,
+          },
+        );
+        this.emit("sidebar-dimensions-change", newSidebarState);
       }
-      
-      // Emit layout mode change event when viewport type actually changes
+
+      // Emit layout mode change event when layout mode type actually changes
       this.emitLayoutModeChange();
     }
   }
@@ -159,21 +157,28 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * Subscribe to layout events
    */
-  public subscribe(eventType: LayoutEventType, listener: LayoutEventListener): () => void {
+  public subscribe(
+    eventType: LayoutEventType,
+    listener: LayoutEventListener,
+  ): () => void {
     if (!this.listeners.has(eventType)) {
       this.listeners.set(eventType, new Set());
     }
 
     this.listeners.get(eventType)!.add(listener);
 
-    console.log(`LayoutContext - Subscribed to ${eventType} (${this.listeners.get(eventType)!.size} total listeners)`);
+    console.log(
+      `LayoutContext - Subscribed to ${eventType} (${this.listeners.get(eventType)!.size} total listeners)`,
+    );
 
     // Return unsubscribe function
     return () => {
       const eventListeners = this.listeners.get(eventType);
       if (eventListeners) {
         eventListeners.delete(listener);
-        console.log(`LayoutContext - Unsubscribed from ${eventType} (${eventListeners.size} remaining)`);
+        console.log(
+          `LayoutContext - Unsubscribed from ${eventType} (${eventListeners.size} remaining)`,
+        );
       }
     };
   }
@@ -185,50 +190,64 @@ export class LayoutContextImpl implements LayoutContext {
     const event: LayoutEvent = {
       type: eventType,
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     const eventListeners = this.listeners.get(eventType);
     if (eventListeners && eventListeners.size > 0) {
-      console.log(`LayoutContext - Emitting ${eventType} to ${eventListeners.size} listeners:`, data);
-      
-      eventListeners.forEach(listener => {
+      console.log(
+        `LayoutContext - Emitting ${eventType} to ${eventListeners.size} listeners:`,
+        data,
+      );
+
+      eventListeners.forEach((listener) => {
         try {
           listener(event);
         } catch (error) {
-          console.error(`LayoutContext - Error in ${eventType} listener:`, error);
+          console.error(
+            `LayoutContext - Error in ${eventType} listener:`,
+            error,
+          );
         }
       });
     } else {
       // Only log on first occurrence or important events to reduce console noise
-      if (eventType === 'layout-ready' || eventType === 'responsive-mode-change') {
-        console.log(`LayoutContext - No listeners for ${eventType}, event ignored`);
+      if (eventType === "layout-ready") {
+        console.log(
+          `LayoutContext - No listeners for ${eventType}, event ignored`,
+        );
       }
     }
   }
 
   /**
    * Notify that sidebar dimensions have changed (called by sidebar component)
-   * This method triggers layout updates and events based on current sidebar instance state
+   * This method triggers layout updates based on current sidebar instance state
+   * NOTE: This method does NOT emit layout-mode-change events to prevent infinite recursion
    */
   public notifySidebarDimensionsChanged(): void {
     if (!this.sidebarInstance) {
-      console.warn('LayoutContext - No sidebar instance registered, ignoring dimension change notification');
+      console.warn(
+        "LayoutContext - No sidebar instance registered, ignoring dimension change notification",
+      );
       return;
     }
 
     const currentDimensions = this.getSidebarDimensionsInternal();
-    
-    console.log('LayoutContext - Sidebar dimensions change notification received:', currentDimensions);
+
+    console.log(
+      "LayoutContext - Sidebar dimensions change notification received:",
+      currentDimensions,
+    );
 
     // Update CSS Grid variables immediately based on current sidebar state
     this.updateCSSGridVariables();
 
     // Emit change event with current sidebar dimensions
-    this.emit('sidebar-dimensions-change', currentDimensions);
-    
-    // Emit layout mode change event
-    this.emitLayoutModeChange();
+    //this.emit("sidebar-dimensions-change", currentDimensions);
+
+    // NOTE: Do NOT emit layout-mode-change here to prevent circular dependency
+    // Layout mode changes are only emitted when viewport type changes (mobile/tablet/desktop)
   }
 
   /**
@@ -242,34 +261,27 @@ export class LayoutContextImpl implements LayoutContext {
    * Internal method to get current sidebar dimensions with fallback
    * Used internally by methods that need sidebar dimensions
    */
-  private getSidebarDimensionsInternal(): SidebarDimensions {
+  private getSidebarDimensionsInternal(): Dimensions {
     const sidebar = this.getSidebar();
     if (sidebar) {
       return sidebar.getDimensions();
     }
-    
-    // Fallback: calculate dimensions based on responsive mode and viewport
-    const { viewport } = this.state;
-    const isMobile = viewport.isMobile;
-    
+
+    // Fallback: calculate dimensions based on current layout mode type
+    const isMobile = this.isLayoutMobile();
+
     if (isMobile) {
       return {
         width: 0,
-        rightBorder: 0,
-        isCompact: false,
-        isMobile: true,
-        isVisible: false
+        isVisible: false,
       };
     }
-    
-    // For desktop/tablet without registered sidebar, use responsive mode defaults
-    const mode = this.responsiveMode;
+
+    // For desktop/tablet without registered sidebar, use layout mode defaults
+    const mode = this.layoutMode;
     return {
       width: mode.sidebarBehavior.defaultWidth,
-      rightBorder: mode.sidebarBehavior.defaultWidth,
-      isCompact: false,
-      isMobile: false,
-      isVisible: mode.sidebarBehavior.isVisible
+      isVisible: mode.sidebarBehavior.isVisible,
     };
   }
 
@@ -284,15 +296,15 @@ export class LayoutContextImpl implements LayoutContext {
    * Mark layout as ready (called when all components are initialized)
    */
   public markReady(): void {
-    console.log('LayoutContext - Layout marked as ready');
-    
+    console.log("LayoutContext - Layout marked as ready");
+
     // Ensure CSS Grid variables are set correctly on initialization
     this.updateCSSGridVariables();
-    
+
     // Emit initial layout mode
     this.emitLayoutModeChange();
-    
-    this.emit('layout-ready', this.state);
+
+    this.emit("layout-ready", this.state);
   }
 
   /**
@@ -305,21 +317,22 @@ export class LayoutContextImpl implements LayoutContext {
   } {
     const viewport = this.state.viewport;
     const sidebar = this.getSidebarDimensionsInternal();
-    
-    if (viewport.isMobile) {
+    const isMobile = this.isLayoutMobile();
+
+    if (isMobile) {
       // Mobile: full width content
       return {
         left: 0,
         width: viewport.width,
-        availableWidth: viewport.width
+        availableWidth: viewport.width,
       };
     }
 
-    // Desktop: account for sidebar
+    // Desktop/tablet: account for sidebar
     return {
-      left: sidebar.rightBorder,
-      width: viewport.width - sidebar.rightBorder,
-      availableWidth: viewport.width - sidebar.rightBorder
+      left: sidebar.width,
+      width: viewport.width - sidebar.width,
+      availableWidth: viewport.width - sidebar.width,
     };
   }
 
@@ -327,7 +340,7 @@ export class LayoutContextImpl implements LayoutContext {
    * Destroy context and cleanup
    */
   public destroy(): void {
-    console.log('LayoutContext - Destroying...');
+    console.log("LayoutContext - Destroying...");
 
     // Clear all listeners
     this.listeners.clear();
@@ -348,7 +361,7 @@ export class LayoutContextImpl implements LayoutContext {
     // Note: In a real implementation, you'd want to track listeners to remove them properly
 
     LayoutContextImpl.instance = null;
-    console.log('LayoutContext - Destroyed');
+    console.log("LayoutContext - Destroyed");
   }
 
   /**
@@ -356,52 +369,65 @@ export class LayoutContextImpl implements LayoutContext {
    */
   private updateCSSGridVariables(): void {
     const root = document.documentElement;
-    const appLayout = document.querySelector('.app-layout') as HTMLElement;
-    
+    const appLayout = document.querySelector(".app-layout") as HTMLElement;
+
     if (appLayout) {
-      const viewport = this.state.viewport;
       const sidebar = this.getSidebarDimensionsInternal();
-      
-      if (viewport.isMobile) {
+      const isMobile = this.isLayoutMobile();
+
+      if (isMobile) {
         // Mobile: sidebar is overlay, so grid should be single column
-        appLayout.style.gridTemplateColumns = '1fr';
+        appLayout.style.gridTemplateColumns = "1fr";
         appLayout.style.gridTemplateAreas = `
           "header"
           "content"
         `;
       } else {
-        // Desktop: update sidebar width in grid using CSS variables
+        // Desktop/tablet: update sidebar width in grid using CSS variables
         const sidebarWidth = `${sidebar.width}px`;
-        const compactWidth = `${sidebar.isCompact ? 
-          this.getResponsiveMode().sidebarBehavior.compactWidth : 
-          this.getResponsiveMode().sidebarBehavior.defaultWidth}px`;
-        
+        const isCompact = this.layoutMode.type === 'desktop-compact';
+        const compactWidth = `${
+          isCompact
+            ? this.layoutMode.sidebarBehavior.compactWidth
+            : this.layoutMode.sidebarBehavior.defaultWidth
+        }px`;
+
         // Set CSS custom properties on the layout element (higher specificity than media queries)
-        appLayout.style.setProperty('--sidebar-width', sidebarWidth);
-        appLayout.style.setProperty('--sidebar-compact-width', compactWidth);
-        appLayout.style.setProperty('--sidebar-right-border', `${sidebar.rightBorder}px`);
-        
+        appLayout.style.setProperty("--sidebar-width", sidebarWidth);
+        appLayout.style.setProperty("--sidebar-compact-width", compactWidth);
+        appLayout.style.setProperty(
+          "--sidebar-right-border",
+          `${sidebar.width}px`,
+        );
+
         // Also update root for other components
-        root.style.setProperty('--sidebar-width', sidebarWidth);
-        root.style.setProperty('--sidebar-right-border', `${sidebar.rightBorder}px`);
-        
+        root.style.setProperty("--sidebar-width", sidebarWidth);
+        root.style.setProperty(
+          "--sidebar-right-border",
+          `${sidebar.width}px`,
+        );
+
         // Let CSS handle grid template columns via variables
-        appLayout.style.gridTemplateColumns = '';
+        appLayout.style.gridTemplateColumns = "";
         appLayout.style.gridTemplateAreas = `
           "sidebar header"
           "sidebar content"
         `;
       }
-      
+
       // Update layout classes for CSS hooks
-      appLayout.classList.toggle('sidebar-compact', sidebar.isCompact && !viewport.isMobile);
-      appLayout.classList.toggle('mobile-layout', viewport.isMobile);
-      
-      console.log('LayoutContext - CSS Grid variables updated:', {
+      const isCompact = this.layoutMode.type === 'desktop-compact';
+      appLayout.classList.toggle(
+        "sidebar-compact",
+        isCompact && !isMobile,
+      );
+      appLayout.classList.toggle("mobile-layout", isMobile);
+
+      console.log("LayoutContext - CSS Grid variables updated:", {
         sidebarWidth: sidebar.width,
         gridColumns: appLayout.style.gridTemplateColumns,
-        isCompact: sidebar.isCompact,
-        isMobile: viewport.isMobile
+        isCompact: this.layoutMode.type === 'desktop-compact',
+        isMobile: isMobile,
       });
     }
   }
@@ -412,32 +438,47 @@ export class LayoutContextImpl implements LayoutContext {
   private calculateLayoutMode(): LayoutMode {
     const viewport = this.state.viewport;
     const sidebar = this.getSidebarDimensionsInternal();
+    const isCompact = this.sidebarInstance?.isCompactMode() || false;
     
-    let type: LayoutModeType;
-    if (viewport.isMobile) {
-      type = 'mobile';
-    } else if (viewport.isTablet) {
-      type = 'tablet';
-    } else if (viewport.isDesktop && sidebar.isCompact) {
+    // Use current layout mode type and check for compact state
+    const currentType = this.state.layoutModeType;
+    let type: LayoutModeType = currentType;
+    
+    // Only apply compact mode for desktop layout mode type
+    if (currentType === 'desktop' && isCompact) {
       type = 'desktop-compact';
-    } else {
-      type = 'desktop';
     }
-    
+
+    // Calculate flags based on layout mode type
+    const isMobile = type === 'mobile';
+    const isTablet = type === 'tablet';
+    const isDesktop = type === 'desktop' || type === 'desktop-compact';
+
     return {
       type,
-      isCompact: sidebar.isCompact,
-      isMobile: viewport.isMobile,
-      isTablet: viewport.isTablet,
-      isDesktop: viewport.isDesktop,
+      isCompact,
+      isMobile,
+      isTablet,
+      isDesktop,
       viewport: {
         width: viewport.width,
-        height: viewport.height
+        height: viewport.height,
       },
       sidebar: {
         width: sidebar.width,
-        isVisible: sidebar.isVisible
-      }
+        isVisible: sidebar.isVisible,
+      },
+      breakpoints: {
+        mobile: 768,
+        tablet: 1024,
+        desktop: 1025,
+      },
+      sidebarBehavior: {
+        isVisible: !isMobile,
+        canToggle: !isMobile,
+        defaultWidth: 280,
+        compactWidth: 80,
+      },
     };
   }
 
@@ -446,8 +487,8 @@ export class LayoutContextImpl implements LayoutContext {
    */
   private emitLayoutModeChange(): void {
     const layoutMode = this.calculateLayoutMode();
-    console.log('LayoutContext - Layout mode changed:', layoutMode);
-    this.emit('layout-mode-change', layoutMode);
+    console.log("LayoutContext - Layout mode changed:", layoutMode);
+    this.emit("layout-mode-change", layoutMode);
   }
 
   /**
@@ -458,147 +499,200 @@ export class LayoutContextImpl implements LayoutContext {
   }
 
   /**
-   * Get initial responsive mode
+   * Get initial layout mode
    */
-  private getInitialResponsiveMode(): ResponsiveMode {
+  private getInitialLayoutMode(): LayoutMode {
     const width = window.innerWidth;
     const height = window.innerHeight;
     const isMobile = width <= 768;
     const isTablet = width > 768 && width <= 1024;
     const isDesktop = width > 1024;
 
-    let type: ResponsiveModeType;
+    let type: LayoutModeType;
     if (isMobile) {
-      type = 'mobile';
+      type = "mobile";
     } else if (isTablet) {
-      type = 'tablet';
+      type = "tablet";
     } else {
-      type = 'desktop';
+      type = "desktop";
     }
 
     return {
       type,
+      isCompact: false, // Default to non-compact mode
       isMobile,
       isTablet,
       isDesktop,
       viewport: { width, height },
+      sidebar: {
+        width: isMobile ? 0 : 280, // Fallback for initial load
+        isVisible: !isMobile,
+      },
       breakpoints: {
         mobile: 768,
         tablet: 1024,
-        desktop: 1025
+        desktop: 1025,
       },
       sidebarBehavior: {
         isVisible: !isMobile, // Visible on both tablet and desktop
         canToggle: !isMobile, // Can toggle on both tablet and desktop
         defaultWidth: 280, // CSS strict width - consistent across all screen sizes
-        compactWidth: 80 // CSS strict width - consistent across all screen sizes
-      }
+        compactWidth: 80, // CSS strict width - consistent across all screen sizes
+      },
     };
   }
 
   /**
-   * Update responsive mode when viewport changes
+   * Update layout mode when viewport changes
    */
-  private updateResponsiveMode(): void {
-    const oldMode = { ...this.responsiveMode };
+  private updateLayoutMode(): void {
+    const oldMode = { ...this.layoutMode };
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const isMobile = width <= this.responsiveMode.breakpoints.mobile;
-    const isTablet = width > this.responsiveMode.breakpoints.mobile && width <= this.responsiveMode.breakpoints.tablet;
-    const isDesktop = width > this.responsiveMode.breakpoints.tablet;
+    const isMobile = width <= this.layoutMode.breakpoints.mobile;
+    const isTablet =
+      width > this.layoutMode.breakpoints.mobile &&
+      width <= this.layoutMode.breakpoints.tablet;
+    const isDesktop = width > this.layoutMode.breakpoints.tablet;
 
-    let type: ResponsiveModeType;
+    let type: LayoutModeType;
     if (isMobile) {
-      type = 'mobile';
+      type = "mobile";
     } else if (isTablet) {
-      type = 'tablet';
+      type = "tablet";
     } else {
-      type = 'desktop';
+      type = "desktop";
     }
 
-    // Check if responsive mode type changed
+    // Check if layout mode type changed
     const modeTypeChanged = oldMode.type !== type;
 
-    // Always update responsive mode (for viewport dimensions)
-    this.responsiveMode = {
-      ...this.responsiveMode,
+    // Always update layout mode (for viewport dimensions)
+    const sidebar = this.getSidebarDimensionsInternal();
+    this.layoutMode = {
+      ...this.layoutMode,
       type,
       isMobile,
       isTablet,
       isDesktop,
       viewport: { width, height },
+      sidebar: {
+        width: sidebar.width,
+        isVisible: sidebar.isVisible,
+      },
       sidebarBehavior: {
         isVisible: !isMobile, // Visible on both tablet and desktop
         canToggle: !isMobile, // Can toggle on both tablet and desktop
         defaultWidth: 280, // CSS strict width - consistent across all screen sizes
-        compactWidth: 80 // CSS strict width - consistent across all screen sizes
-      }
+        compactWidth: 80, // CSS strict width - consistent across all screen sizes
+      },
     };
 
-    // Only emit responsive mode change event if the mode TYPE changed (mobile ↔ tablet ↔ desktop)
+    // Update the layoutModeType in the state to match the calculated layout mode
+    this.state.layoutModeType = type;
+
+    // Only emit layout mode change event if the mode TYPE changed (mobile ↔ tablet ↔ desktop)
     if (modeTypeChanged) {
-      console.log(`LayoutContext - Responsive mode TYPE changed: ${oldMode.type} → ${type}`);
-      this.emit('responsive-mode-change', this.responsiveMode);
+      console.log(
+        `LayoutContext - Layout mode TYPE changed: ${oldMode.type} → ${type}`,
+      );
+      this.emit("layout-mode-change", this.layoutMode);
     }
     // Note: Viewport size changes within the same mode are tracked silently (no logging/events)
-  }
-
-  /**
-   * Get current responsive mode
-   */
-  public getResponsiveMode(): ResponsiveMode {
-    return { ...this.responsiveMode };
   }
 
   /**
    * Check if current mode is mobile
    */
   public isMobile(): boolean {
-    return this.responsiveMode.isMobile;
+    return this.layoutMode.isMobile;
   }
 
   /**
    * Check if current mode is tablet
    */
   public isTablet(): boolean {
-    return this.responsiveMode.isTablet;
+    return this.layoutMode.isTablet;
   }
 
   /**
    * Check if current mode is desktop
    */
   public isDesktop(): boolean {
-    return this.responsiveMode.isDesktop;
+    return this.layoutMode.isDesktop;
   }
 
   /**
-   * Get sidebar dimensions based on current responsive mode and compact state
+   * Get sidebar dimensions based on current layout mode and compact state
    */
-  public calculateSidebarDimensions(isCompact: boolean = false): { width: number; isVisible: boolean } {
-    const mode = this.responsiveMode;
-    
+  public calculateSidebarDimensions(isCompact: boolean = false): {
+    width: number;
+    isVisible: boolean;
+  } {
+    const mode = this.layoutMode;
+
     if (!mode.sidebarBehavior.isVisible) {
       return { width: 0, isVisible: false };
     }
 
     return {
-      width: isCompact ? mode.sidebarBehavior.compactWidth : mode.sidebarBehavior.defaultWidth,
-      isVisible: true
+      width: isCompact
+        ? mode.sidebarBehavior.compactWidth
+        : mode.sidebarBehavior.defaultWidth,
+      isVisible: true,
     };
   }
 
   /**
-   * Get responsive breakpoints
+   * Get layout breakpoints
    */
   public getBreakpoints() {
-    return { ...this.responsiveMode.breakpoints };
+    return { ...this.layoutMode.breakpoints };
   }
 
   /**
    * Check if sidebar can toggle in current mode
    */
   public canSidebarToggle(): boolean {
-    return this.responsiveMode.sidebarBehavior.canToggle;
+    return this.layoutMode.sidebarBehavior.canToggle;
+  }
+
+  // =================================================================================
+  // Helper Methods for Viewport Type Checking
+  // =================================================================================
+
+  /**
+   * Check if current layout mode type is mobile
+   */
+  private isLayoutMobile(): boolean {
+    return this.state.layoutModeType === 'mobile';
+  }
+
+  /**
+   * Check if current layout mode type is tablet
+   */
+  private isLayoutTablet(): boolean {
+    return this.state.layoutModeType === 'tablet';
+  }
+
+  /**
+   * Check if current layout mode type is desktop (including compact)
+   */
+  private isLayoutDesktop(): boolean {
+    return this.state.layoutModeType === 'desktop' || this.state.layoutModeType === 'desktop-compact';
+  }
+
+  /**
+   * Get layout mode type from viewport dimensions
+   */
+  private getLayoutModeTypeFromViewport(width: number): LayoutModeType {
+    if (width <= 768) {
+      return 'mobile';
+    } else if (width <= 1024) {
+      return 'tablet';
+    } else {
+      return 'desktop';
+    }
   }
 
   // =================================================================================
@@ -608,16 +702,18 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * Register a sidebar instance with the LayoutContext
    * This allows centralized access to the sidebar through the context
-   * 
+   *
    * @param sidebar - The sidebar instance implementing ISidebar interface
    */
   public registerSidebar(sidebar: Sidebar): void {
     if (this.sidebarInstance && this.sidebarInstance !== sidebar) {
-      console.warn('LayoutContext - Replacing existing sidebar instance. This might indicate a setup issue.');
+      console.warn(
+        "LayoutContext - Replacing existing sidebar instance. This might indicate a setup issue.",
+      );
     }
-    
+
     this.sidebarInstance = sidebar;
-    console.log('LayoutContext - Sidebar instance registered successfully');
+    console.log("LayoutContext - Sidebar instance registered successfully");
   }
 
   /**
@@ -626,7 +722,7 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public unregisterSidebar(): void {
     if (this.sidebarInstance) {
-      console.log('LayoutContext - Unregistering sidebar instance');
+      console.log("LayoutContext - Unregistering sidebar instance");
       this.sidebarInstance = null;
     }
   }
@@ -634,7 +730,7 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * Get the current sidebar instance
    * Provides centralized access to the sidebar through LayoutContext
-   * 
+   *
    * @returns The registered sidebar instance or null if none is registered
    */
   public getSidebar(): Sidebar | null {
@@ -643,7 +739,7 @@ export class LayoutContextImpl implements LayoutContext {
 
   /**
    * Check if a sidebar instance is currently registered
-   * 
+   *
    * @returns True if a sidebar is registered, false otherwise
    */
   public hasSidebar(): boolean {
@@ -653,7 +749,7 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * Execute a method on the registered sidebar instance if available
    * This provides a safe way to interact with the sidebar without null checks
-   * 
+   *
    * @param callback - Function that receives the sidebar instance
    * @returns The result of the callback, or null if no sidebar is registered
    */
@@ -662,34 +758,16 @@ export class LayoutContextImpl implements LayoutContext {
       try {
         return callback(this.sidebarInstance);
       } catch (error) {
-        console.error('LayoutContext - Error executing sidebar callback:', error);
+        console.error(
+          "LayoutContext - Error executing sidebar callback:",
+          error,
+        );
         return null;
       }
     }
     return null;
   }
 
-  /**
-   * Get sidebar state information combining both dimensions and instance data
-   * This provides a comprehensive view of the sidebar's current state
-   * 
-   * @returns Combined sidebar state or null if no sidebar is registered
-   */
-  public getSidebarState(): (SidebarDimensions & {
-    isLocked: boolean;
-    element: HTMLElement | null;
-  }) | null {
-    if (!this.sidebarInstance) {
-      return null;
-    }
-
-    const dimensions = this.getSidebarDimensionsInternal();
-    return {
-      ...dimensions,
-      isLocked: this.sidebarInstance.isLocked(),
-      element: this.sidebarInstance.getElement()
-    };
-  }
 }
 
 export default LayoutContextImpl;

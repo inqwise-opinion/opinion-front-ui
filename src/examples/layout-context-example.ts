@@ -5,8 +5,10 @@
  * coordinating sidebar dimensions across all layout components.
  */
 
-import LayoutContextImpl, { LayoutEvent, SidebarDimensions } from '../contexts/LayoutContextImpl.js';
-import { Sidebar } from '../components/Sidebar.js';
+import { getLayoutContext, type LayoutEvent } from '../contexts/index.js';
+import type { Dimensions } from '../components/Sidebar.js';
+import type { LayoutContext } from '../contexts/LayoutContext.js';
+import SidebarComponent from '../components/SidebarComponent.js';
 import { AppHeader } from '../components/AppHeader.js';
 import { AppFooter } from '../components/AppFooter.js';
 import { MainContent } from '../components/MainContent.js';
@@ -18,13 +20,13 @@ export function basicLayoutContextUsage() {
   console.log('=== Layout Context Basic Usage Example ===');
   
   // Get the singleton layout context instance
-  const layoutContext = LayoutContextImpl.getInstance();
+  const layoutContext = getLayoutContext();
   
   // Subscribe to sidebar dimension changes
   const unsubscribe = layoutContext.subscribe(
     'sidebar-dimensions-change',
     (event: LayoutEvent) => {
-      const dimensions = event.data as SidebarDimensions;
+      const dimensions = event.data as Dimensions;
       console.log('Received sidebar dimensions change:', dimensions);
       
       // Your component can respond to the change here
@@ -51,7 +53,7 @@ export function basicLayoutContextUsage() {
 export function sidebarPublishingExample() {
   console.log('=== Sidebar Publishing Example ===');
   
-  const sidebar = new Sidebar();
+  const sidebar = new SidebarComponent();
   
   // Initialize sidebar - this automatically publishes initial dimensions
   sidebar.init();
@@ -103,10 +105,10 @@ export function completeLayoutInitialization() {
   // This is how the system works in practice:
   
   // 1. Layout context is created (singleton)
-  const layoutContext = LayoutContextImpl.getInstance();
+  const layoutContext = getLayoutContext();
   
   // 2. Components are initialized in order
-  const sidebar = new Sidebar();
+  const sidebar = new SidebarComponent();
   const header = new AppHeader(); 
   const footer = new AppFooter();
   const mainContent = new MainContent();
@@ -142,11 +144,11 @@ export function completeLayoutInitialization() {
  * Example: Custom component subscribing to layout context
  */
 export class CustomLayoutComponent {
-  private layoutContext: LayoutContextImpl;
+  private layoutContext: LayoutContext;
   private layoutUnsubscribers: Array<() => void> = [];
   
   constructor() {
-    this.layoutContext = LayoutContextImpl.getInstance();
+    this.layoutContext = getLayoutContext();
   }
   
   init() {
@@ -179,7 +181,7 @@ export class CustomLayoutComponent {
   }
   
   private handleSidebarDimensionsChange(event: LayoutEvent) {
-    const dimensions = event.data as SidebarDimensions;
+    const dimensions = event.data as Dimensions;
     console.log('CustomLayoutComponent - Sidebar dimensions changed:', dimensions);
     this.updateLayout(dimensions);
   }
@@ -190,7 +192,7 @@ export class CustomLayoutComponent {
     // Handle responsive changes
   }
   
-  private updateLayout(dimensions: SidebarDimensions) {
+  private updateLayout(dimensions: Dimensions) {
     // Update your component's layout based on sidebar dimensions
     console.log(`CustomLayoutComponent - Updating layout: sidebar is ${
       dimensions.isCompact ? 'compact' : 'normal'
@@ -226,7 +228,7 @@ export class CustomLayoutComponent {
 export function responsiveLayoutExample() {
   console.log('=== Responsive Layout Example ===');
   
-  const layoutContext = LayoutContextImpl.getInstance();
+  const layoutContext = getLayoutContext();
   
   // Get current viewport info
   const viewport = layoutContext.getViewport();
@@ -254,7 +256,7 @@ export function responsiveLayoutExample() {
 /**
  * Helper function for component layout updates
  */
-function updateYourComponentLayout(dimensions: SidebarDimensions) {
+function updateYourComponentLayout(dimensions: Dimensions) {
   console.log('Updating component layout:', {
     sidebarWidth: dimensions.width,
     contentLeftMargin: dimensions.rightBorder,

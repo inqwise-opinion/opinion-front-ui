@@ -4,11 +4,12 @@
  * Provides testing controls and development utilities
  */
 
-import { Sidebar, CompactModeChangeHandler } from '../components/Sidebar';
+import { Sidebar } from '../components/Sidebar';
 import SidebarComponent from '../components/SidebarComponent';
 import { AppHeader } from '../components/AppHeader';
 import MainContent from '../components/MainContent';
-import LayoutContextImpl, { LayoutEvent, ResponsiveMode, LayoutMode } from '../contexts/LayoutContextImpl';
+import LayoutContextImpl from '../contexts/LayoutContextImpl';
+import type { LayoutEvent, LayoutMode } from '../contexts/LayoutContext';
 
 export class DebugPage {
   private isInitialized: boolean = false;
@@ -184,8 +185,8 @@ export class DebugPage {
     this.setupTestControls();
     
     // Update viewport info initially using LayoutContext data
-    const currentResponsiveMode = this.layoutContext.getResponsiveMode();
-    this.updateViewportInfoFromContext(currentResponsiveMode);
+    const currentLayoutMode = this.layoutContext.getLayoutMode();
+    this.updateViewportInfoFromLayoutMode(currentLayoutMode);
     this.updateLayoutStatus();
     
     // Setup responsive behavior
@@ -219,8 +220,8 @@ export class DebugPage {
     // Method 3: Listen for custom header position events (AppHeader responses)
     this.setupHeaderEventListener();
     
-    // Method 4: Try to access sidebar instance if available
-    this.tryDirectSidebarAccess();
+    // Method 4: Subscribe to layout mode changes for compact mode detection
+    this.setupLayoutModeSubscription();
     
     this.logToEventConsole('sidebar_events', 'ℹ️ Debug hooks established - waiting for events...');
   }
@@ -290,9 +291,10 @@ export class DebugPage {
    */
   private setupHeaderEventListener(): void {
     // Listen for custom header position events
-    document.addEventListener('header-position-updated', (event: CustomEvent) => {
+    document.addEventListener('header-position-updated', (event: Event) => {
+      const customEvent = event as CustomEvent;
       const timestamp = new Date().toLocaleTimeString();
-      const detail = event.detail;
+      const detail = customEvent.detail;
       
       this.logToEventConsole('header_events', `<span style="color: #10b981; font-weight: bold;">[${timestamp}] 🎯 POSITION UPDATE</span>`);
       this.logToEventConsole('header_events', `└─ Left: ${detail.headerLeft}px, Width: ${detail.headerWidth}px`);
@@ -303,44 +305,34 @@ export class DebugPage {
   }
   
   /**
-   * Try to access sidebar instance directly (fallback)
+   * Setup layout mode subscription for sidebar compact mode detection
    */
-  private tryDirectSidebarAccess(): void {
-    // Look for global app instance
-    let sidebar: Sidebar | null = null;
+  private setupLayoutModeSubscription(): void {
+    // Subscribe to layout mode changes to detect compact mode changes
+    this.sidebarDebugUnsubscribe = this.layoutContext.subscribe('layout-mode-change', (event: LayoutEvent) => {
+      const layoutMode = event.data as LayoutMode;
+      const timestamp = new Date().toLocaleTimeString();
+      const isCompact = layoutMode.isCompact;
+      const status = isCompact ? 'COMPACT' : 'NORMAL';
+      const statusColor = isCompact ? '#fbbf24' : '#3b82f6';
+      
+      // Log to sidebar events console
+      this.logToEventConsole('sidebar_events', `<span style="color: ${statusColor}; font-weight: bold;">[${timestamp}] 🎯 LAYOUT EVENT</span>`);
+      this.logToEventConsole('sidebar_events', `└─ Layout mode compact state: ${isCompact}`);
+      this.logToEventConsole('sidebar_events', `└─ Sidebar width: ${layoutMode.sidebar.width}px`);
+      this.logToEventConsole('sidebar_events', `└─ Layout type: ${layoutMode.type}`);
+    });
+    
+    // Log initial compact state
+    const currentLayoutMode = this.layoutContext.getLayoutMode();
+    const initialCompact = currentLayoutMode.isCompact;
+    this.logToEventConsole('sidebar_events', `✅ Subscribed to LayoutContext compact mode changes`);
+    this.logToEventConsole('sidebar_events', `ℹ️ Initial compact state from layout: ${initialCompact ? 'COMPACT' : 'NORMAL'}`);
+    
+    // Check for global app instance for additional debugging
     let appHeader: AppHeader | null = null;
-    
-    // Try various ways to get the instances
-    if ((window as any).app?.sidebar) {
-      sidebar = (window as any).app.sidebar;
-    } else if ((window as any).app?.header?.getSidebar) {
-      sidebar = (window as any).app.header.getSidebar();
-    }
-    
     if ((window as any).app?.header) {
       appHeader = (window as any).app.header;
-    }
-    
-    if (sidebar) {
-      try {
-        // Subscribe to sidebar compact mode changes
-        const sidebarHandler: CompactModeChangeHandler = (isCompact: boolean) => {
-          const timestamp = new Date().toLocaleTimeString();
-          const status = isCompact ? 'COMPACT' : 'NORMAL';
-          const statusColor = isCompact ? '#fbbf24' : '#3b82f6';
-          
-          this.logToEventConsole('sidebar_events', `<span style="color: ${statusColor}; font-weight: bold;">[${timestamp}] 🎯 DIRECT EVENT</span>`);
-          this.logToEventConsole('sidebar_events', `└─ Sidebar instance fired event: ${isCompact}`);
-        };
-        
-        this.sidebarDebugUnsubscribe = sidebar.onCompactModeChange(sidebarHandler);
-        this.logToEventConsole('sidebar_events', '✅ Successfully subscribed to sidebar instance events');
-        
-      } catch (error) {
-        this.logToEventConsole('sidebar_events', '❌ Failed to subscribe to sidebar instance: ' + (error as Error).message);
-      }
-    } else {
-      this.logToEventConsole('sidebar_events', 'ℹ️ Sidebar instance not accessible via global references');
     }
     
     if (appHeader) {
@@ -465,21 +457,9 @@ export class DebugPage {
   private setupResponsiveHandlers(): void {
     console.log('🎯 DebugPage - Setting up responsive mode subscriptions...');
     
-    // Subscribe to responsive mode changes
-    this.responsiveModeUnsubscribe = this.layoutContext.subscribe('responsive-mode-change', (event: LayoutEvent) => {
-      const responsiveMode = event.data as ResponsiveMode;
-      const timestamp = new Date().toLocaleTimeString();
-      
-      // Update viewport info display
-      this.updateViewportInfoFromContext(responsiveMode);
-      
-      // Log the responsive mode change
-      this.logToConsole(`<span style="color: #e67e22; font-weight: bold;">[${timestamp}] 📱 RESPONSIVE MODE CHANGE</span>`);
-      this.logToConsole(`└─ Mode: ${responsiveMode.type.toUpperCase()}`);
-      this.logToConsole(`└─ Viewport: ${responsiveMode.viewport.width}x${responsiveMode.viewport.height}`);
-      this.logToConsole(`└─ Breakpoints: Mobile≤${responsiveMode.breakpoints.mobile}px, Tablet≤${responsiveMode.breakpoints.tablet}px`);
-      this.logToConsole(`└─ Sidebar: ${responsiveMode.sidebarBehavior.isVisible ? 'visible' : 'hidden'}, ${responsiveMode.sidebarBehavior.canToggle ? 'toggleable' : 'fixed'}`);
-    });
+    // Note: 'responsive-mode-change' is not available in the current LayoutContext
+    // We'll rely on 'layout-mode-change' instead
+    // this.responsiveModeUnsubscribe = null;
     
     // Subscribe to layout mode changes  
     this.layoutModeUnsubscribe = this.layoutContext.subscribe('layout-mode-change', (event: LayoutEvent) => {
@@ -498,12 +478,9 @@ export class DebugPage {
     });
     
     // Initial state logging
-    const currentResponsiveMode = this.layoutContext.getResponsiveMode();
     const currentLayoutMode = this.layoutContext.getLayoutMode();
     
-    this.logToConsole('✅ Subscribed to LayoutContext responsive mode changes');
     this.logToConsole('✅ Subscribed to LayoutContext layout mode changes');
-    this.logToConsole(`📊 Initial responsive mode: ${currentResponsiveMode.type}`);
     this.logToConsole(`📊 Initial layout mode: ${currentLayoutMode.type}${currentLayoutMode.isCompact ? ' (compact)' : ''}`);
   }
   
@@ -528,12 +505,12 @@ export class DebugPage {
   }
   
   /**
-   * Update viewport information from LayoutContext responsive mode data
+   * Update viewport information from LayoutContext layout mode data
    */
-  private updateViewportInfoFromContext(responsiveMode: ResponsiveMode): void {
+  private updateViewportInfoFromLayoutMode(layoutMode: LayoutMode): void {
     const viewportInfo = document.getElementById('viewport_info');
     if (viewportInfo) {
-      const { viewport, type, breakpoints, sidebarBehavior } = responsiveMode;
+      const { viewport, type, breakpoints, sidebarBehavior } = layoutMode;
       
       viewportInfo.innerHTML = `
         <div style="color: #e67e22; font-weight: bold; margin-bottom: 8px;">📱 ${type.toUpperCase()} MODE</div>

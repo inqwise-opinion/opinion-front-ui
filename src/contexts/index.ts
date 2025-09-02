@@ -6,14 +6,10 @@
 import LayoutContextImpl from './LayoutContextImpl.js';
 import type { 
   LayoutContext,
-  LayoutContextFactory,
-  SidebarDimensions,
-  SidebarState,
+  LayoutContextFactory as ILayoutContextFactory,
   LayoutState,
   LayoutEventType,
-  ResponsiveModeType,
   LayoutModeType,
-  ResponsiveMode,
   LayoutMode,
   LayoutEvent,
   LayoutEventListener
@@ -22,12 +18,20 @@ import type {
 /**
  * Factory class for creating/getting LayoutContext instances
  */
-export class LayoutContextFactory implements LayoutContextFactory {
+export class LayoutContextFactory implements ILayoutContextFactory {
   /**
-   * Get the singleton LayoutContext instance
+   * Get the singleton LayoutContext instance (static method)
    * @returns LayoutContext interface instance
    */
   public static getInstance(): LayoutContext {
+    return LayoutContextImpl.getInstance();
+  }
+  
+  /**
+   * Get the singleton LayoutContext instance (instance method)
+   * @returns LayoutContext interface instance
+   */
+  public getInstance(): LayoutContext {
     return LayoutContextImpl.getInstance();
   }
 }
@@ -43,13 +47,9 @@ export function getLayoutContext(): LayoutContext {
 // Re-export all types for consumers
 export type {
   LayoutContext,
-  SidebarDimensions,
-  SidebarState,
   LayoutState,
   LayoutEventType,
-  ResponsiveModeType,
   LayoutModeType,
-  ResponsiveMode,
   LayoutMode,
   LayoutEvent,
   LayoutEventListener

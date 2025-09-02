@@ -6,7 +6,8 @@
 // Import component-scoped CSS
 import '../assets/styles/components/main-content.css';
 // Import layout context
-import { getLayoutContext, type LayoutContext, type LayoutEvent, type SidebarDimensions } from '../contexts/index.js';
+import { getLayoutContext, type LayoutContext, type LayoutEvent } from '../contexts/index.js';
+import type { Dimensions } from './Sidebar.js';
 
 export interface MainContentConfig {
   className?: string;
@@ -389,9 +390,8 @@ export class MainContent {
     // Note: No longer subscribing to viewport-change - sidebar-dimensions-change is sufficient
     // The sidebar dimensions already encode all the viewport information we need
 
-    // Set initial layout based on current state
-    const currentState = this.layoutContext.getState();
-    this.updateContentLayout(currentState.sidebar);
+    // Set initial layout based on current layout mode
+    this.updateContentLayout();
 
     console.log('MainContent - Successfully subscribed to layout context events ✅');
   }
@@ -400,24 +400,28 @@ export class MainContent {
    * Handle sidebar dimension changes from layout context
    */
   private handleSidebarDimensionsChange(event: LayoutEvent): void {
-    const dimensions = event.data as SidebarDimensions;
+    const dimensions = event.data as Dimensions;
     console.log('MainContent - Received sidebar dimensions change:', dimensions);
-    this.updateContentLayout(dimensions);
+    this.updateContentLayout();
   }
 
 
   /**
-   * Update content layout based on sidebar dimensions
+   * Update content layout based on current layout mode
    */
-  private updateContentLayout(dimensions: SidebarDimensions): void {
+  private updateContentLayout(): void {
     if (!this.container) return;
 
-    console.log('MainContent - Updating layout for sidebar dimensions:', dimensions);
+    // Get layout state directly from LayoutContext
+    const layoutMode = this.layoutContext.getLayoutMode();
+    const { isCompact, isMobile } = layoutMode;
 
-    // Update CSS classes based on sidebar state for layout adjustments
-    this.container.classList.toggle('content-sidebar-compact', dimensions.isCompact && !dimensions.isMobile);
-    this.container.classList.toggle('content-sidebar-normal', !dimensions.isCompact && !dimensions.isMobile);
-    this.container.classList.toggle('content-mobile', dimensions.isMobile);
+    console.log('MainContent - Updating layout for layout mode:', { type: layoutMode.type, isCompact, isMobile });
+
+    // Update CSS classes based on layout mode
+    this.container.classList.toggle('content-sidebar-compact', isCompact && !isMobile);
+    this.container.classList.toggle('content-sidebar-normal', !isCompact && !isMobile);
+    this.container.classList.toggle('content-mobile', isMobile);
 
     // Remove any inline positioning - let CSS Grid handle layout
     this.container.style.left = '';
@@ -427,14 +431,14 @@ export class MainContent {
     // Dispatch custom event for other components that might need to know
     const event = new CustomEvent('content-layout-updated', {
       detail: {
-        dimensions,
+        layoutMode: { type: layoutMode.type, isCompact, isMobile },
         contentElement: this.container
       }
     });
     document.dispatchEvent(event);
 
     console.log('MainContent - Layout updated:', {
-      dimensions,
+      layoutMode: { type: layoutMode.type, isCompact, isMobile },
       cssClasses: Array.from(this.container.classList).filter(cls => cls.startsWith('content-'))
     });
   }

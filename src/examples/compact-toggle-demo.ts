@@ -5,7 +5,7 @@
  * in the sidebar component.
  */
 
-import { Sidebar } from '../components/Sidebar.js';
+import SidebarComponent from '../components/SidebarComponent.js';
 import LayoutContextImpl from '../contexts/LayoutContextImpl.js';
 
 /**
@@ -15,7 +15,7 @@ export function demonstrateCompactToggle() {
   console.log('=== Compact Toggle Button Demo ===');
   
   const layoutContext = LayoutContextImpl.getInstance();
-  const sidebar = new Sidebar();
+  const sidebar = new SidebarComponent();
   
   // Initialize sidebar
   sidebar.init().then(() => {

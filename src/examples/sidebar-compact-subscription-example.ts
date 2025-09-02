@@ -5,11 +5,12 @@
  * in the Sidebar component and react to state changes.
  */
 
-import { Sidebar, CompactModeChangeHandler } from '../components/Sidebar';
+import SidebarComponent from '../components/SidebarComponent.js';
+import type { Sidebar } from '../components/Sidebar.js';
 
 // Example 1: Basic subscription
 export function basicCompactModeSubscription() {
-  const sidebar = new Sidebar();
+  const sidebar = new SidebarComponent();
   sidebar.init();
 
   // Subscribe to compact mode changes
@@ -39,7 +40,7 @@ export class LayoutManager {
   private footer: HTMLElement | null = null;
 
   constructor() {
-    this.sidebar = new Sidebar();
+    this.sidebar = new SidebarComponent();
     this.sidebar.init();
     this.setupEventListeners();
     this.findLayoutElements();
@@ -104,7 +105,7 @@ export class UserPreferencesManager {
   private preferences: { [key: string]: any } = {};
 
   constructor() {
-    this.sidebar = new Sidebar();
+    this.sidebar = new SidebarComponent();
     this.sidebar.init();
     this.loadPreferences();
     this.setupEventListeners();
@@ -180,7 +181,7 @@ export class SidebarAnalytics {
   private events: Array<{ event: string; data: any; timestamp: Date }> = [];
 
   constructor() {
-    this.sidebar = new Sidebar();
+    this.sidebar = new SidebarComponent();
     this.sidebar.init();
     this.setupTracking();
   }
@@ -229,7 +230,7 @@ export class SidebarAnalytics {
 
 // Example 5: Multiple Components Working Together
 export function multiComponentExample() {
-  const sidebar = new Sidebar();
+  const sidebar = new SidebarComponent();
   sidebar.init();
 
   // Component 1: Header adjustor

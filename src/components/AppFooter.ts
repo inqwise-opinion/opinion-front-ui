@@ -7,7 +7,8 @@
 import '../assets/styles/components/footer.css';
 // Import layout context
 import { getLayoutContext } from '../contexts/index.js';
-import type { LayoutEvent, SidebarDimensions, LayoutContext } from '../contexts/LayoutContext.js';
+import type { LayoutEvent, LayoutContext } from '../contexts/LayoutContext.js';
+import type { Dimensions } from '../components/Sidebar.js';
 
 export interface FooterConfig {
   showCopyright?: boolean;
@@ -334,9 +335,8 @@ export class AppFooter {
     // Note: No longer subscribing to viewport-change - sidebar-dimensions-change is sufficient
     // The sidebar dimensions already encode all the viewport information we need
 
-    // Set initial layout based on current state
-    const currentState = this.layoutContext.getState();
-    this.updateFooterLayout(currentState.sidebar);
+    // Set initial layout based on current layout mode
+    this.updateFooterLayout();
 
     console.log('AppFooter - Successfully subscribed to layout context events ✅');
   }
@@ -345,24 +345,28 @@ export class AppFooter {
    * Handle sidebar dimension changes from layout context
    */
   private handleSidebarDimensionsChange(event: LayoutEvent): void {
-    const dimensions = event.data as SidebarDimensions;
+    const dimensions = event.data as Dimensions;
     console.log('AppFooter - Received sidebar dimensions change:', dimensions);
-    this.updateFooterLayout(dimensions);
+    this.updateFooterLayout();
   }
 
 
   /**
-   * Update footer layout based on sidebar dimensions
+   * Update footer layout based on current layout mode
    */
-  private updateFooterLayout(dimensions: SidebarDimensions): void {
+  private updateFooterLayout(): void {
     if (!this.container) return;
 
-    console.log('AppFooter - Updating layout for sidebar dimensions:', dimensions);
+    // Get layout state directly from LayoutContext
+    const layoutMode = this.layoutContext.getLayoutMode();
+    const { isCompact, isMobile } = layoutMode;
 
-    // Update CSS classes based on sidebar state for layout adjustments
-    this.container.classList.toggle('footer-sidebar-compact', dimensions.isCompact && !dimensions.isMobile);
-    this.container.classList.toggle('footer-sidebar-normal', !dimensions.isCompact && !dimensions.isMobile);
-    this.container.classList.toggle('footer-mobile', dimensions.isMobile);
+    console.log('AppFooter - Updating layout for layout mode:', { type: layoutMode.type, isCompact, isMobile });
+
+    // Update CSS classes based on layout mode
+    this.container.classList.toggle('footer-sidebar-compact', isCompact && !isMobile);
+    this.container.classList.toggle('footer-sidebar-normal', !isCompact && !isMobile);
+    this.container.classList.toggle('footer-mobile', isMobile);
 
     // Remove any inline positioning - let CSS Grid handle layout
     this.container.style.left = '';
@@ -377,14 +381,14 @@ export class AppFooter {
     // Dispatch custom event for other components that might need to know
     const event = new CustomEvent('footer-layout-updated', {
       detail: {
-        dimensions,
+        layoutMode: { type: layoutMode.type, isCompact, isMobile },
         footerElement: this.container
       }
     });
     document.dispatchEvent(event);
 
     console.log('AppFooter - Layout updated:', {
-      dimensions,
+      layoutMode: { type: layoutMode.type, isCompact, isMobile },
       cssClasses: Array.from(this.container.classList).filter(cls => cls.startsWith('footer-'))
     });
   }

@@ -73,25 +73,20 @@ export class DashboardPage {
       
       const templateHtml = await response.text();
       
+      // Extract the body content from the template
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(templateHtml, 'text/html');
+      const bodyContent = doc.body.innerHTML;
+
       // Use MainContent component if available, otherwise fallback to #app
-      const targetElement = this.mainContent?.getElement() || document.getElementById('app');
-      
-      if (targetElement) {
-        // Extract the body content from the template
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(templateHtml, 'text/html');
-        const bodyContent = doc.body.innerHTML;
-        
-        // Set content using appropriate method
-        if (this.mainContent) {
-          this.mainContent.setContent(bodyContent);
-          console.log('Dashboard template loaded into semantic <main> element');
-        } else {
-          targetElement.innerHTML = bodyContent;
-          console.log('Dashboard template loaded into fallback #app element');
-        }
+      if (this.mainContent) {
+        this.mainContent.setContent(bodyContent);
+        console.log('Dashboard template loaded into semantic <main> element');
       } else {
-        throw new Error('No target element found for dashboard content');
+        const appEl = document.getElementById('app');
+        if (!appEl) throw new Error('No #app element found for dashboard content');
+        appEl.innerHTML = bodyContent;
+        console.log('Dashboard template loaded into fallback #app element');
       }
       
       console.log('Dashboard template loaded');

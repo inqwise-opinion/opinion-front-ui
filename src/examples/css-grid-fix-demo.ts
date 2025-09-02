@@ -6,7 +6,7 @@
  */
 
 import LayoutContextImpl from '../contexts/LayoutContextImpl.js';
-import { Sidebar } from '../components/Sidebar.js';
+import SidebarComponent from '../components/SidebarComponent.js';
 
 /**
  * Demonstrates the issue and solution
@@ -159,7 +159,7 @@ export async function testCompleteIntegration() {
   const layoutContext = LayoutContextImpl.getInstance();
   
   // Initialize sidebar (this will publish initial dimensions)
-  const sidebar = new Sidebar();
+  const sidebar = new SidebarComponent();
   await sidebar.init();
   
   console.log('✅ Sidebar initialized and published initial dimensions');

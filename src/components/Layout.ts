@@ -3,10 +3,18 @@
  * Manages all master page components (Header, Sidebar, Footer) and their coordination
  */
 
-import AppHeader, { HeaderUser } from './AppHeader';
-import AppFooter, { FooterConfig } from './AppFooter';
+import AppHeader, { HeaderUser } from "./AppHeader";
+import AppFooter, { FooterConfig } from "./AppFooter";
+import MainContent from "./MainContent";
 // Import layout context
-import { getLayoutContext, type LayoutContext, type LayoutEvent, type LayoutMode, type LayoutModeType } from '../contexts/index.js';
+import {
+  getLayoutContext,
+  type LayoutContext,
+  type LayoutEvent,
+  type LayoutMode,
+  type LayoutModeType,
+} from "../contexts/index.js";
+import LayoutContextImpl from "../contexts/LayoutContextImpl.js";
 
 export interface LayoutConfig {
   header?: {
@@ -25,6 +33,7 @@ export interface LayoutConfig {
 export class Layout {
   private header: AppHeader;
   private footer: AppFooter;
+  private mainContent: MainContent;
   private config: LayoutConfig;
   private isInitialized: boolean = false;
   private layoutContext: LayoutContext;
@@ -34,98 +43,108 @@ export class Layout {
     this.config = {
       header: {
         enabled: true,
-        brandTitle: 'Opinion',
-        brandHref: '/dashboard',
-        ...config.header
+        brandTitle: "Opinion",
+        brandHref: "/dashboard",
+        ...config.header,
       },
       sidebar: {
         enabled: true,
-        ...config.sidebar
+        ...config.sidebar,
       },
       footer: {
         enabled: true,
         showCopyright: true,
-        copyrightText: '© 2024 Inqwise Ltd',
+        copyrightText: "© 2024 Inqwise Ltd",
         showNavigation: true,
-        ...config.footer
-      }
+        ...config.footer,
+      },
     };
 
     // Initialize layout context
-    this.layoutContext = getLayoutContext();
-    
+    this.layoutContext = LayoutContextImpl.getInstance();
+
     // Initialize components
     this.header = new AppHeader();
     this.footer = new AppFooter(this.config.footer);
+    this.mainContent = new MainContent({
+      className: "main-content",
+      id: "app",
+      ariaLabel: "Main application content",
+    });
   }
 
   /**
    * Initialize the layout and all components
    */
   async init(): Promise<void> {
-    console.log('🏢 LAYOUT - init() START');
+    console.log("🏢 LAYOUT - init() START");
 
     try {
-      console.log('🏢 LAYOUT - Starting layout initialization...');
-      
+      console.log("🏢 LAYOUT - Starting layout initialization...");
+
       // Initialize header
       if (this.config.header?.enabled) {
-        console.log('🏢 LAYOUT - Header enabled, initializing...');
+        console.log("🏢 LAYOUT - Header enabled, initializing...");
         await this.header.init();
-        console.log('✅ LAYOUT - Header initialized successfully');
-        
+        console.log("✅ LAYOUT - Header initialized successfully");
+
         // Update brand if configured
         if (this.config.header.brandTitle) {
-          console.log('🏢 LAYOUT - Updating header brand...');
+          console.log("🏢 LAYOUT - Updating header brand...");
           this.header.updateBrand(
             this.config.header.brandTitle,
-            this.config.header.brandHref
+            this.config.header.brandHref,
           );
-          console.log('✅ LAYOUT - Header brand updated');
+          console.log("✅ LAYOUT - Header brand updated");
         }
       } else {
-        console.log('⚠️ LAYOUT - Header disabled in config');
+        console.log("⚠️ LAYOUT - Header disabled in config");
       }
 
+      // Initialize MainContent area (manages existing element)
+      console.log("🏢 LAYOUT - Initializing MainContent...");
+      this.mainContent.init();
+      console.log("✅ LAYOUT - MainContent initialized");
+
       // Note: Sidebar is now managed by the page component, not by Layout
-      console.log('🏢 LAYOUT - Sidebar management delegated to page component');
+      console.log("🏢 LAYOUT - Sidebar management delegated to page component");
 
       // Initialize footer
       if (this.config.footer?.enabled) {
-        console.log('🏢 LAYOUT - Footer enabled, initializing...');
+        console.log("🏢 LAYOUT - Footer enabled, initializing...");
         await this.footer.init();
-        console.log('✅ LAYOUT - Footer initialized successfully');
+        console.log("✅ LAYOUT - Footer initialized successfully");
       } else {
-        console.log('⚠️ LAYOUT - Footer disabled in config');
+        console.log("⚠️ LAYOUT - Footer disabled in config");
       }
 
       // Setup component coordination
-      console.log('🏢 LAYOUT - Setting up component coordination...');
+      console.log("🏢 LAYOUT - Setting up component coordination...");
       this.setupComponentCoordination();
-      console.log('✅ LAYOUT - Component coordination setup complete');
+      console.log("✅ LAYOUT - Component coordination setup complete");
 
       // Setup responsive behavior
-      console.log('🏢 LAYOUT - Setting up responsive behavior...');
+      console.log("🏢 LAYOUT - Setting up responsive behavior...");
       this.setupResponsiveBehavior();
-      console.log('✅ LAYOUT - Responsive behavior setup complete');
-      
+      console.log("✅ LAYOUT - Responsive behavior setup complete");
+
       // Subscribe to layout context events
-      console.log('🏢 LAYOUT - Subscribing to layout context events...');
+      console.log("🏢 LAYOUT - Subscribing to layout context events...");
       this.subscribeToLayoutContext();
-      console.log('✅ LAYOUT - Layout context subscription complete');
-      
+      console.log("✅ LAYOUT - Layout context subscription complete");
+
       // Mark layout as ready
       this.layoutContext.markReady();
 
       this.isInitialized = true;
-      console.log('✅ LAYOUT - Layout initialization completed successfully!');
+      console.log("✅ LAYOUT - Layout initialization completed successfully!");
     } catch (error) {
-      console.error('❌ LAYOUT - Layout initialization failed:', error);
-      console.error('❌ LAYOUT - Error stack:', error.stack);
+      console.error("❌ LAYOUT - Layout initialization failed:", error);
+      console.error("❌ LAYOUT - Error stack:", error.stack);
       throw error;
     }
-    
-    console.log('🏢 LAYOUT - init() END');
+
+    console.log("🏢 LAYOUT - init() END");
   }
 
   /**
@@ -134,46 +153,16 @@ export class Layout {
   private setupComponentCoordination(): void {
     // Note: Component coordination is now handled by the layout context
     // All components subscribe to layout context events for coordination
-    console.log('Layout - Component coordination delegated to layout context');
+    console.log("Layout - Component coordination delegated to layout context");
   }
 
   /**
    * Setup responsive behavior for the entire layout
    */
   private setupResponsiveBehavior(): void {
-    // Subscribe to layout context responsive mode changes
-    this.layoutContext.subscribe('responsive-mode-change', (event) => {
-      this.handleResponsiveModeChange(event.data);
-    });
-
     // Initial responsive setup based on current mode
-    const currentMode = this.layoutContext.getResponsiveMode();
-    this.handleResponsiveModeChange(currentMode);
-  }
-
-  /**
-   * Handle responsive mode changes from LayoutContext
-   */
-  private handleResponsiveModeChange(mode: any): void {
-    console.log(`Layout - Responsive mode changed to: ${mode.type}`, mode);
-    
-    // Update body classes for CSS targeting
-    document.body.classList.toggle('mobile-layout', mode.isMobile);
-    document.body.classList.toggle('tablet-layout', mode.isTablet);
-    document.body.classList.toggle('desktop-layout', mode.isDesktop);
-    
-    // Update components based on responsive mode
-    if (this.config.header?.enabled) {
-      // Header might need responsive updates
-      console.log('Layout - Updating header for responsive mode');
-    }
-    
-    if (this.config.footer?.enabled) {
-      // Footer might need responsive updates
-      console.log('Layout - Updating footer for responsive mode');
-    }
-    
-    console.log(`Layout - Responsive mode update complete for ${mode.type}`);
+    const currentMode = this.layoutContext.getLayoutMode();
+    this.updateComponentCSSClasses(currentMode);
   }
 
   /**
@@ -182,12 +171,19 @@ export class Layout {
   getHeader(): AppHeader {
     return this.header;
   }
-  
+
   /**
    * Get footer component reference
    */
   getFooter(): AppFooter {
     return this.footer;
+  }
+
+  /**
+   * Get main content component reference
+   */
+  getMainContent(): MainContent {
+    return this.mainContent;
   }
 
   /**
@@ -197,8 +193,8 @@ export class Layout {
     if (this.config.header?.enabled) {
       this.header.updateUser(user);
     }
-    
-    console.log('Layout - User updated across components');
+
+    console.log("Layout - User updated across components");
   }
 
   /**
@@ -211,8 +207,12 @@ export class Layout {
     if (config.header) {
       if (config.header.brandTitle || config.header.brandHref) {
         this.header.updateBrand(
-          config.header.brandTitle || this.config.header?.brandTitle || 'Opinion',
-          config.header.brandHref || this.config.header?.brandHref || '/dashboard'
+          config.header.brandTitle ||
+            this.config.header?.brandTitle ||
+            "Opinion",
+          config.header.brandHref ||
+            this.config.header?.brandHref ||
+            "/dashboard",
         );
       }
     }
@@ -269,17 +269,17 @@ export class Layout {
     headerVisible: boolean;
     footerVisible: boolean;
     sidebarEnabled: boolean;
-    viewport: 'mobile' | 'tablet' | 'desktop';
+    viewport: "mobile" | "tablet" | "desktop";
   } {
     const width = window.innerWidth;
     const isMobile = width <= 768;
     const isTablet = width <= 1024;
-    
+
     return {
       headerVisible: this.config.header?.enabled || false,
       footerVisible: this.config.footer?.enabled || false,
       sidebarEnabled: this.config.sidebar?.enabled || false,
-      viewport: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
+      viewport: isMobile ? "mobile" : isTablet ? "tablet" : "desktop",
     };
   }
 
@@ -291,144 +291,176 @@ export class Layout {
     this.footer.updateCopyrightText(text);
 
     // Update sidebar copyright (if it exists)
-    const sidebarCopyright = document.querySelector('.sidebar-footer .copyright-text') as HTMLElement;
+    const sidebarCopyright = document.querySelector(
+      ".sidebar-footer .copyright-text",
+    ) as HTMLElement;
     if (sidebarCopyright) {
       sidebarCopyright.textContent = text;
     }
 
-    console.log('Layout - Copyright text updated:', text);
+    console.log("Layout - Copyright text updated:", text);
   }
-  
+
   /**
    * Subscribe to layout context events
    */
   private subscribeToLayoutContext(): void {
-    console.log('Layout - Subscribing to layout context events...');
-    
+    console.log("Layout - Subscribing to layout context events...");
+
     // Subscribe to layout ready events
     const layoutReadyUnsubscribe = this.layoutContext.subscribe(
-      'layout-ready',
-      this.handleLayoutReady.bind(this)
+      "layout-ready",
+      this.handleLayoutReady.bind(this),
     );
     this.layoutUnsubscribers.push(layoutReadyUnsubscribe);
-    
+
     // Subscribe to sidebar dimension changes for coordination
     const sidebarDimensionsUnsubscribe = this.layoutContext.subscribe(
-      'sidebar-dimensions-change',
-      this.handleSidebarDimensionsChange.bind(this)
+      "sidebar-dimensions-change",
+      this.handleSidebarDimensionsChange.bind(this),
     );
     this.layoutUnsubscribers.push(sidebarDimensionsUnsubscribe);
-    
+
     // Subscribe to layout mode changes for CSS class management
     const layoutModeUnsubscribe = this.layoutContext.subscribe(
-      'layout-mode-change',
-      this.handleLayoutModeChange.bind(this)
+      "layout-mode-change",
+      (event) => {
+        if (event && event.data) {
+          this.handleLayoutModeChange(event);
+        } else {
+          console.error("Layout - Received invalid layout-mode-change event:", event);
+        }
+      },
     );
     this.layoutUnsubscribers.push(layoutModeUnsubscribe);
-    
-    console.log('Layout - Successfully subscribed to layout context events ✅');
+
+    console.log("Layout - Successfully subscribed to layout context events ✅");
   }
-  
+
   /**
    * Handle layout ready event
    */
   private handleLayoutReady(event: any): void {
-    console.log('Layout - Layout context marked as ready:', event.data);
-    
+    console.log("Layout - Layout context marked as ready:", event.data);
+
     // Perform any final coordination between components
     this.finalizeComponentCoordination();
   }
-  
+
   /**
    * Handle sidebar dimension changes for global coordination
    */
   private handleSidebarDimensionsChange(event: any): void {
     const dimensions = event.data;
-    console.log('Layout - Received sidebar dimensions change for coordination:', dimensions);
-    
+    console.log(
+      "Layout - Received sidebar dimensions change for coordination:",
+      dimensions,
+    );
+
     // Layout component can perform any global coordination here
     // Individual components already handle their own layout updates
-    
+
     // Example: Could update global CSS variables or dispatch custom events
-    document.documentElement.style.setProperty('--sidebar-width', `${dimensions.width}px`);
-    document.documentElement.style.setProperty('--content-margin-left', `${dimensions.rightBorder}px`);
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      `${dimensions.width}px`,
+    );
+    document.documentElement.style.setProperty(
+      "--content-margin-left",
+      `${dimensions.width}px`,
+    );
   }
-  
+
   /**
    * Finalize component coordination after layout is ready
    */
   private finalizeComponentCoordination(): void {
-    console.log('Layout - Finalizing component coordination...');
-    
+    console.log("Layout - Finalizing component coordination...");
+
     // Ensure all components are properly positioned
     const layoutState = this.layoutContext.getState();
-    
+    const sidebarDimensions = this.layoutContext.getSidebar()?.getDimensions();
+    const layoutMode = this.layoutContext.getLayoutMode();
+
     // Set global CSS variables for consistent layout
     const root = document.documentElement;
-    root.style.setProperty('--sidebar-width', `${layoutState.sidebar.width}px`);
-    root.style.setProperty('--sidebar-right-border', `${layoutState.sidebar.rightBorder}px`);
-    root.style.setProperty('--viewport-width', `${layoutState.viewport.width}px`);
-    root.style.setProperty('--viewport-height', `${layoutState.viewport.height}px`);
     
-    console.log('Layout - Component coordination finalized ✅');
+    // Use actual sidebar dimensions or fallback to layout mode defaults
+    const sidebarWidth = sidebarDimensions ? sidebarDimensions.width : layoutMode.sidebar.width;
+    root.style.setProperty("--sidebar-width", `${sidebarWidth}px`);
+    
+    // Use sidebar width for positioning (rightBorder was just width for left-aligned sidebars)
+    root.style.setProperty(
+      "--sidebar-right-border",
+      `${sidebarWidth}px`,
+    );
+    
+
+    console.log("Layout - Component coordination finalized ✅");
   }
-  
+
   /**
    * Handle layout mode changes and update component CSS classes
    */
   private handleLayoutModeChange(event: LayoutEvent): void {
     const layoutMode = event.data as LayoutMode;
-    console.log('Layout - Received layout mode change:', layoutMode);
-    
-    this.updateComponentCSSClasses(layoutMode);
+    console.log("Layout - Received layout mode change:", layoutMode);
+
+    if (layoutMode) {
+      this.updateComponentCSSClasses(layoutMode);
+    } else {
+      console.error("Layout - Received undefined layout mode data in event:", event);
+    }
   }
-  
+
   /**
    * Update CSS classes for all layout components based on layout mode
    */
   private updateComponentCSSClasses(layoutMode: LayoutMode): void {
     const { type, isCompact, isMobile, isTablet, isDesktop } = layoutMode;
-    
+
     console.log(`Layout - Updating component CSS classes for mode: ${type}`);
-    
+
     // Get all layout components
     const components = {
-      layout: document.querySelector('.app-layout') as HTMLElement,
-      sidebar: document.querySelector('.app-sidebar') as HTMLElement,
-      header: document.querySelector('.app-header') as HTMLElement,
-      content: document.querySelector('.app-content-scroll, .app-main') as HTMLElement,
-      footer: document.querySelector('.app-footer') as HTMLElement
+      layout: document.querySelector(".app-layout") as HTMLElement,
+      sidebar: document.querySelector(".app-sidebar") as HTMLElement,
+      header: document.querySelector(".app-header") as HTMLElement,
+      content: document.querySelector(
+        ".app-content-scroll, .app-main",
+      ) as HTMLElement,
+      footer: document.querySelector(".app-footer") as HTMLElement,
     };
-    
+
     // Define CSS class mappings for each mode
     const modeClasses = {
-      mobile: 'layout-mode-mobile',
-      tablet: 'layout-mode-tablet',
-      desktop: 'layout-mode-desktop',
-      'desktop-compact': 'layout-mode-desktop-compact'
+      mobile: "layout-mode-mobile",
+      tablet: "layout-mode-tablet",
+      desktop: "layout-mode-desktop",
+      "desktop-compact": "layout-mode-desktop-compact",
     };
-    
+
     const stateClasses = {
-      compact: 'layout-compact',
-      mobile: 'layout-mobile',
-      tablet: 'layout-tablet',
-      desktop: 'layout-desktop'
+      compact: "layout-compact",
+      mobile: "layout-mobile",
+      tablet: "layout-tablet",
+      desktop: "layout-desktop",
     };
-    
+
     // Remove all existing layout mode classes and add current ones
-    Object.values(components).forEach(element => {
+    Object.values(components).forEach((element) => {
       if (element) {
         // Remove all previous layout mode classes
-        Object.values(modeClasses).forEach(className => {
+        Object.values(modeClasses).forEach((className) => {
           element.classList.remove(className);
         });
-        Object.values(stateClasses).forEach(className => {
+        Object.values(stateClasses).forEach((className) => {
           element.classList.remove(className);
         });
-        
+
         // Add current layout mode class
         element.classList.add(modeClasses[type]);
-        
+
         // Add state-based classes
         if (isCompact) element.classList.add(stateClasses.compact);
         if (isMobile) element.classList.add(stateClasses.mobile);
@@ -436,48 +468,50 @@ export class Layout {
         if (isDesktop) element.classList.add(stateClasses.desktop);
       }
     });
-    
+
     // Update body classes for global CSS targeting
     const body = document.body;
-    Object.values(modeClasses).forEach(className => {
+    Object.values(modeClasses).forEach((className) => {
       body.classList.remove(className);
     });
-    Object.values(stateClasses).forEach(className => {
+    Object.values(stateClasses).forEach((className) => {
       body.classList.remove(className);
     });
-    
+
     body.classList.add(modeClasses[type]);
     if (isCompact) body.classList.add(stateClasses.compact);
     if (isMobile) body.classList.add(stateClasses.mobile);
     if (isTablet) body.classList.add(stateClasses.tablet);
     if (isDesktop) body.classList.add(stateClasses.desktop);
-    
+
     // Set CSS custom properties for mode-specific styling
     const root = document.documentElement;
-    root.style.setProperty('--layout-mode', type);
-    root.style.setProperty('--is-compact', isCompact ? '1' : '0');
-    root.style.setProperty('--is-mobile', isMobile ? '1' : '0');
-    root.style.setProperty('--is-tablet', isTablet ? '1' : '0');
-    root.style.setProperty('--is-desktop', isDesktop ? '1' : '0');
-    
-    console.log('Layout - CSS classes updated:', {
+    root.style.setProperty("--layout-mode", type);
+    root.style.setProperty("--is-compact", isCompact ? "1" : "0");
+    root.style.setProperty("--is-mobile", isMobile ? "1" : "0");
+    root.style.setProperty("--is-tablet", isTablet ? "1" : "0");
+    root.style.setProperty("--is-desktop", isDesktop ? "1" : "0");
+
+    console.log("Layout - CSS classes updated:", {
       mode: type,
       addedClasses: [
         modeClasses[type],
         ...(isCompact ? [stateClasses.compact] : []),
         ...(isMobile ? [stateClasses.mobile] : []),
         ...(isTablet ? [stateClasses.tablet] : []),
-        ...(isDesktop ? [stateClasses.desktop] : [])
+        ...(isDesktop ? [stateClasses.desktop] : []),
       ],
-      components: Object.keys(components).filter(key => components[key as keyof typeof components] !== null)
+      components: Object.keys(components).filter(
+        (key) => components[key as keyof typeof components] !== null,
+      ),
     });
-    
+
     // Dispatch custom event for other parts of the application
-    const customEvent = new CustomEvent('layout-mode-updated', {
+    const customEvent = new CustomEvent("layout-mode-updated", {
       detail: {
         layoutMode,
-        components
-      }
+        components,
+      },
     });
     document.dispatchEvent(customEvent);
   }
@@ -486,14 +520,17 @@ export class Layout {
    * Cleanup when layout is destroyed
    */
   destroy(): void {
-    console.log('Layout - Destroying...');
-    
+    console.log("Layout - Destroying...");
+
     // Unsubscribe from layout context events
-    this.layoutUnsubscribers.forEach(unsubscribe => {
+    this.layoutUnsubscribers.forEach((unsubscribe) => {
       try {
         unsubscribe();
       } catch (error) {
-        console.error('Layout - Error unsubscribing from layout context:', error);
+        console.error(
+          "Layout - Error unsubscribing from layout context:",
+          error,
+        );
       }
     });
     this.layoutUnsubscribers = [];
@@ -511,31 +548,35 @@ export class Layout {
 
     // Clean up global CSS variables
     const root = document.documentElement;
-    root.style.removeProperty('--sidebar-width');
-    root.style.removeProperty('--sidebar-right-border');
-    root.style.removeProperty('--content-margin-left');
-    root.style.removeProperty('--viewport-width');
-    root.style.removeProperty('--viewport-height');
-    root.style.removeProperty('--layout-mode');
-    root.style.removeProperty('--is-compact');
-    root.style.removeProperty('--is-mobile');
-    root.style.removeProperty('--is-tablet');
-    root.style.removeProperty('--is-desktop');
-    
+    root.style.removeProperty("--sidebar-width");
+    root.style.removeProperty("--sidebar-right-border");
+    root.style.removeProperty("--content-margin-left");
+    root.style.removeProperty("--layout-mode");
+    root.style.removeProperty("--is-compact");
+    root.style.removeProperty("--is-mobile");
+    root.style.removeProperty("--is-tablet");
+    root.style.removeProperty("--is-desktop");
+
     // Clean up layout mode classes from body
     const layoutModeClasses = [
-      'layout-mode-mobile', 'layout-mode-tablet', 'layout-mode-desktop', 'layout-mode-desktop-compact',
-      'layout-compact', 'layout-mobile', 'layout-tablet', 'layout-desktop'
+      "layout-mode-mobile",
+      "layout-mode-tablet",
+      "layout-mode-desktop",
+      "layout-mode-desktop-compact",
+      "layout-compact",
+      "layout-mobile",
+      "layout-tablet",
+      "layout-desktop",
     ];
-    layoutModeClasses.forEach(className => {
+    layoutModeClasses.forEach((className) => {
       document.body.classList.remove(className);
     });
 
     // Remove window event listeners
     // Note: In a real app, you'd want to keep track of listeners to remove them properly
-    
+
     this.isInitialized = false;
-    console.log('Layout - Destroyed');
+    console.log("Layout - Destroyed");
   }
 }
 
