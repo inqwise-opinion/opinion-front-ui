@@ -3,57 +3,44 @@
  * Provides clean interface-based access to layout management
  */
 
-import LayoutContextImpl from './LayoutContextImpl.js';
-import type { 
+import LayoutContextImpl from "./LayoutContextImpl";
+import type {
   LayoutContext,
-  LayoutContextFactory as ILayoutContextFactory,
-  LayoutState,
   LayoutEventType,
   LayoutModeType,
   LayoutMode,
   LayoutEvent,
-  LayoutEventListener
-} from './LayoutContext.js';
-
-/**
- * Factory class for creating/getting LayoutContext instances
- */
-export class LayoutContextFactory implements ILayoutContextFactory {
-  /**
-   * Get the singleton LayoutContext instance (static method)
-   * @returns LayoutContext interface instance
-   */
-  public static getInstance(): LayoutContext {
-    return LayoutContextImpl.getInstance();
-  }
-  
-  /**
-   * Get the singleton LayoutContext instance (instance method)
-   * @returns LayoutContext interface instance
-   */
-  public getInstance(): LayoutContext {
-    return LayoutContextImpl.getInstance();
-  }
-}
-
-/**
- * Convenience function for getting LayoutContext instance
- * @returns LayoutContext interface instance
- */
-export function getLayoutContext(): LayoutContext {
-  return LayoutContextImpl.getInstance();
-}
+  LayoutEventListener,
+  LayoutViewPort,
+} from "./LayoutContext";
 
 // Re-export all types for consumers
 export type {
   LayoutContext,
-  LayoutState,
   LayoutEventType,
   LayoutModeType,
   LayoutMode,
   LayoutEvent,
-  LayoutEventListener
+  LayoutEventListener,
+  LayoutViewPort,
 };
 
-// Default export is the factory function
-export default getLayoutContext;
+// Re-export the implementation class
+export { LayoutContextImpl };
+
+// Singleton instance for global access
+let layoutContextInstance: LayoutContextImpl | null = null;
+
+/**
+ * Get the global layout context instance
+ * Creates a singleton instance if it doesn't exist
+ */
+export function getLayoutContext(): LayoutContextImpl {
+  if (!layoutContextInstance) {
+    layoutContextInstance = new LayoutContextImpl();
+  }
+  return layoutContextInstance;
+}
+
+// Default export is the implementation class
+export default LayoutContextImpl;

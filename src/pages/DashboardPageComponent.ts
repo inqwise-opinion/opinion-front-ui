@@ -235,13 +235,8 @@ export class DashboardPageComponent extends PageComponent {
       document.body.removeAttribute('data-sidebar-state');
     }
     
-    // Notify footer component of sidebar state change
-    if (this.layout) {
-      const footer = this.layout.getFooter();
-      if (footer) {
-        footer.updateLayout(this.sidebarState);
-      }
-    }
+    // Footer layout is now handled automatically by the layout context
+    // No manual footer updates needed - CSS Grid handles responsive layout
     
     // Update copyright positioning
     this.updateCopyrightPosition();

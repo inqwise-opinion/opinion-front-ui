@@ -3,10 +3,11 @@
  * Tests compact toggle, state management, UI behavior, and integration with mobile menu
  */
 
-import { Sidebar, NavigationItem } from '../src/components/Sidebar';
+import SidebarComponent from '../src/components/SidebarComponent';
+import type { NavigationItem } from '../src/components/Sidebar';
 
 describe('Sidebar Compact Mode', () => {
-  let sidebar: Sidebar;
+  let sidebar: SidebarComponent;
   let sidebarElement: HTMLElement;
   let compactToggleButton: HTMLElement;
 
@@ -27,7 +28,7 @@ describe('Sidebar Compact Mode', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     
     // Initialize sidebar
-    sidebar = new Sidebar();
+    sidebar = new SidebarComponent();
     sidebar.init();
     
     // Get DOM references

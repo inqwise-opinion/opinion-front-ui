@@ -4,8 +4,8 @@
  */
 
 // Core layout components
-export { default as AppHeader } from './AppHeader';
-export { default as AppFooter } from './AppFooter';
+export { default as AppHeaderImpl } from './AppHeaderImpl';
+export { default as AppFooterImpl } from './AppFooterImpl';
 export { default as Layout } from './Layout';
 
 // Navigation components
@@ -16,8 +16,8 @@ export { default as UserMenu } from './UserMenu';
 export { default as PageComponent } from './PageComponent';
 
 // Note: Import TypeScript interfaces directly from source files:
-// - HeaderUser from './AppHeader'
-// - FooterConfig, FooterLink from './AppFooter'
+// - HeaderUser from './AppHeaderImpl'
+// - FooterConfig, FooterLink from './AppFooterImpl'
 // - LayoutConfig from './Layout'
 // - PageComponentConfig from './PageComponent'
 // - NavigationItem from './Sidebar'

@@ -4,7 +4,7 @@
  * This aligns with the refactored CSS-based layout approach
  */
 
-import AppHeader from '../src/components/AppHeader';
+import { AppHeaderImpl } from '../src/components/AppHeaderImpl';
 import { Sidebar } from '../src/components/Sidebar';
 
 // Mock UserMenu to avoid dependencies in AppHeader tests
@@ -21,7 +21,7 @@ jest.mock('../src/components/UserMenu', () => {
 });
 
 describe('AppHeader Compact Mode CSS Class Application', () => {
-  let appHeader: AppHeader;
+  let appHeader: AppHeaderImpl;
   let sidebar: Sidebar;
   let headerElement: HTMLElement;
   let sidebarElement: HTMLElement;
@@ -48,12 +48,12 @@ describe('AppHeader Compact Mode CSS Class Application', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     
     // Initialize AppHeader - this will create and initialize its own Sidebar
-    appHeader = new AppHeader();
+    appHeader = new AppHeaderImpl();
     await appHeader.init();
     
     // Get references
     sidebar = appHeader.getSidebar() as Sidebar;
-    headerElement = appHeader.getContainer() as HTMLElement;
+    headerElement = document.querySelector('.app-header') as HTMLElement;
     sidebarElement = document.getElementById('app_sidebar') as HTMLElement;
   });
 

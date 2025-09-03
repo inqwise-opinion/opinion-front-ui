@@ -3,20 +3,23 @@
  * Defines the contract for layout management and coordination
  */
 
-import type { Sidebar } from '../components/Sidebar.js';
+import type { Sidebar } from "../components/Sidebar.js";
 
-
-export interface LayoutState {
-  layoutModeType: LayoutModeType;
-  viewport: {
-    width: number;
-    height: number;
-  };
+export interface LayoutViewPort {
+  width: number;
+  height: number;
 }
 
-export type LayoutEventType = 'sidebar-dimensions-change' | 'layout-ready' | 'layout-mode-change';
+export type LayoutEventType =
+  | "sidebar-dimensions-change"
+  | "layout-ready"
+  | "layout-mode-change";
 
-export type LayoutModeType = 'mobile' | 'tablet' | 'desktop' | 'desktop-compact';
+export type LayoutModeType =
+  | "mobile"
+  | "tablet"
+  | "desktop"
+  | "desktop-compact";
 
 export interface LayoutMode {
   type: LayoutModeType;
@@ -33,9 +36,9 @@ export interface LayoutMode {
     isVisible: boolean;
   };
   breakpoints: {
-    mobile: number;    // ≤ 768px
-    tablet: number;    // 769px - 1024px  
-    desktop: number;   // > 1024px
+    mobile: number; // ≤ 768px
+    tablet: number; // 769px - 1024px
+    desktop: number; // > 1024px
   };
   sidebarBehavior: {
     isVisible: boolean;
@@ -59,13 +62,15 @@ export type LayoutEventListener = (event: LayoutEvent) => void;
  */
 export interface LayoutContext {
   // Event Management
-  subscribe(eventType: LayoutEventType, listener: LayoutEventListener): () => void;
+  subscribe(
+    eventType: LayoutEventType,
+    listener: LayoutEventListener,
+  ): () => void;
   emit(eventType: LayoutEventType, data: any): void;
-  
+
   // State Management
-  getState(): LayoutState;
-  getViewport(): LayoutState['viewport'];
-  
+  getViewport(): LayoutViewPort;
+
   // Layout Management
   markReady(): void;
   calculateContentArea(): {
@@ -73,33 +78,45 @@ export interface LayoutContext {
     width: number;
     availableWidth: number;
   };
-  
+
   // Layout Mode Management
   getLayoutMode(): LayoutMode;
-  isMobile(): boolean;
-  isTablet(): boolean;
-  isDesktop(): boolean;
-  getBreakpoints(): LayoutMode['breakpoints'];
+  getBreakpoints(): LayoutMode["breakpoints"];
   canSidebarToggle(): boolean;
-  calculateSidebarDimensions(isCompact?: boolean): { width: number; isVisible: boolean };
-  
+  calculateSidebarDimensions(isCompact?: boolean): {
+    width: number;
+    isVisible: boolean;
+  };
+
   // Sidebar Instance Management
   registerSidebar(sidebar: Sidebar): void;
   unregisterSidebar(): void;
   getSidebar(): Sidebar | null;
   hasSidebar(): boolean;
   withSidebar<T>(callback: (sidebar: Sidebar) => T): T | null;
-  
+
+  // Component Registration System
+  registerLayout(layout: any): void;
+  registerHeader(header: any): void;
+  registerFooter(footer: any): void;
+  registerMainContent(mainContent: any): void;
+  getLayout(): any | null;
+  getHeader(): any | null;
+  getFooter(): any | null;
+  getMainContent(): any | null;
+  getRegisteredComponents(): {
+    layout: any | null;
+    header: any | null;
+    footer: any | null;
+    mainContent: any | null;
+    sidebar: Sidebar | null;
+  };
+  areAllComponentsRegistered(): boolean;
+  unregisterAllComponents(): void;
+
   // Notification System
   notifySidebarDimensionsChanged(): void;
-  
+
   // Lifecycle
   destroy(): void;
-}
-
-/**
- * Factory function type for getting LayoutContext instance
- */
-export interface LayoutContextFactory {
-  getInstance(): LayoutContext;
 }

@@ -6,14 +6,14 @@
 // Import component-scoped CSS
 import "../assets/styles/components/sidebar.css";
 // Import layout context
-import { getLayoutContext, type LayoutContext } from "../contexts/index.js";
+import { getLayoutContext, type LayoutContext } from "../contexts/index";
 // Import sidebar interfaces and types
 import {
   Sidebar,
   SidebarConfig,
   NavigationItem,
   Dimensions,
-} from "./Sidebar.js";
+} from "./Sidebar";
 
 export class SidebarComponent implements Sidebar {
   private sidebar: HTMLElement | null = null;
@@ -466,7 +466,8 @@ export class SidebarComponent implements Sidebar {
    */
   private setCompactMode(compact: boolean): void {
     // Block compact mode on mobile - mobile uses overlay mode instead
-    if (this.layoutContext.isMobile()) {
+    const layoutMode = this.layoutContext.getLayoutMode();
+    if (layoutMode.isMobile) {
       console.log(
         "📱 Sidebar - Compact mode blocked on mobile (uses overlay mode instead)",
       );
@@ -838,7 +839,8 @@ export class SidebarComponent implements Sidebar {
     }
 
     // Use layout context to check if we're in mobile mode
-    if (!this.layoutContext.isMobile()) {
+    const layoutMode = this.layoutContext.getLayoutMode();
+    if (!layoutMode.isMobile) {
       console.warn(
         "⚠️ Sidebar - toggleMobileVisibility called but not in mobile mode",
       );

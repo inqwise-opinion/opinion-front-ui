@@ -3,7 +3,7 @@
  * Tests subscription to sidebar compact mode changes and dynamic positioning
  */
 
-import AppHeader from '../src/components/AppHeader';
+import { AppHeaderImpl } from '../src/components/AppHeaderImpl';
 import { Sidebar } from '../src/components/Sidebar';
 
 // Mock UserMenu to avoid dependencies in AppHeader tests
@@ -20,7 +20,7 @@ jest.mock('../src/components/UserMenu', () => {
 });
 
 describe('AppHeader Compact Mode Subscription', () => {
-  let appHeader: AppHeader;
+  let appHeader: AppHeaderImpl;
   let sidebar: Sidebar;
   let headerElement: HTMLElement;
 
@@ -49,12 +49,12 @@ describe('AppHeader Compact Mode Subscription', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     
     // Initialize AppHeader - this will create and initialize its own Sidebar
-    appHeader = new AppHeader();
+    appHeader = new AppHeaderImpl();
     await appHeader.init();
     
     // Get references
     sidebar = appHeader.getSidebar() as Sidebar;
-    headerElement = appHeader.getContainer() as HTMLElement;
+    headerElement = document.querySelector('.app-header') as HTMLElement;
   });
 
   afterEach(() => {
@@ -91,7 +91,7 @@ describe('AppHeader Compact Mode Subscription', () => {
 
     test('should handle subscription when sidebar is not available', async () => {
       // Create AppHeader without sidebar
-      const headerWithoutSidebar = new AppHeader();
+      const headerWithoutSidebar = new AppHeaderImpl();
       
       // Directly set sidebar to null
       (headerWithoutSidebar as any).sidebar = null;
@@ -487,7 +487,7 @@ describe('AppHeader Compact Mode Subscription', () => {
 
     test('should not throw when destroying without subscription', async () => {
       // Create header without successful sidebar initialization
-      const headerWithoutSidebar = new AppHeader();
+      const headerWithoutSidebar = new AppHeaderImpl();
       (headerWithoutSidebar as any).sidebarCompactModeUnsubscribe = null;
       
       // Should not throw

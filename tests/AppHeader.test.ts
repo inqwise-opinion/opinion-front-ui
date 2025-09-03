@@ -3,10 +3,11 @@
  * Tests page title updates, breadcrumb management, responsive behavior, and accessibility
  */
 
-import { AppHeader, HeaderUser } from '../src/components/AppHeader';
+import { AppHeaderImpl } from '../src/components/AppHeaderImpl';
+import type { HeaderUser } from '../src/components/AppHeader';
 
 describe('AppHeader - Title Functionality', () => {
-  let appHeader: AppHeader;
+  let appHeader: AppHeaderImpl;
 
   beforeEach(() => {
     // Set up DOM environment
@@ -50,7 +51,7 @@ describe('AppHeader - Title Functionality', () => {
 
   describe('Header Structure and Title Creation', () => {
     test('should create header with default title structure', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const headerElement = document.querySelector('.app-header');
@@ -65,7 +66,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should create breadcrumb structure with correct elements', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const breadcrumbList = document.querySelector('.breadcrumb-list');
@@ -82,7 +83,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should have default "Dashboard" title', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const currentPageTitle = document.querySelector('#current_page_title');
@@ -90,7 +91,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should have proper ARIA structure for breadcrumbs', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const breadcrumbNav = document.querySelector('.header-breadcrumbs nav');
@@ -103,7 +104,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should have proper CSS classes applied', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const headerElement = document.querySelector('.app-header');
@@ -118,7 +119,7 @@ describe('AppHeader - Title Functionality', () => {
 
   describe('Page Title Updates', () => {
     beforeEach(async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
     });
 
@@ -193,7 +194,7 @@ describe('AppHeader - Title Functionality', () => {
 
   describe('Breadcrumb Management', () => {
     beforeEach(async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
     });
 
@@ -290,7 +291,7 @@ describe('AppHeader - Title Functionality', () => {
 
   describe('Brand Management', () => {
     beforeEach(async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
     });
 
@@ -333,7 +334,7 @@ describe('AppHeader - Title Functionality', () => {
     test('should show title on desktop viewport', async () => {
       Object.defineProperty(window, 'innerWidth', { value: 1280 });
       
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const headerCenter = document.querySelector('.header-center') as HTMLElement;
@@ -345,7 +346,7 @@ describe('AppHeader - Title Functionality', () => {
     test('should adjust title padding on mobile viewport', async () => {
       Object.defineProperty(window, 'innerWidth', { value: 375 });
       
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const headerCenter = document.querySelector('.header-center') as HTMLElement;
@@ -357,7 +358,7 @@ describe('AppHeader - Title Functionality', () => {
     test('should show title on tablet viewport', async () => {
       Object.defineProperty(window, 'innerWidth', { value: 768 });
       
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const headerCenter = document.querySelector('.header-center') as HTMLElement;
@@ -367,7 +368,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should handle viewport changes after initialization', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const headerCenter = document.querySelector('.header-center') as HTMLElement;
@@ -400,7 +401,7 @@ describe('AppHeader - Title Functionality', () => {
           appHeader.destroy();
         }
         
-        appHeader = new AppHeader();
+        appHeader = new AppHeaderImpl();
         await appHeader.init();
         
         appHeader.updatePageTitle(`Title at ${viewport}px`);
@@ -413,7 +414,7 @@ describe('AppHeader - Title Functionality', () => {
 
   describe('Title Styling and CSS Classes', () => {
     beforeEach(async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
     });
 
@@ -454,7 +455,7 @@ describe('AppHeader - Title Functionality', () => {
 
   describe('Title Accessibility', () => {
     beforeEach(async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
     });
 
@@ -497,13 +498,13 @@ describe('AppHeader - Title Functionality', () => {
       // Clear the DOM
       document.body.innerHTML = '';
       
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       
       await expect(appHeader.init()).resolves.not.toThrow();
     });
 
     test('should handle multiple rapid title updates', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const titles = ['Title 1', 'Title 2', 'Title 3', 'Title 4', 'Title 5'];
@@ -517,7 +518,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should handle breadcrumb updates with null values', () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       return appHeader.init().then(() => {
         expect(() => {
           appHeader.updateBreadcrumbs('Main', undefined);
@@ -529,7 +530,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should handle DOM manipulation after initialization', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       // Simulate external DOM changes
@@ -543,7 +544,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should handle window resize events', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       // Multiple resize events
@@ -559,7 +560,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should handle destruction and recreation', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       appHeader.updatePageTitle('First Title');
@@ -569,7 +570,7 @@ describe('AppHeader - Title Functionality', () => {
       // Destroy and recreate
       appHeader.destroy();
       
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const newTitle = document.querySelector('#current_page_title')?.textContent;
@@ -579,7 +580,7 @@ describe('AppHeader - Title Functionality', () => {
 
   describe('Performance and Memory Management', () => {
     test('should handle many title updates efficiently', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const startTime = performance.now();
@@ -600,7 +601,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should not create memory leaks with rapid updates', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const initialChildCount = document.querySelector('.header-breadcrumbs')?.children.length;
@@ -615,7 +616,7 @@ describe('AppHeader - Title Functionality', () => {
     });
 
     test('should cleanup event listeners on destroy', async () => {
-      appHeader = new AppHeader();
+      appHeader = new AppHeaderImpl();
       await appHeader.init();
       
       const headerElement = document.querySelector('.app-header');

@@ -5,8 +5,8 @@
  */
 
 import { Sidebar } from '../components/Sidebar';
-import { AppHeader } from '../components/AppHeader';
-import { AppFooter } from '../components/AppFooter';
+import { AppHeaderImpl } from '../components/AppHeaderImpl';
+import { AppFooterImpl } from '../components/AppFooterImpl';
 import { MainContent } from '../components/MainContent';
 import { globalEventBus, AppEvents } from '../utils/EventBus';
 
@@ -21,8 +21,8 @@ export async function testLayoutIntegration(): Promise<boolean> {
     console.log('🔧 Testing component initialization...');
     
     const sidebar = new Sidebar();
-    const header = new AppHeader();
-    const footer = new AppFooter();
+    const header = new AppHeaderImpl();
+    const footer = new AppFooterImpl();
     const mainContent = new MainContent();
 
     // Initialize components
@@ -114,8 +114,8 @@ export async function demoCleanLayout(): Promise<void> {
 
   // Initialize components
   const sidebar = new Sidebar();
-  const header = new AppHeader();
-  const footer = new AppFooter();
+  const header = new AppHeaderImpl();
+  const footer = new AppFooterImpl();
   const mainContent = new MainContent();
 
   // Initialize in proper order

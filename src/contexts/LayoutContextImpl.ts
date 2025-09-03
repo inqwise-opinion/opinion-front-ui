@@ -3,56 +3,47 @@
  * Provides a centralized event system for layout components
  */
 
-import type { Dimensions, Sidebar } from "../components/Sidebar.js";
+import type { Dimensions, Sidebar } from "../components/Sidebar";
 import type {
   LayoutContext,
-  LayoutContextFactory,
-  LayoutState,
   LayoutEventType,
   LayoutModeType,
   LayoutMode,
   LayoutEvent,
   LayoutEventListener,
-} from "./LayoutContext.js";
+  LayoutViewPort,
+} from "./LayoutContext";
 
 export class LayoutContextImpl implements LayoutContext {
-  private static instance: LayoutContextImpl | null = null;
   private listeners: Map<LayoutEventType, Set<LayoutEventListener>> = new Map();
-  private state: LayoutState;
+  private viewport: LayoutViewPort;
+  private modeType: LayoutModeType;
   private layoutMode: LayoutMode;
   private resizeObserver: ResizeObserver | null = null;
   private resizeTimeout: NodeJS.Timeout | null = null;
   private sidebarInstance: Sidebar | null = null;
+  
+  // Component registry
+  private layoutInstance: any = null;
+  private headerInstance: any = null;
+  private footerInstance: any = null;
+  private mainContentInstance: any = null;
 
   public constructor() {
-    this.state = this.getInitialState();
+    this.viewport = this.getViewPort();
+    this.modeType = this.identifyModeType(this.viewport);
     this.layoutMode = this.getInitialLayoutMode();
     this.setupViewportObserver();
-    console.log("LayoutContext - Initialized with state:", this.state);
+    console.log("LayoutContext - Initialized with viewport:", this.viewport);
     console.log("LayoutContext - Initialized layout mode:", this.layoutMode);
   }
 
-  /**
-   * Get singleton instance
-   */
-  public static getInstance(): LayoutContextImpl {
-    if (!LayoutContextImpl.instance) {
-      LayoutContextImpl.instance = new LayoutContextImpl();
-    }
-    return LayoutContextImpl.instance;
-  }
+  private identifyModeType(viewport: LayoutViewPort): LayoutModeType {
+    const isMobile = viewport.width <= 768;
+    const isTablet = viewport.width > 768 && viewport.width <= 1024;
+    const isDesktop = viewport.width > 1024;
 
-  /**
-   * Get initial layout state
-   */
-  private getInitialState(): LayoutState {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const isMobile = width <= 768;
-    const isTablet = width > 768 && width <= 1024;
-    const isDesktop = width > 1024;
-    
-    // Determine initial layout mode type
+    // Determine layout mode type
     let layoutModeType: LayoutModeType;
     if (isMobile) {
       layoutModeType = "mobile";
@@ -62,12 +53,16 @@ export class LayoutContextImpl implements LayoutContext {
       layoutModeType = "desktop"; // Default to non-compact desktop
     }
 
+    return layoutModeType;
+  }
+
+  /**
+   * Get current viewport dimensions
+   */
+  private getViewPort(): LayoutViewPort {
     return {
-      layoutModeType,
-      viewport: {
-        width,
-        height,
-      },
+      width: window.innerWidth,
+      height: window.innerHeight,
     };
   }
 
@@ -100,13 +95,13 @@ export class LayoutContextImpl implements LayoutContext {
   private handleViewportChange(): void {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    
+
     // Calculate new layout mode type from viewport dimensions
     const newLayoutModeType = this.getLayoutModeTypeFromViewport(width);
-    const oldLayoutModeType = this.state.layoutModeType;
+    const oldLayoutModeType = this.modeType;
 
-    // Update viewport state only
-    this.state.viewport = { width, height };
+    // Update viewport state
+    this.viewport = { width, height };
 
     // Check if layout mode type changed
     const layoutModeTypeChanged = oldLayoutModeType !== newLayoutModeType;
@@ -251,13 +246,6 @@ export class LayoutContextImpl implements LayoutContext {
   }
 
   /**
-   * Get current layout state
-   */
-  public getState(): LayoutState {
-    return { ...this.state };
-  }
-
-  /**
    * Internal method to get current sidebar dimensions with fallback
    * Used internally by methods that need sidebar dimensions
    */
@@ -288,8 +276,8 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * Get current viewport info
    */
-  public getViewport() {
-    return { ...this.state.viewport };
+  public getViewport(): LayoutViewPort {
+    return { ...this.viewport };
   }
 
   /**
@@ -304,7 +292,7 @@ export class LayoutContextImpl implements LayoutContext {
     // Emit initial layout mode
     this.emitLayoutModeChange();
 
-    this.emit("layout-ready", this.state);
+    this.emit("layout-ready", this.getLayoutMode());
   }
 
   /**
@@ -315,7 +303,7 @@ export class LayoutContextImpl implements LayoutContext {
     width: number;
     availableWidth: number;
   } {
-    const viewport = this.state.viewport;
+    const viewport = this.viewport;
     const sidebar = this.getSidebarDimensionsInternal();
     const isMobile = this.isLayoutMobile();
 
@@ -360,7 +348,7 @@ export class LayoutContextImpl implements LayoutContext {
     // Remove window listeners
     // Note: In a real implementation, you'd want to track listeners to remove them properly
 
-    LayoutContextImpl.instance = null;
+    // No singleton cleanup needed
     console.log("LayoutContext - Destroyed");
   }
 
@@ -385,7 +373,7 @@ export class LayoutContextImpl implements LayoutContext {
       } else {
         // Desktop/tablet: update sidebar width in grid using CSS variables
         const sidebarWidth = `${sidebar.width}px`;
-        const isCompact = this.layoutMode.type === 'desktop-compact';
+        const isCompact = this.layoutMode.type === "desktop-compact";
         const compactWidth = `${
           isCompact
             ? this.layoutMode.sidebarBehavior.compactWidth
@@ -402,10 +390,7 @@ export class LayoutContextImpl implements LayoutContext {
 
         // Also update root for other components
         root.style.setProperty("--sidebar-width", sidebarWidth);
-        root.style.setProperty(
-          "--sidebar-right-border",
-          `${sidebar.width}px`,
-        );
+        root.style.setProperty("--sidebar-right-border", `${sidebar.width}px`);
 
         // Let CSS handle grid template columns via variables
         appLayout.style.gridTemplateColumns = "";
@@ -416,17 +401,14 @@ export class LayoutContextImpl implements LayoutContext {
       }
 
       // Update layout classes for CSS hooks
-      const isCompact = this.layoutMode.type === 'desktop-compact';
-      appLayout.classList.toggle(
-        "sidebar-compact",
-        isCompact && !isMobile,
-      );
+      const isCompact = this.layoutMode.type === "desktop-compact";
+      appLayout.classList.toggle("sidebar-compact", isCompact && !isMobile);
       appLayout.classList.toggle("mobile-layout", isMobile);
 
       console.log("LayoutContext - CSS Grid variables updated:", {
         sidebarWidth: sidebar.width,
         gridColumns: appLayout.style.gridTemplateColumns,
-        isCompact: this.layoutMode.type === 'desktop-compact',
+        isCompact: this.layoutMode.type === "desktop-compact",
         isMobile: isMobile,
       });
     }
@@ -436,23 +418,23 @@ export class LayoutContextImpl implements LayoutContext {
    * Calculate current layout mode based on viewport and sidebar state
    */
   private calculateLayoutMode(): LayoutMode {
-    const viewport = this.state.viewport;
+    const viewport = this.viewport;
     const sidebar = this.getSidebarDimensionsInternal();
     const isCompact = this.sidebarInstance?.isCompactMode() || false;
-    
+
     // Use current layout mode type and check for compact state
-    const currentType = this.state.layoutModeType;
+    const currentType = this.modeType;
     let type: LayoutModeType = currentType;
-    
+
     // Only apply compact mode for desktop layout mode type
-    if (currentType === 'desktop' && isCompact) {
-      type = 'desktop-compact';
+    if (currentType === "desktop" && isCompact) {
+      type = "desktop-compact";
     }
 
     // Calculate flags based on layout mode type
-    const isMobile = type === 'mobile';
-    const isTablet = type === 'tablet';
-    const isDesktop = type === 'desktop' || type === 'desktop-compact';
+    const isMobile = type === "mobile";
+    const isTablet = type === "tablet";
+    const isDesktop = type === "desktop" || type === "desktop-compact";
 
     return {
       type,
@@ -588,8 +570,8 @@ export class LayoutContextImpl implements LayoutContext {
       },
     };
 
-    // Update the layoutModeType in the state to match the calculated layout mode
-    this.state.layoutModeType = type;
+    // Update the mode type
+    this.modeType = type;
 
     // Only emit layout mode change event if the mode TYPE changed (mobile ↔ tablet ↔ desktop)
     if (modeTypeChanged) {
@@ -599,27 +581,6 @@ export class LayoutContextImpl implements LayoutContext {
       this.emit("layout-mode-change", this.layoutMode);
     }
     // Note: Viewport size changes within the same mode are tracked silently (no logging/events)
-  }
-
-  /**
-   * Check if current mode is mobile
-   */
-  public isMobile(): boolean {
-    return this.layoutMode.isMobile;
-  }
-
-  /**
-   * Check if current mode is tablet
-   */
-  public isTablet(): boolean {
-    return this.layoutMode.isTablet;
-  }
-
-  /**
-   * Check if current mode is desktop
-   */
-  public isDesktop(): boolean {
-    return this.layoutMode.isDesktop;
   }
 
   /**
@@ -665,21 +626,24 @@ export class LayoutContextImpl implements LayoutContext {
    * Check if current layout mode type is mobile
    */
   private isLayoutMobile(): boolean {
-    return this.state.layoutModeType === 'mobile';
+    return this.modeType === "mobile";
   }
 
   /**
    * Check if current layout mode type is tablet
    */
   private isLayoutTablet(): boolean {
-    return this.state.layoutModeType === 'tablet';
+    return this.modeType === "tablet";
   }
 
   /**
    * Check if current layout mode type is desktop (including compact)
    */
   private isLayoutDesktop(): boolean {
-    return this.state.layoutModeType === 'desktop' || this.state.layoutModeType === 'desktop-compact';
+    return (
+      this.modeType === "desktop" ||
+      this.modeType === "desktop-compact"
+    );
   }
 
   /**
@@ -687,11 +651,11 @@ export class LayoutContextImpl implements LayoutContext {
    */
   private getLayoutModeTypeFromViewport(width: number): LayoutModeType {
     if (width <= 768) {
-      return 'mobile';
+      return "mobile";
     } else if (width <= 1024) {
-      return 'tablet';
+      return "tablet";
     } else {
-      return 'desktop';
+      return "desktop";
     }
   }
 
@@ -768,6 +732,139 @@ export class LayoutContextImpl implements LayoutContext {
     return null;
   }
 
+  // =================================================================================
+  // Component Registration System
+  // =================================================================================
+
+  /**
+   * Register the Layout component instance with the context
+   * Allows the context to coordinate with the main layout controller
+   */
+  public registerLayout(layout: any): void {
+    if (this.layoutInstance && this.layoutInstance !== layout) {
+      console.warn(
+        "LayoutContext - Replacing existing Layout instance. This might indicate a setup issue.",
+      );
+    }
+
+    this.layoutInstance = layout;
+    console.log("LayoutContext - Layout component registered successfully");
+  }
+
+  /**
+   * Register the Header component instance with the context
+   * Allows the context to coordinate header-related layout changes
+   */
+  public registerHeader(header: any): void {
+    if (this.headerInstance && this.headerInstance !== header) {
+      console.warn(
+        "LayoutContext - Replacing existing Header instance. This might indicate a setup issue.",
+      );
+    }
+
+    this.headerInstance = header;
+    console.log("LayoutContext - Header component registered successfully");
+  }
+
+  /**
+   * Register the Footer component instance with the context
+   * Allows the context to coordinate footer-related layout changes
+   */
+  public registerFooter(footer: any): void {
+    if (this.footerInstance && this.footerInstance !== footer) {
+      console.warn(
+        "LayoutContext - Replacing existing Footer instance. This might indicate a setup issue.",
+      );
+    }
+
+    this.footerInstance = footer;
+    console.log("LayoutContext - Footer component registered successfully");
+  }
+
+  /**
+   * Register the MainContent component instance with the context
+   * Allows the context to coordinate content area layout changes
+   */
+  public registerMainContent(mainContent: any): void {
+    if (this.mainContentInstance && this.mainContentInstance !== mainContent) {
+      console.warn(
+        "LayoutContext - Replacing existing MainContent instance. This might indicate a setup issue.",
+      );
+    }
+
+    this.mainContentInstance = mainContent;
+    console.log("LayoutContext - MainContent component registered successfully");
+  }
+
+  /**
+   * Get the registered Layout instance
+   */
+  public getLayout(): any | null {
+    return this.layoutInstance;
+  }
+
+  /**
+   * Get the registered Header instance
+   */
+  public getHeader(): any | null {
+    return this.headerInstance;
+  }
+
+  /**
+   * Get the registered Footer instance
+   */
+  public getFooter(): any | null {
+    return this.footerInstance;
+  }
+
+  /**
+   * Get the registered MainContent instance
+   */
+  public getMainContent(): any | null {
+    return this.mainContentInstance;
+  }
+
+  /**
+   * Get all registered component instances
+   * Useful for debugging and coordination purposes
+   */
+  public getRegisteredComponents(): {
+    layout: any | null;
+    header: any | null;
+    footer: any | null;
+    mainContent: any | null;
+    sidebar: Sidebar | null;
+  } {
+    return {
+      layout: this.layoutInstance,
+      header: this.headerInstance,
+      footer: this.footerInstance,
+      mainContent: this.mainContentInstance,
+      sidebar: this.sidebarInstance,
+    };
+  }
+
+  /**
+   * Check if all core components are registered
+   */
+  public areAllComponentsRegistered(): boolean {
+    return !!(this.layoutInstance && this.headerInstance && this.footerInstance && this.mainContentInstance);
+  }
+
+  /**
+   * Unregister all components (used during cleanup)
+   */
+  public unregisterAllComponents(): void {
+    console.log("LayoutContext - Unregistering all components");
+    
+    this.layoutInstance = null;
+    this.headerInstance = null;
+    this.footerInstance = null;
+    this.mainContentInstance = null;
+    this.sidebarInstance = null;
+    
+    console.log("LayoutContext - All components unregistered");
+  }
 }
 
 export default LayoutContextImpl;

@@ -9,8 +9,8 @@ import { getLayoutContext, type LayoutEvent } from '../contexts/index.js';
 import type { Dimensions } from '../components/Sidebar.js';
 import type { LayoutContext } from '../contexts/LayoutContext.js';
 import SidebarComponent from '../components/SidebarComponent.js';
-import { AppHeader } from '../components/AppHeader.js';
-import { AppFooter } from '../components/AppFooter.js';
+import { AppHeaderImpl } from '../components/AppHeaderImpl.js';
+import { AppFooterImpl } from '../components/AppFooterImpl.js';
 import { MainContent } from '../components/MainContent.js';
 
 /**
@@ -74,8 +74,8 @@ export function componentSubscriptionExample() {
   console.log('=== Component Subscription Example ===');
   
   // All layout components now automatically subscribe to layout context events
-  const header = new AppHeader();
-  const footer = new AppFooter();
+  const header = new AppHeaderImpl();
+  const footer = new AppFooterImpl();
   const mainContent = new MainContent();
   
   // When initialized, each component:
@@ -109,8 +109,8 @@ export function completeLayoutInitialization() {
   
   // 2. Components are initialized in order
   const sidebar = new SidebarComponent();
-  const header = new AppHeader(); 
-  const footer = new AppFooter();
+  const header = new AppHeaderImpl();
+  const footer = new AppFooterImpl();
   const mainContent = new MainContent();
   
   // 3. Each component subscribes to layout context during init

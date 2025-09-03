@@ -6,9 +6,10 @@
 
 import { Sidebar } from '../components/Sidebar';
 import SidebarComponent from '../components/SidebarComponent';
-import { AppHeader } from '../components/AppHeader';
+import type { AppHeader } from '../components/AppHeader';
 import MainContent from '../components/MainContent';
-import LayoutContextImpl from '../contexts/LayoutContextImpl';
+import { getLayoutContext } from '../contexts/index';
+import type { LayoutContext } from '../contexts/LayoutContext';
 import type { LayoutEvent, LayoutMode } from '../contexts/LayoutContext';
 
 export class DebugPage {
@@ -18,12 +19,12 @@ export class DebugPage {
   private responsiveModeUnsubscribe: (() => void) | null = null;
   private layoutModeUnsubscribe: (() => void) | null = null;
   private mainContent: MainContent | null = null;
-  private layoutContext: LayoutContextImpl;
+  private layoutContext: LayoutContext;
 
   constructor(mainContent: MainContent | null = null) {
     console.log('🏗️ DEBUGPAGE - Constructor START');
     this.mainContent = mainContent;
-    this.layoutContext = LayoutContextImpl.getInstance();
+    this.layoutContext = getLayoutContext();
     console.log('✅ DEBUGPAGE - Constructor completed successfully');
     console.log('🏗️ DEBUGPAGE - Constructor END');
   }

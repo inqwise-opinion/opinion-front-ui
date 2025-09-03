@@ -6,8 +6,8 @@
 import { MockApiService } from './services/MockApiService';
 import DashboardPage from './pages/DashboardPage';
 import DebugPage from './pages/DebugPage';
-import AppHeader from './components/AppHeader';
-import AppFooter from './components/AppFooter';
+import { AppHeaderImpl } from './components/AppHeaderImpl';
+import AppFooterImpl from './components/AppFooterImpl';
 import MainContent from './components/MainContent';
 import Layout from './components/Layout';
 
@@ -17,8 +17,8 @@ export class OpinionApp {
   private apiService: MockApiService;
   
   // Global layout components
-  private appHeader: AppHeader | null = null;
-  private appFooter: AppFooter | null = null;
+  private appHeader: AppHeaderImpl | null = null;
+  private appFooter: AppFooterImpl | null = null;
   private mainContent: MainContent | null = null;
   private layout: Layout | null = null;
 
@@ -126,7 +126,7 @@ export class OpinionApp {
       
       // 3. Initialize AppFooter last
       console.log('🏗️ APP.TS - Initializing global AppFooter...');
-      this.appFooter = new AppFooter({ 
+      this.appFooter = new AppFooterImpl({
         showCopyright: true, 
         showNavigation: true,
         copyrightText: '&copy; 2024 Opinion - created by <a href="https://www.inqwise.com" target="_blank" rel="noopener noreferrer">inqwise</a>'

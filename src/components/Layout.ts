@@ -3,12 +3,11 @@
  * Manages all master page components (Header, Sidebar, Footer) and their coordination
  */
 
-import AppHeader, { HeaderUser } from "./AppHeader";
-import AppFooter, { FooterConfig } from "./AppFooter";
+import AppHeaderImpl, { HeaderUser } from "./AppHeaderImpl";
+import AppFooterImpl, { FooterConfig } from "./AppFooterImpl";
 import MainContent from "./MainContent";
 // Import layout context
 import {
-  getLayoutContext,
   type LayoutContext,
   type LayoutEvent,
   type LayoutMode,
@@ -31,12 +30,12 @@ export interface LayoutConfig {
 }
 
 export class Layout {
-  private header: AppHeader;
-  private footer: AppFooter;
+  private header: AppHeaderImpl;
+  private footer: AppFooterImpl;
   private mainContent: MainContent;
   private config: LayoutConfig;
   private isInitialized: boolean = false;
-  private layoutContext: LayoutContext;
+  private layoutContext: LayoutContextImpl;
   private layoutUnsubscribers: Array<() => void> = [];
 
   constructor(config: LayoutConfig = {}) {
@@ -60,17 +59,20 @@ export class Layout {
       },
     };
 
-    // Initialize layout context
-    this.layoutContext = LayoutContextImpl.getInstance();
+    // Initialize layout context first
+    this.layoutContext = new LayoutContextImpl();
 
     // Initialize components
-    this.header = new AppHeader();
-    this.footer = new AppFooter(this.config.footer);
+    this.header = new AppHeaderImpl();
+    this.footer = new AppFooterImpl(this.config.footer);
     this.mainContent = new MainContent({
       className: "main-content",
       id: "app",
       ariaLabel: "Main application content",
     });
+
+    // Register all components with the LayoutContext
+    this.registerComponentsWithContext();
   }
 
   /**
@@ -148,6 +150,39 @@ export class Layout {
   }
 
   /**
+   * Register all components with the LayoutContext instance
+   * This allows the context to know about and coordinate all layout components
+   */
+  private registerComponentsWithContext(): void {
+    console.log("Layout - Registering components with LayoutContext...");
+
+    // Register Layout itself with the context
+    this.layoutContext.registerLayout(this);
+    console.log("Layout - Registered Layout component with context");
+
+    // Register Header component
+    if (this.header) {
+      this.layoutContext.registerHeader(this.header);
+      console.log("Layout - Registered Header component with context");
+    }
+
+    // Register Footer component
+    if (this.footer) {
+      this.layoutContext.registerFooter(this.footer);
+      console.log("Layout - Registered Footer component with context");
+    }
+
+    // Register MainContent component
+    if (this.mainContent) {
+      this.layoutContext.registerMainContent(this.mainContent);
+      console.log("Layout - Registered MainContent component with context");
+    }
+
+    // Note: Sidebar will be registered separately when it's created by page components
+    console.log("Layout - Component registration with LayoutContext completed");
+  }
+
+  /**
    * Setup coordination between components
    */
   private setupComponentCoordination(): void {
@@ -168,14 +203,14 @@ export class Layout {
   /**
    * Get header component reference
    */
-  getHeader(): AppHeader {
+  getHeader(): AppHeaderImpl {
     return this.header;
   }
 
   /**
    * Get footer component reference
    */
-  getFooter(): AppFooter {
+  getFooter(): AppFooterImpl {
     return this.footer;
   }
 
@@ -184,6 +219,13 @@ export class Layout {
    */
   getMainContent(): MainContent {
     return this.mainContent;
+  }
+
+  /**
+   * Get layout context instance
+   */
+  getLayoutContext(): LayoutContext {
+    return this.layoutContext;
   }
 
   /**
@@ -217,10 +259,8 @@ export class Layout {
       }
     }
 
-    // Update footer config
-    if (config.footer) {
-      this.footer.updateConfig(config.footer);
-    }
+    // Footer config cannot be updated after initialization
+    // Footer configuration is set only at construction time
   }
 
   /**
@@ -285,20 +325,20 @@ export class Layout {
 
   /**
    * Update copyright text across components
+   * Note: Footer copyright is now immutable (set at construction time)
    */
   updateCopyrightText(text: string): void {
-    // Update footer copyright
-    this.footer.updateCopyrightText(text);
+    // Footer copyright is immutable - set only during construction
+    console.warn("Layout - Footer copyright text cannot be updated after initialization");
 
-    // Update sidebar copyright (if it exists)
+    // Update sidebar copyright (if it exists) - this may still be dynamic
     const sidebarCopyright = document.querySelector(
       ".sidebar-footer .copyright-text",
     ) as HTMLElement;
     if (sidebarCopyright) {
       sidebarCopyright.textContent = text;
+      console.log("Layout - Sidebar copyright text updated:", text);
     }
-
-    console.log("Layout - Copyright text updated:", text);
   }
 
   /**
@@ -328,7 +368,10 @@ export class Layout {
         if (event && event.data) {
           this.handleLayoutModeChange(event);
         } else {
-          console.error("Layout - Received invalid layout-mode-change event:", event);
+          console.error(
+            "Layout - Received invalid layout-mode-change event:",
+            event,
+          );
         }
       },
     );
@@ -378,23 +421,20 @@ export class Layout {
     console.log("Layout - Finalizing component coordination...");
 
     // Ensure all components are properly positioned
-    const layoutState = this.layoutContext.getState();
     const sidebarDimensions = this.layoutContext.getSidebar()?.getDimensions();
     const layoutMode = this.layoutContext.getLayoutMode();
 
     // Set global CSS variables for consistent layout
     const root = document.documentElement;
-    
+
     // Use actual sidebar dimensions or fallback to layout mode defaults
-    const sidebarWidth = sidebarDimensions ? sidebarDimensions.width : layoutMode.sidebar.width;
+    const sidebarWidth = sidebarDimensions
+      ? sidebarDimensions.width
+      : layoutMode.sidebar.width;
     root.style.setProperty("--sidebar-width", `${sidebarWidth}px`);
-    
+
     // Use sidebar width for positioning (rightBorder was just width for left-aligned sidebars)
-    root.style.setProperty(
-      "--sidebar-right-border",
-      `${sidebarWidth}px`,
-    );
-    
+    root.style.setProperty("--sidebar-right-border", `${sidebarWidth}px`);
 
     console.log("Layout - Component coordination finalized ✅");
   }
@@ -409,7 +449,10 @@ export class Layout {
     if (layoutMode) {
       this.updateComponentCSSClasses(layoutMode);
     } else {
-      console.error("Layout - Received undefined layout mode data in event:", event);
+      console.error(
+        "Layout - Received undefined layout mode data in event:",
+        event,
+      );
     }
   }
 
@@ -534,6 +577,14 @@ export class Layout {
       }
     });
     this.layoutUnsubscribers = [];
+
+    // Unregister all components from LayoutContext
+    this.layoutContext.unregisterAllComponents();
+
+    // Destroy LayoutContext
+    if (this.layoutContext) {
+      this.layoutContext.destroy();
+    }
 
     // Destroy all components
     if (this.header) {

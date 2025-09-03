@@ -3,7 +3,7 @@
  * This test aims to identify why visual resize doesn't work while unit tests pass
  */
 
-import AppHeader from '../src/components/AppHeader';
+import { AppHeaderImpl } from '../src/components/AppHeaderImpl';
 import { Sidebar } from '../src/components/Sidebar';
 
 // Mock UserMenu to avoid dependencies
@@ -20,7 +20,7 @@ jest.mock('../src/components/UserMenu', () => {
 });
 
 describe('AppHeader Resize Behavior Debug', () => {
-  let appHeader: AppHeader;
+  let appHeader: AppHeaderImpl;
   let sidebar: Sidebar;
   let headerElement: HTMLElement;
   let originalAddEventListener: typeof window.addEventListener;
@@ -63,12 +63,12 @@ describe('AppHeader Resize Behavior Debug', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     
     // Initialize AppHeader
-    appHeader = new AppHeader();
+    appHeader = new AppHeaderImpl();
     await appHeader.init();
     
     // Get references
     sidebar = appHeader.getSidebar() as Sidebar;
-    headerElement = appHeader.getContainer() as HTMLElement;
+    headerElement = document.querySelector('.app-header') as HTMLElement;
   });
 
   afterEach(() => {
