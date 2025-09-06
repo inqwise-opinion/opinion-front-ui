@@ -7,8 +7,8 @@
 .app-main.main-content {
   display: flex;
   flex-direction: column;
-  padding: 16px;
-  background-color: #f8fafc;
+  /* Padding handled by app-layout.css */
+  background-color: inherit; /* Use app-layout background */
   position: relative;
   
   /* Flexbox layout for internal content organization */
@@ -167,37 +167,9 @@
   position: relative;
 }
 
-.error-message {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #fef2f2;
-  z-index: 10;
-}
+/* Error message styles removed - handled by error-messages.css */
 
-.error-content {
-  text-align: center;
-  padding: 24px;
-  background-color: #ffffff;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.error-content h2 {
-  color: #dc2626;
-  margin-bottom: 12px;
-}
-
-.error-content p {
-  color: #991b1b;
-  margin-bottom: 16px;
-}
+/* Error content styles removed - handled by error-messages.css */
 
 .retry-button {
   background-color: #dc2626;
@@ -220,62 +192,20 @@
   outline-offset: 2px;
 }
 
-/* Desktop Layout Enhancements */
-@media (min-width: 1400px) {
-  .app-main.main-content {
-    padding: 20px 24px;
-    gap: 20px;
-  }
-  
+/* Responsive adjustments - consolidated to match app-layout.css breakpoints */
+@media (min-width: 1025px) {
+  /* Desktop - use base styles, no overrides needed */
   .main-content h1 {
-    font-size: 28px;
-  }
-  
-  .main-content h2 {
     font-size: 24px;
   }
   
   .main-content-card {
-    padding: 24px;
-  }
-  
-  .main-content-flex {
-    gap: 20px;
+    padding: 16px;
   }
 }
 
-@media (min-width: 1200px) and (max-width: 1399px) {
-  .app-main.main-content {
-    padding: 18px 20px;
-    gap: 18px;
-  }
-  
-  .main-content h1 {
-    font-size: 26px;
-  }
-  
-  .main-content-card {
-    padding: 20px;
-  }
-}
-
-@media (min-width: 1025px) and (max-width: 1199px) {
-  .app-main.main-content {
-    padding: 16px 20px;
-  }
-  
-  .main-content-card {
-    padding: 18px;
-  }
-}
-
-/* Tablet adjustments */
 @media (min-width: 769px) and (max-width: 1024px) {
-  .app-main.main-content {
-    padding: 16px 18px;
-    gap: 16px;
-  }
-  
+  /* Tablet adjustments */
   .main-content h1 {
     font-size: 22px;
   }
@@ -285,13 +215,8 @@
   }
 }
 
-/* Mobile adjustments */
 @media (max-width: 768px) {
-  .app-main.main-content {
-    padding: 12px;
-    gap: 12px;
-  }
-  
+  /* Mobile adjustments */
   .main-content-flex-row {
     flex-direction: column;
     gap: 12px;
@@ -329,8 +254,7 @@
 }
 
 .main-content.content-mobile {
-  /* Mobile-specific main content adjustments */
-  padding: 16px !important;
+  /* Mobile-specific main content adjustments - padding handled by app-layout.css */
 }
 
 /* PageComponent positioning and layout */
@@ -384,7 +308,8 @@
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-@media (min-width: 1200px) {
+/* Grid layouts consolidated to use main app breakpoints */
+@media (min-width: 1025px) {
   .main-content-grid {
     gap: 24px;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -407,12 +332,6 @@
   .main-content-2col,
   .main-content-3col {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (min-width: 1025px) and (max-width: 1199px) {
-  .main-content-3col {
-    grid-template-columns: 1fr 1fr;
   }
 }
 

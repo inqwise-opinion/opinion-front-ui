@@ -163,7 +163,6 @@ export class SidebarComponent implements Sidebar {
           <!-- Desktop/Tablet compact toggle button -->
           <button class="compact-toggle-btn"
                   type="button"
-                  title="${this.compactMode ? "Expand sidebar" : "Compact sidebar"}"
                   aria-label="${this.compactMode ? "Expand sidebar" : "Compact sidebar"}"
                   data-compact="${this.compactMode}">
             <span class="material-icons compact-icon">
@@ -174,7 +173,6 @@ export class SidebarComponent implements Sidebar {
           <!-- Mobile close button -->
           <button class="mobile-close-btn"
                   type="button"
-                  title="Close menu"
                   aria-label="Close menu">
             <span class="material-icons" style="font-size: 20px;">close</span>
           </button>
@@ -216,11 +214,6 @@ export class SidebarComponent implements Sidebar {
           : "";
 
         if (item.expandable && item.children) {
-          // Create expandable item title with caption if available
-          const expandableTitle = item.caption
-            ? `${item.text} - ${item.caption}`
-            : item.text;
-
           return `
           <li class="nav-item nav-item-expandable">
             <button class="nav-link nav-link-expandable ${isActive}"
@@ -228,8 +221,7 @@ export class SidebarComponent implements Sidebar {
                     data-expandable="true"
                     aria-expanded="${item.expanded ? "true" : "false"}"
                     role="menuitem"
-                    tabindex="0"
-                    title="${expandableTitle}">
+                    tabindex="0">
               <span class="nav-icon material-icons" data-icon="${item.icon}">${item.icon}</span>
               <span class="nav-text">${item.text}</span>
               ${badge}
@@ -238,16 +230,12 @@ export class SidebarComponent implements Sidebar {
             <ul class="nav-submenu" aria-expanded="${item.expanded ? "true" : "false"}" role="menu">
               ${item.children
                 .map((child) => {
-                  const childTitle = child.caption
-                    ? `${child.text} - ${child.caption}`
-                    : child.text;
                   return `
                   <li class="nav-subitem">
                     <a class="nav-sublink ${child.active ? "nav-sublink-active" : ""}"
                        href="${child.href}"
                        data-nav-id="${child.id}"
                        role="menuitem"
-                       title="${childTitle}"
                        ${child.active ? 'aria-current="page"' : ""}>
                       <span class="nav-subicon material-icons">${child.icon}</span>
                       <span class="nav-subtext">${child.text}</span>
@@ -264,23 +252,11 @@ export class SidebarComponent implements Sidebar {
             ? `<span class="nav-caption">${item.caption}</span>`
             : "";
 
-          // Create tooltip content - show caption if available, otherwise just title
-          const tooltipContent = item.caption
-            ? `${item.text} - ${item.caption}`
-            : item.text;
-          // Create title attribute content (for native tooltips)
-          const titleContent = item.caption
-            ? `${item.text} - ${item.caption}`
-            : item.text;
-
           return `
           <li class="nav-item">
             <a class="nav-link ${isActive}"
                href="${item.href}"
                data-nav-id="${item.id}"
-               data-title="${item.text}"
-               data-tooltip="${tooltipContent}"
-               title="${titleContent}"
                role="menuitem"
                ${ariaCurrent}
                tabindex="0">

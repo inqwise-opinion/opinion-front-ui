@@ -9,60 +9,13 @@
    LAYOUT MODE-SPECIFIC STYLES
    ==================================== */
 
-/* Mobile Layout Mode */
-.layout-mode-mobile .app-header {
-  /* Mobile-specific header styles */
-  padding: 8px 16px;
-  font-size: 14px;
-}
+/* Layout mode-specific styles - removed conflicting padding/sizing rules */
+/* All layout positioning and padding is handled by app-layout.css */
 
 .layout-mode-mobile .app-sidebar {
-  /* Mobile sidebar is typically hidden or overlay */
+  /* Mobile sidebar overlay behavior */
   transform: translateX(-100%);
   transition: transform 0.3s ease;
-}
-
-.layout-mode-mobile .app-main {
-  /* Mobile content uses full width */
-  padding: 16px;
-}
-
-.layout-mode-mobile .app-footer {
-  /* Mobile footer styling */
-  padding: 12px 16px;
-  font-size: 12px;
-}
-
-/* Tablet Layout Mode */
-.layout-mode-tablet .app-header {
-  /* Tablet-specific header styles */
-  padding: 12px 20px;
-  font-size: 16px;
-}
-
-.layout-mode-tablet .app-sidebar {
-  /* Tablet sidebar width defined in sidebar.css */
-}
-
-.layout-mode-tablet .app-main {
-  /* Tablet content padding */
-  padding: 20px;
-}
-
-/* Desktop Layout Mode */
-.layout-mode-desktop .app-header {
-  /* Desktop header styles */
-  padding: 16px 24px;
-  font-size: 18px;
-}
-
-.layout-mode-desktop .app-sidebar {
-  /* Desktop sidebar width defined in sidebar.css */
-}
-
-.layout-mode-desktop .app-main {
-  /* Desktop content with generous padding */
-  padding: 24px 32px;
 }
 
 /* Desktop Compact Layout Mode */
@@ -76,82 +29,18 @@
   display: none;
 }
 
-.layout-mode-desktop-compact .app-header {
-  /* Adjust header for compact sidebar */
-  margin-left: 80px;
-}
-
-.layout-mode-desktop-compact .app-main {
-  /* Adjust content area for compact sidebar */
-  margin-left: 80px;
-}
-
-/* ====================================
-   STATE-BASED STYLES
-   ==================================== */
-
-/* Compact State (can be combined with any mode) */
-.layout-compact .app-sidebar {
-  /* Universal compact sidebar styling */
-  --sidebar-animation-duration: 0.3s;
-  transition: width var(--sidebar-animation-duration) ease;
-}
-
+/* Compact mode navigation adjustments */
 .layout-compact .nav-item {
-  /* Compact navigation items */
   justify-content: center;
 }
 
-/* Mobile State */
-.layout-mobile .app-layout {
-  /* Mobile-specific grid layout */
-  grid-template-columns: 1fr;
-  grid-template-areas: 
-    "header"
-    "content";
-}
-
-/* Tablet State */
-.layout-tablet .app-layout {
-  /* Tablet-specific adjustments */
-  --header-height: 56px;
-}
-
-/* Desktop State */
-.layout-desktop .app-layout {
-  /* Desktop-specific layout */
-  --header-height: 64px;
-}
+/* Layout states are handled by app-layout.css - removed duplicates */
 
 /* ====================================
    COMPONENT-SPECIFIC MODE STYLING
    ==================================== */
 
-/* Header Mode Adaptations */
-.app-header.layout-mode-mobile .header-center {
-  /* Mobile header center adjustments */
-  padding-left: 16px;
-}
-
-.app-header.layout-mode-desktop .header-center {
-  /* Desktop header - no extra padding */
-  padding-left: 0;
-}
-
-.app-header.layout-mode-desktop-compact {
-  /* Header adapts to compact sidebar */
-  transition: margin-left 0.3s ease;
-}
-
-/* Sidebar Mode Adaptations */
-.app-sidebar.layout-mode-mobile {
-  /* Mobile sidebar as overlay */
-  position: fixed;
-  z-index: 1000;
-  top: 0;
-  left: 0;
-  height: 100vh;
-}
+/* Component-specific mode styling - only non-conflicting rules */
 
 .app-sidebar.layout-mode-desktop-compact .sidebar-brand .brand-title {
   /* Hide brand title in compact mode */
@@ -165,34 +54,6 @@
   font-weight: 600;
   font-size: 18px;
   color: #3b82f6;
-}
-
-/* Content Mode Adaptations */
-.app-main.layout-mode-mobile {
-  /* Mobile content adjustments */
-  min-height: calc(100vh - var(--header-height, 60px));
-}
-
-.app-main.layout-mode-tablet {
-  /* Tablet content adjustments */
-  min-height: calc(100vh - var(--header-height, 56px));
-}
-
-.app-main.layout-mode-desktop,
-.app-main.layout-mode-desktop-compact {
-  /* Desktop content adjustments */
-  min-height: calc(100vh - var(--header-height, 64px));
-}
-
-/* Footer Mode Adaptations */
-.app-footer.layout-mode-mobile {
-  /* Mobile footer - minimal padding */
-  padding: 12px 16px;
-}
-
-.app-footer.layout-mode-desktop {
-  /* Desktop footer - standard padding */
-  padding: 16px 32px;
 }
 
 /* ====================================
@@ -274,18 +135,7 @@
    ANIMATION CLASSES
    ==================================== */
 
-/* Smooth transitions between layout modes */
-.app-sidebar,
-.app-header,
-.app-main,
-.app-footer {
-  transition: 
-    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.2s ease;
-}
-
-/* Special animations for mode transitions */
+/* Mode transition animations - transitions handled by app-layout.css and component CSS */
 .layout-mode-transition {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
