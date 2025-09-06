@@ -8,6 +8,7 @@ import { Sidebar } from '../components/Sidebar';
 import SidebarComponent from '../components/SidebarComponent';
 import type { AppHeader } from '../components/AppHeader';
 import MainContent from '../components/MainContent';
+import Layout from '../components/Layout';
 import { getLayoutContext } from '../contexts/index';
 import type { LayoutContext } from '../contexts/LayoutContext';
 import type { LayoutEvent, LayoutMode } from '../contexts/LayoutContext';
@@ -19,14 +20,25 @@ export class DebugPage {
   private responsiveModeUnsubscribe: (() => void) | null = null;
   private layoutModeUnsubscribe: (() => void) | null = null;
   private mainContent: MainContent | null = null;
+  private layout: Layout | null = null;
   private layoutContext: LayoutContext;
 
-  constructor(mainContent: MainContent | null = null) {
-    console.log('🏗️ DEBUGPAGE - Constructor START');
+  constructor(mainContent: MainContent | null = null, layout: Layout | null = null) {
+    console.log('🛠️ DEBUGPAGE - Constructor START');
     this.mainContent = mainContent;
-    this.layoutContext = getLayoutContext();
+    this.layout = layout;
+    
+    // Use Layout's LayoutContext if available, otherwise fallback to global
+    if (this.layout) {
+      this.layoutContext = this.layout.getLayoutContext();
+      console.log('🎯 DEBUGPAGE - Using LayoutContext from provided Layout instance');
+    } else {
+      this.layoutContext = getLayoutContext();
+      console.log('🎯 DEBUGPAGE - Using global LayoutContext (no Layout instance provided)');
+    }
+    
     console.log('✅ DEBUGPAGE - Constructor completed successfully');
-    console.log('🏗️ DEBUGPAGE - Constructor END');
+    console.log('🛠️ DEBUGPAGE - Constructor END');
   }
 
   /**
@@ -100,7 +112,7 @@ export class DebugPage {
       console.log(`DebugPage - Current ${elementType} content length:`, targetElement.innerHTML.length);
       
       const content = `
-        <div class="debug-page-content" style="padding: 20px; max-width: 1200px; margin: 0 auto;">
+        <div class="debug-page-content" style="max-width: 1200px; margin: 0 auto;">
           <div class="debug-header" style="background: #f8f9fa; padding: 20px; margin-bottom: 20px; border-radius: 8px;">
             <h1 style="margin: 0 0 10px 0; color: #333;">🛠️ Debug Page</h1>
             <p style="margin: 0; color: #666;">This page uses the regular app layout system with global header, sidebar, and footer components.</p>
@@ -150,6 +162,40 @@ export class DebugPage {
             <div style="margin: 30px 0;">
               <h3 style="color: #333; margin-bottom: 15px;">Test Console</h3>
               <div id="test_console" style="background: #1e1e1e; color: #fff; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 13px; height: 200px; overflow-y: auto;"></div>
+            </div>
+            
+            <div style="margin: 30px 0;">
+              <h3 style="color: #333; margin-bottom: 15px;">💬 Message Simulation</h3>
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="margin-bottom: 15px;">
+                  <h4 style="margin: 0 0 10px 0; color: #555;">Basic Messages:</h4>
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <button id="msg_error" style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">❌ Error</button>
+                    <button id="msg_warning" style="padding: 8px 12px; background: #fd7e14; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">⚠️ Warning</button>
+                    <button id="msg_info" style="padding: 8px 12px; background: #0dcaf0; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">ℹ️ Info</button>
+                    <button id="msg_success" style="padding: 8px 12px; background: #198754; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">✅ Success</button>
+                  </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <h4 style="margin: 0 0 10px 0; color: #555;">Advanced Messages:</h4>
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <button id="msg_with_action" style="padding: 8px 12px; background: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🔧 With Action</button>
+                    <button id="msg_persistent" style="padding: 8px 12px; background: #495057; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">📌 Persistent</button>
+                    <button id="msg_auto_hide" style="padding: 8px 12px; background: #20c997; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">⏰ Auto-hide</button>
+                    <button id="msg_sequence" style="padding: 8px 12px; background: #e83e8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🎬 Sequence</button>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 style="margin: 0 0 10px 0; color: #555;">Message Management:</h4>
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <button id="clear_all_messages" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🗑️ Clear All</button>
+                    <button id="clear_errors_only" style="padding: 8px 12px; background: #adb5bd; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">❌ Clear Errors</button>
+                    <button id="clear_persistent" style="padding: 8px 12px; background: #343a40; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">📌 Clear Persistent</button>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div style="margin: 20px 0;">
@@ -450,6 +496,229 @@ export class DebugPage {
         this.logToConsole('🧹 Event logs cleared');
       });
     }
+    
+    // Setup Message Simulation Controls
+    this.setupMessageSimulationControls();
+  }
+  
+  /**
+   * Setup message simulation controls
+   */
+  private setupMessageSimulationControls(): void {
+    // Basic message buttons
+    this.setupBasicMessageControls();
+    
+    // Advanced message buttons
+    this.setupAdvancedMessageControls();
+    
+    // Message management buttons
+    this.setupMessageManagementControls();
+  }
+  
+  /**
+   * Setup basic message type controls
+   */
+  private setupBasicMessageControls(): void {
+    console.log('🎯 DEBUGPAGE - Setting up basic message controls...');
+    
+    // Error message
+    const msgError = document.getElementById('msg_error');
+    console.log('🎯 DEBUGPAGE - Error button element:', msgError ? 'FOUND' : 'NOT FOUND');
+    if (msgError) {
+      msgError.addEventListener('click', () => {
+        console.log('🎯 DEBUGPAGE - Error button clicked!');
+        this.layoutContext.showError('Connection Failed', 'Unable to connect to the server. Please check your internet connection.');
+        this.logToConsole('❌ Error message displayed via LayoutContext');
+      });
+    }
+    
+    // Warning message
+    const msgWarning = document.getElementById('msg_warning');
+    console.log('🎯 DEBUGPAGE - Warning button element:', msgWarning ? 'FOUND' : 'NOT FOUND');
+    if (msgWarning) {
+      msgWarning.addEventListener('click', () => {
+        console.log('🎯 DEBUGPAGE - Warning button clicked!');
+        this.layoutContext.showWarning('Session Expiring', 'Your session will expire in 5 minutes. Save your work to avoid losing data.');
+        this.logToConsole('⚠️ Warning message displayed via LayoutContext');
+      });
+    }
+    
+    // Info message
+    const msgInfo = document.getElementById('msg_info');
+    console.log('🎯 DEBUGPAGE - Info button element:', msgInfo ? 'FOUND' : 'NOT FOUND');
+    if (msgInfo) {
+      msgInfo.addEventListener('click', () => {
+        console.log('🎯 DEBUGPAGE - Info button clicked!');
+        this.layoutContext.showInfo('New Feature Available', 'Check out the new dashboard features in the sidebar navigation.');
+        this.logToConsole('ℹ️ Info message displayed via LayoutContext');
+      });
+    }
+    
+    // Success message
+    const msgSuccess = document.getElementById('msg_success');
+    console.log('🎯 DEBUGPAGE - Success button element:', msgSuccess ? 'FOUND' : 'NOT FOUND');
+    if (msgSuccess) {
+      msgSuccess.addEventListener('click', () => {
+        console.log('🎯 DEBUGPAGE - Success button clicked!');
+        this.layoutContext.showSuccess('Data Saved', 'Your changes have been saved successfully to the server.');
+        this.logToConsole('✅ Success message displayed via LayoutContext');
+      });
+    }
+  }
+  
+  /**
+   * Setup advanced message controls
+   */
+  private setupAdvancedMessageControls(): void {
+    // Message with action
+    const msgWithAction = document.getElementById('msg_with_action');
+    if (msgWithAction) {
+      msgWithAction.addEventListener('click', () => {
+        // Get Layout instance directly for advanced message features
+        const layout = this.layoutContext.getLayout();
+        if (layout && layout.getErrorMessages) {
+          const errorMessages = layout.getErrorMessages();
+          errorMessages.addMessage({
+            id: 'network-error-with-action',
+            type: 'error',
+            title: 'Network Error',
+            description: 'Failed to load data. Check your connection and try again.',
+            actions: [{
+              id: 'retry',
+              text: 'Retry',
+              action: () => {
+                this.logToConsole('🔄 Retry button clicked!');
+                errorMessages.removeMessage('network-error-with-action');
+                this.layoutContext.showSuccess('Retrying...', 'Attempting to reconnect to the server.');
+              },
+              style: 'primary'
+            }],
+            dismissible: true,
+            autoHide: false
+          });
+          this.logToConsole('🔧 Error message with action displayed');
+        } else {
+          this.logToConsole('❌ Unable to access ErrorMessages component');
+        }
+      });
+    }
+    
+    // Persistent message
+    const msgPersistent = document.getElementById('msg_persistent');
+    if (msgPersistent) {
+      msgPersistent.addEventListener('click', () => {
+        const layout = this.layoutContext.getLayout();
+        if (layout && layout.getErrorMessages) {
+          const errorMessages = layout.getErrorMessages();
+          errorMessages.addMessage({
+            id: 'persistent-warning',
+            type: 'warning',
+            title: 'Persistent Warning',
+            description: 'This message persists across page navigation. Use "Clear Persistent" to remove it.',
+            persistent: true,
+            dismissible: true,
+            autoHide: false
+          });
+          this.logToConsole('📌 Persistent warning message displayed');
+        }
+      });
+    }
+    
+    // Auto-hide message
+    const msgAutoHide = document.getElementById('msg_auto_hide');
+    if (msgAutoHide) {
+      msgAutoHide.addEventListener('click', () => {
+        const layout = this.layoutContext.getLayout();
+        if (layout && layout.getErrorMessages) {
+          const errorMessages = layout.getErrorMessages();
+          errorMessages.addMessage({
+            id: 'auto-hide-info',
+            type: 'info',
+            title: 'Auto-Hide Message',
+            description: 'This message will automatically disappear after 3 seconds.',
+            autoHide: true,
+            autoHideDelay: 3000,
+            dismissible: true
+          });
+          this.logToConsole('⏰ Auto-hide info message displayed (3s delay)');
+        }
+      });
+    }
+    
+    // Message sequence
+    const msgSequence = document.getElementById('msg_sequence');
+    if (msgSequence) {
+      msgSequence.addEventListener('click', () => {
+        this.showMessageSequence();
+        this.logToConsole('🎬 Message sequence started');
+      });
+    }
+  }
+  
+  /**
+   * Setup message management controls
+   */
+  private setupMessageManagementControls(): void {
+    // Clear all messages
+    const clearAllMessages = document.getElementById('clear_all_messages');
+    if (clearAllMessages) {
+      clearAllMessages.addEventListener('click', () => {
+        this.layoutContext.clearMessages(false); // Don't clear persistent
+        this.logToConsole('🗑️ All non-persistent messages cleared via LayoutContext');
+      });
+    }
+    
+    // Clear errors only
+    const clearErrorsOnly = document.getElementById('clear_errors_only');
+    if (clearErrorsOnly) {
+      clearErrorsOnly.addEventListener('click', () => {
+        this.layoutContext.clearMessagesByType('error');
+        this.logToConsole('❌ Error messages cleared via LayoutContext');
+      });
+    }
+    
+    // Clear persistent messages
+    const clearPersistent = document.getElementById('clear_persistent');
+    if (clearPersistent) {
+      clearPersistent.addEventListener('click', () => {
+        this.layoutContext.clearMessages(true); // Include persistent
+        this.logToConsole('📌 All messages including persistent cleared via LayoutContext');
+      });
+    }
+  }
+  
+  /**
+   * Show a sequence of messages for demonstration
+   */
+  private showMessageSequence(): void {
+    let step = 0;
+    const steps = [
+      () => {
+        this.layoutContext.showInfo('Step 1', 'Starting data validation process...');
+      },
+      () => {
+        this.layoutContext.showInfo('Step 2', 'Validating user permissions...');
+      },
+      () => {
+        this.layoutContext.showWarning('Step 3', 'Found 2 validation warnings that need attention.');
+      },
+      () => {
+        this.layoutContext.showError('Step 4', 'Validation failed: Missing required field "email".');
+      },
+      () => {
+        this.layoutContext.showSuccess('Step 5', 'Process completed! All issues resolved.');
+      }
+    ];
+    
+    const runNextStep = () => {
+      if (step < steps.length) {
+        steps[step]();
+        step++;
+        setTimeout(runNextStep, 2000); // 2 second delay between steps
+      }
+    };
+    
+    runNextStep();
   }
   
   /**

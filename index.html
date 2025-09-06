@@ -10,6 +10,7 @@
   <!-- Load critical CSS directly for Vite compatibility -->
   <link rel="stylesheet" href="/src/assets/styles/app-layout.css">
   <link rel="stylesheet" href="/src/assets/styles/components/sidebar.css">
+  <link rel="stylesheet" href="/src/assets/styles/components/error-messages.css">
   
   <!-- Material Icons with font-display swap to prevent layout shift -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" rel="stylesheet">
@@ -80,8 +81,8 @@
       </div>
     </nav>
     
-    <!-- Scrollable content area containing header + main + footer -->
-    <div class="app-content-scroll">
+    <!-- Content area containing header + scrollable content -->
+    <div class="app-content-area">
       <!-- Header: Static structure, content populated by component -->
       <header class="app-header" id="app-header" role="banner">
         <div class="header-container">
@@ -89,24 +90,75 @@
         </div>
       </header>
       
-      <!-- Main: Dynamic content area -->
-      <main class="app-main" id="app-main" role="main" aria-label="Main content">
-        <div class="loader-container">
-          <div class="loader"></div>
-          <p class="loading-text">Loading Opinion Front UI...</p>
+      <!-- Scrollable container for error messages, main content, and footer -->
+      <div class="app-content-scroll" id="app-content-scroll">
+        <!-- Error Messages Container: For global error messages and notifications -->
+        <div class="app-error-messages" id="app-error-messages" role="alert" aria-live="polite">
+          <!-- Error messages will be populated dynamically -->
         </div>
-      </main>
-      
-      <!-- Footer: Static structure, content populated by component -->
-      <footer class="app-footer" id="app-footer" role="contentinfo">
-        <div class="footer-container">
-          <!-- Footer content populated by AppFooter component -->
-        </div>
-      </footer>
+        
+        <!-- Main: Dynamic content area -->
+        <main class="app-main" id="app-main" role="main" aria-label="Main content">
+          <div class="loader-container">
+            <div class="loader"></div>
+            <p class="loading-text">Loading Opinion Front UI...</p>
+          </div>
+        </main>
+        
+        <!-- Footer: Static structure, content populated by component -->
+        <footer class="app-footer" id="app-footer" role="contentinfo">
+          <div class="footer-container">
+            <!-- Footer content populated by AppFooter component -->
+          </div>
+        </footer>
+      </div>
     </div>
   </div>
   
-  <!-- Load main script with DOM ready check -->
-  <script type="module" src="/src/main.ts"></script>
+  <!-- Load main script with CSS ready check to prevent FOUC -->
+  <script>
+    // Simple function to check if critical CSS is loaded
+    function waitForCriticalCSS() {
+      return new Promise((resolve) => {
+        const checkCSS = () => {
+          const stylesheets = document.querySelectorAll('link[rel="stylesheet"]');
+          let loadedCount = 0;
+          
+          // Check if all critical stylesheets are loaded
+          stylesheets.forEach(sheet => {
+            if (sheet.sheet || sheet.disabled) {
+              loadedCount++;
+            }
+          });
+          
+          // Wait for at least the critical ones to load
+          if (loadedCount >= 3 || document.readyState === 'complete') {
+            resolve();
+          } else {
+            // Check again in 10ms
+            setTimeout(checkCSS, 10);
+          }
+        };
+        
+        checkCSS();
+      });
+    }
+    
+    // Initialize app after critical CSS is loaded
+    async function initializeApp() {
+      await waitForCriticalCSS();
+      // Small additional delay to ensure layout stability
+      setTimeout(() => {
+        import('/src/main.ts');
+      }, 50);
+    }
+    
+    // Start initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+      initializeApp();
+    }
+  </script>
 </body>
 </html>

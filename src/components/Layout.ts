@@ -6,6 +6,8 @@
 import AppHeaderImpl, { HeaderUser } from "./AppHeaderImpl";
 import AppFooterImpl, { FooterConfig } from "./AppFooterImpl";
 import MainContent from "./MainContent";
+import { NavigationItem } from "./Sidebar";
+import ErrorMessagesComponent from "./ErrorMessages";
 // Import layout context
 import {
   type LayoutContext,
@@ -15,6 +17,23 @@ import {
 } from "../contexts/index.js";
 import LayoutContextImpl from "../contexts/LayoutContextImpl.js";
 
+/**
+ * User menu item interface for configurable user menu
+ */
+export interface UserMenuItem {
+  id: string;
+  text: string;
+  icon: string;
+  href?: string;
+  action?: string; // For JavaScript actions like "feedback", "logout"
+  type?: 'link' | 'action' | 'divider'; // Default is 'link'
+  className?: string; // Additional CSS classes
+  style?: string; // Additional inline styles
+}
+
+/**
+ * Layout configuration interface
+ */
 export interface LayoutConfig {
   header?: {
     enabled?: boolean;
@@ -27,16 +46,23 @@ export interface LayoutConfig {
   footer?: FooterConfig & {
     enabled?: boolean;
   };
+  navigation?: NavigationItem[]; // Configuration for sidebar navigation items
+  userMenu?: UserMenuItem[]; // Configuration for user menu items
 }
 
 export class Layout {
   private header: AppHeaderImpl;
   private footer: AppFooterImpl;
   private mainContent: MainContent;
+  private errorMessages: ErrorMessagesComponent;
   private config: LayoutConfig;
   private isInitialized: boolean = false;
   private layoutContext: LayoutContextImpl;
   private layoutUnsubscribers: Array<() => void> = [];
+  
+  // Navigation and user menu state
+  private navigationItems: NavigationItem[] = [];
+  private userMenuItems: UserMenuItem[] = [];
 
   constructor(config: LayoutConfig = {}) {
     this.config = {
@@ -57,7 +83,18 @@ export class Layout {
         showNavigation: true,
         ...config.footer,
       },
+      navigation: config.navigation || [],
+      userMenu: config.userMenu || [],
     };
+
+    // Initialize navigation and user menu items with defaults or config
+    this.navigationItems = this.config.navigation!.length > 0 
+      ? this.config.navigation! 
+      : this.getDefaultNavigationItems();
+      
+    this.userMenuItems = this.config.userMenu!.length > 0 
+      ? this.config.userMenu! 
+      : this.getDefaultUserMenuItems();
 
     // Initialize layout context first
     this.layoutContext = new LayoutContextImpl();
@@ -70,6 +107,7 @@ export class Layout {
       id: "app",
       ariaLabel: "Main application content",
     });
+    this.errorMessages = new ErrorMessagesComponent();
 
     // Register all components with the LayoutContext
     this.registerComponentsWithContext();
@@ -99,6 +137,11 @@ export class Layout {
           );
           console.log("✅ LAYOUT - Header brand updated");
         }
+        
+        // Apply user menu items to header
+        console.log("🏢 LAYOUT - Applying user menu items to header...");
+        this.header.updateUserMenuItems(this.userMenuItems);
+        console.log("✅ LAYOUT - User menu items applied to header");
       } else {
         console.log("⚠️ LAYOUT - Header disabled in config");
       }
@@ -107,6 +150,9 @@ export class Layout {
       console.log("🏢 LAYOUT - Initializing MainContent...");
       this.mainContent.init();
       console.log("✅ LAYOUT - MainContent initialized");
+
+      // Initialize Error Messages component
+      console.log("🏢 LAYOUT - Error Messages component ready");
 
       // Note: Sidebar is now managed by the page component, not by Layout
       console.log("🏢 LAYOUT - Sidebar management delegated to page component");
@@ -559,6 +605,349 @@ export class Layout {
     document.dispatchEvent(customEvent);
   }
 
+  // =================================================================================
+  // Navigation and User Menu Building Methods
+  // =================================================================================
+
+  /**
+   * Get default navigation items
+   */
+  private getDefaultNavigationItems(): NavigationItem[] {
+    return [
+      {
+        id: "dashboard",
+        text: "Dashboard",
+        icon: "dashboard",
+        href: "/dashboard",
+        caption: "View analytics, reports and key metrics",
+        active: false,
+      },
+      {
+        id: "surveys",
+        text: "Surveys",
+        icon: "poll",
+        href: "/surveys",
+        caption: "Create and manage survey questionnaires",
+      },
+      {
+        id: "debug",
+        text: "Debug",
+        icon: "bug_report",
+        href: "/",
+        caption: "Development tools and troubleshooting",
+        active: true, // Debug is active since root path shows DebugPage
+      },
+    ];
+  }
+
+  /**
+   * Get default user menu items
+   */
+  private getDefaultUserMenuItems(): UserMenuItem[] {
+    return [
+      {
+        id: "account",
+        text: "Account Settings",
+        icon: "settings",
+        href: "/account",
+        type: "link",
+      },
+      {
+        id: "feedback",
+        text: "Send Feedback",
+        icon: "feedback",
+        action: "feedback",
+        type: "action",
+      },
+      {
+        id: "divider1",
+        text: "",
+        icon: "",
+        type: "divider",
+      },
+      {
+        id: "logout",
+        text: "Sign Out",
+        icon: "logout",
+        href: "/logout",
+        type: "link",
+        className: "user-menu-signout",
+        style: "color: #dc3545;",
+      },
+    ];
+  }
+
+  /**
+   * Set navigation items for the sidebar
+   */
+  public setNavigationItems(items: NavigationItem[]): void {
+    this.navigationItems = [...items];
+    console.log("Layout - Navigation items updated:", this.navigationItems.length, "items");
+    
+    // Update sidebar if it's available through layout context
+    const sidebar = this.layoutContext.getSidebar();
+    if (sidebar) {
+      sidebar.updateNavigation(this.navigationItems);
+      console.log("Layout - Navigation items applied to existing sidebar");
+    } else {
+      console.log("Layout - Navigation items stored, will be applied when sidebar is registered");
+    }
+  }
+
+  /**
+   * Get current navigation items
+   */
+  public getNavigationItems(): NavigationItem[] {
+    return [...this.navigationItems];
+  }
+
+  /**
+   * Update a specific navigation item
+   */
+  public updateNavigationItem(id: string, updates: Partial<NavigationItem>): void {
+    const index = this.navigationItems.findIndex(item => item.id === id);
+    if (index !== -1) {
+      this.navigationItems[index] = { ...this.navigationItems[index], ...updates };
+      
+      // Update sidebar if available
+      const sidebar = this.layoutContext.getSidebar();
+      if (sidebar) {
+        sidebar.updateNavigation(this.navigationItems);
+      }
+      
+      console.log(`Layout - Navigation item '${id}' updated`);
+    } else {
+      console.warn(`Layout - Navigation item with id '${id}' not found`);
+    }
+  }
+
+  /**
+   * Add a navigation item
+   */
+  public addNavigationItem(item: NavigationItem, position?: number): void {
+    if (position !== undefined && position >= 0 && position <= this.navigationItems.length) {
+      this.navigationItems.splice(position, 0, item);
+    } else {
+      this.navigationItems.push(item);
+    }
+    
+    // Update sidebar if available
+    const sidebar = this.layoutContext.getSidebar();
+    if (sidebar) {
+      sidebar.updateNavigation(this.navigationItems);
+    }
+    
+    console.log(`Layout - Navigation item '${item.id}' added`);
+  }
+
+  /**
+   * Remove a navigation item
+   */
+  public removeNavigationItem(id: string): void {
+    const index = this.navigationItems.findIndex(item => item.id === id);
+    if (index !== -1) {
+      this.navigationItems.splice(index, 1);
+      
+      // Update sidebar if available
+      const sidebar = this.layoutContext.getSidebar();
+      if (sidebar) {
+        sidebar.updateNavigation(this.navigationItems);
+      }
+      
+      console.log(`Layout - Navigation item '${id}' removed`);
+    } else {
+      console.warn(`Layout - Navigation item with id '${id}' not found`);
+    }
+  }
+
+  /**
+   * Set active navigation item
+   */
+  public setActiveNavigationItem(id: string): void {
+    // Clear all active states
+    this.navigationItems.forEach(item => {
+      item.active = false;
+      if (item.children) {
+        item.children.forEach(child => child.active = false);
+      }
+    });
+    
+    // Set active state for the specified item
+    const item = this.navigationItems.find(item => item.id === id);
+    if (item) {
+      item.active = true;
+    } else {
+      // Check in children
+      for (const parentItem of this.navigationItems) {
+        if (parentItem.children) {
+          const childItem = parentItem.children.find(child => child.id === id);
+          if (childItem) {
+            childItem.active = true;
+            parentItem.expanded = true; // Expand parent if child is active
+            break;
+          }
+        }
+      }
+    }
+    
+    // Update sidebar if available
+    const sidebar = this.layoutContext.getSidebar();
+    if (sidebar) {
+      sidebar.updateNavigation(this.navigationItems);
+      sidebar.setActivePage(id);
+    }
+    
+    console.log(`Layout - Navigation item '${id}' set as active`);
+  }
+
+  /**
+   * Set user menu items
+   */
+  public setUserMenuItems(items: UserMenuItem[]): void {
+    this.userMenuItems = [...items];
+    console.log("Layout - User menu items updated:", this.userMenuItems.length, "items");
+    
+    // Update header/user menu if it's available
+    if (this.header) {
+      this.header.updateUserMenuItems(this.userMenuItems);
+      console.log("Layout - User menu items applied to header");
+    } else {
+      console.log("Layout - User menu items stored, will be applied when header is available");
+    }
+  }
+
+  /**
+   * Get current user menu items
+   */
+  public getUserMenuItems(): UserMenuItem[] {
+    return [...this.userMenuItems];
+  }
+
+  /**
+   * Update a specific user menu item
+   */
+  public updateUserMenuItem(id: string, updates: Partial<UserMenuItem>): void {
+    const index = this.userMenuItems.findIndex(item => item.id === id);
+    if (index !== -1) {
+      this.userMenuItems[index] = { ...this.userMenuItems[index], ...updates };
+      
+      // Update header if available
+      if (this.header) {
+        this.header.updateUserMenuItems(this.userMenuItems);
+      }
+      
+      console.log(`Layout - User menu item '${id}' updated`);
+    } else {
+      console.warn(`Layout - User menu item with id '${id}' not found`);
+    }
+  }
+
+  /**
+   * Add a user menu item
+   */
+  public addUserMenuItem(item: UserMenuItem, position?: number): void {
+    if (position !== undefined && position >= 0 && position <= this.userMenuItems.length) {
+      this.userMenuItems.splice(position, 0, item);
+    } else {
+      this.userMenuItems.push(item);
+    }
+    
+    // Update header if available
+    if (this.header) {
+      this.header.updateUserMenuItems(this.userMenuItems);
+    }
+    
+    console.log(`Layout - User menu item '${item.id}' added`);
+  }
+
+  /**
+   * Remove a user menu item
+   */
+  public removeUserMenuItem(id: string): void {
+    const index = this.userMenuItems.findIndex(item => item.id === id);
+    if (index !== -1) {
+      this.userMenuItems.splice(index, 1);
+      
+      // Update header if available
+      if (this.header) {
+        this.header.updateUserMenuItems(this.userMenuItems);
+      }
+      
+      console.log(`Layout - User menu item '${id}' removed`);
+    } else {
+      console.warn(`Layout - User menu item with id '${id}' not found`);
+    }
+  }
+
+  /**
+   * Get the navigation items to pass to sidebar components
+   * This method is called by page components when creating sidebars
+   */
+  public getNavigationForSidebar(): NavigationItem[] {
+    return this.getNavigationItems();
+  }
+
+  /**
+   * Get the user menu items to pass to header components
+   * This method is called during header initialization
+   */
+  public getUserMenuForHeader(): UserMenuItem[] {
+    return this.getUserMenuItems();
+  }
+
+  // =================================================================================
+  // Error Messages Methods
+  // =================================================================================
+
+  /**
+   * Get the error messages component instance
+   */
+  public getErrorMessages(): ErrorMessagesComponent {
+    return this.errorMessages;
+  }
+
+  /**
+   * Show an error message
+   */
+  public showError(title: string, description?: string, options?: any): void {
+    this.errorMessages.showError(title, description, options);
+  }
+
+  /**
+   * Show a warning message
+   */
+  public showWarning(title: string, description?: string, options?: any): void {
+    this.errorMessages.showWarning(title, description, options);
+  }
+
+  /**
+   * Show an info message
+   */
+  public showInfo(title: string, description?: string, options?: any): void {
+    this.errorMessages.showInfo(title, description, options);
+  }
+
+  /**
+   * Show a success message
+   */
+  public showSuccess(title: string, description?: string, options?: any): void {
+    this.errorMessages.showSuccess(title, description, options);
+  }
+
+  /**
+   * Clear all error messages
+   */
+  public clearMessages(includesPersistent: boolean = false): void {
+    this.errorMessages.clearAll(includesPersistent);
+  }
+
+  /**
+   * Clear messages by type
+   */
+  public clearMessagesByType(type: 'error' | 'warning' | 'info' | 'success'): void {
+    this.errorMessages.clearByType(type);
+  }
+
   /**
    * Cleanup when layout is destroyed
    */
@@ -593,6 +982,10 @@ export class Layout {
 
     if (this.footer) {
       this.footer.destroy();
+    }
+
+    if (this.errorMessages) {
+      this.errorMessages.destroy();
     }
 
     // Note: Sidebar destruction is now handled by the page component

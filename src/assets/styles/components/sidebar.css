@@ -668,6 +668,22 @@
     transform: rotate(-45deg) translate(8px, -8px);
   }
 }
+
+/* Tooltip styling for navigation links */
+.nav-link[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;

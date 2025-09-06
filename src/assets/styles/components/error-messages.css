@@ -1,0 +1,193 @@
+/**
+ * Error Messages Component Styles - Clean Start
+ * 
+ * Simple, clean error message styles without complex positioning
+ */
+
+/* Container - Hidden by default, shown when has messages */
+.app-error-messages {
+  display: none;
+  padding: 4px 16px 0;
+  background: transparent;
+  width: 100%;
+  margin: 0;
+  position: relative;
+  z-index: 100;
+}
+
+.app-error-messages:not(:empty) {
+  display: block;
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+/* Smooth slide-in animation */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Compact message styling - full width, left aligned text */
+.error-message {
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  border: 1px solid;
+  border-left: 3px solid;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  position: relative;
+  transition: all 0.2s ease;
+  animation: messageSlideIn 0.3s ease-out;
+  direction: ltr;
+}
+
+/* Individual message slide-in animation */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+    scale: 0.98;
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    scale: 1;
+  }
+}
+
+.error-message:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Remove bottom margin from last message */
+.error-message:last-child {
+  margin-bottom: 4px;
+}
+
+/* Message types with border and background colors - left aligned */
+.error-message.error {
+  border-left-color: #ef4444;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.error-message.warning {
+  border-left-color: #f59e0b;
+  border-color: #fed7aa;
+  background: #fffbeb;
+}
+
+.error-message.info {
+  border-left-color: #3b82f6;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.error-message.success {
+  border-left-color: #10b981;
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+/* Message content - compact */
+.error-content {
+  flex: 1;
+  line-height: 1.2;
+  text-align: left;
+  direction: ltr;
+  padding: 10px;
+  margin: 0;
+}
+
+.error-title {
+  font-weight: 600;
+  margin: 0;
+  color: #1f2937;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.error-description {
+  margin: 2px 0 0 0;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+/* Single line layout for compact display */
+.error-message:not(:has(.error-description)) .error-content {
+  display: flex;
+  align-items: center;
+}
+
+/* Compact close button */
+.error-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 1px;
+  color: #9ca3af;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 3px;
+  min-width: 20px;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  opacity: 0.7;
+}
+
+.error-close:hover {
+  color: #6b7280;
+  background: rgba(0, 0, 0, 0.06);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.error-close:active {
+  transform: scale(0.95);
+}
+
+.error-close:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+/* Close button hover animation */
+.error-message:hover .error-close {
+  opacity: 1;
+}
+
+/* Fade-out animation for message dismissal */
+@keyframes messageFadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 200px;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.95);
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}

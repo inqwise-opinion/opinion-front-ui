@@ -79,6 +79,24 @@ export class OpinionApp {
     window.addEventListener('popstate', () => {
       this.handleRouteChange();
     });
+    
+    // Handle postMessage events for testing (e.g., from test-positioning.html iframe)
+    window.addEventListener('message', (event) => {
+      console.log('🎯 APP.TS - Received postMessage:', event.data);
+      
+      if (event.data && event.data.action) {
+        switch (event.data.action) {
+          case 'showErrorMessage':
+            this.handleTestErrorMessage(event.data);
+            break;
+          case 'clearErrorMessages':
+            this.handleClearMessages();
+            break;
+          default:
+            console.log('🎯 APP.TS - Unknown postMessage action:', event.data.action);
+        }
+      }
+    });
   }
 
   private async loadInitialData(): Promise<void> {
@@ -153,6 +171,57 @@ export class OpinionApp {
     const currentPath = window.location.pathname;
     await this.handleRoute(currentPath);
   }
+  
+  /**
+   * Handle test error message from postMessage (for iframe testing)
+   */
+  private handleTestErrorMessage(messageData: any): void {
+    console.log('🚨 APP.TS - Handling test error message:', messageData);
+    
+    if (!this.layout) {
+      console.warn('⚠️ APP.TS - Layout not initialized, cannot show error message');
+      return;
+    }
+    
+    const { type, title, description, source } = messageData;
+    console.log(`🎯 APP.TS - Showing ${type} message from ${source || 'unknown'}`);
+    
+    // Use the layout's error message system
+    const layoutContext = this.layout.getLayoutContext();
+    
+    switch (type) {
+      case 'error':
+        layoutContext.showError(title || 'Test Error', description || 'This is a test error message from iframe testing.');
+        break;
+      case 'warning':
+        layoutContext.showWarning(title || 'Test Warning', description || 'This is a test warning message from iframe testing.');
+        break;
+      case 'info':
+        layoutContext.showInfo(title || 'Test Info', description || 'This is a test info message from iframe testing.');
+        break;
+      case 'success':
+        layoutContext.showSuccess(title || 'Test Success', description || 'This is a test success message from iframe testing.');
+        break;
+      default:
+        console.warn('⚠️ APP.TS - Unknown message type:', type);
+        layoutContext.showInfo('Test Message', 'Unknown message type: ' + type);
+    }
+  }
+  
+  /**
+   * Handle clearing all error messages (for iframe testing)
+   */
+  private handleClearMessages(): void {
+    console.log('🧹 APP.TS - Clearing all test messages');
+    
+    if (!this.layout) {
+      console.warn('⚠️ APP.TS - Layout not initialized, cannot clear messages');
+      return;
+    }
+    
+    const layoutContext = this.layout.getLayoutContext();
+    layoutContext.clearMessages();
+  }
 
   /**
    * Handle route changes
@@ -179,7 +248,7 @@ export class OpinionApp {
       // Pages will now render their content inside the semantic <main> element
       if (path === '/') {
         console.log('🎯 APP.TS - Creating DebugPage for root path...');
-        this.currentPage = new DebugPage(this.mainContent);
+        this.currentPage = new DebugPage(this.mainContent, this.layout);
         console.log('🎯 APP.TS - Initializing DebugPage...');
         await this.currentPage.init();
         console.log('✅ APP.TS - DebugPage initialized successfully');
@@ -198,7 +267,7 @@ export class OpinionApp {
       else {
         console.warn(`⚠️ APP.TS - Unknown route: ${path}`);
         console.log('🎯 APP.TS - Fallback: Creating DebugPage...');
-        this.currentPage = new DebugPage(this.mainContent);
+        this.currentPage = new DebugPage(this.mainContent, this.layout);
         console.log('🎯 APP.TS - Initializing fallback DebugPage...');
         await this.currentPage.init();
         console.log('✅ APP.TS - Fallback DebugPage initialized successfully');
@@ -227,5 +296,12 @@ export class OpinionApp {
    */
   public getCurrentPage(): any {
     return this.currentPage;
+  }
+  
+  /**
+   * Get layout instance (for DebugPage access to LayoutContext)
+   */
+  public getLayout(): Layout | null {
+    return this.layout;
   }
 }

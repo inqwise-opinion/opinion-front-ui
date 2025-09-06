@@ -3,6 +3,8 @@
  * Manages user dropdown menu functionality
  */
 
+import type { UserMenuItem } from "./Layout";
+
 export interface User {
   username: string;
   email?: string;
@@ -810,6 +812,88 @@ export class UserMenu {
     
     console.log('UserMenu - Setting default user data:', defaultUser);
     this.updateUser(defaultUser);
+  }
+
+  /**
+   * Update user menu items from Layout configuration
+   */
+  public updateMenuItems(items: UserMenuItem[]): void {
+    console.log('UserMenu - Updating menu items:', items.length, 'items');
+    
+    // Find the menu items container
+    const menuItemsContainer = this.elements.dropdown?.querySelector('.user-menu-items');
+    if (!menuItemsContainer) {
+      console.warn('UserMenu - Menu items container not found');
+      return;
+    }
+    
+    // Generate HTML for menu items
+    const menuItemsHTML = items.map(item => this.renderUserMenuItem(item)).join('');
+    
+    // Update the menu items
+    menuItemsContainer.innerHTML = menuItemsHTML;
+    
+    // Re-setup hover effects for new items
+    this.setupMenuItemHoverEffects();
+    
+    console.log('UserMenu - Menu items updated successfully');
+  }
+
+  /**
+   * Render a single user menu item
+   */
+  private renderUserMenuItem(item: UserMenuItem): string {
+    if (item.type === 'divider') {
+      return '<li style="height: 1px; background: #e9ecef; margin: 8px 16px;"></li>';
+    }
+    
+    const href = item.href || 'javascript:;';
+    const action = item.action ? `data-action="${item.action}"` : '';
+    const className = item.className ? ` ${item.className}` : '';
+    const style = item.style ? ` ${item.style}` : '';
+    const color = item.id === 'logout' ? '#dc3545' : '#6c757d';
+    
+    return `
+      <li>
+        <a href="${href}" class="user-menu-item${className}" ${action} style="
+          display: flex;
+          align-items: center;
+          padding: 12px 20px;
+          color: ${item.id === 'logout' ? '#dc3545' : '#495057'};
+          text-decoration: none;
+          transition: all 0.2s ease;
+          border-radius: 0;
+          margin: 0;
+          font-size: 15px;
+          font-weight: 500;
+          min-height: 48px;${style}
+        ">
+          <span class="material-icons nav-icon" style="
+            margin-right: 16px;
+            font-size: 20px;
+            width: 24px;
+            color: ${color};
+            transition: color 0.2s ease;
+          ">${item.icon}</span>
+          <span class="nav-text">${item.text}</span>
+        </a>
+      </li>
+    `;
+  }
+
+  /**
+   * Setup hover effects for menu items
+   */
+  private setupMenuItemHoverEffects(): void {
+    const menuItems = document.querySelectorAll('.user-menu-item');
+    menuItems.forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        (item as HTMLElement).style.background = '#f8f9fa';
+      });
+      item.addEventListener('mouseleave', () => {
+        (item as HTMLElement).style.background = 'transparent';
+      });
+    });
   }
 
   /**

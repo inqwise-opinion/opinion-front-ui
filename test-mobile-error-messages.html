@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Error Messages Test</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f8f9fa;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        .mobile-header {
+            background: #2563eb;
+            color: white;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .mobile-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .mobile-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .test-card h2 {
+            color: #1e293b;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .single-button-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: transform 0.2s ease;
+            min-height: 44px; /* Touch-friendly */
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-error { background: #dc3545; color: white; }
+        .btn-warning { background: #fd7e14; color: white; }
+        .btn-info { background: #0dcaf0; color: white; }
+        .btn-success { background: #198754; color: white; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-purple { background: #6f42c1; color: white; }
+        .btn-teal { background: #20c997; color: white; }
+
+        .status-display {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+            color: #495057;
+            min-height: 80px;
+            margin-top: 15px;
+            overflow-y: auto;
+            max-height: 120px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .feature-list li::before {
+            content: '✅';
+            font-size: 12px;
+        }
+
+        .info-badge {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            border-left: 3px solid #2196f3;
+            margin-top: 10px;
+        }
+
+        .warning-badge {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            border-left: 3px solid #ffc107;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .test-card {
+                padding: 15px;
+            }
+            
+            .btn {
+                font-size: 13px;
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <h1>📱💬 Mobile Error Messages</h1>
+        <p>Touch-friendly error message testing</p>
+    </div>
+
+    <!-- Quick Status -->
+    <div class="test-card">
+        <h2>🔍 Test Status</h2>
+        <div class="status-display" id="mobile-status">
+            Ready for mobile error message testing. Tap any button below.
+        </div>
+    </div>
+
+    <!-- Basic Messages (Mobile Optimized) -->
+    <div class="test-card">
+        <h2>📝 Basic Messages</h2>
+        <div class="button-grid">
+            <button class="btn btn-error" onclick="testMobileMessage('error')">
+                <span class="material-icons" style="font-size: 18px;">error</span>
+                Error
+            </button>
+            <button class="btn btn-warning" onclick="testMobileMessage('warning')">
+                <span class="material-icons" style="font-size: 18px;">warning</span>
+                Warning
+            </button>
+            <button class="btn btn-info" onclick="testMobileMessage('info')">
+                <span class="material-icons" style="font-size: 18px;">info</span>
+                Info
+            </button>
+            <button class="btn btn-success" onclick="testMobileMessage('success')">
+                <span class="material-icons" style="font-size: 18px;">check_circle</span>
+                Success
+            </button>
+        </div>
+    </div>
+
+    <!-- Advanced Features -->
+    <div class="test-card">
+        <h2>🔧 Advanced Features</h2>
+        <div class="button-grid">
+            <button class="btn btn-purple" onclick="testAdvancedMobile('action')">
+                <span class="material-icons" style="font-size: 18px;">build</span>
+                Action
+            </button>
+            <button class="btn btn-secondary" onclick="testAdvancedMobile('persistent')">
+                <span class="material-icons" style="font-size: 18px;">push_pin</span>
+                Persist
+            </button>
+            <button class="btn btn-teal" onclick="testAdvancedMobile('autoHide')">
+                <span class="material-icons" style="font-size: 18px;">schedule</span>
+                Auto-hide
+            </button>
+            <button class="btn btn-purple" onclick="testAdvancedMobile('sequence')">
+                <span class="material-icons" style="font-size: 18px;">movie</span>
+                Sequence
+            </button>
+        </div>
+    </div>
+
+    <!-- Management -->
+    <div class="test-card">
+        <h2>🗂️ Management</h2>
+        <div class="button-grid">
+            <button class="btn btn-secondary" onclick="testMobileClear('all')">
+                <span class="material-icons" style="font-size: 18px;">clear_all</span>
+                Clear All
+            </button>
+            <button class="btn btn-error" onclick="testMobileClear('errors')">
+                <span class="material-icons" style="font-size: 18px;">error_outline</span>
+                Clear Errors
+            </button>
+        </div>
+    </div>
+
+    <!-- Integration -->
+    <div class="test-card">
+        <h2>🔗 Integration Test</h2>
+        <div class="single-button-grid">
+            <button class="btn btn-primary" onclick="openMobileApp()">
+                <span class="material-icons" style="font-size: 18px;">smartphone</span>
+                Open App (Mobile View)
+            </button>
+            <button class="btn btn-primary" onclick="openDesktopErrorTest()">
+                <span class="material-icons" style="font-size: 18px;">desktop_windows</span>
+                Open Desktop Test
+            </button>
+        </div>
+        
+        <div class="warning-badge">
+            <strong>📱 Mobile Testing:</strong> Open the main app and test error messages in mobile viewport (&lt;768px). Messages should display properly above content.
+        </div>
+    </div>
+
+    <!-- Features Overview -->
+    <div class="test-card">
+        <h2>✨ Mobile Features</h2>
+        <ul class="feature-list">
+            <li>Touch-optimized buttons (44px+ height)</li>
+            <li>Responsive message containers</li>
+            <li>Mobile-friendly typography</li>
+            <li>Swipe-to-dismiss support (if implemented)</li>
+            <li>Proper viewport integration</li>
+            <li>Accessibility on mobile devices</li>
+        </ul>
+        
+        <div class="info-badge">
+            <strong>API Usage:</strong> All the same LayoutContext methods work on mobile - <code>layoutContext.showError()</code>, etc. The UI adapts automatically!
+        </div>
+    </div>
+
+    <script>
+        let mobileMessageCount = 0;
+
+        function updateMobileStatus(message, type = 'info') {
+            const status = document.getElementById('mobile-status');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            status.innerHTML = `
+                <strong>[${timestamp}]</strong> ${message}<br>
+                <small>Mobile-optimized error message testing</small>
+            `;
+            
+            // Color coding
+            const colors = {
+                error: '#dc3545',
+                warning: '#fd7e14',
+                success: '#198754',
+                info: '#0dcaf0'
+            };
+            
+            status.style.borderLeft = `4px solid ${colors[type] || '#6c757d'}`;
+            
+            // Auto-scroll to show latest
+            status.scrollTop = status.scrollHeight;
+        }
+
+        function testMobileMessage(type) {
+            mobileMessageCount++;
+            
+            const mobileMessages = {
+                error: {
+                    title: 'Connection Error',
+                    description: 'Unable to connect on mobile network',
+                    call: `layoutContext.showError('Connection Error', 'Mobile network issue')`
+                },
+                warning: {
+                    title: 'Battery Warning',
+                    description: 'Low battery may affect app performance',
+                    call: `layoutContext.showWarning('Battery Warning', 'Low battery detected')`
+                },
+                info: {
+                    title: 'Mobile Feature',
+                    description: 'New mobile feature available',
+                    call: `layoutContext.showInfo('Mobile Feature', 'Check out mobile updates')`
+                },
+                success: {
+                    title: 'Mobile Sync',
+                    description: 'Data synced successfully on mobile',
+                    call: `layoutContext.showSuccess('Mobile Sync', 'Data synchronized')`
+                }
+            };
+
+            const msg = mobileMessages[type];
+            updateMobileStatus(`📱 Mobile ${type.toUpperCase()} #${mobileMessageCount}:<br>
+                               <strong>${msg.title}</strong><br>
+                               ${msg.description}<br>
+                               <code style="font-size: 11px;">${msg.call}</code>`, type);
+
+            console.log(`%c📱 Mobile Error Message Test - ${type.toUpperCase()}`, 
+                       'color: #2563eb; font-weight: bold; font-size: 14px');
+            console.log(`Mobile Context: ${msg.title} - ${msg.description}`);
+            console.log(`API Call: ${msg.call}`);
+        }
+
+        function testAdvancedMobile(feature) {
+            mobileMessageCount++;
+            
+            const mobileFeatures = {
+                action: {
+                    title: 'Network Error with Mobile Retry',
+                    description: 'Touch retry button to reconnect',
+                    call: 'errorMessages.addMessage({...mobile specific action...})'
+                },
+                persistent: {
+                    title: 'Persistent Mobile Warning',
+                    description: 'Survives mobile app backgrounding',
+                    call: 'errorMessages.addMessage({persistent: true, mobile: true})'
+                },
+                autoHide: {
+                    title: 'Mobile Auto-Hide',
+                    description: 'Disappears after 3s on mobile',
+                    call: 'errorMessages.addMessage({autoHide: true, mobileOptimized: true})'
+                },
+                sequence: {
+                    title: 'Mobile Message Flow',
+                    description: 'Progressive disclosure for mobile',
+                    call: 'showMobileMessageSequence()'
+                }
+            };
+
+            const feature_info = mobileFeatures[feature];
+            updateMobileStatus(`🔧 Mobile ${feature.toUpperCase()} #${mobileMessageCount}:<br>
+                               <strong>${feature_info.title}</strong><br>
+                               ${feature_info.description}<br>
+                               <code style="font-size: 11px;">${feature_info.call}</code>`, 'info');
+
+            console.log(`%c🚀 Mobile Advanced Feature - ${feature.toUpperCase()}`, 
+                       'color: #6f42c1; font-weight: bold');
+            console.log(`Mobile Feature: ${feature_info.title}`);
+            console.log(`Description: ${feature_info.description}`);
+        }
+
+        function testMobileClear(action) {
+            const clearActions = {
+                all: {
+                    title: 'Clear All Mobile Messages',
+                    call: 'layoutContext.clearMessages(false)'
+                },
+                errors: {
+                    title: 'Clear Mobile Errors Only',
+                    call: 'layoutContext.clearMessagesByType("error")'
+                }
+            };
+
+            const action_info = clearActions[action];
+            updateMobileStatus(`🗂️ Mobile Clear: ${action_info.title}<br>
+                               <code>${action_info.call}</code>`, 'warning');
+
+            console.log(`%c🧹 Mobile Clear - ${action.toUpperCase()}`, 
+                       'color: #dc3545; font-weight: bold');
+            console.log(`Mobile Action: ${action_info.title}`);
+            console.log(`API Call: ${action_info.call}`);
+        }
+
+        function openMobileApp() {
+            // Force mobile view
+            const url = 'http://localhost:3002/';
+            updateMobileStatus(`📱 Opening app in mobile view: ${url}<br>
+                               Resize to <768px width to test mobile error messages!`, 'success');
+            
+            const newWindow = window.open(url, '_blank');
+            
+            // Add instructions to console
+            console.log('%c📱 Mobile App Testing', 'color: #16a34a; font-weight: bold; font-size: 16px');
+            console.log('1. Resize browser to mobile width (<768px)');
+            console.log('2. Look for "💬 Message Simulation" in DebugPage');
+            console.log('3. Test messages in mobile viewport');
+            console.log('4. Verify messages display properly on mobile');
+        }
+
+        function openDesktopErrorTest() {
+            window.open('./test-error-messages.html', '_blank');
+            updateMobileStatus('🖥️ Opened desktop error message test page', 'success');
+        }
+
+        // Touch event optimization
+        document.addEventListener('touchstart', function() {}, {passive: true});
+
+        // Viewport size detection
+        function checkMobileViewport() {
+            const width = window.innerWidth;
+            const isMobile = width < 768;
+            
+            if (isMobile) {
+                updateMobileStatus(`📱 Mobile viewport detected: ${width}px width`, 'success');
+            } else {
+                updateMobileStatus(`💻 Desktop viewport: ${width}px - Resize to <768px for mobile testing`, 'info');
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('%c📱💬 Mobile Error Messages Test Loaded', 
+                       'color: #16a34a; font-size: 16px; font-weight: bold');
+            console.log('Touch-optimized interface for mobile error message testing');
+            
+            checkMobileViewport();
+            
+            // Check viewport changes
+            window.addEventListener('resize', checkMobileViewport);
+        });
+
+        // Add haptic feedback simulation for supported devices
+        function vibrate() {
+            if (navigator.vibrate) {
+                navigator.vibrate(50); // Short haptic feedback
+            }
+        }
+
+        // Add vibration to button taps
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('touchstart', vibrate);
+        });
+    </script>
+</body>
+</html>

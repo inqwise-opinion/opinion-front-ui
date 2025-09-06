@@ -54,6 +54,10 @@ async function initApp() {
     console.log('🚀 MAIN.TS - Calling app.init()...');
     await app.init();
     
+    // Expose app instance globally for DebugPage access to Layout
+    (window as any).app = app;
+    console.log('🎯 MAIN.TS - App instance exposed globally');
+    
     console.log('✅ MAIN.TS - Application initialization completed successfully!');
   } catch (error) {
     console.error('❌ MAIN.TS - Failed to initialize application:', error);

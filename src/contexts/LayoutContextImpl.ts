@@ -865,6 +865,105 @@ export class LayoutContextImpl implements LayoutContext {
     
     console.log("LayoutContext - All components unregistered");
   }
+
+  // =================================================================================
+  // Error Messages Methods
+  // =================================================================================
+
+  /**
+   * Show an error message via the Layout component
+   */
+  public showError(title: string, description?: string, options?: any): void {
+    const layout = this.getLayout();
+    console.log('🎯 LAYOUTCONTEXT - showError called:');
+    console.log('  - Layout instance:', layout ? 'FOUND' : 'NULL');
+    console.log('  - showError method:', layout && typeof layout.showError === 'function' ? 'FOUND' : 'NOT FOUND');
+    console.log('  - Layout instance type:', layout ? layout.constructor.name : 'N/A');
+    
+    if (layout && typeof layout.showError === 'function') {
+      console.log('🎯 LAYOUTCONTEXT - Calling layout.showError...');
+      layout.showError(title, description, options);
+    } else {
+      console.warn('LayoutContext - Layout component not available or does not support error messages');
+      console.log('  - Available methods on layout:', layout ? Object.getOwnPropertyNames(Object.getPrototypeOf(layout)).filter(name => typeof layout[name] === 'function') : 'N/A');
+    }
+  }
+
+  /**
+   * Show a warning message via the Layout component
+   */
+  public showWarning(title: string, description?: string, options?: any): void {
+    const layout = this.getLayout();
+    if (layout && typeof layout.showWarning === 'function') {
+      layout.showWarning(title, description, options);
+    } else {
+      console.warn('LayoutContext - Layout component not available or does not support warning messages');
+    }
+  }
+
+  /**
+   * Show an info message via the Layout component
+   */
+  public showInfo(title: string, description?: string, options?: any): void {
+    const layout = this.getLayout();
+    if (layout && typeof layout.showInfo === 'function') {
+      layout.showInfo(title, description, options);
+    } else {
+      console.warn('LayoutContext - Layout component not available or does not support info messages');
+    }
+  }
+
+  /**
+   * Show a success message via the Layout component
+   */
+  public showSuccess(title: string, description?: string, options?: any): void {
+    const layout = this.getLayout();
+    if (layout && typeof layout.showSuccess === 'function') {
+      layout.showSuccess(title, description, options);
+    } else {
+      console.warn('LayoutContext - Layout component not available or does not support success messages');
+    }
+  }
+
+  /**
+   * Clear all error messages via the Layout component
+   */
+  public clearMessages(includesPersistent: boolean = false): void {
+    const layout = this.getLayout();
+    if (layout && typeof layout.clearMessages === 'function') {
+      layout.clearMessages(includesPersistent);
+    } else {
+      console.warn('LayoutContext - Layout component not available or does not support clearing messages');
+    }
+  }
+
+  /**
+   * Clear messages by type via the Layout component
+   */
+  public clearMessagesByType(type: 'error' | 'warning' | 'info' | 'success'): void {
+    const layout = this.getLayout();
+    if (layout && typeof layout.clearMessagesByType === 'function') {
+      layout.clearMessagesByType(type);
+    } else {
+      console.warn('LayoutContext - Layout component not available or does not support clearing messages by type');
+    }
+  }
+
+  /**
+   * Check if has messages via the Layout component
+   */
+  public hasMessages(type?: 'error' | 'warning' | 'info' | 'success'): boolean {
+    const layout = this.getLayout();
+    if (layout && layout.getErrorMessages && typeof layout.getErrorMessages === 'function') {
+      const errorMessages = layout.getErrorMessages();
+      if (errorMessages && typeof errorMessages.hasMessages === 'function') {
+        return errorMessages.hasMessages(type);
+      }
+    }
+    
+    console.warn('LayoutContext - Layout component not available or does not support checking messages');
+    return false;
+  }
 }
 
 export default LayoutContextImpl;

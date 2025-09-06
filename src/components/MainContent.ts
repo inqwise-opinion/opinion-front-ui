@@ -284,6 +284,13 @@ export class MainContent {
   isReady(): boolean {
     return this.isInitialized && this.container !== null;
   }
+  
+  /**
+   * Get the LayoutContext instance
+   */
+  getLayoutContext(): LayoutContext {
+    return this.layoutContext;
+  }
 
   /**
    * Show main content

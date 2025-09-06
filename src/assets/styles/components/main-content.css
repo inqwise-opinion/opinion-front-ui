@@ -7,24 +7,18 @@
 .app-main.main-content {
   display: flex;
   flex-direction: column;
-  padding: 24px 32px;
+  padding: 16px;
   background-color: #f8fafc;
   position: relative;
   
-  /* Enhanced scrollbar styling for desktop */
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
-  
   /* Flexbox layout for internal content organization */
-  gap: 20px;
+  gap: 16px;
   
-  /* Ensure proper sizing and positioning */
-  width: 100%;
+  /* Ensure proper sizing and positioning - full width */
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
   box-sizing: border-box;
-  
-  /* Support for PageComponent content */
-  overflow-y: visible; /* Allow content to flow naturally */
-  overflow-x: hidden;
 }
 
 /* Webkit scrollbar styling for better desktop experience */
@@ -229,8 +223,8 @@
 /* Desktop Layout Enhancements */
 @media (min-width: 1400px) {
   .app-main.main-content {
-    padding: 32px 40px;
-    gap: 24px;
+    padding: 20px 24px;
+    gap: 20px;
   }
   
   .main-content h1 {
@@ -252,8 +246,8 @@
 
 @media (min-width: 1200px) and (max-width: 1399px) {
   .app-main.main-content {
-    padding: 28px 36px;
-    gap: 22px;
+    padding: 18px 20px;
+    gap: 18px;
   }
   
   .main-content h1 {
@@ -267,7 +261,7 @@
 
 @media (min-width: 1025px) and (max-width: 1199px) {
   .app-main.main-content {
-    padding: 24px 32px;
+    padding: 16px 20px;
   }
   
   .main-content-card {
@@ -278,8 +272,8 @@
 /* Tablet adjustments */
 @media (min-width: 769px) and (max-width: 1024px) {
   .app-main.main-content {
-    padding: 20px 24px;
-    gap: 18px;
+    padding: 16px 18px;
+    gap: 16px;
   }
   
   .main-content h1 {
@@ -294,8 +288,8 @@
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .app-main.main-content {
-    padding: 16px;
-    gap: 16px;
+    padding: 12px;
+    gap: 12px;
   }
   
   .main-content-flex-row {

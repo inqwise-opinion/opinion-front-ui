@@ -42,14 +42,28 @@ html, body {
   overflow: hidden;
 }
 
-/* Scrollable content area containing main + footer */
-.app-content-scroll {
+/* Content area containing header + scrollable content */
+.app-content-area {
   grid-area: content;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Critical for proper content sizing */
+  min-height: 0; /* Critical for proper flex sizing */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Scrollable container for error messages, main, and footer */
+.app-content-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1; /* Take remaining space after header */
+  min-height: 0; /* Critical for proper scrolling */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Grid Area Assignments with Enhanced Styling */
@@ -76,13 +90,19 @@ html, body {
 }
 
 .app-main {
-  /* Inside scrollable flex container, not grid area */
+  /* Part of the scrollable content flow */
   background-color: #f8fafc !important; /* Force light background */
   color: #1e293b !important; /* Force dark text */
   position: relative;
-  padding: 24px;
-  flex: 1; /* Take remaining space in flex container */
+  padding: 16px;
+  flex: 1; /* Take remaining space in scroll container */
   min-height: auto; /* Allow content to determine natural height */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  
+  /* No scrolling - handled by parent container */
+  overflow: visible;
 }
 
 .app-footer {

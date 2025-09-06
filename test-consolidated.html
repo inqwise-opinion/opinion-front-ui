@@ -140,6 +140,24 @@
             <button onclick="testViewportInfo()">Show Viewport Info</button>
             <button onclick="testUserMenuClick()">Test User Menu Click</button>
             <button onclick="clearConsole()">Clear Console</button>
+            <button onclick="testErrorMessages()">Test Error Messages</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>💬 Error Messages Integration</h2>
+            <p>Test the new error message functionality added to LayoutContext:</p>
+            <button onclick="testBasicErrorMessages()">Test Basic Messages</button>
+            <button onclick="testAdvancedMessages()">Test Advanced Features</button>
+            <button onclick="openErrorMessagesTest()">Open Dedicated Test Page</button>
+            
+            <div class="info" style="margin-top: 15px;">
+                <strong>✨ New LayoutContext Methods:</strong><br>
+                • <code>layoutContext.showError(title, description)</code><br>
+                • <code>layoutContext.showWarning(title, description)</code><br>
+                • <code>layoutContext.showInfo(title, description)</code><br>
+                • <code>layoutContext.showSuccess(title, description)</code><br>
+                • <code>layoutContext.clearMessages()</code> and more!
+            </div>
         </div>
 
         <div class="test-section">
@@ -241,6 +259,53 @@
         window.clearConsole = function() {
             console.clear();
             console.log('🧹 Console cleared');
+        };
+        
+        // Error Messages Testing Functions
+        window.testErrorMessages = function() {
+            console.log('%c💬 Error Messages Test - Consolidated Page', 'color: #2563eb; font-weight: bold; font-size: 16px');
+            console.log('This demonstrates the LayoutContext error message integration:');
+            console.log('layoutContext.showError("Test Error", "Error from consolidated test page")');
+            console.log('layoutContext.showSuccess("Test Success", "Error messages working in consolidated test!")');
+        };
+        
+        window.testBasicErrorMessages = function() {
+            console.log('%c📝 Basic Error Messages Test', 'color: #16a34a; font-weight: bold; font-size: 14px');
+            
+            const messages = [
+                {type: 'ERROR', color: '#dc3545', call: 'layoutContext.showError("Connection Failed", "Network error occurred")'},
+                {type: 'WARNING', color: '#fd7e14', call: 'layoutContext.showWarning("Session Warning", "Session will expire soon")'},
+                {type: 'INFO', color: '#0dcaf0', call: 'layoutContext.showInfo("Feature Info", "New feature available")'},
+                {type: 'SUCCESS', color: '#198754', call: 'layoutContext.showSuccess("Operation Success", "Data saved successfully")'}
+            ];
+            
+            messages.forEach((msg, index) => {
+                setTimeout(() => {
+                    console.log(`%c${msg.type}:`, `color: ${msg.color}; font-weight: bold`, msg.call);
+                }, index * 600);
+            });
+        };
+        
+        window.testAdvancedMessages = function() {
+            console.log('%c🚀 Advanced Message Features Test', 'color: #6f42c1; font-weight: bold; font-size: 14px');
+            
+            const features = [
+                'errorMessages.addMessage({id: "action-msg", type: "error", actions: [{id: "retry", text: "Retry"}]})',
+                'errorMessages.addMessage({id: "persistent-msg", type: "warning", persistent: true})',
+                'errorMessages.addMessage({id: "auto-hide-msg", type: "info", autoHide: true, autoHideDelay: 3000})',
+                'showMessageSequence() // Shows 5 messages in 2s intervals'
+            ];
+            
+            features.forEach((feature, index) => {
+                setTimeout(() => {
+                    console.log(`%cAdvanced Feature ${index + 1}:`, 'color: #6f42c1; font-weight: bold', feature);
+                }, index * 800);
+            });
+        };
+        
+        window.openErrorMessagesTest = function() {
+            window.open('./test-error-messages.html', '_blank');
+            console.log('🚀 Opened dedicated Error Messages Test Page');
         };
 
         // Viewport change logging

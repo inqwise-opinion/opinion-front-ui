@@ -80,8 +80,33 @@
             Open Main App (localhost:3001)
         </button>
         
+        <button class="test-button" onclick="testErrorMessages()">
+            Test Error Messages
+        </button>
+        
         <div class="status" id="status">
             Ready to test layout features
+        </div>
+    </div>
+    
+    <div class="test-controls">
+        <h2>💬 Error Messages Testing</h2>
+        <p>Test the error message functionality that was added to LayoutContext:</p>
+        
+        <button class="test-button" onclick="testBasicMessages()">
+            Test Basic Messages
+        </button>
+        
+        <button class="test-button" onclick="openErrorMessagesTest()">
+            Open Error Messages Test Page
+        </button>
+        
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #2196f3;">
+            <strong>💬 Error Message Features:</strong><br>
+            • LayoutContext.showError/Warning/Info/Success()<br>
+            • Message clearing and management<br>
+            • Advanced features: actions, persistence, auto-hide<br>
+            • Full integration with DebugPage simulation<br>
         </div>
     </div>
 
@@ -121,8 +146,57 @@
         }
         
         function openMainApp() {
-            window.open('http://localhost:3001/', '_blank');
+            window.open('http://localhost:3002/', '_blank');
             updateStatus('Opened main app in new tab - check the layout and try the compact mode functionality');
+        }
+        
+        function testErrorMessages() {
+            updateStatus('💬 Testing Error Messages - This simulates LayoutContext error message calls');
+            console.log('%c💬 Error Messages Layout Test', 'color: #2563eb; font-weight: bold; font-size: 14px');
+            console.log('Simulating error message functionality:');
+            console.log('layoutContext.showError("Layout Test Error", "This is a test error from layout page")');
+            console.log('layoutContext.showSuccess("Layout Test Success", "Error message system is working!")');
+            
+            // Simulate multiple message types
+            setTimeout(() => {
+                console.log('layoutContext.showWarning("Layout Warning", "This is a test warning")');
+            }, 1000);
+            
+            setTimeout(() => {
+                console.log('layoutContext.showInfo("Layout Info", "Error messages integrated successfully")');
+            }, 2000);
+        }
+        
+        function testBasicMessages() {
+            updateStatus('📝 Testing all basic message types via LayoutContext API');
+            const messages = [
+                {type: 'ERROR', call: 'layoutContext.showError("Connection Failed", "Unable to connect to server")'},
+                {type: 'WARNING', call: 'layoutContext.showWarning("Session Expiring", "Save your work soon")'},
+                {type: 'INFO', call: 'layoutContext.showInfo("New Feature", "Check out the dashboard")'},
+                {type: 'SUCCESS', call: 'layoutContext.showSuccess("Data Saved", "Successfully saved")'}
+            ];
+            
+            console.log('%c📝 Basic Messages Test', 'color: #16a34a; font-weight: bold; font-size: 14px');
+            messages.forEach((msg, index) => {
+                setTimeout(() => {
+                    console.log(`%c${msg.type}:`, `color: ${getLogColor(msg.type.toLowerCase())}; font-weight: bold`, msg.call);
+                }, index * 800);
+            });
+        }
+        
+        function openErrorMessagesTest() {
+            window.open('./test-error-messages.html', '_blank');
+            updateStatus('Opened dedicated Error Messages Test Page - comprehensive testing environment!');
+        }
+        
+        function getLogColor(type) {
+            const colors = {
+                error: '#dc3545',
+                warning: '#fd7e14', 
+                info: '#0dcaf0',
+                success: '#198754'
+            };
+            return colors[type] || '#6c757d';
         }
         
         function updateStatus(message) {

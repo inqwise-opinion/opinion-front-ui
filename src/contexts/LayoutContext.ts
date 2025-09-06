@@ -117,6 +117,15 @@ export interface LayoutContext {
   // Notification System
   notifySidebarDimensionsChanged(): void;
 
+  // Error Messages System
+  showError(title: string, description?: string, options?: any): void;
+  showWarning(title: string, description?: string, options?: any): void;
+  showInfo(title: string, description?: string, options?: any): void;
+  showSuccess(title: string, description?: string, options?: any): void;
+  clearMessages(includesPersistent?: boolean): void;
+  clearMessagesByType(type: 'error' | 'warning' | 'info' | 'success'): void;
+  hasMessages(type?: 'error' | 'warning' | 'info' | 'success'): boolean;
+
   // Lifecycle
   destroy(): void;
 }

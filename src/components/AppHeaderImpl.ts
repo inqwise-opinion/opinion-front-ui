@@ -8,6 +8,7 @@ import "../assets/styles/components/header.css";
 
 // Import required components
 import { UserMenu } from "./UserMenu";
+import type { UserMenuItem } from "./Layout";
 
 // Type-only import for the interface
 import { Sidebar, Dimensions } from "./Sidebar";
@@ -818,6 +819,21 @@ export class AppHeaderImpl {
 
     // Update header layout using current layout mode from layout context
     this.updateHeaderLayout();
+  }
+
+  /**
+   * Update user menu items from Layout configuration
+   */
+  public updateUserMenuItems(items: UserMenuItem[]): void {
+    console.log("AppHeaderImpl - Updating user menu items:", items.length, "items");
+    
+    if (this.userMenu) {
+      this.userMenu.updateMenuItems(items);
+      console.log("AppHeaderImpl - User menu items updated successfully");
+    } else {
+      console.warn("AppHeaderImpl - UserMenu not initialized, storing items for later");
+      // Could store items for later initialization if needed
+    }
   }
 
   /**
