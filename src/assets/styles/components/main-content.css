@@ -21,7 +21,27 @@
   box-sizing: border-box;
 }
 
-/* Webkit scrollbar styling for better desktop experience */
+/* Webkit scrollbar styling for better desktop experience - target .app-main directly */
+.app-main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-main::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.app-main::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.app-main::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Keep the main-content class scrollbar styling as fallback */
 .main-content::-webkit-scrollbar {
   width: 8px;
 }
@@ -235,10 +255,12 @@
   }
   
   /* Hide scrollbars on mobile for cleaner look */
+  .app-main::-webkit-scrollbar,
   .main-content::-webkit-scrollbar {
     display: none;
   }
   
+  .app-main,
   .app-main.main-content {
     scrollbar-width: none;
   }

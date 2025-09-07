@@ -35,7 +35,7 @@ html, body {
   /* Layout variables - strict widths */
   --sidebar-width: 280px;
   --sidebar-compact-width: 80px;
-  --header-height: 64px;
+  --header-height: 60px;
   --header-mobile-height: 60px;
   
   background-color: #f8fafc;
@@ -54,12 +54,12 @@ html, body {
   box-sizing: border-box;
 }
 
-/* Scrollable container for error messages, main, and footer */
+/* Container for error messages, main, and footer - scrollable to accommodate full content */
 .app-content-scroll {
-  overflow-y: auto;
+  overflow-y: auto; /* Enable scrolling to show full content */
   overflow-x: hidden;
   flex: 1; /* Take remaining space after header */
-  min-height: 0; /* Critical for proper scrolling */
+  min-height: 0; /* Critical for proper flex sizing */
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -83,25 +83,26 @@ html, body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   z-index: 5;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: var(--header-height, 64px);
+  height: 60px;
+  min-height: 60px;
   flex-shrink: 0; /* Don't shrink header */
   display: flex;
   align-items: center;
 }
 
 .app-main {
-  /* Part of the scrollable content flow */
+  /* Main content container - no scrolling, shows full vertical content */
   background-color: #f8fafc !important; /* Force light background */
   color: #1e293b !important; /* Force dark text */
   position: relative;
   padding: 16px;
-  flex: 1; /* Take remaining space in scroll container */
+  flex: 0 0 auto; /* Don't grow or shrink, use natural content size */
   min-height: auto; /* Allow content to determine natural height */
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   
-  /* No scrolling - handled by parent container */
+  /* Disable scrolling - show full content */
   overflow: visible;
 }
 

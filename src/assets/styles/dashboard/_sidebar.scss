@@ -114,8 +114,6 @@
     padding: 0 20px;
     background: #fff;
     border-bottom: 0; // Remove bottom border
-    height: 60px; // Match main header height exactly
-    min-height: 60px;
     flex-shrink: 0;
     box-shadow: none; // Remove shadow for cleaner look
     
@@ -209,7 +207,6 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    border-right: 1px solid #e0e6ed; // Right border for separation
     // Shadow removed - handled by main content shadow in layout.scss
     
     .nav-section {
