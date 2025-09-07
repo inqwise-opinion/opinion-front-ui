@@ -10,22 +10,28 @@ The Opinion Front UI uses a modern **CSS Grid + Flexbox hybrid layout system** d
 ```html
 <body>
   <div class="app-layout">                    <!-- CSS Grid Container -->
-    <div class="app-sidebar">                 <!-- Grid Area: sidebar -->
+    <nav class="app-sidebar">                 <!-- Grid Area: sidebar -->
       <!-- Sidebar component content -->
-    </div>
+    </nav>
     
-    <div class="app-content-scroll">          <!-- Grid Area: content -->
+    <div class="app-content-area">            <!-- Grid Area: content -->
       <header class="app-header">             <!-- Fixed header -->
         <!-- Header component content -->
       </header>
       
-      <main class="app-main" id="app">        <!-- Dynamic content area -->
-        <!-- Page component content rendered here -->
-      </main>
-      
-      <footer class="app-footer">             <!-- Footer flows after content -->
-        <!-- Footer component content -->
-      </footer>
+      <div class="app-content-scroll">        <!-- Scrollable container -->
+        <div class="app-error-messages">      <!-- Error messages -->
+          <!-- Global error/notification messages -->
+        </div>
+        
+        <main class="app-main" id="app">      <!-- Dynamic content (no scroll) -->
+          <!-- Page component content rendered here -->
+        </main>
+        
+        <footer class="app-footer">           <!-- Footer flows after content -->
+          <!-- Footer component content -->
+        </footer>
+      </div>
     </div>
   </div>
 </body>
@@ -33,17 +39,16 @@ The Opinion Front UI uses a modern **CSS Grid + Flexbox hybrid layout system** d
 
 ## CSS Grid Foundation
 
-### Desktop Layout (≥768px)
+### Desktop Layout (≥1025px)
 ```css
 .app-layout {
   display: grid;
   height: 100vh;
   width: 100vw;
   grid-template-areas: 
-    "sidebar header"
     "sidebar content";
-  grid-template-columns: 280px 1fr;
-  grid-template-rows: 64px 1fr;
+  grid-template-columns: var(--sidebar-width, 280px) 1fr;
+  grid-template-rows: 1fr;
   overflow: hidden;
 }
 ```
@@ -52,11 +57,15 @@ The Opinion Front UI uses a modern **CSS Grid + Flexbox hybrid layout system** d
 ```css
 .app-layout {
   grid-template-areas: 
-    "header"
-    "main"
-    "footer";
+    "content";
   grid-template-columns: 1fr;
-  grid-template-rows: 60px 1fr 60px;
+  grid-template-rows: 1fr;
+}
+
+.app-sidebar {
+  position: fixed;
+  transform: translateX(-100%); /* Hidden by default */
+  z-index: 20;
 }
 ```
 
@@ -64,15 +73,14 @@ The Opinion Front UI uses a modern **CSS Grid + Flexbox hybrid layout system** d
 
 ### 1. Sidebar (`app-sidebar`)
 - **Grid Area:** `sidebar`
-- **Width:** 280px (desktop), hidden on mobile
-- **Position:** Fixed left column
-- **Content:** Navigation, user menu, compact mode toggle
+- **Width:** 280px (CSS variable: `--sidebar-width`)
+- **Compact Width:** 80px (CSS variable: `--sidebar-compact-width`)
+- **Position:** Fixed left column on desktop, overlay on mobile
+- **Content:** Navigation, brand title, compact mode toggle
 - **Responsive:** 
-  - Large Desktop (≥1400px): 320px
-  - Desktop (1200-1399px): 280px
-  - Small Desktop (1025-1199px): 260px
-  - Tablet (769-1024px): 240px
-  - Mobile (≤768px): Hidden/overlay
+  - Desktop (≥1025px): 280px fixed width
+  - Tablet (769-1024px): 280px with responsive adjustments
+  - Mobile (≤768px): Hidden/overlay with slide transition
 
 #### Compact Mode
 ```css
@@ -81,53 +89,63 @@ The Opinion Front UI uses a modern **CSS Grid + Flexbox hybrid layout system** d
 }
 ```
 
-### 2. Header (`app-header`)
-- **Grid Area:** `header`  
-- **Height:** 64px (desktop), 60px (mobile)
-- **Position:** Fixed top-right area
-- **Content:** App title, user menu, notifications
-- **Behavior:** Always visible, spans content width
-
-### 3. Content Area (`app-content-scroll`)
+### 2. Content Area (`app-content-area`)
 - **Grid Area:** `content`
 - **Layout:** Flexbox column container
-- **Overflow:** `overflow-y: auto` (scrollable)
-- **Purpose:** Contains header + main + footer in scrollable area
+- **Purpose:** Contains header + scrollable content container
+- **Behavior:** Takes remaining grid space after sidebar
+
+### 3. Header (`app-header`)
+- **Container:** Inside `.app-content-area`
+- **Height:** 60px (consistent across all viewports)
+- **Position:** Fixed at top of content area
+- **Content:** Brand title, user menu, notifications
+- **Behavior:** Always visible, spans content width
+
+### 4. Scrollable Container (`app-content-scroll`)
+- **Container:** Inside `.app-content-area`
+- **Layout:** Flexbox column container
+- **Overflow:** `overflow-y: auto` (page-level scrolling)
+- **Purpose:** Contains error messages + main content + footer
+- **Behavior:** Provides scrollbar when content exceeds viewport
 
 **Key CSS Properties:**
 ```css
 .app-content-scroll {
-  grid-area: content;
   overflow-y: auto;
   overflow-x: hidden;
+  flex: 1; /* Take remaining space after header */
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Critical for proper content sizing */
+  min-height: 0; /* Critical for proper flex sizing */
 }
 ```
 
-### 4. Main Content (`app-main`)
+### 5. Main Content (`app-main`)
 - **Container:** Inside `.app-content-scroll`
-- **Layout:** Natural document flow
-- **Height:** Determined by content (no forced minimums)
+- **Layout:** Natural document flow (no internal scrolling)
+- **Height:** Uses natural content height (full vertical content visible)
 - **Purpose:** Dynamic page content rendering
 - **Background:** Light gray (`#f8fafc`)
+- **Scrolling:** None - shows full content, parent container scrolls
 
 **Key CSS Properties:**
 ```css
 .app-main {
-  background-color: #f8fafc;
-  position: relative;
-  min-height: auto; /* Allow natural content height */
+  background-color: #f8fafc !important;
+  padding: 16px;
+  flex: 0 0 auto; /* Don't grow/shrink, use natural size */
+  min-height: auto; /* Allow content to determine height */
+  overflow: visible; /* No internal scrolling */
 }
 ```
 
-### 5. Footer (`app-footer`)
+### 6. Footer (`app-footer`)
 - **Container:** Inside `.app-content-scroll`  
 - **Position:** Flows naturally after main content
 - **Height:** 52px minimum, auto-sizing
 - **Content:** Copyright, navigation links
-- **Behavior:** Always appears right after content ends
+- **Behavior:** Always appears exactly where content ends
 
 **Key CSS Properties:**
 ```css
@@ -135,8 +153,8 @@ The Opinion Front UI uses a modern **CSS Grid + Flexbox hybrid layout system** d
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
   min-height: 52px;
-  position: static; /* Natural document flow */
-  flex-shrink: 0;
+  flex-shrink: 0; /* Don't shrink footer */
+  padding: 16px 32px;
 }
 ```
 
@@ -169,18 +187,20 @@ The Opinion Front UI uses a modern **CSS Grid + Flexbox hybrid layout system** d
 - **Mobile:** ≤768px
 
 ### Key Responsive Changes
-1. **Sidebar Width:** Adjusts at each breakpoint
-2. **Grid Columns:** Single column on mobile
-3. **Header Height:** Reduced on mobile (60px vs 64px)
-4. **Content Padding:** Scales down on smaller screens
+1. **Sidebar Width:** Uses CSS variables for dynamic adjustments
+2. **Grid Columns:** Single column on mobile with sidebar overlay
+3. **Header Height:** Consistent 60px across all viewports
+4. **Sidebar Behavior:** Fixed position on mobile with slide transitions
 
 ## Component Integration
 
 ### Global Layout Components
-- **Sidebar:** `src/components/Sidebar.ts`
-- **Header:** `src/components/AppHeader.ts`
+- **Layout Coordinator:** `src/components/Layout.ts`
+- **Sidebar:** `src/components/SidebarComponent.ts`
+- **Header:** `src/components/AppHeaderImpl.ts`
 - **Main Content:** `src/components/MainContent.ts`
-- **Footer:** `src/components/AppFooter.ts`
+- **Footer:** `src/components/AppFooterImpl.ts`
+- **Error Messages:** `src/components/ErrorMessages.ts`
 
 ### Page Components
 - All pages extend `PageComponent` abstract class
@@ -189,12 +209,14 @@ The Opinion Front UI uses a modern **CSS Grid + Flexbox hybrid layout system** d
 - Examples: `DebugPage`, `DashboardPage`
 
 ### Layout Initialization Order
-1. **OpinionApp** creates layout structure
-2. **Sidebar** inserts as first child of `.app-layout`
-3. **AppHeader** inserts into `.app-content-scroll`
-4. **MainContent** manages `#app` element
-5. **AppFooter** inserts as last child of `.app-content-scroll`
-6. **Page Components** render content inside `#app`
+1. **OpinionApp** creates main application controller
+2. **Layout** component initializes and coordinates all layout components
+3. **AppHeader** initializes with sidebar management
+4. **SidebarComponent** populates navigation and brand content
+5. **MainContent** manages the `#app` element for page content
+6. **ErrorMessages** component ready for global error display
+7. **AppFooter** initializes with copyright and navigation
+8. **Page Components** (DebugPage, DashboardPage) render inside `#app`
 
 ## Critical CSS Properties
 

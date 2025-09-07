@@ -66,7 +66,9 @@ The codebase follows a **component-based architecture** where:
 - Components manage their own lifecycle (init/destroy)
 - Event delegation pattern using `data-action` attributes
 - Automatic cleanup of event listeners and timers
-- Global error handling with detailed logging
+- **Layout Context System**: Centralized layout coordination with `LayoutContextImpl`
+- **Error Message System**: Global error/warning/info/success message display
+- **Responsive Layout Modes**: Automatic CSS class management for different viewport modes
 
 ### TypeScript Configuration
 
@@ -97,38 +99,47 @@ Custom client-side routing implemented in `OpinionApp`:
 
 ### Global Layout Architecture
 
-> **📋 Detailed Documentation:** See [`docs/LAYOUT_ARCHITECTURE.md`](docs/LAYOUT_ARCHITECTURE.md) for comprehensive layout system documentation.
+> **📋 Detailed Documentation:** See [`docs/layout-architecture.md`](docs/layout-architecture.md) for comprehensive layout system documentation.
 
 The application uses a **CSS Grid + Flexbox hybrid layout system**:
 
 ```html
 <div class="app-layout">                    <!-- CSS Grid Container -->
-  <div class="app-sidebar">                 <!-- Grid Area: sidebar -->
+  <nav class="app-sidebar">                 <!-- Grid Area: sidebar -->
     <!-- Sidebar component -->
-  </div>
-  <div class="app-content-scroll">          <!-- Grid Area: content -->
+  </nav>
+  <div class="app-content-area">            <!-- Grid Area: content -->
     <header class="app-header">             <!-- Fixed header -->
       <!-- Header component -->
     </header>
-    <main class="app-main" id="app">        <!-- Dynamic content -->
-      <!-- Page components render here -->
-    </main>
-    <footer class="app-footer">             <!-- Footer flows after content -->
-      <!-- Footer component -->
-    </footer>
+    <div class="app-content-scroll">        <!-- Scrollable container -->
+      <div class="app-error-messages">      <!-- Error messages -->
+        <!-- Global error/notification messages -->
+      </div>
+      <main class="app-main" id="app">      <!-- Dynamic content (no internal scroll) -->
+        <!-- Page components render here -->
+      </main>
+      <footer class="app-footer">           <!-- Footer flows after content -->
+        <!-- Footer component -->
+      </footer>
+    </div>
   </div>
 </div>
 ```
 
 **Layout Principles**:
 - **CSS Grid** for overall structure (sidebar + content areas)
-- **Flexbox** for content flow (header → main → footer)
-- **Natural content height** (footer flows after content, no forced positioning)
-- **Responsive breakpoints** with sidebar width adjustments
+- **Flexbox** for content flow (header → scrollable container → footer inside scroll area)
+- **Page-level scrolling** (`.app-content-scroll` handles scrolling, not `.app-main`)
+- **Natural content height** (`.app-main` shows full content, footer flows after)
+- **Layout Context coordination** (centralized responsive behavior and error messaging)
+- **CSS Custom Properties** (`--sidebar-width`, `--sidebar-compact-width`) for dynamic theming
+- **Responsive breakpoints** with automatic CSS class management
 
 **Responsive Behavior**:
-- **Desktop (≥768px)**: Sidebar fixed width, CSS Grid layout
-- **Mobile (<768px)**: Single column, sidebar hidden/overlay mode
+- **Desktop (≥1025px)**: Sidebar 280px fixed width, CSS Grid layout
+- **Tablet (769px-1024px)**: Sidebar 280px, responsive grid adjustments
+- **Mobile (≤768px)**: Single column, sidebar hidden/overlay mode
 
 ## Development Environment
 
@@ -157,6 +168,14 @@ The `MockApiService` provides realistic development data with:
 - User authentication simulation
 - Survey/opinion data with completion tracking
 - Chart data generation for dashboard features
+
+### Layout Context System
+The `LayoutContextImpl` provides centralized coordination with:
+- Responsive breakpoint management (mobile/tablet/desktop/desktop-compact)
+- Sidebar dimension tracking and CSS variable updates
+- Global error message system integration
+- Component-to-component event communication
+- Automatic CSS class management for layout modes
 
 ### Component Lifecycle Management
 All components extending `PageComponent` get:

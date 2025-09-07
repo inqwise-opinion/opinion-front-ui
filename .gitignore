@@ -71,3 +71,5 @@ coverage/
 # Temporary folders
 tmp/
 temp/
+docs/archive/
+debug/

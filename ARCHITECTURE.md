@@ -4,16 +4,18 @@
 
 ```
 OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
-├── LayoutContext (src/contexts/LayoutContext.ts) 🌐 GLOBAL STATE
+├── LayoutContextImpl (src/contexts/LayoutContextImpl.ts) 🌐 GLOBAL STATE
 ├── MockApiService (src/services/MockApiService.ts) 📊 DATA LAYER
 ├── Layout (src/components/Layout.ts) 🏗️ LAYOUT COORDINATOR
-│   ├── AppHeader (src/components/AppHeader.ts) 📋 TOP BAR
+│   ├── AppHeaderImpl (src/components/AppHeaderImpl.ts) 📋 TOP BAR
 │   │   ├── UserMenu (src/components/UserMenu.ts) 👤 USER ACTIONS
-│   │   └── Sidebar (src/components/Sidebar.ts) 🔗 NAVIGATION
-│   └── AppFooter (src/components/AppFooter.ts) 📄 BOTTOM BAR
+│   │   └── SidebarComponent (src/components/SidebarComponent.ts) 🔗 NAVIGATION
+│   ├── AppFooterImpl (src/components/AppFooterImpl.ts) 📄 BOTTOM BAR
+│   └── ErrorMessagesComponent (src/components/ErrorMessages.ts) 🚨 GLOBAL MESSAGES
 ├── MainContent (src/components/MainContent.ts) 📱 CONTENT CONTAINER
 └── PageComponents 📄 DYNAMIC PAGES
-    └── DebugPage (src/pages/DebugPage.ts) 🛠️ DEBUG TOOLS
+    ├── DebugPage (src/pages/DebugPage.ts) 🛠️ DEBUG TOOLS
+    └── DashboardPage (src/pages/DashboardPage.ts) 📊 DASHBOARD
 ```
 
 ### Component Responsibilities
@@ -27,12 +29,13 @@ OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
   - Manage error handling and recovery
 - **Dependencies**: Layout, MainContent, LayoutContext, MockApiService
 
-#### 🌐 **LayoutContext** (Global State Manager)
+#### 🌐 **LayoutContextImpl** (Global State Manager)
 - **Scope**: Cross-component communication and state management
 - **Responsibilities**:
-  - Manage responsive breakpoints and modes
+  - Manage responsive breakpoints and layout modes
   - Track sidebar dimensions and states
   - Provide event system for component coordination
+  - Handle global error messages and notifications
   - Maintain layout state consistency
 - **Pattern**: Singleton with event emitter
 
@@ -45,23 +48,23 @@ OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
   - Coordinate component positioning
 - **Dependencies**: AppHeader, AppFooter, LayoutContext
 
-#### 📋 **AppHeader** (Top Navigation Bar)
+#### 📋 **AppHeaderImpl** (Top Navigation Bar)
 - **Scope**: Top application bar with navigation and user controls
 - **Responsibilities**:
-  - Display breadcrumbs and page title
+  - Display brand title and navigation
   - Manage mobile menu toggle
   - Host UserMenu component
-  - Initialize and coordinate with Sidebar
-- **Dependencies**: UserMenu, Sidebar, LayoutContext
+  - Initialize and coordinate with SidebarComponent
+- **Dependencies**: UserMenu, SidebarComponent, LayoutContextImpl
 
-#### 🔧 **Sidebar** (Navigation Panel)
+#### 🔧 **SidebarComponent** (Navigation Panel)
 - **Scope**: Left navigation panel with menu items
 - **Responsibilities**:
-  - Render navigation menu items
-  - Handle compact/expanded modes
-  - Manage mobile overlay behavior
-  - Provide navigation event handling
-- **Dependencies**: LayoutContext
+  - Render navigation menu items with icons and captions
+  - Handle compact/expanded modes with toggle button
+  - Manage mobile overlay behavior with slide transitions
+  - Provide navigation event handling and active state management
+- **Dependencies**: LayoutContextImpl
 
 #### 👤 **UserMenu** (User Account Controls)
 - **Scope**: User profile and account actions
@@ -81,14 +84,23 @@ OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
   - Provide flexbox layout for page content
 - **Dependencies**: LayoutContext
 
-#### 📄 **AppFooter** (Bottom Bar)
+#### 📄 **AppFooterImpl** (Bottom Bar)
 - **Scope**: Bottom application bar with links and copyright
 - **Responsibilities**:
   - Display copyright and navigation links
   - Handle footer link interactions
   - Respond to layout changes
   - Manage visibility based on layout mode
-- **Dependencies**: LayoutContext
+- **Dependencies**: LayoutContextImpl
+
+#### 🚨 **ErrorMessagesComponent** (Global Error Display)
+- **Scope**: Global error, warning, info, and success message display
+- **Responsibilities**:
+  - Display various message types with appropriate styling
+  - Handle message persistence and auto-hide behavior
+  - Provide action buttons for interactive messages
+  - Manage message lifecycle (show/hide/clear)
+- **Dependencies**: None (standalone component)
 
 #### 📄 **PageComponents** (Dynamic Content)
 - **Scope**: Individual page/view implementations
@@ -108,12 +120,13 @@ sequenceDiagram
     participant Browser
     participant Main as main.ts
     participant App as OpinionApp
-    participant LC as LayoutContext
+    participant LC as LayoutContextImpl
     participant Layout as Layout
-    participant Header as AppHeader
-    participant Sidebar as Sidebar
+    participant Header as AppHeaderImpl
+    participant Sidebar as SidebarComponent
     participant UserMenu as UserMenu
-    participant Footer as AppFooter
+    participant Footer as AppFooterImpl
+    participant ErrorMsgs as ErrorMessagesComponent
     participant MainContent as MainContent
     participant Page as PageComponent
 
@@ -130,7 +143,7 @@ sequenceDiagram
     App->>Layout: new Layout()
     App->>Layout: layout.init()
     
-    Layout->>Header: new AppHeader()
+    Layout->>Header: new AppHeaderImpl()
     Layout->>Header: header.init()
     
     Header->>Header: createHeader() [async]
@@ -141,7 +154,7 @@ sequenceDiagram
     Header->>UserMenu: userMenu.init()
     UserMenu->>UserMenu: Setup responsive behavior
     
-    Header->>Sidebar: new Sidebar()
+    Header->>Sidebar: new SidebarComponent()
     Header->>Sidebar: sidebar.init()
     
     Sidebar->>Sidebar: createSidebar() [with retry]
@@ -150,11 +163,16 @@ sequenceDiagram
     Sidebar->>LC: Subscribe to responsive-mode-change
     Sidebar->>LC: updateSidebarDimensions()
     
-    Layout->>Footer: new AppFooter()
+    Layout->>Footer: new AppFooterImpl()
     Layout->>Footer: footer.init()
     Footer->>Footer: createFooter() [async]
     Footer->>Footer: Find #app-footer element
     Footer->>Footer: populateContent()
+    
+    Layout->>ErrorMsgs: new ErrorMessagesComponent()
+    Layout->>ErrorMsgs: errorMessages.init()
+    ErrorMsgs->>ErrorMsgs: Find #app-error-messages element
+    ErrorMsgs->>ErrorMsgs: Ready for message display
     
     Layout->>LC: Subscribe to layout events
     Layout->>LC: markReady()
