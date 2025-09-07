@@ -913,6 +913,28 @@ export class Layout {
     return this.layoutContext.getMessages();
   }
 
+  /**
+   * Fluent interface method to work with LayoutContext
+   * Provides safe access to LayoutContext with proper error handling
+   * 
+   * @param handler - Function that receives the LayoutContext instance
+   * @returns Layout instance for method chaining
+   */
+  public withContext<T>(handler: (layoutContext: LayoutContext) => T): Layout {
+    if (!this.layoutContext) {
+      console.warn('Layout - LayoutContext not initialized yet');
+      return this;
+    }
+
+    try {
+      handler(this.layoutContext);
+    } catch (error) {
+      console.error('Layout - Error in withContext handler:', error);
+    }
+
+    return this; // Return Layout for method chaining
+  }
+
   // All message methods are now accessed exclusively through LayoutContext.getMessages()
   // Use layout.getMessages() or layoutContext.getMessages() instead
 
