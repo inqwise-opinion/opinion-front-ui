@@ -7,7 +7,8 @@ import AppHeaderImpl, { HeaderUser } from "./AppHeaderImpl";
 import AppFooterImpl, { FooterConfig } from "./AppFooterImpl";
 import MainContent from "./MainContent";
 import { NavigationItem } from "./Sidebar";
-import ErrorMessagesComponent from "./ErrorMessages";
+import MessagesComponent from "./MessagesComponent";
+import type { Messages } from "../interfaces/Messages";
 // Import layout context
 import {
   type LayoutContext,
@@ -54,7 +55,7 @@ export class Layout {
   private header: AppHeaderImpl;
   private footer: AppFooterImpl;
   private mainContent: MainContent;
-  private errorMessages: ErrorMessagesComponent;
+  private messagesComponent: MessagesComponent | null = null;
   private config: LayoutConfig;
   private isInitialized: boolean = false;
   private layoutContext: LayoutContextImpl;
@@ -107,9 +108,9 @@ export class Layout {
       id: "app",
       ariaLabel: "Main application content",
     });
-    this.errorMessages = new ErrorMessagesComponent();
 
-    // Register all components with the LayoutContext
+    // Note: ErrorMessagesComponent will be initialized in init() method
+    // Register all components with the LayoutContext (ErrorMessages will be registered after init)
     this.registerComponentsWithContext();
   }
 
@@ -151,8 +152,14 @@ export class Layout {
       this.mainContent.init();
       console.log("✅ LAYOUT - MainContent initialized");
 
-      // Initialize Error Messages component
-      console.log("🏢 LAYOUT - Error Messages component ready");
+      // Initialize Messages component
+      console.log("🏢 LAYOUT - Initializing MessagesComponent...");
+      this.messagesComponent = new MessagesComponent();
+      console.log("✅ LAYOUT - MessagesComponent initialized");
+
+      // Register MessagesComponent with LayoutContext now that it's initialized
+      this.layoutContext.registerMessages(this.messagesComponent);
+      console.log("✅ LAYOUT - MessagesComponent registered with LayoutContext");
 
       // Note: Sidebar is now managed by the page component, not by Layout
       console.log("🏢 LAYOUT - Sidebar management delegated to page component");
@@ -900,53 +907,14 @@ export class Layout {
   // =================================================================================
 
   /**
-   * Get the error messages component instance
+   * Get Messages interface - delegates to LayoutContext (exclusive access point)
    */
-  public getErrorMessages(): ErrorMessagesComponent {
-    return this.errorMessages;
+  public getMessages(): Messages | null {
+    return this.layoutContext.getMessages();
   }
 
-  /**
-   * Show an error message
-   */
-  public showError(title: string, description?: string, options?: any): void {
-    this.errorMessages.showError(title, description, options);
-  }
-
-  /**
-   * Show a warning message
-   */
-  public showWarning(title: string, description?: string, options?: any): void {
-    this.errorMessages.showWarning(title, description, options);
-  }
-
-  /**
-   * Show an info message
-   */
-  public showInfo(title: string, description?: string, options?: any): void {
-    this.errorMessages.showInfo(title, description, options);
-  }
-
-  /**
-   * Show a success message
-   */
-  public showSuccess(title: string, description?: string, options?: any): void {
-    this.errorMessages.showSuccess(title, description, options);
-  }
-
-  /**
-   * Clear all error messages
-   */
-  public clearMessages(includesPersistent: boolean = false): void {
-    this.errorMessages.clearAll(includesPersistent);
-  }
-
-  /**
-   * Clear messages by type
-   */
-  public clearMessagesByType(type: 'error' | 'warning' | 'info' | 'success'): void {
-    this.errorMessages.clearByType(type);
-  }
+  // All message methods are now accessed exclusively through LayoutContext.getMessages()
+  // Use layout.getMessages() or layoutContext.getMessages() instead
 
   /**
    * Cleanup when layout is destroyed
@@ -984,8 +952,9 @@ export class Layout {
       this.footer.destroy();
     }
 
-    if (this.errorMessages) {
-      this.errorMessages.destroy();
+    if (this.messagesComponent) {
+      this.messagesComponent.destroy();
+      this.messagesComponent = null; // Clear reference after destruction
     }
 
     // Note: Sidebar destruction is now handled by the page component

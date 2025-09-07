@@ -4,6 +4,7 @@
  */
 
 import type { Sidebar } from "../components/Sidebar.js";
+import type { Messages } from "../interfaces/Messages.js";
 
 export interface LayoutViewPort {
   width: number;
@@ -100,15 +101,18 @@ export interface LayoutContext {
   registerHeader(header: any): void;
   registerFooter(footer: any): void;
   registerMainContent(mainContent: any): void;
+  registerMessages(messages: any): void;
   getLayout(): any | null;
   getHeader(): any | null;
   getFooter(): any | null;
   getMainContent(): any | null;
+  getMessagesComponent(): any | null;
   getRegisteredComponents(): {
     layout: any | null;
     header: any | null;
     footer: any | null;
     mainContent: any | null;
+    messages: any | null;
     sidebar: Sidebar | null;
   };
   areAllComponentsRegistered(): boolean;
@@ -125,6 +129,9 @@ export interface LayoutContext {
   clearMessages(includesPersistent?: boolean): void;
   clearMessagesByType(type: 'error' | 'warning' | 'info' | 'success'): void;
   hasMessages(type?: 'error' | 'warning' | 'info' | 'success'): boolean;
+
+  // Messages Interface Access
+  getMessages(): Messages | null;
 
   // Lifecycle
   destroy(): void;

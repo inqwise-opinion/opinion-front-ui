@@ -28,6 +28,7 @@ export class LayoutContextImpl implements LayoutContext {
   private headerInstance: any = null;
   private footerInstance: any = null;
   private mainContentInstance: any = null;
+  private messagesInstance: any = null;
 
   public constructor() {
     this.viewport = this.getViewPort();
@@ -797,6 +798,21 @@ export class LayoutContextImpl implements LayoutContext {
   }
 
   /**
+   * Register the Messages component instance with the context
+   * Allows the context to coordinate message display
+   */
+  public registerMessages(messages: any): void {
+    if (this.messagesInstance && this.messagesInstance !== messages) {
+      console.warn(
+        "LayoutContext - Replacing existing Messages instance. This might indicate a setup issue.",
+      );
+    }
+
+    this.messagesInstance = messages;
+    console.log("LayoutContext - Messages component registered successfully");
+  }
+
+  /**
    * Get the registered Layout instance
    */
   public getLayout(): any | null {
@@ -825,6 +841,13 @@ export class LayoutContextImpl implements LayoutContext {
   }
 
   /**
+   * Get the registered Messages instance
+   */
+  public getMessagesComponent(): any | null {
+    return this.messagesInstance;
+  }
+
+  /**
    * Get all registered component instances
    * Useful for debugging and coordination purposes
    */
@@ -833,6 +856,7 @@ export class LayoutContextImpl implements LayoutContext {
     header: any | null;
     footer: any | null;
     mainContent: any | null;
+    errorMessages: any | null;
     sidebar: Sidebar | null;
   } {
     return {
@@ -840,6 +864,7 @@ export class LayoutContextImpl implements LayoutContext {
       header: this.headerInstance,
       footer: this.footerInstance,
       mainContent: this.mainContentInstance,
+      messages: this.messagesInstance,
       sidebar: this.sidebarInstance,
     };
   }
@@ -848,7 +873,7 @@ export class LayoutContextImpl implements LayoutContext {
    * Check if all core components are registered
    */
   public areAllComponentsRegistered(): boolean {
-    return !!(this.layoutInstance && this.headerInstance && this.footerInstance && this.mainContentInstance);
+    return !!(this.layoutInstance && this.headerInstance && this.footerInstance && this.mainContentInstance && this.messagesInstance);
   }
 
   /**
@@ -861,6 +886,7 @@ export class LayoutContextImpl implements LayoutContext {
     this.headerInstance = null;
     this.footerInstance = null;
     this.mainContentInstance = null;
+    this.messagesInstance = null;
     this.sidebarInstance = null;
     
     console.log("LayoutContext - All components unregistered");
@@ -871,98 +897,98 @@ export class LayoutContextImpl implements LayoutContext {
   // =================================================================================
 
   /**
-   * Show an error message via the Layout component
+   * Show an error message - redirects to exclusive Messages interface
    */
   public showError(title: string, description?: string, options?: any): void {
-    const layout = this.getLayout();
-    console.log('🎯 LAYOUTCONTEXT - showError called:');
-    console.log('  - Layout instance:', layout ? 'FOUND' : 'NULL');
-    console.log('  - showError method:', layout && typeof layout.showError === 'function' ? 'FOUND' : 'NOT FOUND');
-    console.log('  - Layout instance type:', layout ? layout.constructor.name : 'N/A');
-    
-    if (layout && typeof layout.showError === 'function') {
-      console.log('🎯 LAYOUTCONTEXT - Calling layout.showError...');
-      layout.showError(title, description, options);
+    const messages = this.getMessages();
+    if (messages) {
+      messages.showError(title, description, options);
     } else {
-      console.warn('LayoutContext - Layout component not available or does not support error messages');
-      console.log('  - Available methods on layout:', layout ? Object.getOwnPropertyNames(Object.getPrototypeOf(layout)).filter(name => typeof layout[name] === 'function') : 'N/A');
+      console.warn('LayoutContext - Messages component not available');
     }
   }
 
   /**
-   * Show a warning message via the Layout component
+   * Show a warning message - redirects to exclusive Messages interface
    */
   public showWarning(title: string, description?: string, options?: any): void {
-    const layout = this.getLayout();
-    if (layout && typeof layout.showWarning === 'function') {
-      layout.showWarning(title, description, options);
+    const messages = this.getMessages();
+    if (messages) {
+      messages.showWarning(title, description, options);
     } else {
-      console.warn('LayoutContext - Layout component not available or does not support warning messages');
+      console.warn('LayoutContext - Messages component not available');
     }
   }
 
   /**
-   * Show an info message via the Layout component
+   * Show an info message - redirects to exclusive Messages interface
    */
   public showInfo(title: string, description?: string, options?: any): void {
-    const layout = this.getLayout();
-    if (layout && typeof layout.showInfo === 'function') {
-      layout.showInfo(title, description, options);
+    const messages = this.getMessages();
+    if (messages) {
+      messages.showInfo(title, description, options);
     } else {
-      console.warn('LayoutContext - Layout component not available or does not support info messages');
+      console.warn('LayoutContext - Messages component not available');
     }
   }
 
   /**
-   * Show a success message via the Layout component
+   * Show a success message - redirects to exclusive Messages interface
    */
   public showSuccess(title: string, description?: string, options?: any): void {
-    const layout = this.getLayout();
-    if (layout && typeof layout.showSuccess === 'function') {
-      layout.showSuccess(title, description, options);
+    const messages = this.getMessages();
+    if (messages) {
+      messages.showSuccess(title, description, options);
     } else {
-      console.warn('LayoutContext - Layout component not available or does not support success messages');
+      console.warn('LayoutContext - Messages component not available');
     }
   }
 
   /**
-   * Clear all error messages via the Layout component
+   * Clear all messages - redirects to exclusive Messages interface
    */
   public clearMessages(includesPersistent: boolean = false): void {
-    const layout = this.getLayout();
-    if (layout && typeof layout.clearMessages === 'function') {
-      layout.clearMessages(includesPersistent);
+    const messages = this.getMessages();
+    if (messages) {
+      messages.clearAll(includesPersistent);
     } else {
-      console.warn('LayoutContext - Layout component not available or does not support clearing messages');
+      console.warn('LayoutContext - Messages component not available');
     }
   }
 
   /**
-   * Clear messages by type via the Layout component
+   * Clear messages by type - redirects to exclusive Messages interface
    */
   public clearMessagesByType(type: 'error' | 'warning' | 'info' | 'success'): void {
-    const layout = this.getLayout();
-    if (layout && typeof layout.clearMessagesByType === 'function') {
-      layout.clearMessagesByType(type);
+    const messages = this.getMessages();
+    if (messages) {
+      messages.clearByType(type);
     } else {
-      console.warn('LayoutContext - Layout component not available or does not support clearing messages by type');
+      console.warn('LayoutContext - Messages component not available');
     }
   }
 
   /**
-   * Check if has messages via the Layout component
+   * Check if has messages - redirects to exclusive Messages interface
    */
   public hasMessages(type?: 'error' | 'warning' | 'info' | 'success'): boolean {
-    const layout = this.getLayout();
-    if (layout && layout.getErrorMessages && typeof layout.getErrorMessages === 'function') {
-      const errorMessages = layout.getErrorMessages();
-      if (errorMessages && typeof errorMessages.hasMessages === 'function') {
-        return errorMessages.hasMessages(type);
-      }
+    const messages = this.getMessages();
+    if (messages) {
+      return messages.hasMessages(type);
     }
     
-    console.warn('LayoutContext - Layout component not available or does not support checking messages');
+    console.warn('LayoutContext - Messages component not available');
     return false;
+  }
+
+  /**
+   * Get Messages interface - exclusive access point to messages functionality
+   * Returns MessagesComponent instance that implements Messages interface
+   */
+  public getMessages(): import('../interfaces/Messages').Messages | null {
+    const messagesComponent = this.getMessagesComponent();
+    // MessagesComponent implements Messages interface directly
+    return messagesComponent;
   }
 }
 

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages Refactoring Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Required layout structure -->
+    <div class="app-layout">
+        <div id="app-error-messages" class="app-error-messages" role="alert" aria-live="polite" style="display: none;"></div>
+        <div class="app-header">
+            <h1>🔄 Messages Refactoring Test</h1>
+        </div>
+        <div class="app-content-scroll">
+            <main class="app-main" id="app">
+                <div class="test-container">
+                    <h2>🎯 Testing Refactored Messages System</h2>
+                    <p>This tests the refactored Messages interface system:</p>
+                    <ul>
+                        <li>✅ ErrorMessage → Message</li>
+                        <li>✅ ErrorMessagesComponent → MessagesComponent</li>
+                        <li>✅ Messages interface implementation</li>
+                        <li>✅ LayoutContext exclusive access</li>
+                    </ul>
+                    
+                    <div>
+                        <button onclick="testInitialization()">Test Initialization</button>
+                        <button onclick="testMessagesInterface()">Test Messages Interface</button>
+                        <button onclick="testExclusiveAccess()">Test Exclusive Access</button>
+                    </div>
+                    
+                    <div>
+                        <button onclick="showTestError()">Show Test Error</button>
+                        <button onclick="showTestWarning()">Show Test Warning</button>
+                        <button onclick="showTestInfo()">Show Test Info</button>
+                        <button onclick="showTestSuccess()">Show Test Success</button>
+                        <button onclick="clearAllMessages()">Clear All</button>
+                    </div>
+                </div>
+
+                <div class="test-container">
+                    <h3>📋 Test Log</h3>
+                    <div id="test-log" class="log"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import Layout from './src/components/Layout.js';
+
+        let layout = null;
+        let layoutContext = null;
+
+        async function initializeApp() {
+            try {
+                log('🚀 Initializing refactored system...', 'info');
+                
+                layout = new Layout({
+                    header: { enabled: true, brandTitle: 'Refactoring Test' },
+                    sidebar: { enabled: false },
+                    footer: { enabled: true }
+                });
+
+                await layout.init();
+                layoutContext = layout.getLayoutContext();
+                
+                log('✅ Layout initialized with new MessagesComponent', 'success');
+                
+                // Test that the Messages interface is available
+                const messages = layoutContext.getMessages();
+                if (messages) {
+                    log('✅ Messages interface available through LayoutContext', 'success');
+                    log(`✅ Messages.isReady(): ${messages.isReady()}`, 'success');
+                } else {
+                    log('❌ Messages interface not available', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Initialization failed: ${error.message}`, 'error');
+            }
+        }
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Test functions
+        window.testInitialization = () => {
+            log('🔍 Testing initialization...', 'info');
+            
+            const messages = layoutContext?.getMessages();
+            const isReady = messages?.isReady();
+            const registeredComponents = layoutContext?.getRegisteredComponents();
+            
+            log(`Layout: ${layout ? 'initialized' : 'null'}`, layout ? 'success' : 'error');
+            log(`LayoutContext: ${layoutContext ? 'initialized' : 'null'}`, layoutContext ? 'success' : 'error');
+            log(`Messages interface: ${messages ? 'available' : 'null'}`, messages ? 'success' : 'error');
+            log(`Messages.isReady(): ${isReady}`, isReady ? 'success' : 'error');
+            log(`Registered components: ${registeredComponents ? 'available' : 'null'}`, registeredComponents ? 'success' : 'error');
+        };
+
+        window.testMessagesInterface = () => {
+            log('🔍 Testing Messages interface methods...', 'info');
+            
+            const messages = layoutContext?.getMessages();
+            if (!messages) {
+                log('❌ Messages interface not available', 'error');
+                return;
+            }
+
+            // Test interface methods exist
+            const methods = ['showError', 'showWarning', 'showInfo', 'showSuccess', 'clearAll', 'clearByType', 'hasMessages', 'isReady'];
+            methods.forEach(method => {
+                const exists = typeof messages[method] === 'function';
+                log(`${method}(): ${exists ? 'available' : 'missing'}`, exists ? 'success' : 'error');
+            });
+        };
+
+        window.testExclusiveAccess = () => {
+            log('🔍 Testing exclusive access through LayoutContext...', 'info');
+            
+            // Test that LayoutContext.getMessages() is the exclusive access
+            const contextMessages = layoutContext?.getMessages();
+            const layoutMessages = layout?.getMessages();
+            
+            log(`LayoutContext.getMessages(): ${contextMessages ? 'available' : 'null'}`, contextMessages ? 'success' : 'error');
+            log(`Layout.getMessages(): ${layoutMessages ? 'available' : 'null'}`, layoutMessages ? 'success' : 'error');
+            
+            if (contextMessages && layoutMessages) {
+                log(`Both point to same instance: ${contextMessages === layoutMessages}`, contextMessages === layoutMessages ? 'success' : 'info');
+            }
+        };
+
+        window.showTestError = () => {
+            const messages = layoutContext?.getMessages();
+            if (messages) {
+                messages.showError('Refactored Error', 'This error was shown via the refactored Messages interface');
+                log('✅ Error message displayed via refactored interface', 'success');
+            } else {
+                log('❌ Messages interface not available', 'error');
+            }
+        };
+
+        window.showTestWarning = () => {
+            const messages = layoutContext?.getMessages();
+            if (messages) {
+                messages.showWarning('Refactored Warning', 'This warning was shown via the refactored Messages interface');
+                log('✅ Warning message displayed via refactored interface', 'success');
+            } else {
+                log('❌ Messages interface not available', 'error');
+            }
+        };
+
+        window.showTestInfo = () => {
+            const messages = layoutContext?.getMessages();
+            if (messages) {
+                messages.showInfo('Refactored Info', 'This info was shown via the refactored Messages interface');
+                log('✅ Info message displayed via refactored interface', 'success');
+            } else {
+                log('❌ Messages interface not available', 'error');
+            }
+        };
+
+        window.showTestSuccess = () => {
+            const messages = layoutContext?.getMessages();
+            if (messages) {
+                messages.showSuccess('Refactored Success', 'This success was shown via the refactored Messages interface');
+                log('✅ Success message displayed via refactored interface', 'success');
+            } else {
+                log('❌ Messages interface not available', 'error');
+            }
+        };
+
+        window.clearAllMessages = () => {
+            const messages = layoutContext?.getMessages();
+            if (messages) {
+                messages.clearAll();
+                log('✅ All messages cleared via refactored interface', 'success');
+            } else {
+                log('❌ Messages interface not available', 'error');
+            }
+        };
+
+        // Initialize when DOM loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Expose for debugging
+        window.layout = () => layout;
+        window.layoutContext = () => layoutContext;
+    </script>
+</body>
+</html>

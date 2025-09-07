@@ -25,6 +25,18 @@ npm run build
 npm run preview
 ```
 
+### 🤖 AI Agent Development Process Guidelines
+
+**IMPORTANT**: The `npm run dev` command starts a persistent development server that prevents the AI agent from continuing with other tasks. 
+
+**Process Agreement**:
+- **User Responsibility**: User will manually run `npm run dev` in a separate terminal instance on port 3000
+- **Agent Responsibility**: Agent can assume the development server is available at `http://localhost:3000`
+- **Communication**: If the agent needs to verify the server or encounters port issues, agent should inform the user to handle this manually
+- **Testing**: Agent can reference `http://localhost:3000` for testing and verification purposes
+
+This arrangement allows the agent to continue with development tasks while the user maintains control over the development server lifecycle.
+
 ### Testing
 ```bash
 # Run all tests

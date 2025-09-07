@@ -7,7 +7,7 @@
 export { default as AppHeaderImpl } from './AppHeaderImpl';
 export { default as AppFooterImpl } from './AppFooterImpl';
 export { default as Layout } from './Layout';
-export { default as ErrorMessagesComponent } from './ErrorMessages';
+export { default as MessagesComponent } from './MessagesComponent';
 
 // Navigation components
 export type { Sidebar } from './Sidebar';

@@ -1,28 +1,19 @@
 /**
- * Error Messages Component - Clean Implementation
+ * Messages Component - Clean Implementation
  * 
- * Simple, clean error messages that display under the header.
+ * Simple, clean messages that display under the header.
  * Access via LayoutContext only - never directly from other components.
  */
 
 // Import clean CSS
 import "../assets/styles/components/error-messages.css";
 
-// Simple interfaces for clean implementation
-export interface ErrorMessage {
-  id: string;
-  type: 'error' | 'warning' | 'info' | 'success';
-  title: string;
-  description?: string;
-  dismissible?: boolean; // Default: true
-  autoHide?: boolean; // Default: false for errors/warnings, true for info/success
-  autoHideDelay?: number; // Default: 5000ms
-  persistent?: boolean; // Default: false
-}
+// Import interfaces
+import type { Messages, Message, MessageOptions, MessageType } from "../interfaces/Messages";
 
-export class ErrorMessagesComponent {
+export class MessagesComponent implements Messages {
   private container: HTMLElement | null = null;
-  private messages: Map<string, ErrorMessage> = new Map();
+  private messages: Map<string, Message> = new Map();
   private autoHideTimers: Map<string, NodeJS.Timeout> = new Map();
 
   constructor() {
@@ -46,14 +37,14 @@ export class ErrorMessagesComponent {
   /**
    * Add a message - clean implementation
    */
-  public addMessage(message: ErrorMessage): void {
+  public addMessage(message: Message): void {
     if (!this.container) {
       console.warn('ErrorMessages - Container not available');
       return;
     }
 
     // Set simple defaults
-    const messageWithDefaults: ErrorMessage = {
+    const messageWithDefaults: Message = {
       dismissible: true,
       autoHide: message.type === 'success' || message.type === 'info',
       autoHideDelay: 5000,
@@ -132,7 +123,7 @@ export class ErrorMessagesComponent {
   /**
    * Clear messages by type
    */
-  public clearByType(type: ErrorMessage['type']): void {
+  public clearByType(type: MessageType): void {
     const messagesToRemove: string[] = [];
 
     this.messages.forEach((message, id) => {
@@ -149,14 +140,14 @@ export class ErrorMessagesComponent {
   /**
    * Get current messages
    */
-  public getMessages(): ErrorMessage[] {
+  public getMessages(): Message[] {
     return Array.from(this.messages.values());
   }
 
   /**
    * Check if has messages of specific type
    */
-  public hasMessages(type?: ErrorMessage['type']): boolean {
+  public hasMessages(type?: MessageType): boolean {
     if (!type) {
       return this.messages.size > 0;
     }
@@ -167,7 +158,7 @@ export class ErrorMessagesComponent {
   /**
    * Create message element - simplified version
    */
-  private createMessageElement(message: ErrorMessage): HTMLElement {
+  private createMessageElement(message: Message): HTMLElement {
     const messageEl = document.createElement('div');
     messageEl.className = `error-message ${message.type}`;
     messageEl.setAttribute('data-message-id', message.id);
@@ -211,7 +202,7 @@ export class ErrorMessagesComponent {
   /**
    * Convenience methods for different message types
    */
-  public showError(title: string, description?: string, options?: Partial<ErrorMessage>): void {
+  public showError(title: string, description?: string, options?: MessageOptions): void {
     this.addMessage({
       id: options?.id || `error-${Date.now()}`,
       type: 'error',
@@ -222,7 +213,7 @@ export class ErrorMessagesComponent {
     });
   }
 
-  public showWarning(title: string, description?: string, options?: Partial<ErrorMessage>): void {
+  public showWarning(title: string, description?: string, options?: MessageOptions): void {
     this.addMessage({
       id: options?.id || `warning-${Date.now()}`,
       type: 'warning',
@@ -233,7 +224,7 @@ export class ErrorMessagesComponent {
     });
   }
 
-  public showInfo(title: string, description?: string, options?: Partial<ErrorMessage>): void {
+  public showInfo(title: string, description?: string, options?: MessageOptions): void {
     this.addMessage({
       id: options?.id || `info-${Date.now()}`,
       type: 'info',
@@ -244,7 +235,7 @@ export class ErrorMessagesComponent {
     });
   }
 
-  public showSuccess(title: string, description?: string, options?: Partial<ErrorMessage>): void {
+  public showSuccess(title: string, description?: string, options?: MessageOptions): void {
     this.addMessage({
       id: options?.id || `success-${Date.now()}`,
       type: 'success',
@@ -253,6 +244,13 @@ export class ErrorMessagesComponent {
       autoHide: true, // Success messages can auto-hide
       ...options,
     });
+  }
+
+  /**
+   * Check if the messages system is ready
+   */
+  public isReady(): boolean {
+    return this.container !== null;
   }
 
   /**
@@ -277,4 +275,4 @@ export class ErrorMessagesComponent {
 }
 
 
-export default ErrorMessagesComponent;
+export default MessagesComponent;
