@@ -74,6 +74,7 @@ export interface LayoutContext {
 
   // Layout Management
   markReady(): void;
+  isReady(): boolean;
   calculateContentArea(): {
     left: number;
     width: number;

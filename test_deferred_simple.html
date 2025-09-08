@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Deferred Test</title>
+    <link rel="stylesheet" href="src/assets/css/main.css">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .log { background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .result { font-weight: bold; color: green; }
+        .error { font-weight: bold; color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Simple Deferred withContext Test</h1>
+    
+    <div id="app-error-messages" class="app-error-messages" role="alert" aria-live="polite" style="display: none;"></div>
+    
+    <button onclick="runTest()">Run Test</button>
+    <button onclick="clearLog()">Clear Log</button>
+    
+    <div id="log" class="log"></div>
+
+    <script type="module">
+        import Layout from './src/components/Layout.js';
+
+        function log(message, className = '') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        window.log = log;
+
+        window.runTest = async () => {
+            log('🚀 Starting deferred withContext test...', 'result');
+            
+            try {
+                // Create layout but don't initialize yet
+                const layout = new Layout({
+                    header: { enabled: true, brandTitle: 'Deferred Test' },
+                    sidebar: { enabled: false },
+                    footer: { enabled: true }
+                });
+                
+                log('✅ Layout created (not initialized)', 'result');
+                
+                // Add deferred handlers
+                layout
+                    .withContext(ctx => {
+                        log('🎉 DEFERRED HANDLER 1 EXECUTED!', 'result');
+                        log(`Context ready: ${ctx.isReady()}`, 'result');
+                    })
+                    .withContext(ctx => {
+                        log('🎉 DEFERRED HANDLER 2 EXECUTED!', 'result');
+                        const viewport = ctx.getViewport();
+                        log(`Viewport: ${viewport.width}x${viewport.height}`, 'result');
+                    });
+                
+                log('✅ Two deferred handlers added', 'result');
+                
+                // Wait a moment, then initialize
+                setTimeout(async () => {
+                    log('🚀 Initializing layout now...', 'result');
+                    await layout.init();
+                    log('✅ Layout initialization complete', 'result');
+                    
+                    // Add immediate handler
+                    layout.withContext(ctx => {
+                        log('⚡ IMMEDIATE HANDLER EXECUTED!', 'result');
+                    });
+                    
+                    log('✅ Test completed successfully!', 'result');
+                }, 2000);
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, 'error');
+                console.error('Test error:', error);
+            }
+        };
+
+        window.clearLog = () => {
+            document.getElementById('log').innerHTML = '';
+        };
+
+        log('🎯 Simple deferred test ready - click "Run Test"', 'result');
+    </script>
+</body>
+</html>

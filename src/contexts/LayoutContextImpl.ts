@@ -22,6 +22,7 @@ export class LayoutContextImpl implements LayoutContext {
   private resizeObserver: ResizeObserver | null = null;
   private resizeTimeout: NodeJS.Timeout | null = null;
   private sidebarInstance: Sidebar | null = null;
+  private isLayoutReady: boolean = false;
   
   // Component registry
   private layoutInstance: any = null;
@@ -287,6 +288,9 @@ export class LayoutContextImpl implements LayoutContext {
   public markReady(): void {
     console.log("LayoutContext - Layout marked as ready");
 
+    // Set ready state
+    this.isLayoutReady = true;
+
     // Ensure CSS Grid variables are set correctly on initialization
     this.updateCSSGridVariables();
 
@@ -294,6 +298,13 @@ export class LayoutContextImpl implements LayoutContext {
     this.emitLayoutModeChange();
 
     this.emit("layout-ready", this.getLayoutMode());
+  }
+
+  /**
+   * Check if layout is ready
+   */
+  public isReady(): boolean {
+    return this.isLayoutReady;
   }
 
   /**
@@ -330,6 +341,9 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public destroy(): void {
     console.log("LayoutContext - Destroying...");
+
+    // Reset ready state
+    this.isLayoutReady = false;
 
     // Clear all listeners
     this.listeners.clear();
@@ -856,7 +870,7 @@ export class LayoutContextImpl implements LayoutContext {
     header: any | null;
     footer: any | null;
     mainContent: any | null;
-    errorMessages: any | null;
+    messages: any | null;
     sidebar: Sidebar | null;
   } {
     return {

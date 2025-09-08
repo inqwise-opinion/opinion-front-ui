@@ -27,7 +27,7 @@ export interface UserMenuItem {
   icon: string;
   href?: string;
   action?: string; // For JavaScript actions like "feedback", "logout"
-  type?: 'link' | 'action' | 'divider'; // Default is 'link'
+  type?: "link" | "action" | "divider"; // Default is 'link'
   className?: string; // Additional CSS classes
   style?: string; // Additional inline styles
 }
@@ -60,7 +60,10 @@ export class Layout {
   private isInitialized: boolean = false;
   private layoutContext: LayoutContextImpl;
   private layoutUnsubscribers: Array<() => void> = [];
-  
+  private deferredContextHandlers: Array<
+    (layoutContext: LayoutContext) => void
+  > = [];
+
   // Navigation and user menu state
   private navigationItems: NavigationItem[] = [];
   private userMenuItems: UserMenuItem[] = [];
@@ -80,7 +83,7 @@ export class Layout {
       footer: {
         enabled: true,
         showCopyright: true,
-        copyrightText: "© 2024 Inqwise Ltd",
+        copyrightText: "© 2025 Inqwise Ltd",
         showNavigation: true,
         ...config.footer,
       },
@@ -89,13 +92,15 @@ export class Layout {
     };
 
     // Initialize navigation and user menu items with defaults or config
-    this.navigationItems = this.config.navigation!.length > 0 
-      ? this.config.navigation! 
-      : this.getDefaultNavigationItems();
-      
-    this.userMenuItems = this.config.userMenu!.length > 0 
-      ? this.config.userMenu! 
-      : this.getDefaultUserMenuItems();
+    this.navigationItems =
+      this.config.navigation!.length > 0
+        ? this.config.navigation!
+        : this.getDefaultNavigationItems();
+
+    this.userMenuItems =
+      this.config.userMenu!.length > 0
+        ? this.config.userMenu!
+        : this.getDefaultUserMenuItems();
 
     // Initialize layout context first
     this.layoutContext = new LayoutContextImpl();
@@ -138,7 +143,7 @@ export class Layout {
           );
           console.log("✅ LAYOUT - Header brand updated");
         }
-        
+
         // Apply user menu items to header
         console.log("🏢 LAYOUT - Applying user menu items to header...");
         this.header.updateUserMenuItems(this.userMenuItems);
@@ -159,7 +164,9 @@ export class Layout {
 
       // Register MessagesComponent with LayoutContext now that it's initialized
       this.layoutContext.registerMessages(this.messagesComponent);
-      console.log("✅ LAYOUT - MessagesComponent registered with LayoutContext");
+      console.log(
+        "✅ LAYOUT - MessagesComponent registered with LayoutContext",
+      );
 
       // Note: Sidebar is now managed by the page component, not by Layout
       console.log("🏢 LAYOUT - Sidebar management delegated to page component");
@@ -190,6 +197,9 @@ export class Layout {
 
       // Mark layout as ready
       this.layoutContext.markReady();
+
+      // Execute any deferred context handlers now that everything is ready
+      this.executeDeferredContextHandlers();
 
       this.isInitialized = true;
       console.log("✅ LAYOUT - Layout initialization completed successfully!");
@@ -382,7 +392,9 @@ export class Layout {
    */
   updateCopyrightText(text: string): void {
     // Footer copyright is immutable - set only during construction
-    console.warn("Layout - Footer copyright text cannot be updated after initialization");
+    console.warn(
+      "Layout - Footer copyright text cannot be updated after initialization",
+    );
 
     // Update sidebar copyright (if it exists) - this may still be dynamic
     const sidebarCopyright = document.querySelector(
@@ -689,15 +701,21 @@ export class Layout {
    */
   public setNavigationItems(items: NavigationItem[]): void {
     this.navigationItems = [...items];
-    console.log("Layout - Navigation items updated:", this.navigationItems.length, "items");
-    
+    console.log(
+      "Layout - Navigation items updated:",
+      this.navigationItems.length,
+      "items",
+    );
+
     // Update sidebar if it's available through layout context
     const sidebar = this.layoutContext.getSidebar();
     if (sidebar) {
       sidebar.updateNavigation(this.navigationItems);
       console.log("Layout - Navigation items applied to existing sidebar");
     } else {
-      console.log("Layout - Navigation items stored, will be applied when sidebar is registered");
+      console.log(
+        "Layout - Navigation items stored, will be applied when sidebar is registered",
+      );
     }
   }
 
@@ -711,17 +729,23 @@ export class Layout {
   /**
    * Update a specific navigation item
    */
-  public updateNavigationItem(id: string, updates: Partial<NavigationItem>): void {
-    const index = this.navigationItems.findIndex(item => item.id === id);
+  public updateNavigationItem(
+    id: string,
+    updates: Partial<NavigationItem>,
+  ): void {
+    const index = this.navigationItems.findIndex((item) => item.id === id);
     if (index !== -1) {
-      this.navigationItems[index] = { ...this.navigationItems[index], ...updates };
-      
+      this.navigationItems[index] = {
+        ...this.navigationItems[index],
+        ...updates,
+      };
+
       // Update sidebar if available
       const sidebar = this.layoutContext.getSidebar();
       if (sidebar) {
         sidebar.updateNavigation(this.navigationItems);
       }
-      
+
       console.log(`Layout - Navigation item '${id}' updated`);
     } else {
       console.warn(`Layout - Navigation item with id '${id}' not found`);
@@ -732,18 +756,22 @@ export class Layout {
    * Add a navigation item
    */
   public addNavigationItem(item: NavigationItem, position?: number): void {
-    if (position !== undefined && position >= 0 && position <= this.navigationItems.length) {
+    if (
+      position !== undefined &&
+      position >= 0 &&
+      position <= this.navigationItems.length
+    ) {
       this.navigationItems.splice(position, 0, item);
     } else {
       this.navigationItems.push(item);
     }
-    
+
     // Update sidebar if available
     const sidebar = this.layoutContext.getSidebar();
     if (sidebar) {
       sidebar.updateNavigation(this.navigationItems);
     }
-    
+
     console.log(`Layout - Navigation item '${item.id}' added`);
   }
 
@@ -751,16 +779,16 @@ export class Layout {
    * Remove a navigation item
    */
   public removeNavigationItem(id: string): void {
-    const index = this.navigationItems.findIndex(item => item.id === id);
+    const index = this.navigationItems.findIndex((item) => item.id === id);
     if (index !== -1) {
       this.navigationItems.splice(index, 1);
-      
+
       // Update sidebar if available
       const sidebar = this.layoutContext.getSidebar();
       if (sidebar) {
         sidebar.updateNavigation(this.navigationItems);
       }
-      
+
       console.log(`Layout - Navigation item '${id}' removed`);
     } else {
       console.warn(`Layout - Navigation item with id '${id}' not found`);
@@ -772,22 +800,24 @@ export class Layout {
    */
   public setActiveNavigationItem(id: string): void {
     // Clear all active states
-    this.navigationItems.forEach(item => {
+    this.navigationItems.forEach((item) => {
       item.active = false;
       if (item.children) {
-        item.children.forEach(child => child.active = false);
+        item.children.forEach((child) => (child.active = false));
       }
     });
-    
+
     // Set active state for the specified item
-    const item = this.navigationItems.find(item => item.id === id);
+    const item = this.navigationItems.find((item) => item.id === id);
     if (item) {
       item.active = true;
     } else {
       // Check in children
       for (const parentItem of this.navigationItems) {
         if (parentItem.children) {
-          const childItem = parentItem.children.find(child => child.id === id);
+          const childItem = parentItem.children.find(
+            (child) => child.id === id,
+          );
           if (childItem) {
             childItem.active = true;
             parentItem.expanded = true; // Expand parent if child is active
@@ -796,14 +826,14 @@ export class Layout {
         }
       }
     }
-    
+
     // Update sidebar if available
     const sidebar = this.layoutContext.getSidebar();
     if (sidebar) {
       sidebar.updateNavigation(this.navigationItems);
       sidebar.setActivePage(id);
     }
-    
+
     console.log(`Layout - Navigation item '${id}' set as active`);
   }
 
@@ -812,14 +842,20 @@ export class Layout {
    */
   public setUserMenuItems(items: UserMenuItem[]): void {
     this.userMenuItems = [...items];
-    console.log("Layout - User menu items updated:", this.userMenuItems.length, "items");
-    
+    console.log(
+      "Layout - User menu items updated:",
+      this.userMenuItems.length,
+      "items",
+    );
+
     // Update header/user menu if it's available
     if (this.header) {
       this.header.updateUserMenuItems(this.userMenuItems);
       console.log("Layout - User menu items applied to header");
     } else {
-      console.log("Layout - User menu items stored, will be applied when header is available");
+      console.log(
+        "Layout - User menu items stored, will be applied when header is available",
+      );
     }
   }
 
@@ -834,15 +870,15 @@ export class Layout {
    * Update a specific user menu item
    */
   public updateUserMenuItem(id: string, updates: Partial<UserMenuItem>): void {
-    const index = this.userMenuItems.findIndex(item => item.id === id);
+    const index = this.userMenuItems.findIndex((item) => item.id === id);
     if (index !== -1) {
       this.userMenuItems[index] = { ...this.userMenuItems[index], ...updates };
-      
+
       // Update header if available
       if (this.header) {
         this.header.updateUserMenuItems(this.userMenuItems);
       }
-      
+
       console.log(`Layout - User menu item '${id}' updated`);
     } else {
       console.warn(`Layout - User menu item with id '${id}' not found`);
@@ -853,17 +889,21 @@ export class Layout {
    * Add a user menu item
    */
   public addUserMenuItem(item: UserMenuItem, position?: number): void {
-    if (position !== undefined && position >= 0 && position <= this.userMenuItems.length) {
+    if (
+      position !== undefined &&
+      position >= 0 &&
+      position <= this.userMenuItems.length
+    ) {
       this.userMenuItems.splice(position, 0, item);
     } else {
       this.userMenuItems.push(item);
     }
-    
+
     // Update header if available
     if (this.header) {
       this.header.updateUserMenuItems(this.userMenuItems);
     }
-    
+
     console.log(`Layout - User menu item '${item.id}' added`);
   }
 
@@ -871,15 +911,15 @@ export class Layout {
    * Remove a user menu item
    */
   public removeUserMenuItem(id: string): void {
-    const index = this.userMenuItems.findIndex(item => item.id === id);
+    const index = this.userMenuItems.findIndex((item) => item.id === id);
     if (index !== -1) {
       this.userMenuItems.splice(index, 1);
-      
+
       // Update header if available
       if (this.header) {
         this.header.updateUserMenuItems(this.userMenuItems);
       }
-      
+
       console.log(`Layout - User menu item '${id}' removed`);
     } else {
       console.warn(`Layout - User menu item with id '${id}' not found`);
@@ -914,25 +954,77 @@ export class Layout {
   }
 
   /**
+   * Check if layout is fully initialized
+   */
+  public get isLayoutInitialized(): boolean {
+    return this.isInitialized;
+  }
+
+  /**
    * Fluent interface method to work with LayoutContext
    * Provides safe access to LayoutContext with proper error handling
-   * 
+   * Defers handler execution until LayoutContext is fully initialized
+   *
    * @param handler - Function that receives the LayoutContext instance
    * @returns Layout instance for method chaining
    */
   public withContext<T>(handler: (layoutContext: LayoutContext) => T): Layout {
     if (!this.layoutContext) {
-      console.warn('Layout - LayoutContext not initialized yet');
+      console.warn("Layout - LayoutContext not initialized yet");
       return this;
     }
 
-    try {
-      handler(this.layoutContext);
-    } catch (error) {
-      console.error('Layout - Error in withContext handler:', error);
+    // If layout is already initialized and ready, execute immediately
+    if (this.isInitialized && this.layoutContext.isReady()) {
+      try {
+        handler(this.layoutContext);
+      } catch (error) {
+        console.error("Layout - Error in withContext handler:", error);
+      }
+    } else {
+      // Otherwise, save handler to class member for deferred execution
+      this.deferredContextHandlers.push(handler);
+      console.log(
+        `Layout - Handler deferred, total pending: ${this.deferredContextHandlers.length}`,
+      );
     }
 
     return this; // Return Layout for method chaining
+  }
+
+  /**
+   * Execute all deferred context handlers
+   * Called when LayoutContext is fully ready
+   */
+  private executeDeferredContextHandlers(): void {
+    if (this.deferredContextHandlers.length === 0) {
+      return;
+    }
+
+    console.log(
+      `Layout - Executing ${this.deferredContextHandlers.length} deferred context handlers`,
+    );
+
+    const handlers = [...this.deferredContextHandlers];
+    this.deferredContextHandlers = []; // Clear the array
+
+    handlers.forEach((handler, index) => {
+      try {
+        console.log(
+          `Layout - Executing deferred handler ${index + 1}/${handlers.length}`,
+        );
+        handler(this.layoutContext);
+      } catch (error) {
+        console.error(
+          `Layout - Error in deferred context handler ${index + 1}:`,
+          error,
+        );
+      }
+    });
+
+    console.log(
+      `Layout - All ${handlers.length} deferred context handlers executed`,
+    );
   }
 
   // All message methods are now accessed exclusively through LayoutContext.getMessages()
@@ -956,6 +1048,14 @@ export class Layout {
       }
     });
     this.layoutUnsubscribers = [];
+
+    // Clear any pending deferred context handlers
+    if (this.deferredContextHandlers.length > 0) {
+      console.log(
+        `Layout - Clearing ${this.deferredContextHandlers.length} pending deferred context handlers`,
+      );
+      this.deferredContextHandlers = [];
+    }
 
     // Unregister all components from LayoutContext
     this.layoutContext.unregisterAllComponents();
