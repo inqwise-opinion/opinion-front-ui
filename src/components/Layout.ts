@@ -3,10 +3,11 @@
  * Manages all master page components (Header, Sidebar, Footer) and their coordination
  */
 
-import AppHeaderImpl, { HeaderUser } from "./AppHeaderImpl";
+import AppHeaderImpl, { HeaderUser, HeaderConfig } from "./AppHeaderImpl";
 import AppFooterImpl, { FooterConfig } from "./AppFooterImpl";
 import MainContent from "./MainContent";
-import { NavigationItem } from "./Sidebar";
+import { NavigationItem, Sidebar, SidebarConfig } from "./Sidebar";
+import SidebarComponent from "./SidebarComponent";
 import MessagesComponent from "./MessagesComponent";
 import type { Messages } from "../interfaces/Messages";
 // Import layout context
@@ -40,9 +41,14 @@ export interface LayoutConfig {
     enabled?: boolean;
     brandTitle?: string;
     brandHref?: string;
+    showMobileToggle?: boolean;
+    showBreadcrumbs?: boolean;
+    showUserMenu?: boolean;
   };
   sidebar?: {
     enabled?: boolean;
+    defaultWidth?: number; // Default sidebar width
+    compactWidth?: number; // Compact sidebar width
     footer?: {
       text?: string; // Footer text (default: "© 2025 Opinion")
       showFooter?: boolean; // Whether to show footer (default: true)
@@ -59,6 +65,7 @@ export class Layout {
   private header: AppHeaderImpl;
   private footer: AppFooterImpl;
   private mainContent: MainContent;
+  private sidebar: SidebarComponent | null = null;
   private messagesComponent: MessagesComponent | null = null;
   private config: LayoutConfig;
   private isInitialized: boolean = false;
@@ -78,13 +85,18 @@ export class Layout {
         enabled: true,
         brandTitle: "Opinion",
         brandHref: "/dashboard",
+        showMobileToggle: true,
+        showBreadcrumbs: true,
+        showUserMenu: true,
         ...config.header,
       },
       sidebar: {
         enabled: true,
+        defaultWidth: 280,
+        compactWidth: 80,
         footer: {
-          text: config.sidebar?.footer?.text ?? "© 2025 Opinion",
-          showFooter: config.sidebar?.footer?.showFooter ?? true,
+          text: "© 2025 Opinion",
+          showFooter: true,
         },
         ...config.sidebar,
       },
@@ -99,22 +111,10 @@ export class Layout {
       userMenu: config.userMenu || [],
     };
 
-    // Initialize navigation and user menu items with defaults or config
-    this.navigationItems =
-      this.config.navigation!.length > 0
-        ? this.config.navigation!
-        : this.getDefaultNavigationItems();
-
-    this.userMenuItems =
-      this.config.userMenu!.length > 0
-        ? this.config.userMenu!
-        : this.getDefaultUserMenuItems();
-
     // Initialize layout context first
     this.layoutContext = new LayoutContextImpl();
 
-    // Initialize components
-    this.header = new AppHeaderImpl();
+    this.header = new AppHeaderImpl(this.config.header);
     this.footer = new AppFooterImpl(this.config.footer);
     this.mainContent = new MainContent({
       className: "main-content",
@@ -122,9 +122,7 @@ export class Layout {
       ariaLabel: "Main application content",
     });
 
-    // Note: ErrorMessagesComponent will be initialized in init() method
-    // Register all components with the LayoutContext (ErrorMessages will be registered after init)
-    this.registerComponentsWithContext();
+    // Note: Components will be registered with LayoutContext at the start of init()
   }
 
   /**
@@ -134,6 +132,11 @@ export class Layout {
     console.log("🏢 LAYOUT - init() START");
 
     try {
+      // Register all components with LayoutContext before initialization
+      console.log("🏢 LAYOUT - Registering components with LayoutContext...");
+      this.registerComponentsWithContext();
+      console.log("✅ LAYOUT - Components registered with LayoutContext");
+
       console.log("🏢 LAYOUT - Starting layout initialization...");
 
       // Initialize header
@@ -154,7 +157,7 @@ export class Layout {
 
         // Apply user menu items to header
         console.log("🏢 LAYOUT - Applying user menu items to header...");
-        this.header.updateUserMenuItems(this.userMenuItems);
+
         console.log("✅ LAYOUT - User menu items applied to header");
       } else {
         console.log("⚠️ LAYOUT - Header disabled in config");
@@ -170,14 +173,14 @@ export class Layout {
       this.messagesComponent = new MessagesComponent();
       console.log("✅ LAYOUT - MessagesComponent initialized");
 
-      // Register MessagesComponent with LayoutContext now that it's initialized
-      this.layoutContext.registerMessages(this.messagesComponent);
-      console.log(
-        "✅ LAYOUT - MessagesComponent registered with LayoutContext",
-      );
-
-      // Note: Sidebar is now managed by the page component, not by Layout
-      console.log("🏢 LAYOUT - Sidebar management delegated to page component");
+      // Initialize sidebar component if enabled
+      if (this.config.sidebar?.enabled) {
+        console.log("🏢 LAYOUT - Sidebar enabled, initializing...");
+        await this.initSidebar();
+        console.log("✅ LAYOUT - Sidebar initialized successfully");
+      } else {
+        console.log("⚠️ LAYOUT - Sidebar disabled in config");
+      }
 
       // Initialize footer
       if (this.config.footer?.enabled) {
@@ -187,6 +190,14 @@ export class Layout {
       } else {
         console.log("⚠️ LAYOUT - Footer disabled in config");
       }
+
+      // Re-register components with LayoutContext after initialization
+      // This ensures newly created components (MessagesComponent, Sidebar) are properly registered
+      console.log(
+        "🏢 LAYOUT - Re-registering components with LayoutContext after initialization...",
+      );
+      this.registerComponentsWithContext();
+      console.log("✅ LAYOUT - Components re-registered with LayoutContext");
 
       // Setup component coordination
       console.log("🏢 LAYOUT - Setting up component coordination...");
@@ -221,35 +232,76 @@ export class Layout {
   }
 
   /**
+   * Initialize the sidebar component
+   */
+  private async initSidebar(): Promise<void> {
+    try {
+      // Create sidebar configuration
+      const sidebarConfig: SidebarConfig = {
+        defaultWidth: this.config.sidebar?.defaultWidth ?? 280,
+        compactWidth: this.config.sidebar?.compactWidth ?? 80,
+        footer: {
+          text: this.config.sidebar?.footer?.text ?? "© 2025 Opinion",
+          showFooter: this.config.sidebar?.footer?.showFooter ?? true,
+        },
+      };
+
+      console.log("🏢 LAYOUT - Creating sidebar with config:", sidebarConfig);
+      this.sidebar = new SidebarComponent(sidebarConfig);
+
+      // Initialize the sidebar
+      await this.sidebar.init();
+
+      // Update sidebar navigation with configured items
+      this.sidebar.updateNavigation(this.navigationItems);
+    } catch (error) {
+      console.error("❌ LAYOUT - Sidebar initialization failed:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Register all components with the LayoutContext instance
    * This allows the context to know about and coordinate all layout components
+   * Safe to call multiple times - handles re-registration properly
    */
   private registerComponentsWithContext(): void {
     console.log("Layout - Registering components with LayoutContext...");
 
-    // Register Layout itself with the context
+    // Register Layout itself with the context (safe to re-register)
     this.layoutContext.registerLayout(this);
     console.log("Layout - Registered Layout component with context");
 
-    // Register Header component
+    // Register Header component (safe to re-register)
     if (this.header) {
       this.layoutContext.registerHeader(this.header);
       console.log("Layout - Registered Header component with context");
     }
 
-    // Register Footer component
+    // Register Footer component (safe to re-register)
     if (this.footer) {
       this.layoutContext.registerFooter(this.footer);
       console.log("Layout - Registered Footer component with context");
     }
 
-    // Register MainContent component
+    // Register MainContent component (safe to re-register)
     if (this.mainContent) {
       this.layoutContext.registerMainContent(this.mainContent);
       console.log("Layout - Registered MainContent component with context");
     }
 
-    // Note: Sidebar will be registered separately when it's created by page components
+    // Register MessagesComponent if it exists (created during init)
+    if (this.messagesComponent) {
+      this.layoutContext.registerMessages(this.messagesComponent);
+      console.log("Layout - Registered MessagesComponent with context");
+    }
+
+    // Register Sidebar if it exists (created during init)
+    if (this.sidebar) {
+      this.layoutContext.registerSidebar(this.sidebar);
+      console.log("Layout - Registered Sidebar component with context");
+    }
+
     console.log("Layout - Component registration with LayoutContext completed");
   }
 
@@ -267,8 +319,7 @@ export class Layout {
    */
   private setupResponsiveBehavior(): void {
     // Initial responsive setup based on current mode
-    const currentMode = this.layoutContext.getLayoutMode();
-    this.updateComponentCSSClasses(currentMode);
+    this.updateComponentCSSClasses(this.layoutContext);
   }
 
   /**
@@ -290,6 +341,13 @@ export class Layout {
    */
   getMainContent(): MainContent {
     return this.mainContent;
+  }
+
+  /**
+   * Get sidebar component reference
+   */
+  getSidebar(): Sidebar | null {
+    return this.sidebar;
   }
 
   /**
@@ -361,9 +419,9 @@ export class Layout {
   /**
    * Get component references (duplicate methods removed)
    */
-  getSidebar(): any | null {
-    // Note: Sidebar is now managed by the page component, not Layout
-    return null;
+  getSidebarLegacy(): any | null {
+    // Legacy method - use getSidebar() instead
+    return this.getSidebar();
   }
 
   /**
@@ -492,24 +550,6 @@ export class Layout {
    */
   private finalizeComponentCoordination(): void {
     console.log("Layout - Finalizing component coordination...");
-
-    // Ensure all components are properly positioned
-    const sidebarDimensions = this.layoutContext.getSidebar()?.getDimensions();
-    const layoutMode = this.layoutContext.getLayoutMode();
-
-    // Set global CSS variables for consistent layout
-    const root = document.documentElement;
-
-    // Use actual sidebar dimensions or fallback to layout mode defaults
-    const sidebarWidth = sidebarDimensions
-      ? sidebarDimensions.width
-      : layoutMode.sidebar.width;
-    root.style.setProperty("--sidebar-width", `${sidebarWidth}px`);
-
-    // Use sidebar width for positioning (rightBorder was just width for left-aligned sidebars)
-    root.style.setProperty("--sidebar-right-border", `${sidebarWidth}px`);
-
-    console.log("Layout - Component coordination finalized ✅");
   }
 
   /**
@@ -520,7 +560,7 @@ export class Layout {
     console.log("Layout - Received layout mode change:", layoutMode);
 
     if (layoutMode) {
-      this.updateComponentCSSClasses(layoutMode);
+      this.updateComponentCSSClasses(this.layoutContext);
     } else {
       console.error(
         "Layout - Received undefined layout mode data in event:",
@@ -532,8 +572,12 @@ export class Layout {
   /**
    * Update CSS classes for all layout components based on layout mode
    */
-  private updateComponentCSSClasses(layoutMode: LayoutMode): void {
-    const { type, isCompact, isMobile, isTablet, isDesktop } = layoutMode;
+  private updateComponentCSSClasses(ctx: LayoutContextImpl): void {
+    const type = ctx.getModeType();
+    const isMobile = ctx.isLayoutMobile();
+    const isTablet = ctx.isLayoutTablet();
+    const isDesktop = ctx.isLayoutDesktop();
+    const sidebarCompactMode = ctx.getSidebar()?.isCompactMode();
 
     console.log(`Layout - Updating component CSS classes for mode: ${type}`);
 
@@ -578,7 +622,7 @@ export class Layout {
         element.classList.add(modeClasses[type]);
 
         // Add state-based classes
-        if (isCompact) element.classList.add(stateClasses.compact);
+        if (sidebarCompactMode) element.classList.add(stateClasses.compact);
         if (isMobile) element.classList.add(stateClasses.mobile);
         if (isTablet) element.classList.add(stateClasses.tablet);
         if (isDesktop) element.classList.add(stateClasses.desktop);
@@ -595,7 +639,7 @@ export class Layout {
     });
 
     body.classList.add(modeClasses[type]);
-    if (isCompact) body.classList.add(stateClasses.compact);
+    if (sidebarCompactMode) body.classList.add(stateClasses.compact);
     if (isMobile) body.classList.add(stateClasses.mobile);
     if (isTablet) body.classList.add(stateClasses.tablet);
     if (isDesktop) body.classList.add(stateClasses.desktop);
@@ -603,7 +647,7 @@ export class Layout {
     // Set CSS custom properties for mode-specific styling
     const root = document.documentElement;
     root.style.setProperty("--layout-mode", type);
-    root.style.setProperty("--is-compact", isCompact ? "1" : "0");
+    root.style.setProperty("--is-compact", sidebarCompactMode ? "1" : "0");
     root.style.setProperty("--is-mobile", isMobile ? "1" : "0");
     root.style.setProperty("--is-tablet", isTablet ? "1" : "0");
     root.style.setProperty("--is-desktop", isDesktop ? "1" : "0");
@@ -612,7 +656,7 @@ export class Layout {
       mode: type,
       addedClasses: [
         modeClasses[type],
-        ...(isCompact ? [stateClasses.compact] : []),
+        ...(sidebarCompactMode ? [stateClasses.compact] : []),
         ...(isMobile ? [stateClasses.mobile] : []),
         ...(isTablet ? [stateClasses.tablet] : []),
         ...(isDesktop ? [stateClasses.desktop] : []),
@@ -621,88 +665,11 @@ export class Layout {
         (key) => components[key as keyof typeof components] !== null,
       ),
     });
-
-    // Dispatch custom event for other parts of the application
-    const customEvent = new CustomEvent("layout-mode-updated", {
-      detail: {
-        layoutMode,
-        components,
-      },
-    });
-    document.dispatchEvent(customEvent);
   }
 
   // =================================================================================
   // Navigation and User Menu Building Methods
   // =================================================================================
-
-  /**
-   * Get default navigation items
-   */
-  private getDefaultNavigationItems(): NavigationItem[] {
-    return [
-      {
-        id: "dashboard",
-        text: "Dashboard",
-        icon: "dashboard",
-        href: "/dashboard",
-        caption: "View analytics, reports and key metrics",
-        active: false,
-      },
-      {
-        id: "surveys",
-        text: "Surveys",
-        icon: "poll",
-        href: "/surveys",
-        caption: "Create and manage survey questionnaires",
-      },
-      {
-        id: "debug",
-        text: "Debug",
-        icon: "bug_report",
-        href: "/",
-        caption: "Development tools and troubleshooting",
-        active: true, // Debug is active since root path shows DebugPage
-      },
-    ];
-  }
-
-  /**
-   * Get default user menu items
-   */
-  private getDefaultUserMenuItems(): UserMenuItem[] {
-    return [
-      {
-        id: "account",
-        text: "Account Settings",
-        icon: "settings",
-        href: "/account",
-        type: "link",
-      },
-      {
-        id: "feedback",
-        text: "Send Feedback",
-        icon: "feedback",
-        action: "feedback",
-        type: "action",
-      },
-      {
-        id: "divider1",
-        text: "",
-        icon: "",
-        type: "divider",
-      },
-      {
-        id: "logout",
-        text: "Sign Out",
-        icon: "logout",
-        href: "/logout",
-        type: "link",
-        className: "user-menu-signout",
-        style: "color: #dc3545;",
-      },
-    ];
-  }
 
   /**
    * Set navigation items for the sidebar
@@ -961,6 +928,20 @@ export class Layout {
     };
   }
 
+  /**
+   * Get sidebar configuration
+   */
+  public getSidebarConfig(): SidebarConfig {
+    return {
+      defaultWidth: this.config.sidebar?.defaultWidth ?? 280,
+      compactWidth: this.config.sidebar?.compactWidth ?? 80,
+      footer: {
+        text: this.config.sidebar?.footer?.text ?? "© 2025 Opinion",
+        showFooter: this.config.sidebar?.footer?.showFooter ?? true,
+      },
+    };
+  }
+
   // =================================================================================
   // Error Messages Methods
   // =================================================================================
@@ -1087,6 +1068,12 @@ export class Layout {
     // Destroy all components
     if (this.header) {
       this.header.destroy();
+    }
+
+    if (this.sidebar) {
+      this.layoutContext.unregisterSidebar();
+      this.sidebar.destroy();
+      this.sidebar = null;
     }
 
     if (this.footer) {

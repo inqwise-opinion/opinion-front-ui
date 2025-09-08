@@ -26,6 +26,14 @@ export interface HeaderUser {
   avatar?: string;
 }
 
+export interface HeaderConfig {
+  brandTitle?: string; // Header brand/logo title (default: "Opinion")
+  brandHref?: string; // Header brand/logo link (default: "/dashboard")
+  showMobileToggle?: boolean; // Show mobile menu toggle (default: true)
+  showBreadcrumbs?: boolean; // Show breadcrumb navigation (default: true)
+  showUserMenu?: boolean; // Show user menu (default: true)
+}
+
 export class AppHeaderImpl {
   private container: HTMLElement | null = null;
   private isInitialized: boolean = false;
@@ -37,9 +45,19 @@ export class AppHeaderImpl {
   private resizeTimeout: NodeJS.Timeout | null = null;
   private layoutContext: LayoutContext;
   private layoutUnsubscribers: Array<() => void> = [];
+  private config: Required<HeaderConfig>;
 
-  constructor() {
-    console.log("AppHeaderImpl - Creating clean header...");
+  constructor(config: HeaderConfig = {}) {
+    // Apply configuration with defaults
+    this.config = {
+      brandTitle: config.brandTitle ?? "Opinion",
+      brandHref: config.brandHref ?? "/dashboard",
+      showMobileToggle: config.showMobileToggle ?? true,
+      showBreadcrumbs: config.showBreadcrumbs ?? true,
+      showUserMenu: config.showUserMenu ?? true,
+    };
+
+    console.log("AppHeaderImpl - Creating clean header with config:", this.config);
     this.layoutContext = getLayoutContext();
     this.sidebar = new SidebarComponent();
   }
@@ -141,10 +159,8 @@ export class AppHeaderImpl {
     const headerContainer = this.container.querySelector(".header-container");
     if (!headerContainer) return;
 
-    // Populate header content
-    headerContainer.innerHTML = `
-      <!-- Left section: Mobile toggle button -->
-      <div class="header-left">
+    // Populate header content using configuration
+    const mobileToggleHtml = this.config.showMobileToggle ? `
         <button class="mobile-menu-toggle" id="mobile_menu_toggle" aria-label="Toggle Menu" title="Toggle Menu">
           <div class="hamburger-icon">
             <div class="hamburger-line"></div>
@@ -152,10 +168,9 @@ export class AppHeaderImpl {
             <div class="hamburger-line"></div>
           </div>
         </button>
-      </div>
+    ` : '';
 
-      <!-- Center section: Enhanced breadcrumbs and page title -->
-      <div class="header-center" style="${window.innerWidth <= 767 ? "padding-left: 16px;" : "padding-left: 0;"}">
+    const breadcrumbsHtml = this.config.showBreadcrumbs ? `
         <nav class="header-breadcrumbs" aria-label="Breadcrumb">
           <ol class="breadcrumb-list">
             <!-- Current Page (Menu Item) -->
@@ -176,12 +191,27 @@ export class AppHeaderImpl {
             </li>
           </ol>
         </nav>
+    ` : '';
+
+    const userMenuHtml = this.config.showUserMenu ? `
+        <!-- User Menu -->
+        <div id="user_menu_container"></div>
+    ` : '';
+
+    headerContainer.innerHTML = `
+      <!-- Left section: Mobile toggle button -->
+      <div class="header-left">
+        ${mobileToggleHtml}
+      </div>
+
+      <!-- Center section: Enhanced breadcrumbs and page title -->
+      <div class="header-center" style="${window.innerWidth <= 767 ? "padding-left: 16px;" : "padding-left: 0;"}">
+        ${breadcrumbsHtml}
       </div>
 
       <!-- Right section: User menu only -->
       <div class="header-right">
-        <!-- User Menu -->
-        <div id="user_menu_container"></div>
+        ${userMenuHtml}
       </div>
     `;
   }
@@ -190,6 +220,11 @@ export class AppHeaderImpl {
    * Initialize user menu component (responsive - works on both mobile and desktop)
    */
   private async initUserMenu(): Promise<void> {
+    if (!this.config.showUserMenu) {
+      console.log("AppHeaderImpl - User menu disabled in config, skipping initialization");
+      return;
+    }
+
     const userMenuContainer = await this.waitForElement("#user_menu_container");
     if (userMenuContainer) {
       this.userMenu = new UserMenu(userMenuContainer);
@@ -336,6 +371,11 @@ export class AppHeaderImpl {
    * Setup mobile menu toggle handler
    */
   private setupMobileMenuHandler(): void {
+    if (!this.config.showMobileToggle) {
+      console.log("AppHeaderImpl - Mobile toggle disabled in config, skipping handler setup");
+      return;
+    }
+
     const mobileMenuToggle = document.getElementById("mobile_menu_toggle");
     if (mobileMenuToggle) {
       mobileMenuToggle.addEventListener("click", (e) => {
@@ -428,11 +468,15 @@ export class AppHeaderImpl {
   /**
    * Update logo/brand link
    */
-  updateBrand(title: string, href: string = "/dashboard"): void {
+  updateBrand(title?: string, href?: string): void {
+    const finalTitle = title ?? this.config.brandTitle;
+    const finalHref = href ?? this.config.brandHref;
+    
     const logo = this.container?.querySelector(".logo") as HTMLAnchorElement;
     if (logo) {
-      logo.textContent = title;
-      logo.href = href;
+      logo.textContent = finalTitle;
+      logo.href = finalHref;
+      console.log(`AppHeaderImpl - Brand updated: "${finalTitle}" -> ${finalHref}`);
     }
   }
 
@@ -501,6 +545,13 @@ export class AppHeaderImpl {
    */
   getSidebar(): Sidebar | null {
     return this.sidebar;
+  }
+
+  /**
+   * Get header configuration
+   */
+  public getConfig(): Required<HeaderConfig> {
+    return { ...this.config };
   }
 
   /**
