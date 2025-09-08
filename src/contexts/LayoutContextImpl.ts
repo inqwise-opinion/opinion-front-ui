@@ -23,6 +23,7 @@ export class LayoutContextImpl implements LayoutContext {
   private resizeTimeout: NodeJS.Timeout | null = null;
   private sidebarInstance: Sidebar | null = null;
   private isLayoutReady: boolean = false;
+  private compact: boolean = false;
   
   // Component registry
   private layoutInstance: any = null;
@@ -344,6 +345,9 @@ export class LayoutContextImpl implements LayoutContext {
 
     // Reset ready state
     this.isLayoutReady = false;
+    
+    // Reset compact state
+    this.compact = false;
 
     // Clear all listeners
     this.listeners.clear();
@@ -436,6 +440,9 @@ export class LayoutContextImpl implements LayoutContext {
     const viewport = this.viewport;
     const sidebar = this.getSidebarDimensionsInternal();
     const isCompact = this.sidebarInstance?.isCompactMode() || false;
+
+    // Update internal compact state
+    this.compact = isCompact;
 
     // Use current layout mode type and check for compact state
     const currentType = this.modeType;
@@ -566,9 +573,15 @@ export class LayoutContextImpl implements LayoutContext {
 
     // Always update layout mode (for viewport dimensions)
     const sidebar = this.getSidebarDimensionsInternal();
+    const isCompact = this.sidebarInstance?.isCompactMode() || false;
+    
+    // Update internal compact state
+    this.compact = isCompact;
+    
     this.layoutMode = {
       ...this.layoutMode,
       type,
+      isCompact,
       isMobile,
       isTablet,
       isDesktop,
@@ -631,6 +644,13 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public canSidebarToggle(): boolean {
     return this.layoutMode.sidebarBehavior.canToggle;
+  }
+
+  /**
+   * Check if current layout is in compact mode
+   */
+  public isCompact(): boolean {
+    return this.compact;
   }
 
   // =================================================================================

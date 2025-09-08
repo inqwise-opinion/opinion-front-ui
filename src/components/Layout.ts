@@ -43,6 +43,10 @@ export interface LayoutConfig {
   };
   sidebar?: {
     enabled?: boolean;
+    footer?: {
+      text?: string; // Footer text (default: "© 2025 Opinion")
+      showFooter?: boolean; // Whether to show footer (default: true)
+    };
   };
   footer?: FooterConfig & {
     enabled?: boolean;
@@ -78,6 +82,10 @@ export class Layout {
       },
       sidebar: {
         enabled: true,
+        footer: {
+          text: config.sidebar?.footer?.text ?? "© 2025 Opinion",
+          showFooter: config.sidebar?.footer?.showFooter ?? true,
+        },
         ...config.sidebar,
       },
       footer: {
@@ -940,6 +948,17 @@ export class Layout {
    */
   public getUserMenuForHeader(): UserMenuItem[] {
     return this.getUserMenuItems();
+  }
+
+  /**
+   * Get sidebar footer configuration to pass to sidebar components
+   * This method is called by page components when creating sidebars
+   */
+  public getSidebarFooterConfig(): { text: string; showFooter: boolean } {
+    return {
+      text: this.config.sidebar?.footer?.text || "© 2025 Opinion",
+      showFooter: this.config.sidebar?.footer?.showFooter ?? true,
+    };
   }
 
   // =================================================================================

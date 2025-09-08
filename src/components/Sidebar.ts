@@ -9,6 +9,10 @@
 export interface SidebarConfig {
   defaultWidth?: number; // Default expanded width (default: 280px)
   compactWidth?: number; // Compact mode width (default: 80px)
+  footer?: {
+    text?: string; // Footer text (default: "© 2025 Opinion")
+    showFooter?: boolean; // Whether to show footer (default: true)
+  };
 }
 
 /**
@@ -33,6 +37,10 @@ export interface Sidebar {
   // Navigation
   updateNavigation(items: NavigationItem[]): void;
   setActivePage(navId: string): void;
+  
+  // Footer management
+  updateFooterText(text: string): void;
+  setFooterVisibility(show: boolean): void;
   
   // Lifecycle
   init(): Promise<void>;

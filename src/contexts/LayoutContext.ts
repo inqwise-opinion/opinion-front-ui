@@ -85,6 +85,7 @@ export interface LayoutContext {
   getLayoutMode(): LayoutMode;
   getBreakpoints(): LayoutMode["breakpoints"];
   canSidebarToggle(): boolean;
+  isCompact(): boolean;
   calculateSidebarDimensions(isCompact?: boolean): {
     width: number;
     isVisible: boolean;

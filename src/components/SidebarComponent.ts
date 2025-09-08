@@ -31,6 +31,10 @@ export class SidebarComponent implements Sidebar {
     this.config = {
       defaultWidth: config.defaultWidth ?? 280,
       compactWidth: config.compactWidth ?? 80,
+      footer: {
+        text: config.footer?.text ?? "© 2025 Opinion",
+        showFooter: config.footer?.showFooter ?? true,
+      },
     };
 
     console.log("Sidebar - Creating sidebar with config:", this.config);
@@ -194,10 +198,12 @@ export class SidebarComponent implements Sidebar {
 
     // Populate footer
     const footerContainer = this.sidebar.querySelector(".sidebar-footer");
-    if (footerContainer) {
+    if (footerContainer && this.config.footer.showFooter) {
       footerContainer.innerHTML = `
-        <p class="copyright-text">&copy; 2024 Opinion</p>
+        <p class="copyright-text">${this.config.footer.text}</p>
       `;
+    } else if (footerContainer && !this.config.footer.showFooter) {
+      (footerContainer as HTMLElement).style.display = "none";
     }
   }
 
@@ -427,6 +433,48 @@ export class SidebarComponent implements Sidebar {
    */
   public setActivePage(navId: string): void {
     this.setActiveItem(navId);
+  }
+
+  /**
+   * Update sidebar footer text
+   */
+  public updateFooterText(text: string): void {
+    this.config.footer.text = text;
+    
+    if (this.sidebar && this.isInitialized) {
+      const footerContainer = this.sidebar.querySelector(".sidebar-footer");
+      const copyrightText = footerContainer?.querySelector(".copyright-text");
+      
+      if (copyrightText && this.config.footer.showFooter) {
+        copyrightText.textContent = text;
+        console.log(`Sidebar - Footer text updated to: "${text}"`);
+      }
+    }
+  }
+
+  /**
+   * Show or hide sidebar footer
+   */
+  public setFooterVisibility(show: boolean): void {
+    this.config.footer.showFooter = show;
+    
+    if (this.sidebar && this.isInitialized) {
+      const footerContainer = this.sidebar.querySelector(".sidebar-footer");
+      
+      if (footerContainer) {
+        const footerEl = footerContainer as HTMLElement;
+        if (show) {
+          footerEl.style.display = "";
+          footerEl.innerHTML = `
+            <p class="copyright-text">${this.config.footer.text}</p>
+          `;
+          console.log("Sidebar - Footer shown");
+        } else {
+          footerEl.style.display = "none";
+          console.log("Sidebar - Footer hidden");
+        }
+      }
+    }
   }
 
 
