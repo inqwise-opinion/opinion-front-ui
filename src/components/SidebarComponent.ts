@@ -8,12 +8,7 @@ import "../assets/styles/components/sidebar.css";
 // Import layout context
 import { getLayoutContext, type LayoutContext } from "../contexts/index";
 // Import sidebar interfaces and types
-import {
-  Sidebar,
-  SidebarConfig,
-  NavigationItem,
-  Dimensions,
-} from "./Sidebar";
+import { Sidebar, SidebarConfig, NavigationItem, Dimensions } from "./Sidebar";
 
 export class SidebarComponent implements Sidebar {
   private sidebar: HTMLElement | null = null;
@@ -22,6 +17,7 @@ export class SidebarComponent implements Sidebar {
   private compactMode: boolean = false;
   //private compactModeListeners: Array<(isCompact: boolean) => void> = [];
   private layoutContext: LayoutContext;
+  private toggleCompactModeHandler?: (compactMode: boolean) => void;
 
   // Configuration
   private config: Required<SidebarConfig>;
@@ -41,6 +37,18 @@ export class SidebarComponent implements Sidebar {
 
     this.layoutContext = getLayoutContext();
     this.setupDefaultNavigation();
+  }
+
+  public isVisible(): boolean {
+    return !this.layoutContext.isLayoutMobile() || this.isLocked();
+  }
+  /**
+   * Set the toggle compact mode handler
+   */
+  public setToggleCompactModeHandler(
+    handler?: (compactMode: boolean) => void,
+  ): void {
+    this.toggleCompactModeHandler = handler;
   }
 
   /**
@@ -440,11 +448,11 @@ export class SidebarComponent implements Sidebar {
    */
   public updateFooterText(text: string): void {
     this.config.footer.text = text;
-    
+
     if (this.sidebar && this.isInitialized) {
       const footerContainer = this.sidebar.querySelector(".sidebar-footer");
       const copyrightText = footerContainer?.querySelector(".copyright-text");
-      
+
       if (copyrightText && this.config.footer.showFooter) {
         copyrightText.textContent = text;
         console.log(`Sidebar - Footer text updated to: "${text}"`);
@@ -457,10 +465,10 @@ export class SidebarComponent implements Sidebar {
    */
   public setFooterVisibility(show: boolean): void {
     this.config.footer.showFooter = show;
-    
+
     if (this.sidebar && this.isInitialized) {
       const footerContainer = this.sidebar.querySelector(".sidebar-footer");
-      
+
       if (footerContainer) {
         const footerEl = footerContainer as HTMLElement;
         if (show) {
@@ -476,7 +484,6 @@ export class SidebarComponent implements Sidebar {
       }
     }
   }
-
 
   /**
    * Check if sidebar is in compact mode
@@ -1014,7 +1021,6 @@ export class SidebarComponent implements Sidebar {
       isVisible,
     };
   }
-
 
   /**
    * Setup layout mode subscriptions

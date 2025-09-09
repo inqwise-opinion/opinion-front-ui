@@ -1,6 +1,6 @@
 /**
  * Base PageComponent Class
- * 
+ *
  * Provides common functionality for all page-level components including:
  * - Initialization and cleanup lifecycle
  * - Event handling and delegation
@@ -8,6 +8,9 @@
  * - Common UI interactions
  * - Error handling
  */
+
+import { LayoutContext } from "@/contexts";
+import MainContent from "./MainContent";
 
 export interface PageComponentConfig {
   pageTitle?: string;
@@ -19,17 +22,22 @@ export abstract class PageComponent {
   protected initialized: boolean = false;
   protected destroyed: boolean = false;
   protected config: PageComponentConfig;
-  protected eventListeners: Array<{element: Element | Window | Document, event: string, handler: EventListener}> = [];
+  protected eventListeners: Array<{
+    element: Element | Window | Document;
+    event: string;
+    handler: EventListener;
+  }> = [];
   protected pageTitle: string;
+  protected layoutContext?: LayoutContext;
 
   constructor(config: PageComponentConfig = {}) {
     this.config = {
-      autoInit: true,
-      ...config
+      autoInit: false,
+      ...config,
     };
-    
-    this.pageTitle = config.pageTitle || 'Page';
-    
+
+    this.pageTitle = config.pageTitle || "Page";
+
     if (this.config.autoInit) {
       // Initialize on next tick to allow subclass constructor to complete
       setTimeout(() => this.init(), 0);
@@ -41,36 +49,44 @@ export abstract class PageComponent {
    * Called automatically if autoInit is true, or manually by subclasses
    */
   public async init(): Promise<void> {
+    if (!this.layoutContext) {
+      console.warn(`${this.constructor.name}: Layout context not set`);
+      return;
+    }
+
     if (this.initialized || this.destroyed) {
-      console.warn(`${this.constructor.name}: Cannot initialize - already initialized or destroyed`);
+      console.warn(
+        `${this.constructor.name}: Cannot initialize - already initialized or destroyed`,
+      );
       return;
     }
 
     try {
       console.log(`${this.constructor.name}: Initializing...`);
-      
+
       // Wait for DOM if needed
-      if (document.readyState === 'loading') {
-        await new Promise(resolve => {
-          document.addEventListener('DOMContentLoaded', resolve, { once: true });
+      if (document.readyState === "loading") {
+        await new Promise((resolve) => {
+          document.addEventListener("DOMContentLoaded", resolve, {
+            once: true,
+          });
         });
       }
 
       // Initialize page-specific functionality
       await this.onInit();
-      
+
       // Set up event listeners
       this.setupEventListeners();
-      
+
       // Set up keyboard shortcuts
       this.setupKeyboardShortcuts();
-      
+
       this.initialized = true;
       console.log(`${this.constructor.name}: Initialized successfully`);
-      
+
       // Trigger post-initialization hook
       await this.onPostInit();
-      
     } catch (error) {
       console.error(`${this.constructor.name}: Initialization failed:`, error);
       throw error;
@@ -88,21 +104,20 @@ export abstract class PageComponent {
 
     try {
       console.log(`${this.constructor.name}: Destroying...`);
-      
+
       // Cleanup page-specific functionality
       this.onDestroy();
-      
+
       // Remove all event listeners
       this.removeAllEventListeners();
-      
+
       // Clear any intervals/timeouts
       this.clearTimers();
-      
+
       this.destroyed = true;
       this.initialized = false;
-      
+
       console.log(`${this.constructor.name}: Destroyed successfully`);
-      
     } catch (error) {
       console.error(`${this.constructor.name}: Destruction failed:`, error);
     }
@@ -115,7 +130,7 @@ export abstract class PageComponent {
     element: Element | Window | Document,
     event: string,
     handler: EventListener,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): void {
     element.addEventListener(event, handler, options);
     this.eventListeners.push({ element, event, handler });
@@ -135,12 +150,12 @@ export abstract class PageComponent {
    * Handle event delegation for data-action attributes
    */
   protected setupEventDelegation(): void {
-    this.addEventListener(document, 'click', (event) => {
+    this.addEventListener(document, "click", (event) => {
       const target = event.target as Element;
-      const actionElement = target.closest('[data-action]');
-      
+      const actionElement = target.closest("[data-action]");
+
       if (actionElement) {
-        const action = actionElement.getAttribute('data-action');
+        const action = actionElement.getAttribute("data-action");
         if (action) {
           event.preventDefault();
           this.handleAction(action, actionElement, event);
@@ -154,11 +169,13 @@ export abstract class PageComponent {
    */
   protected handleAction(action: string, element: Element, event: Event): void {
     const methodName = `handle${this.capitalizeFirst(action)}`;
-    
-    if (typeof (this as any)[methodName] === 'function') {
+
+    if (typeof (this as any)[methodName] === "function") {
       (this as any)[methodName](element, event);
     } else {
-      console.warn(`${this.constructor.name}: No handler found for action '${action}' (${methodName})`);
+      console.warn(
+        `${this.constructor.name}: No handler found for action '${action}' (${methodName})`,
+      );
     }
   }
 
@@ -166,7 +183,7 @@ export abstract class PageComponent {
    * Set up common keyboard shortcuts
    */
   protected setupKeyboardShortcuts(): void {
-    this.addEventListener(document, 'keydown', (event: KeyboardEvent) => {
+    this.addEventListener(document, "keydown", (event: KeyboardEvent) => {
       this.handleKeydown(event);
     });
   }
@@ -176,7 +193,7 @@ export abstract class PageComponent {
    */
   protected handleKeydown(event: KeyboardEvent): void {
     // Common keyboard shortcuts
-    if (event.key === 'Escape') {
+    if (event.key === "Escape") {
       this.handleEscape(event);
     }
   }
@@ -187,8 +204,8 @@ export abstract class PageComponent {
   protected handleEscape(event: KeyboardEvent): void {
     // Close any open dropdowns, modals, etc.
     const openDropdowns = document.querySelectorAll('[aria-expanded="true"]');
-    openDropdowns.forEach(dropdown => {
-      dropdown.setAttribute('aria-expanded', 'false');
+    openDropdowns.forEach((dropdown) => {
+      dropdown.setAttribute("aria-expanded", "false");
     });
   }
 
@@ -212,9 +229,9 @@ export abstract class PageComponent {
   protected updatePageTitle(title: string): void {
     this.pageTitle = title;
     document.title = title;
-    
+
     // Update breadcrumb if exists
-    const breadcrumbTitle = document.getElementById('current_page_title');
+    const breadcrumbTitle = document.getElementById("current_page_title");
     if (breadcrumbTitle) {
       breadcrumbTitle.textContent = title;
     }
@@ -223,7 +240,7 @@ export abstract class PageComponent {
   /**
    * Show loading state
    */
-  protected showLoading(message: string = 'Loading...'): void {
+  protected showLoading(message: string = "Loading..."): void {
     // Implementation depends on your loading component
     console.log(`${this.constructor.name}: ${message}`);
   }
@@ -247,13 +264,18 @@ export abstract class PageComponent {
   /**
    * Get element with error handling
    */
-  protected getElement(selector: string, required: boolean = true): Element | null {
+  protected getElement(
+    selector: string,
+    required: boolean = true,
+  ): Element | null {
     const element = document.querySelector(selector);
-    
+
     if (!element && required) {
-      console.error(`${this.constructor.name}: Required element not found: ${selector}`);
+      console.error(
+        `${this.constructor.name}: Required element not found: ${selector}`,
+      );
     }
-    
+
     return element;
   }
 
@@ -304,6 +326,13 @@ export abstract class PageComponent {
 
   public get getPageTitle(): string {
     return this.pageTitle;
+  }
+
+  public async handleLayout(ctx: LayoutContext): Promise<void> {
+    this.layoutContext = ctx;
+    await this.init();
+
+    return;
   }
 }
 

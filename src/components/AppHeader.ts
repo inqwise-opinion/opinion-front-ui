@@ -3,18 +3,12 @@
  * Defines the contract for app header components
  */
 
-import type { Sidebar } from "./Sidebar.js";
+import UserMenu from "./UserMenu";
 
 export interface HeaderUser {
   username: string;
   email?: string;
   avatar?: string;
-}
-
-export interface SidebarInfo {
-  width: number;
-  isCompact: boolean;
-  isMobile: boolean;
 }
 
 export interface HeaderPosition {
@@ -60,21 +54,6 @@ export interface AppHeader {
   setVisible(visible: boolean): void;
 
   /**
-   * Get sidebar instance for external access
-   */
-  getSidebar(): Sidebar | null;
-
-  /**
-   * Simulate user loading - for testing/demo purposes
-   */
-  simulateUserLoading(): void;
-
-  /**
-   * Get current sidebar information (useful for other components)
-   */
-  getSidebarInfo(): SidebarInfo | null;
-
-  /**
    * Get current header position information
    */
   getHeaderPosition(): HeaderPosition | null;
@@ -88,4 +67,9 @@ export interface AppHeader {
    * Cleanup when component is destroyed
    */
   destroy(): void;
+
+  /**
+   * Set user menu handler
+   */
+  setUserMenuHandler(handler: (userMenu: UserMenu) => void): void;
 }

@@ -11,20 +11,11 @@ import { UserMenu } from "./UserMenu";
 import type { UserMenuItem } from "./Layout";
 
 // Type-only import for the interface
-import { Sidebar, Dimensions } from "./Sidebar";
-import SidebarComponent from "./SidebarComponent";
+import { Dimensions } from "./Sidebar";
 // Import layout context
 import { getLayoutContext } from "../contexts/index";
-import type {
-  LayoutEvent,
-  LayoutContext,
-} from "../contexts/LayoutContext";
-
-export interface HeaderUser {
-  username: string;
-  email?: string;
-  avatar?: string;
-}
+import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
+import { AppHeader, HeaderUser } from "./AppHeader";
 
 export interface HeaderConfig {
   brandTitle?: string; // Header brand/logo title (default: "Opinion")
@@ -34,13 +25,10 @@ export interface HeaderConfig {
   showUserMenu?: boolean; // Show user menu (default: true)
 }
 
-export class AppHeaderImpl {
+export class AppHeaderImpl implements AppHeader {
+  private userMenuHandler?: (userMenu: UserMenu) => void;
   private container: HTMLElement | null = null;
-  private isInitialized: boolean = false;
-  private currentPageTitle: string = "Dashboard";
-  private currentUser: HeaderUser | null = null;
   private userMenu: UserMenu | null = null;
-  private sidebar: SidebarComponent | null = null;
   private user: HeaderUser | null = null;
   private resizeTimeout: NodeJS.Timeout | null = null;
   private layoutContext: LayoutContext;
@@ -51,15 +39,21 @@ export class AppHeaderImpl {
     // Apply configuration with defaults
     this.config = {
       brandTitle: config.brandTitle ?? "Opinion",
-      brandHref: config.brandHref ?? "/dashboard",
+      brandHref: config.brandHref ?? "/",
       showMobileToggle: config.showMobileToggle ?? true,
       showBreadcrumbs: config.showBreadcrumbs ?? true,
       showUserMenu: config.showUserMenu ?? true,
     };
 
-    console.log("AppHeaderImpl - Creating clean header with config:", this.config);
+    console.log(
+      "AppHeaderImpl - Creating clean header with config:",
+      this.config,
+    );
     this.layoutContext = getLayoutContext();
-    this.sidebar = new SidebarComponent();
+  }
+
+  public setUserMenuHandler(handler: (userMenu: UserMenu) => void): void {
+    this.userMenuHandler = handler;
   }
 
   /**
@@ -80,22 +74,10 @@ export class AppHeaderImpl {
       // Initialize user menu component (desktop only)
       await this.initUserMenu();
 
-      // Initialize sidebar component (can fail without breaking header)
-      try {
-        await this.initSidebar();
-      } catch (sidebarError) {
-        console.warn(
-          "AppHeaderImpl - Sidebar initialization failed, continuing without sidebar:",
-          sidebarError,
-        );
-        this.sidebar = null;
-      }
-
       // Setup event listeners
       this.setupEventListeners();
 
-      // Header is now fully CSS-based - no dynamic layout subscriptions needed
-      // this.subscribeToLayoutContext();
+      this.layoutContext.subscribe();
 
       console.log("AppHeaderImpl - Ready");
     } catch (error) {
@@ -160,7 +142,8 @@ export class AppHeaderImpl {
     if (!headerContainer) return;
 
     // Populate header content using configuration
-    const mobileToggleHtml = this.config.showMobileToggle ? `
+    const mobileToggleHtml = this.config.showMobileToggle
+      ? `
         <button class="mobile-menu-toggle" id="mobile_menu_toggle" aria-label="Toggle Menu" title="Toggle Menu">
           <div class="hamburger-icon">
             <div class="hamburger-line"></div>
@@ -168,9 +151,11 @@ export class AppHeaderImpl {
             <div class="hamburger-line"></div>
           </div>
         </button>
-    ` : '';
+    `
+      : "";
 
-    const breadcrumbsHtml = this.config.showBreadcrumbs ? `
+    const breadcrumbsHtml = this.config.showBreadcrumbs
+      ? `
         <nav class="header-breadcrumbs" aria-label="Breadcrumb">
           <ol class="breadcrumb-list">
             <!-- Current Page (Menu Item) -->
@@ -191,12 +176,15 @@ export class AppHeaderImpl {
             </li>
           </ol>
         </nav>
-    ` : '';
+    `
+      : "";
 
-    const userMenuHtml = this.config.showUserMenu ? `
+    const userMenuHtml = this.config.showUserMenu
+      ? `
         <!-- User Menu -->
         <div id="user_menu_container"></div>
-    ` : '';
+    `
+      : "";
 
     headerContainer.innerHTML = `
       <!-- Left section: Mobile toggle button -->
@@ -221,37 +209,25 @@ export class AppHeaderImpl {
    */
   private async initUserMenu(): Promise<void> {
     if (!this.config.showUserMenu) {
-      console.log("AppHeaderImpl - User menu disabled in config, skipping initialization");
+      console.log(
+        "AppHeaderImpl - User menu disabled in config, skipping initialization",
+      );
       return;
     }
 
     const userMenuContainer = await this.waitForElement("#user_menu_container");
     if (userMenuContainer) {
       this.userMenu = new UserMenu(userMenuContainer);
+      if (this.userMenuHandler) {
+        this.userMenuHandler(this.userMenu);
+      }
       await this.userMenu.init();
-      console.log("AppHeaderImpl - UserMenu component initialized (responsive)");
+      console.log(
+        "AppHeaderImpl - UserMenu component initialized (responsive)",
+      );
     } else {
       console.warn("AppHeaderImpl - User menu container not found");
     }
-  }
-
-  /**
-   * Initialize sidebar component
-   */
-  private async initSidebar(): Promise<void> {
-    if (!this.sidebar) {
-      console.error('AppHeaderImpl - Sidebar instance not available for initialization');
-      return;
-    }
-    
-    await this.sidebar.init();
-
-    // Register sidebar with LayoutContext for centralized access
-    this.layoutContext.registerSidebar(this.sidebar);
-
-    console.log(
-      "AppHeaderImpl - Sidebar component initialized and registered with LayoutContext",
-    );
   }
 
   /**
@@ -277,21 +253,6 @@ export class AppHeaderImpl {
     this.setupMobileMenuHandler();
 
     // Header positioning is now fully CSS-based - no dynamic resize handling needed
-  }
-
-  /**
-   * Handle window resize events with debouncing for better performance
-   */
-  private handleResizeDebounced(): void {
-    // Clear previous timeout
-    if (this.resizeTimeout) {
-      clearTimeout(this.resizeTimeout);
-    }
-
-    // Debounce resize handling to improve performance
-    this.resizeTimeout = setTimeout(() => {
-      this.handleResize();
-    }, 100); // 100ms debounce
   }
 
   /**
@@ -325,37 +286,6 @@ export class AppHeaderImpl {
   }
 
   /**
-   * Recreate header with updated structure based on current viewport
-   */
-  private recreateHeader(): void {
-    if (!this.container) return;
-
-    // Store current page title
-    const currentTitle =
-      document.getElementById("current_page_title")?.textContent || "Dashboard";
-
-    // Remove existing header
-    this.container.remove();
-
-    // Create new header with current viewport structure
-    this.createHeader();
-
-    // Restore page title
-    this.updatePageTitle(currentTitle);
-
-    // Restore user if available
-    if (this.user) {
-      // Wait a moment for DOM to be ready, then reinitialize user menu
-      setTimeout(async () => {
-        await this.initUserMenu();
-        if (this.user) {
-          this.updateUser(this.user);
-        }
-      }, 100);
-    }
-  }
-
-  /**
    * Handle keyboard navigation
    */
   private handleKeyboardNavigation(event: KeyboardEvent): void {
@@ -372,7 +302,9 @@ export class AppHeaderImpl {
    */
   private setupMobileMenuHandler(): void {
     if (!this.config.showMobileToggle) {
-      console.log("AppHeaderImpl - Mobile toggle disabled in config, skipping handler setup");
+      console.log(
+        "AppHeaderImpl - Mobile toggle disabled in config, skipping handler setup",
+      );
       return;
     }
 
@@ -385,7 +317,7 @@ export class AppHeaderImpl {
         console.log("📱 AppHeaderImpl - Mobile menu toggle clicked");
 
         // Check if we're in mobile mode
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = this.layoutContext.isLayoutMobile();
         if (!isMobile) {
           console.log(
             "⚠️ AppHeaderImpl - Not in mobile mode, ignoring mobile menu click",
@@ -393,18 +325,23 @@ export class AppHeaderImpl {
           return;
         }
 
-        // Toggle mobile sidebar visibility
-        if (this.sidebar) {
-          console.log("🔄 AppHeaderImpl - Triggering sidebar mobile toggle...");
-          this.sidebar.toggleMobileVisibility();
+        // Toggle mobile sidebar visibility via LayoutContext
+        const sidebar = this.layoutContext.getSidebar();
+        if (sidebar) {
+          console.log(
+            "🔄 AppHeaderImpl - Triggering sidebar mobile toggle via LayoutContext...",
+          );
+          sidebar.toggleMobileVisibility();
         } else {
           console.warn(
-            "❌ AppHeaderImpl - Sidebar not available for mobile toggle",
+            "❌ AppHeaderImpl - No sidebar registered in LayoutContext for mobile toggle",
           );
         }
       });
 
-      console.log("✅ AppHeaderImpl - Mobile menu toggle handler setup complete");
+      console.log(
+        "✅ AppHeaderImpl - Mobile menu toggle handler setup complete",
+      );
     } else {
       console.warn("⚠️ AppHeaderImpl - Mobile menu toggle button not found");
     }
@@ -471,12 +408,14 @@ export class AppHeaderImpl {
   updateBrand(title?: string, href?: string): void {
     const finalTitle = title ?? this.config.brandTitle;
     const finalHref = href ?? this.config.brandHref;
-    
+
     const logo = this.container?.querySelector(".logo") as HTMLAnchorElement;
     if (logo) {
       logo.textContent = finalTitle;
       logo.href = finalHref;
-      console.log(`AppHeaderImpl - Brand updated: "${finalTitle}" -> ${finalHref}`);
+      console.log(
+        `AppHeaderImpl - Brand updated: "${finalTitle}" -> ${finalHref}`,
+      );
     }
   }
 
@@ -517,7 +456,9 @@ export class AppHeaderImpl {
       // Update document title
       document.title = `${subPage} - ${mainPage} - Opinion`;
 
-      console.log(`AppHeaderImpl - Breadcrumbs updated: ${mainPage} > ${subPage}`);
+      console.log(
+        `AppHeaderImpl - Breadcrumbs updated: ${mainPage} > ${subPage}`,
+      );
     } else {
       // Hide separator and sub-page
       if (separator) separator.style.display = "none";
@@ -539,63 +480,11 @@ export class AppHeaderImpl {
     }
   }
 
-
-  /**
-   * Get sidebar instance for external access
-   */
-  getSidebar(): Sidebar | null {
-    return this.sidebar;
-  }
-
   /**
    * Get header configuration
    */
   public getConfig(): Required<HeaderConfig> {
     return { ...this.config };
-  }
-
-  /**
-   * Simulate user loading - uses UserMenu for both mobile and desktop
-   */
-  simulateUserLoading(): void {
-    console.log("🔄 AppHeaderImpl - simulateUserLoading() called");
-    console.log(
-      `📊 Viewport: ${window.innerWidth}px (UserMenu handles responsive display)`,
-    );
-
-    if (!this.userMenu) {
-      console.warn(
-        "❌ AppHeaderImpl - UserMenu not available for loading simulation",
-      );
-      return;
-    }
-
-    console.log("⏳ AppHeaderImpl - Setting loading state...");
-    const loadingUser = { username: "Loading...", email: "Please wait..." };
-    this.updateUser(loadingUser);
-
-    // Simulate loading with actual user data
-    const mockUsers = [
-      { username: "John Doe", email: "john.doe@company.com", avatar: "👤" },
-      { username: "Sarah Wilson", email: "sarah.w@company.com", avatar: "👩" },
-      {
-        username: "Mike Johnson",
-        email: "mike.johnson@company.com",
-        avatar: "👨",
-      },
-      { username: "Emma Davis", email: "emma.davis@company.com", avatar: "👩‍💼" },
-      { username: "Alex Chen", email: "alex.chen@company.com", avatar: "👨‍💼" },
-    ];
-    const randomUser = mockUsers[Math.floor(Math.random() * mockUsers.length)];
-
-    console.log(`🎯 AppHeaderImpl - Will load user: ${randomUser.username}`);
-
-    // Use Promise-based simulation instead of timer
-    this.simulateAsyncUserLoad(randomUser).then(() => {
-      console.log("✅ AppHeaderImpl - Loading complete, updating user...");
-      this.updateUser(randomUser);
-      console.log("🎉 AppHeaderImpl - User updated successfully!");
-    });
   }
 
   /**
@@ -625,7 +514,7 @@ export class AppHeaderImpl {
     }
 
     return new Promise((resolve) => {
-      const observer = new MutationObserver((mutations) => {
+      const observer = new MutationObserver(() => {
         const element = document.querySelector(selector) as HTMLElement;
         if (element) {
           observer.disconnect();
@@ -647,77 +536,15 @@ export class AppHeaderImpl {
   }
 
   /**
-   * Simulate async user loading using requestAnimationFrame for better performance
-   */
-  private async simulateAsyncUserLoad(user: HeaderUser): Promise<void> {
-    // Use requestAnimationFrame for smooth animation-based delays
-    return new Promise((resolve) => {
-      let frames = 0;
-      const targetFrames = 90; // ~1.5 seconds at 60fps
-
-      const animate = () => {
-        frames++;
-        if (frames >= targetFrames) {
-          resolve();
-        } else {
-          requestAnimationFrame(animate);
-        }
-      };
-
-      requestAnimationFrame(animate);
-    });
-  }
-
-  /**
-   * Subscribe to layout context events
-   */
-  private subscribeToLayoutContext(): void {
-    console.log("AppHeaderImpl - Subscribing to layout context events...");
-
-    // Subscribe to sidebar dimension changes
-    const sidebarDimensionsUnsubscribe = this.layoutContext.subscribe(
-      "sidebar-dimensions-change",
-      this.handleSidebarDimensionsChange.bind(this),
-    );
-    this.layoutUnsubscribers.push(sidebarDimensionsUnsubscribe);
-
-    // Note: No longer subscribing to viewport-change - sidebar-dimensions-change is sufficient
-    // The sidebar dimensions already encode all the viewport information we need
-
-    // Set initial layout based on current layout mode
-    this.updateHeaderLayout();
-
-    console.log(
-      "AppHeaderImpl - Successfully subscribed to layout context events ✅",
-    );
-  }
-
-  /**
-   * Handle sidebar dimension changes from layout context
-   */
-  private handleSidebarDimensionsChange(event: LayoutEvent): void {
-    const dimensions = event.data as Dimensions;
-    console.log("AppHeaderImpl - Received sidebar dimensions change:", dimensions);
-    this.updateHeaderLayout();
-  }
-
-  /**
    * Update header layout based on current layout mode
    */
-  private updateHeaderLayout(): void {
+  private updateHeaderLayout(ctx: LayoutContext): void {
     if (!this.container) {
-      console.warn("AppHeaderImpl - Cannot update layout: container not available");
+      console.warn(
+        "AppHeaderImpl - Cannot update layout: container not available",
+      );
       return;
     }
-
-    // Get layout state directly from LayoutContext
-    const layoutMode = this.layoutContext.getLayoutMode();
-    const { isCompact, isMobile } = layoutMode;
-
-    console.log(
-      `🎯 AppHeaderImpl - Updating layout for layout mode:`,
-      { type: layoutMode.type, isCompact, isMobile },
-    );
 
     // Remove all positioning inline styles - let CSS handle layout
     this.container.style.left = "";
@@ -727,120 +554,23 @@ export class AppHeaderImpl {
     // Update CSS classes based on layout mode
     this.container.classList.toggle(
       "header-sidebar-compact",
-      isCompact && !isMobile,
+      ctx.isCompact() && !ctx.isLayoutMobile(),
     );
     this.container.classList.toggle(
       "header-sidebar-normal",
-      !isCompact && !isMobile,
+      ctx.isCompact() && !ctx.isLayoutMobile(),
     );
-    this.container.classList.toggle("header-mobile", isMobile);
+    this.container.classList.toggle("header-mobile", ctx.isLayoutMobile());
 
     // Dispatch custom event for other components
     const event = new CustomEvent("header-layout-updated", {
       detail: {
-        layoutMode: { type: layoutMode.type, isCompact, isMobile },
-        headerElement: this.container,
+        layoutContext: ctx,
       },
     });
     document.dispatchEvent(event);
 
-    console.log(`✅ AppHeaderImpl - Layout updated:`, {
-      layoutMode: { type: layoutMode.type, isCompact, isMobile },
-      cssClasses: Array.from(this.container.classList).filter((cls) =>
-        cls.startsWith("header-"),
-      ),
-    });
-  }
-
-
-  /**
-   * Calculate sidebar dimensions and coordinates
-   */
-  private calculateSidebarDimensions(isCompact: boolean): {
-    width: number;
-    isCompact: boolean;
-    isMobile: boolean;
-  } {
-    const isMobile = window.innerWidth < 768;
-
-    if (isMobile) {
-      // On mobile, sidebar is overlay/hidden, so header should be full width
-      return {
-        width: 0,
-        isCompact: false, // Compact mode doesn't apply on mobile
-        isMobile: true,
-      };
-    }
-
-    // Get layout mode sidebar dimensions from layout context
-    const layoutMode = this.layoutContext.getLayoutMode();
-    const normalWidth = layoutMode.sidebarBehavior.defaultWidth; // 240px for tablet, 280px for desktop
-    const compactWidth = layoutMode.sidebarBehavior.compactWidth; // 64px for tablet, 80px for desktop
-    const currentWidth = isCompact ? compactWidth : normalWidth;
-
-    console.log(
-      `📏 AppHeaderImpl - Using layout mode dimensions: ${normalWidth}px normal, ${compactWidth}px compact (${layoutMode.type} mode)`,
-    );
-
-    return {
-      width: currentWidth,
-      isCompact,
-      isMobile: false,
-    };
-  }
-
-  /**
-   * Update header position based on sidebar coordinates
-   */
-  private updateHeaderPosition(sidebarInfo: {
-    width: number;
-    isCompact: boolean;
-    isMobile: boolean;
-  }): void {
-    if (!this.container) return;
-
-    const { isCompact, isMobile } = sidebarInfo;
-
-    // Remove all inline positioning styles - let CSS handle layout
-    this.container.style.left = "";
-    this.container.style.width = "";
-    this.container.style.right = "";
-
-    // Add CSS class for styling hooks - CSS will handle width: 100%
-    this.container.classList.toggle(
-      "header-sidebar-compact",
-      isCompact && !isMobile,
-    );
-    this.container.classList.toggle(
-      "header-sidebar-normal",
-      !isCompact && !isMobile,
-    );
-    this.container.classList.toggle("header-mobile", isMobile);
-
-    // Trigger custom event for other components that might need to know
-    const event = new CustomEvent("header-position-updated", {
-      detail: {
-        sidebarInfo,
-        isCompact,
-        isMobile,
-      },
-    });
-
-    document.dispatchEvent(event);
-  }
-
-  /**
-   * Get current sidebar information (useful for other components)
-   */
-  public getSidebarInfo(): {
-    width: number;
-    isCompact: boolean;
-    isMobile: boolean;
-  } | null {
-    if (!this.sidebar) return null;
-
-    const isCompact = this.sidebar.isCompactMode();
-    return this.calculateSidebarDimensions(isCompact);
+    console.log(`✅ AppHeaderImpl - Layout updated`);
   }
 
   /**
@@ -869,22 +599,7 @@ export class AppHeaderImpl {
     console.log("🔄 AppHeaderImpl - Force updating position (manual trigger)");
 
     // Update header layout using current layout mode from layout context
-    this.updateHeaderLayout();
-  }
-
-  /**
-   * Update user menu items from Layout configuration
-   */
-  public updateUserMenuItems(items: UserMenuItem[]): void {
-    console.log("AppHeaderImpl - Updating user menu items:", items.length, "items");
-    
-    if (this.userMenu) {
-      this.userMenu.updateMenuItems(items);
-      console.log("AppHeaderImpl - User menu items updated successfully");
-    } else {
-      console.warn("AppHeaderImpl - UserMenu not initialized, storing items for later");
-      // Could store items for later initialization if needed
-    }
+    this.updateHeaderLayout(this.layoutContext);
   }
 
   /**
@@ -910,13 +625,6 @@ export class AppHeaderImpl {
     if (this.userMenu) {
       this.userMenu.destroy();
       this.userMenu = null;
-    }
-
-    // Destroy sidebar component and unregister from LayoutContext
-    if (this.sidebar) {
-      this.layoutContext.unregisterSidebar();
-      this.sidebar.destroy();
-      this.sidebar = null;
     }
 
     // Clean up resize timeout

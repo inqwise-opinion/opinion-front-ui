@@ -3,8 +3,11 @@
  * Defines the contract for layout management and coordination
  */
 
+import { AppHeader } from "@/components/AppHeader.js";
 import type { Sidebar } from "../components/Sidebar.js";
 import type { Messages } from "../interfaces/Messages.js";
+import { AppFooter } from "@/components/AppFooter.js";
+import MainContent from "@/components/MainContent.js";
 
 export interface LayoutViewPort {
   width: number;
@@ -12,42 +15,11 @@ export interface LayoutViewPort {
 }
 
 export type LayoutEventType =
-  | "sidebar-dimensions-change"
+  | "sidebar-compact-mode-change"
   | "layout-ready"
   | "layout-mode-change";
 
-export type LayoutModeType =
-  | "mobile"
-  | "tablet"
-  | "desktop"
-  | "desktop-compact";
-
-export interface LayoutMode {
-  type: LayoutModeType;
-  isCompact: boolean;
-  isMobile: boolean;
-  isTablet: boolean;
-  isDesktop: boolean;
-  viewport: {
-    width: number;
-    height: number;
-  };
-  sidebar: {
-    width: number;
-    isVisible: boolean;
-  };
-  breakpoints: {
-    mobile: number; // ≤ 768px
-    tablet: number; // 769px - 1024px
-    desktop: number; // > 1024px
-  };
-  sidebarBehavior: {
-    isVisible: boolean;
-    canToggle: boolean;
-    defaultWidth: number;
-    compactWidth: number;
-  };
-}
+export type LayoutModeType = "mobile" | "tablet" | "desktop";
 
 export interface LayoutEvent {
   type: LayoutEventType;
@@ -75,40 +47,21 @@ export interface LayoutContext {
   // Layout Management
   markReady(): void;
   isReady(): boolean;
-  calculateContentArea(): {
-    left: number;
-    width: number;
-    availableWidth: number;
-  };
-
-  // Layout Mode Management
-  getLayoutMode(): LayoutMode;
-  getBreakpoints(): LayoutMode["breakpoints"];
-  canSidebarToggle(): boolean;
-  isCompact(): boolean;
-  calculateSidebarDimensions(isCompact?: boolean): {
-    width: number;
-    isVisible: boolean;
-  };
 
   // Sidebar Instance Management
   registerSidebar(sidebar: Sidebar): void;
-  unregisterSidebar(): void;
   getSidebar(): Sidebar | null;
-  hasSidebar(): boolean;
-  withSidebar<T>(callback: (sidebar: Sidebar) => T): T | null;
 
   // Component Registration System
   registerLayout(layout: any): void;
-  registerHeader(header: any): void;
-  registerFooter(footer: any): void;
-  registerMainContent(mainContent: any): void;
-  registerMessages(messages: any): void;
-  getLayout(): any | null;
-  getHeader(): any | null;
-  getFooter(): any | null;
-  getMainContent(): any | null;
-  getMessagesComponent(): any | null;
+  registerHeader(header: AppHeader): void;
+  registerFooter(footer: AppFooter): void;
+  registerMainContent(mainContent: MainContent): void;
+  registerMessages(messages: Messages): void;
+  getHeader(): AppHeader | null;
+  getFooter(): AppFooter | null;
+  getMainContent(): MainContent | null;
+  getMessagesComponent(): Messages | null;
   getRegisteredComponents(): {
     layout: any | null;
     header: any | null;
@@ -128,4 +81,24 @@ export interface LayoutContext {
 
   // Lifecycle
   destroy(): void;
+
+  /**
+   * Check if current mode type is mobile
+   */
+  isLayoutMobile(): boolean;
+
+  /**
+   * Check if current mode type is tablet
+   */
+  isLayoutTablet(): boolean;
+
+  /**
+   * Check if current mode type is desktop
+   */
+  isLayoutDesktop(): boolean;
+
+  /**
+   * Get the current layout mode type
+   */
+  getModeType(): LayoutModeType;
 }

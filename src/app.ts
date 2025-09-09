@@ -122,29 +122,78 @@ export class OpinionApp {
       console.log("🏗️ APP.TS - Initializing Layout coordinator...");
       this.layout = new Layout();
 
-      await this.layout.withContext((ctx) => {}).init();
+      await this.layout
+        .withContext((ctx) => {
+          ctx.getSidebar()?.updateNavigation([
+            {
+              id: "dashboard",
+              text: "Dashboard",
+              icon: "dashboard",
+              href: "/dashboard",
+              caption: "View analytics, reports and key metrics",
+              active: false,
+            },
+            {
+              id: "surveys",
+              text: "Surveys",
+              icon: "poll",
+              href: "/surveys",
+              caption: "Create and manage survey questionnaires",
+              active: false,
+            },
+            {
+              id: "debug",
+              text: "Debug",
+              icon: "bug_report",
+              href: "/",
+              caption: "Development tools and troubleshooting",
+              active: false,
+            },
+          ]);
+
+          ctx.getSidebar()?.setActivePage("debug");
+
+          ctx.getHeader()?.setUserMenuHandler((user) => {
+            user.updateMenuItems([
+              {
+                id: "account",
+                text: "Account Settings",
+                icon: "settings",
+                href: "/account",
+                type: "link",
+              },
+              {
+                id: "feedback",
+                text: "Send Feedback",
+                icon: "feedback",
+                action: "feedback",
+                type: "action",
+              },
+              {
+                id: "divider1",
+                text: "",
+                icon: "",
+                type: "divider",
+              },
+              {
+                id: "logout",
+                text: "Sign Out",
+                icon: "logout",
+                href: "/logout",
+                type: "link",
+                className: "user-menu-signout",
+                style: "color: #dc3545;",
+              },
+            ]);
+          });
+
+          ctx.getHeader()?.updateUser({
+            username: "Demo User",
+            email: "demo@opinion.app",
+          });
+        })
+        .init();
       console.log("✅ APP.TS - Layout coordinator initialized");
-
-      // Layout already initializes AppHeader, so we just get the reference
-      this.appHeader = this.layout.getHeader();
-
-      // Set a test user
-      this.appHeader.updateUser({
-        username: "Demo User",
-        email: "demo@opinion.app",
-      });
-
-      console.log("✅ APP.TS - Global AppHeader initialized");
-
-      // 2. Initialize MainContent area (now just manages existing element)
-      console.log("🏗️ APP.TS - Initializing MainContent...");
-      this.mainContent = new MainContent({
-        className: "main-content",
-        id: "app", // Keep existing ID for compatibility
-        ariaLabel: "Main application content",
-      });
-      this.mainContent.init();
-      console.log("✅ APP.TS - MainContent initialized");
 
       // Semantic structure is now complete:
       // <nav class="app-sidebar"> (created by AppHeader)
@@ -188,32 +237,44 @@ export class OpinionApp {
 
     switch (type) {
       case "error":
-        layoutContext.showError(
-          title || "Test Error",
-          description || "This is a test error message from iframe testing.",
-        );
+        layoutContext
+          .getMessages()
+          ?.showError(
+            title || "Test Error",
+            description || "This is a test error message from iframe testing.",
+          );
         break;
       case "warning":
-        layoutContext.showWarning(
-          title || "Test Warning",
-          description || "This is a test warning message from iframe testing.",
-        );
+        layoutContext
+          .getMessages()
+          ?.showWarning(
+            title || "Test Warning",
+            description ||
+              "This is a test warning message from iframe testing.",
+          );
         break;
       case "info":
-        layoutContext.showInfo(
-          title || "Test Info",
-          description || "This is a test info message from iframe testing.",
-        );
+        layoutContext
+          .getMessages()
+          ?.showInfo(
+            title || "Test Info",
+            description || "This is a test info message from iframe testing.",
+          );
         break;
       case "success":
-        layoutContext.showSuccess(
-          title || "Test Success",
-          description || "This is a test success message from iframe testing.",
-        );
+        layoutContext
+          .getMessages()
+          ?.showSuccess(
+            title || "Test Success",
+            description ||
+              "This is a test success message from iframe testing.",
+          );
         break;
       default:
         console.warn("⚠️ APP.TS - Unknown message type:", type);
-        layoutContext.showInfo("Test Message", "Unknown message type: " + type);
+        layoutContext
+          .getMessages()
+          ?.showInfo("Test Message", "Unknown message type: " + type);
     }
   }
 
@@ -257,9 +318,9 @@ export class OpinionApp {
       // Pages will now render their content inside the semantic <main> element
       if (path === "/") {
         console.log("🎯 APP.TS - Creating DebugPage for root path...");
-        this.currentPage = new DebugPage(this.mainContent, this.layout);
+        this.currentPage = new DebugPage();
         console.log("🎯 APP.TS - Initializing DebugPage...");
-        await this.currentPage.init();
+        await this.currentPage.handleLayout(this.layout?.getLayoutContext());
         console.log("✅ APP.TS - DebugPage initialized successfully");
       } else if (path === "/dashboard") {
         console.log("🎯 APP.TS - Creating DashboardPage...");
@@ -276,9 +337,9 @@ export class OpinionApp {
       else {
         console.warn(`⚠️ APP.TS - Unknown route: ${path}`);
         console.log("🎯 APP.TS - Fallback: Creating DebugPage...");
-        this.currentPage = new DebugPage(this.mainContent, this.layout);
+        this.currentPage = new DebugPage();
         console.log("🎯 APP.TS - Initializing fallback DebugPage...");
-        await this.currentPage.init();
+        await this.currentPage.ha;
         console.log("✅ APP.TS - Fallback DebugPage initialized successfully");
       }
     } catch (error) {

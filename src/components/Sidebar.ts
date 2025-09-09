@@ -23,28 +23,34 @@ export interface Sidebar {
   isCompactMode(): boolean;
   isLocked(): boolean;
   getDimensions(): Dimensions;
-  
+  isVisible(): boolean;
+
   // State management
   toggleCompactMode(): void;
   expandSidebar(): void;
   compactSidebar(): void;
   lockExpanded(): void;
   unlockSidebar(): void;
-  
+
   // Mobile behavior
   toggleMobileVisibility(): void;
-  
+
   // Navigation
   updateNavigation(items: NavigationItem[]): void;
   setActivePage(navId: string): void;
-  
+
   // Footer management
   updateFooterText(text: string): void;
   setFooterVisibility(show: boolean): void;
-  
+
   // Lifecycle
   init(): Promise<void>;
   destroy(): void;
+
+  /**
+   * Set the toggle compact mode handler
+   */
+  setToggleCompactModeHandler(handler?: (compactMode: boolean) => void): void;
 }
 
 /**
@@ -63,13 +69,11 @@ export interface NavigationItem {
   children?: NavigationItem[];
 }
 
-
 /**
  * Sidebar dimensions interface - pure dimensional data
  * Behavioral state should be accessed via dedicated methods or layout mode
  */
 export interface Dimensions {
-  width: number;           // Current width in pixels
-  isVisible: boolean;      // Whether sidebar is visible
+  width: number; // Current width in pixels
+  isVisible: boolean; // Whether sidebar is visible
 }
-

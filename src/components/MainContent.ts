@@ -4,10 +4,14 @@
  */
 
 // Import component-scoped CSS
-import '../assets/styles/components/main-content.css';
+import "../assets/styles/components/main-content.css";
 // Import layout context
-import { getLayoutContext, type LayoutContext, type LayoutEvent } from '../contexts/index.js';
-import type { Dimensions } from './Sidebar.js';
+import {
+  getLayoutContext,
+  type LayoutContext,
+  type LayoutEvent,
+} from "../contexts/index.js";
+import type { Dimensions } from "./Sidebar.js";
 
 export interface MainContentConfig {
   className?: string;
@@ -25,34 +29,36 @@ export class MainContent {
 
   constructor(config: MainContentConfig = {}) {
     this.config = {
-      className: 'app-main main-content',
-      id: 'app', // Keep the existing id from HTML
-      ...config
+      className: "app-main main-content",
+      id: "app", // Keep the existing id from HTML
+      ...config,
     };
-    
+
     this.layoutContext = getLayoutContext();
-    console.log('MainContent - Creating clean component with Flexbox layout...');
+    console.log(
+      "MainContent - Creating clean component with Flexbox layout...",
+    );
   }
 
   /**
    * Initialize the main content area
    */
   init(): void {
-    console.log('MainContent - Initializing...');
-    
+    console.log("MainContent - Initializing...");
+
     if (this.isInitialized) {
-      console.warn('MainContent - Already initialized');
+      console.warn("MainContent - Already initialized");
       return;
     }
 
     // Create the main content element (will use existing app-main if available)
     this.createMainElement();
-    
+
     // Subscribe to layout changes to ensure proper content positioning
     this.subscribeToLayoutContext();
-    
+
     this.isInitialized = true;
-    console.log('MainContent - Ready ✅');
+    console.log("MainContent - Ready ✅");
   }
 
   /**
@@ -60,69 +66,71 @@ export class MainContent {
    */
   private createMainElement(): void {
     // First, try to find the existing app-main element
-    this.container = document.querySelector('.app-main');
-    
+    this.container = document.querySelector(".app-main");
+
     if (this.container) {
-      console.log('MainContent - Using existing app-main element');
-      
+      console.log("MainContent - Using existing app-main element");
+
       // Clear the existing content (loading spinner)
-      this.container.innerHTML = '';
-      
+      this.container.innerHTML = "";
+
       // Add the main-content class to the existing element
-      this.container.classList.add('main-content');
-      
+      this.container.classList.add("main-content");
+
       // Update the id if specified
-      if (this.config.id && this.config.id !== 'app') {
+      if (this.config.id && this.config.id !== "app") {
         this.container.id = this.config.id;
       }
     } else {
       // Fallback: Create main element using semantic HTML5 main tag
-      console.log('MainContent - Creating new main element (fallback)');
-      this.container = document.createElement('main');
-      
+      console.log("MainContent - Creating new main element (fallback)");
+      this.container = document.createElement("main");
+
       // Set basic attributes
       if (this.config.id) {
         this.container.id = this.config.id;
       }
-      
+
       if (this.config.className) {
         this.container.className = this.config.className;
       }
-      
+
       // Insert main element into the app layout structure
       this.insertIntoLayout();
     }
 
     // Set ARIA attributes for accessibility
     if (this.config.role) {
-      this.container.setAttribute('role', this.config.role);
+      this.container.setAttribute("role", this.config.role);
     }
-    
+
     if (this.config.ariaLabel) {
-      this.container.setAttribute('aria-label', this.config.ariaLabel);
+      this.container.setAttribute("aria-label", this.config.ariaLabel);
     } else {
       // Default aria-label for main content
-      this.container.setAttribute('aria-label', 'Main content');
+      this.container.setAttribute("aria-label", "Main content");
     }
-    
-    console.log('MainContent - Main element ready');
+
+    console.log("MainContent - Main element ready");
   }
 
   /**
    * Insert main element into proper semantic position
    */
   private insertIntoLayout(): void {
-    const appLayout = document.querySelector('.app-layout');
-    
+    const appLayout = document.querySelector(".app-layout");
+
     if (appLayout) {
       // Find the header element to insert main after it
-      const header = appLayout.querySelector('.app-header');
-      const footer = appLayout.querySelector('.app-footer');
-      
+      const header = appLayout.querySelector(".app-header");
+      const footer = appLayout.querySelector(".app-footer");
+
       if (header && footer) {
         // Insert between header and footer
         appLayout.insertBefore(this.container!, footer);
-        console.log('MainContent - Inserted between header and footer in app-layout');
+        console.log(
+          "MainContent - Inserted between header and footer in app-layout",
+        );
       } else if (header) {
         // Insert after header
         if (header.nextSibling) {
@@ -130,16 +138,18 @@ export class MainContent {
         } else {
           appLayout.appendChild(this.container!);
         }
-        console.log('MainContent - Inserted after header in app-layout');
+        console.log("MainContent - Inserted after header in app-layout");
       } else {
         // No header found, append to app-layout
         appLayout.appendChild(this.container!);
-        console.log('MainContent - Appended to app-layout');
+        console.log("MainContent - Appended to app-layout");
       }
     } else {
       // Fallback: insert into body
       document.body.appendChild(this.container!);
-      console.log('MainContent - Fallback: Appended to body (app-layout not found)');
+      console.log(
+        "MainContent - Fallback: Appended to body (app-layout not found)",
+      );
     }
   }
 
@@ -148,18 +158,18 @@ export class MainContent {
    */
   setContent(content: string | HTMLElement): void {
     if (!this.container) {
-      console.warn('MainContent - Cannot set content: not initialized');
+      console.warn("MainContent - Cannot set content: not initialized");
       return;
     }
 
-    if (typeof content === 'string') {
+    if (typeof content === "string") {
       this.container.innerHTML = content;
     } else {
-      this.container.innerHTML = '';
+      this.container.innerHTML = "";
       this.container.appendChild(content);
     }
 
-    console.log('MainContent - Content updated');
+    console.log("MainContent - Content updated");
   }
 
   /**
@@ -167,12 +177,12 @@ export class MainContent {
    */
   appendContent(content: string | HTMLElement): void {
     if (!this.container) {
-      console.warn('MainContent - Cannot append content: not initialized');
+      console.warn("MainContent - Cannot append content: not initialized");
       return;
     }
 
-    if (typeof content === 'string') {
-      const temp = document.createElement('div');
+    if (typeof content === "string") {
+      const temp = document.createElement("div");
       temp.innerHTML = content;
       while (temp.firstChild) {
         this.container.appendChild(temp.firstChild);
@@ -181,7 +191,7 @@ export class MainContent {
       this.container.appendChild(content);
     }
 
-    console.log('MainContent - Content appended');
+    console.log("MainContent - Content appended");
   }
 
   /**
@@ -189,12 +199,12 @@ export class MainContent {
    */
   clearContent(): void {
     if (!this.container) {
-      console.warn('MainContent - Cannot clear content: not initialized');
+      console.warn("MainContent - Cannot clear content: not initialized");
       return;
     }
 
-    this.container.innerHTML = '';
-    console.log('MainContent - Content cleared');
+    this.container.innerHTML = "";
+    console.log("MainContent - Content cleared");
   }
 
   /**
@@ -202,7 +212,7 @@ export class MainContent {
    */
   addClass(className: string): void {
     if (!this.container) {
-      console.warn('MainContent - Cannot add class: not initialized');
+      console.warn("MainContent - Cannot add class: not initialized");
       return;
     }
 
@@ -214,7 +224,7 @@ export class MainContent {
    */
   removeClass(className: string): void {
     if (!this.container) {
-      console.warn('MainContent - Cannot remove class: not initialized');
+      console.warn("MainContent - Cannot remove class: not initialized");
       return;
     }
 
@@ -226,7 +236,7 @@ export class MainContent {
    */
   toggleClass(className: string): void {
     if (!this.container) {
-      console.warn('MainContent - Cannot toggle class: not initialized');
+      console.warn("MainContent - Cannot toggle class: not initialized");
       return;
     }
 
@@ -238,7 +248,7 @@ export class MainContent {
    */
   updateConfig(config: Partial<MainContentConfig>): void {
     this.config = { ...this.config, ...config };
-    
+
     if (!this.container) return;
 
     // Update className if changed
@@ -253,15 +263,15 @@ export class MainContent {
 
     // Update role if changed
     if (config.role) {
-      this.container.setAttribute('role', config.role);
+      this.container.setAttribute("role", config.role);
     }
 
     // Update aria-label if changed
     if (config.ariaLabel) {
-      this.container.setAttribute('aria-label', config.ariaLabel);
+      this.container.setAttribute("aria-label", config.ariaLabel);
     }
 
-    console.log('MainContent - Configuration updated');
+    console.log("MainContent - Configuration updated");
   }
 
   /**
@@ -284,7 +294,7 @@ export class MainContent {
   isReady(): boolean {
     return this.isInitialized && this.container !== null;
   }
-  
+
   /**
    * Get the LayoutContext instance
    */
@@ -297,9 +307,9 @@ export class MainContent {
    */
   show(): void {
     if (!this.container) return;
-    
-    this.container.style.display = '';
-    this.container.removeAttribute('aria-hidden');
+
+    this.container.style.display = "";
+    this.container.removeAttribute("aria-hidden");
   }
 
   /**
@@ -307,9 +317,9 @@ export class MainContent {
    */
   hide(): void {
     if (!this.container) return;
-    
-    this.container.style.display = 'none';
-    this.container.setAttribute('aria-hidden', 'true');
+
+    this.container.style.display = "none";
+    this.container.setAttribute("aria-hidden", "true");
   }
 
   /**
@@ -319,13 +329,13 @@ export class MainContent {
     if (!this.container) return;
 
     if (loading) {
-      this.container.classList.add('loading');
-      this.container.setAttribute('aria-busy', 'true');
-      
+      this.container.classList.add("loading");
+      this.container.setAttribute("aria-busy", "true");
+
       // Add loading indicator if not already present
-      if (!this.container.querySelector('.loading-indicator')) {
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'loading-indicator';
+      if (!this.container.querySelector(".loading-indicator")) {
+        const loadingIndicator = document.createElement("div");
+        loadingIndicator.className = "loading-indicator";
         loadingIndicator.innerHTML = `
           <div class="loading-spinner" aria-label="Loading content...">
             <div class="spinner"></div>
@@ -335,11 +345,12 @@ export class MainContent {
         this.container.appendChild(loadingIndicator);
       }
     } else {
-      this.container.classList.remove('loading');
-      this.container.removeAttribute('aria-busy');
-      
+      this.container.classList.remove("loading");
+      this.container.removeAttribute("aria-busy");
+
       // Remove loading indicator
-      const loadingIndicator = this.container.querySelector('.loading-indicator');
+      const loadingIndicator =
+        this.container.querySelector(".loading-indicator");
       if (loadingIndicator) {
         loadingIndicator.remove();
       }
@@ -353,12 +364,12 @@ export class MainContent {
     if (!this.container) return;
 
     if (error) {
-      this.container.classList.add('error');
-      
+      this.container.classList.add("error");
+
       // Add error message if not already present
-      if (!this.container.querySelector('.error-message')) {
-        const errorElement = document.createElement('div');
-        errorElement.className = 'error-message';
+      if (!this.container.querySelector(".error-message")) {
+        const errorElement = document.createElement("div");
+        errorElement.className = "error-message";
         errorElement.innerHTML = `
           <div class="error-content" role="alert" aria-live="assertive">
             <h2>Error</h2>
@@ -371,10 +382,10 @@ export class MainContent {
         this.container.appendChild(errorElement);
       }
     } else {
-      this.container.classList.remove('error');
-      
+      this.container.classList.remove("error");
+
       // Remove error message
-      const errorElement = this.container.querySelector('.error-message');
+      const errorElement = this.container.querySelector(".error-message");
       if (errorElement) {
         errorElement.remove();
       }
@@ -385,12 +396,12 @@ export class MainContent {
    * Subscribe to layout context events
    */
   private subscribeToLayoutContext(): void {
-    console.log('MainContent - Subscribing to layout context events...');
+    console.log("MainContent - Subscribing to layout context events...");
 
     // Subscribe to sidebar dimension changes
     const sidebarDimensionsUnsubscribe = this.layoutContext.subscribe(
-      'sidebar-dimensions-change',
-      this.handleSidebarDimensionsChange.bind(this)
+      "sidebar-compact-mode-change",
+      this.handleSidebarDimensionsChange.bind(this),
     );
     this.layoutUnsubscribers.push(sidebarDimensionsUnsubscribe);
 
@@ -400,18 +411,22 @@ export class MainContent {
     // Set initial layout based on current layout mode
     this.updateContentLayout();
 
-    console.log('MainContent - Successfully subscribed to layout context events ✅');
+    console.log(
+      "MainContent - Successfully subscribed to layout context events ✅",
+    );
   }
 
   /**
    * Handle sidebar dimension changes from layout context
    */
   private handleSidebarDimensionsChange(event: LayoutEvent): void {
-    const dimensions = event.data as Dimensions;
-    console.log('MainContent - Received sidebar dimensions change:', dimensions);
+    const sidebarCompactMode = event.data as Boolean;
+    console.log(
+      "MainContent - Received sidebar dimensions change to:",
+      sidebarCompactMode ? "'compact'" : "'expanded'",
+    );
     this.updateContentLayout();
   }
-
 
   /**
    * Update content layout based on current layout mode
@@ -420,33 +435,40 @@ export class MainContent {
     if (!this.container) return;
 
     // Get layout state directly from LayoutContext
-    const layoutMode = this.layoutContext.getLayoutMode();
-    const { isCompact, isMobile } = layoutMode;
+    const sidebar = this.layoutContext.getSidebar();
+    const sidebarCompactMode = sidebar?.isCompactMode();
+    const layoutModeType = this.layoutContext.getModeType();
+    const layoutMobile = this.layoutContext.isLayoutMobile();
 
-    console.log('MainContent - Updating layout for layout mode:', { type: layoutMode.type, isCompact, isMobile });
+    console.log("MainContent - Updating layout:", {
+      sidebarCompactMode: sidebarCompactMode,
+      layoutModeType: layoutModeType,
+    });
 
     // Update CSS classes based on layout mode
-    this.container.classList.toggle('content-sidebar-compact', isCompact && !isMobile);
-    this.container.classList.toggle('content-sidebar-normal', !isCompact && !isMobile);
-    this.container.classList.toggle('content-mobile', isMobile);
+    this.container.classList.toggle(
+      "content-sidebar-compact",
+      sidebarCompactMode && !layoutMobile,
+    );
+    this.container.classList.toggle(
+      "content-sidebar-normal",
+      !sidebarCompactMode && !layoutMobile,
+    );
+    this.container.classList.toggle("content-mobile", layoutMobile);
 
     // Remove any inline positioning - let CSS Grid handle layout
-    this.container.style.left = '';
-    this.container.style.width = '';
-    this.container.style.marginLeft = '';
+    this.container.style.left = "";
+    this.container.style.width = "";
+    this.container.style.marginLeft = "";
 
-    // Dispatch custom event for other components that might need to know
-    const event = new CustomEvent('content-layout-updated', {
-      detail: {
-        layoutMode: { type: layoutMode.type, isCompact, isMobile },
-        contentElement: this.container
-      }
-    });
-    document.dispatchEvent(event);
-
-    console.log('MainContent - Layout updated:', {
-      layoutMode: { type: layoutMode.type, isCompact, isMobile },
-      cssClasses: Array.from(this.container.classList).filter(cls => cls.startsWith('content-'))
+    console.log("MainContent - Layout updated:", {
+      layoutMode: {
+        type: layoutModeType,
+        sidebarCompactMode: sidebarCompactMode,
+      },
+      cssClasses: Array.from(this.container.classList).filter((cls) =>
+        cls.startsWith("content-"),
+      ),
     });
   }
 
@@ -454,28 +476,31 @@ export class MainContent {
    * Destroy the component
    */
   destroy(): void {
-    console.log('MainContent - Destroying...');
-    
+    console.log("MainContent - Destroying...");
+
     // Unsubscribe from layout context events
-    this.layoutUnsubscribers.forEach(unsubscribe => {
+    this.layoutUnsubscribers.forEach((unsubscribe) => {
       try {
         unsubscribe();
       } catch (error) {
-        console.error('MainContent - Error unsubscribing from layout context:', error);
+        console.error(
+          "MainContent - Error unsubscribing from layout context:",
+          error,
+        );
       }
     });
     this.layoutUnsubscribers = [];
-    
+
     // Remove DOM element
     if (this.container) {
       this.container.remove();
       this.container = null;
     }
-    
+
     // Reset state
     this.isInitialized = false;
-    
-    console.log('MainContent - Destroyed successfully');
+
+    console.log("MainContent - Destroyed successfully");
   }
 }
 
