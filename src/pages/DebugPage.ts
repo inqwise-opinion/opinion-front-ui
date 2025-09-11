@@ -7,7 +7,7 @@
 import { Sidebar } from "../components/Sidebar";
 import SidebarComponent from "../components/SidebarComponent";
 import type { AppHeader } from "../components/AppHeader";
-import MainContent from "../components/MainContent";
+import MainContentImpl from "@/components/MainContentImpl";
 import Layout from "../components/Layout";
 import { getLayoutContext } from "../contexts/index";
 import type {
@@ -23,7 +23,7 @@ export class DebugPage extends PageComponent {
   private headerDebugUnsubscribe: (() => void) | null = null;
   private responsiveModeUnsubscribe: (() => void) | null = null;
 
-  constructor(mainContent: MainContent) {
+  constructor(mainContent: MainContentImpl) {
     super(mainContent);
     console.log("🛠️ DEBUGPAGE - Constructor");
   }

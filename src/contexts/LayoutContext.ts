@@ -7,7 +7,7 @@ import { AppHeader } from "@/components/AppHeader.js";
 import type { Sidebar } from "../components/Sidebar.js";
 import type { Messages } from "../interfaces/Messages.js";
 import { AppFooter } from "@/components/AppFooter.js";
-import MainContent from "@/components/MainContent.js";
+import { MainContent } from "@/components/MainContent.js";
 
 export interface LayoutViewPort {
   width: number;
@@ -53,7 +53,6 @@ export interface LayoutContext {
   getSidebar(): Sidebar | null;
 
   // Component Registration System
-  registerLayout(layout: any): void;
   registerHeader(header: AppHeader): void;
   registerFooter(footer: AppFooter): void;
   registerMainContent(mainContent: MainContent): void;
@@ -63,11 +62,10 @@ export interface LayoutContext {
   getMainContent(): MainContent | null;
   getMessagesComponent(): Messages | null;
   getRegisteredComponents(): {
-    layout: any | null;
-    header: any | null;
-    footer: any | null;
-    mainContent: any | null;
-    messages: any | null;
+    header: AppHeader | null;
+    footer: AppFooter | null;
+    mainContent: MainContent | null;
+    messages: Messages | null;
     sidebar: Sidebar | null;
   };
   areAllComponentsRegistered(): boolean;

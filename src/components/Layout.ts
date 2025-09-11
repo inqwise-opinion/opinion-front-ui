@@ -5,7 +5,7 @@
 
 import AppHeaderImpl, { HeaderUser, HeaderConfig } from "./AppHeaderImpl";
 import AppFooterImpl, { FooterConfig } from "./AppFooterImpl";
-import MainContent from "./MainContent";
+import MainContentImpl from "./MainContentImpl";
 import { NavigationItem, Sidebar, SidebarConfig } from "./Sidebar";
 import SidebarComponent from "./SidebarComponent";
 import MessagesComponent from "./MessagesComponent";
@@ -64,7 +64,7 @@ export interface LayoutConfig {
 export class Layout {
   private header: AppHeaderImpl;
   private footer: AppFooterImpl;
-  private mainContent: MainContent;
+  private mainContent: MainContentImpl;
   private sidebar: SidebarComponent | null = null;
   private messagesComponent: MessagesComponent | null = null;
   private config: LayoutConfig;
@@ -116,7 +116,7 @@ export class Layout {
 
     this.header = new AppHeaderImpl(this.config.header);
     this.footer = new AppFooterImpl(this.config.footer);
-    this.mainContent = new MainContent({
+    this.mainContent = new MainContentImpl({
       className: "main-content",
       id: "app",
       ariaLabel: "Main application content",

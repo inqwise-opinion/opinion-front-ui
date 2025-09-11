@@ -9,8 +9,8 @@
  * - Error handling
  */
 
-import { LayoutContext } from "@/contexts";
-import MainContent from "./MainContent";
+import MainContentImpl from "./MainContentImpl";
+import type { MainContent } from "./MainContent";
 
 export interface PageComponentConfig {
   pageTitle?: string;
@@ -21,7 +21,7 @@ export interface PageComponentConfig {
 export abstract class PageComponent {
   protected initialized: boolean = false;
   protected destroyed: boolean = false;
-  protected mainContent: MainContent;
+  protected mainContent: MainContentImpl;
   protected config: PageComponentConfig;
   protected eventListeners: Array<{
     element: Element | Window | Document;
@@ -30,7 +30,7 @@ export abstract class PageComponent {
   }> = [];
   protected pageTitle: string;
 
-  constructor(mainContent: MainContent, config: PageComponentConfig = {}) {
+  constructor(mainContent: MainContentImpl, config: PageComponentConfig = {}) {
     this.mainContent = mainContent;
     this.config = {
       autoInit: false,
@@ -239,27 +239,42 @@ export abstract class PageComponent {
   }
 
   /**
-   * Show loading state
+   * Show loading state - delegates to MainContent
    */
   protected showLoading(message: string = "Loading..."): void {
-    // Implementation depends on your loading component
+    if (this.mainContent.isReady()) {
+      this.mainContent.setLoading(true);
+    }
     console.log(`${this.constructor.name}: ${message}`);
   }
 
   /**
-   * Hide loading state
+   * Hide loading state - delegates to MainContent
    */
   protected hideLoading(): void {
-    // Implementation depends on your loading component
+    if (this.mainContent.isReady()) {
+      this.mainContent.setLoading(false);
+    }
     console.log(`${this.constructor.name}: Loading complete`);
   }
 
   /**
-   * Show error message
+   * Show error message - delegates to MainContent
    */
   protected showError(message: string, error?: Error): void {
+    if (this.mainContent.isReady()) {
+      this.mainContent.setError(message);
+    }
     console.error(`${this.constructor.name}: ${message}`, error);
-    // Implementation depends on your error notification system
+  }
+
+  /**
+   * Clear error state - delegates to MainContent
+   */
+  protected clearError(): void {
+    if (this.mainContent.isReady()) {
+      this.mainContent.setError(null);
+    }
   }
 
   /**
@@ -329,12 +344,13 @@ export abstract class PageComponent {
     return this.pageTitle;
   }
 
-  public async handleLayout(ctx: LayoutContext): Promise<void> {
-    this.layoutContext = ctx;
-    await this.init();
-
-    return;
+  /**
+   * Get layout context through MainContent
+   */
+  protected get layoutContext() {
+    return this.mainContent.getLayoutContext();
   }
+
 }
 
 export default PageComponent;

@@ -4,6 +4,10 @@
  */
 
 import type { Dimensions, Sidebar } from "../components/Sidebar";
+import type { AppHeader } from "../components/AppHeader";
+import type { AppFooter } from "../components/AppFooter";
+import type { MainContent } from "../components/MainContent";
+import type { Messages } from "../interfaces/Messages";
 import type {
   LayoutContext,
   LayoutEventType,
@@ -23,11 +27,10 @@ export class LayoutContextImpl implements LayoutContext {
   private isLayoutReady: boolean = false;
 
   // Component registry
-  private layoutInstance: any = null;
-  private headerInstance: any = null;
-  private footerInstance: any = null;
-  private mainContentInstance: any = null;
-  private messagesInstance: any = null;
+  private headerInstance: AppHeader | null = null;
+  private footerInstance: AppFooter | null = null;
+  private mainContentInstance: MainContent | null = null;
+  private messagesInstance: Messages | null = null;
 
   public constructor() {
     this.viewport = this.calculateViewPort();
@@ -290,9 +293,6 @@ export class LayoutContextImpl implements LayoutContext {
 
   /**
    * Register a sidebar instance with the LayoutContext
-   * This allows centralized access to the sidebar through the context
-   *
-   * @param sidebar - The sidebar instance implementing ISidebar interface
    */
   public registerSidebar(sidebar: Sidebar): void {
     if (this.sidebarInstance && this.sidebarInstance !== sidebar) {
@@ -301,90 +301,27 @@ export class LayoutContextImpl implements LayoutContext {
       );
     }
 
-    sidebar.setToggleCompactModeHandler((isCompact) => {
-      sidebar.toggleCompactMode();
-    });
-
     this.sidebarInstance = sidebar;
     console.log("LayoutContext - Sidebar instance registered successfully");
   }
 
   /**
-   * Unregister the current sidebar instance
-   * Should be called during cleanup or when switching sidebars
-   */
-  public unregisterSidebar(): void {
-    if (this.sidebarInstance) {
-      console.log("LayoutContext - Unregistering sidebar instance");
-      this.sidebarInstance = null;
-    }
-  }
-
-  /**
    * Get the current sidebar instance
-   * Provides centralized access to the sidebar through LayoutContext
-   *
-   * @returns The registered sidebar instance or null if none is registered
    */
   public getSidebar(): Sidebar | null {
     return this.sidebarInstance;
-  }
-
-  /**
-   * Check if a sidebar instance is currently registered
-   *
-   * @returns True if a sidebar is registered, false otherwise
-   */
-  public hasSidebar(): boolean {
-    return this.sidebarInstance !== null;
-  }
-
-  /**
-   * Execute a method on the registered sidebar instance if available
-   * This provides a safe way to interact with the sidebar without null checks
-   *
-   * @param callback - Function that receives the sidebar instance
-   * @returns The result of the callback, or null if no sidebar is registered
-   */
-  public withSidebar<T>(callback: (sidebar: Sidebar) => T): T | null {
-    if (this.sidebarInstance) {
-      try {
-        return callback(this.sidebarInstance);
-      } catch (error) {
-        console.error(
-          "LayoutContext - Error executing sidebar callback:",
-          error,
-        );
-        return null;
-      }
-    }
-    return null;
   }
 
   // =================================================================================
   // Component Registration System
   // =================================================================================
 
-  /**
-   * Register the Layout component instance with the context
-   * Allows the context to coordinate with the main layout controller
-   */
-  public registerLayout(layout: any): void {
-    if (this.layoutInstance && this.layoutInstance !== layout) {
-      console.warn(
-        "LayoutContext - Replacing existing Layout instance. This might indicate a setup issue.",
-      );
-    }
-
-    this.layoutInstance = layout;
-    console.log("LayoutContext - Layout component registered successfully");
-  }
 
   /**
    * Register the Header component instance with the context
    * Allows the context to coordinate header-related layout changes
    */
-  public registerHeader(header: any): void {
+  public registerHeader(header: AppHeader): void {
     if (this.headerInstance && this.headerInstance !== header) {
       console.warn(
         "LayoutContext - Replacing existing Header instance. This might indicate a setup issue.",
@@ -399,7 +336,7 @@ export class LayoutContextImpl implements LayoutContext {
    * Register the Footer component instance with the context
    * Allows the context to coordinate footer-related layout changes
    */
-  public registerFooter(footer: any): void {
+  public registerFooter(footer: AppFooter): void {
     if (this.footerInstance && this.footerInstance !== footer) {
       console.warn(
         "LayoutContext - Replacing existing Footer instance. This might indicate a setup issue.",
@@ -414,7 +351,7 @@ export class LayoutContextImpl implements LayoutContext {
    * Register the MainContent component instance with the context
    * Allows the context to coordinate content area layout changes
    */
-  public registerMainContent(mainContent: any): void {
+  public registerMainContent(mainContent: MainContent): void {
     if (this.mainContentInstance && this.mainContentInstance !== mainContent) {
       console.warn(
         "LayoutContext - Replacing existing MainContent instance. This might indicate a setup issue.",
@@ -431,7 +368,7 @@ export class LayoutContextImpl implements LayoutContext {
    * Register the Messages component instance with the context
    * Allows the context to coordinate message display
    */
-  public registerMessages(messages: any): void {
+  public registerMessages(messages: Messages): void {
     if (this.messagesInstance && this.messagesInstance !== messages) {
       console.warn(
         "LayoutContext - Replacing existing Messages instance. This might indicate a setup issue.",
@@ -443,37 +380,30 @@ export class LayoutContextImpl implements LayoutContext {
   }
 
   /**
-   * Get the registered Layout instance
-   */
-  public getLayout(): any | null {
-    return this.layoutInstance;
-  }
-
-  /**
    * Get the registered Header instance
    */
-  public getHeader(): any | null {
+  public getHeader(): AppHeader | null {
     return this.headerInstance;
   }
 
   /**
    * Get the registered Footer instance
    */
-  public getFooter(): any | null {
+  public getFooter(): AppFooter | null {
     return this.footerInstance;
   }
 
   /**
    * Get the registered MainContent instance
    */
-  public getMainContent(): any | null {
+  public getMainContent(): MainContent | null {
     return this.mainContentInstance;
   }
 
   /**
    * Get the registered Messages instance
    */
-  public getMessagesComponent(): any | null {
+  public getMessagesComponent(): Messages | null {
     return this.messagesInstance;
   }
 
@@ -482,15 +412,13 @@ export class LayoutContextImpl implements LayoutContext {
    * Useful for debugging and coordination purposes
    */
   public getRegisteredComponents(): {
-    layout: any | null;
-    header: any | null;
-    footer: any | null;
-    mainContent: any | null;
-    messages: any | null;
+    header: AppHeader | null;
+    footer: AppFooter | null;
+    mainContent: MainContent | null;
+    messages: Messages | null;
     sidebar: Sidebar | null;
   } {
     return {
-      layout: this.layoutInstance,
       header: this.headerInstance,
       footer: this.footerInstance,
       mainContent: this.mainContentInstance,
@@ -504,7 +432,6 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public areAllComponentsRegistered(): boolean {
     return !!(
-      this.layoutInstance &&
       this.headerInstance &&
       this.footerInstance &&
       this.mainContentInstance &&
@@ -518,7 +445,6 @@ export class LayoutContextImpl implements LayoutContext {
   public unregisterAllComponents(): void {
     console.log("LayoutContext - Unregistering all components");
 
-    this.layoutInstance = null;
     this.headerInstance = null;
     this.footerInstance = null;
     this.mainContentInstance = null;
