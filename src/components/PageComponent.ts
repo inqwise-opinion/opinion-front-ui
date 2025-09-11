@@ -11,14 +11,18 @@
 
 import MainContentImpl from "./MainContentImpl";
 import type { MainContent } from "./MainContent";
+import type { HotkeyProvider } from "../contexts/LayoutContext";
+import type { ActivePage, PageInfo } from "../interfaces/ActivePage";
 
 export interface PageComponentConfig {
   pageTitle?: string;
   layoutConfig?: any;
   autoInit?: boolean;
+  pageId?: string; // Optional override for page ID
+  pagePath?: string; // URL path for this page
 }
 
-export abstract class PageComponent {
+export abstract class PageComponent implements HotkeyProvider, ActivePage {
   protected initialized: boolean = false;
   protected destroyed: boolean = false;
   protected mainContent: MainContentImpl;
@@ -29,6 +33,8 @@ export abstract class PageComponent {
     handler: EventListener;
   }> = [];
   protected pageTitle: string;
+  protected pageId: string;
+  protected pagePath: string;
 
   constructor(mainContent: MainContentImpl, config: PageComponentConfig = {}) {
     this.mainContent = mainContent;
@@ -38,6 +44,8 @@ export abstract class PageComponent {
     };
 
     this.pageTitle = config.pageTitle || "Page";
+    this.pageId = config.pageId || this.constructor.name;
+    this.pagePath = config.pagePath || window.location.pathname;
 
     if (this.config.autoInit) {
       // Initialize on next tick to allow subclass constructor to complete
@@ -82,6 +90,12 @@ export abstract class PageComponent {
 
       // Set up keyboard shortcuts
       this.setupKeyboardShortcuts();
+      
+      // Register this page as active hotkey provider
+      this.layoutContext.setActiveHotkeyProvider(this);
+      
+      // Register this page as the active page
+      this.layoutContext.setActivePage(this);
 
       this.initialized = true;
       console.log(`${this.constructor.name}: Initialized successfully`);
@@ -106,6 +120,12 @@ export abstract class PageComponent {
     try {
       console.log(`${this.constructor.name}: Destroying...`);
 
+      // Remove this page from active hotkeys
+      this.layoutContext.removeActiveHotkeyProvider(this);
+      
+      // Deactivate this page if it's currently active
+      this.layoutContext.deactivatePage(this);
+      
       // Cleanup page-specific functionality
       this.onDestroy();
 
@@ -149,20 +169,26 @@ export abstract class PageComponent {
 
   /**
    * Handle event delegation for data-action attributes
+   * Scoped to MainContent container instead of global document
    */
   protected setupEventDelegation(): void {
-    this.addEventListener(document, "click", (event) => {
-      const target = event.target as Element;
-      const actionElement = target.closest("[data-action]");
+    const container = this.mainContent.getElement();
+    if (container) {
+      this.addEventListener(container, "click", (event) => {
+        const target = event.target as Element;
+        const actionElement = target.closest("[data-action]");
 
-      if (actionElement) {
-        const action = actionElement.getAttribute("data-action");
-        if (action) {
-          event.preventDefault();
-          this.handleAction(action, actionElement, event);
+        if (actionElement) {
+          const action = actionElement.getAttribute("data-action");
+          if (action) {
+            event.preventDefault();
+            this.handleAction(action, actionElement, event);
+          }
         }
-      }
-    });
+      });
+    } else {
+      console.warn(`${this.constructor.name}: Cannot setup event delegation - MainContent container not available`);
+    }
   }
 
   /**
@@ -182,6 +208,8 @@ export abstract class PageComponent {
 
   /**
    * Set up common keyboard shortcuts
+   * NOTE: Keyboard shortcuts remain global (document level) as they should work
+   * regardless of focus. This will be moved to LayoutContext in future iteration.
    */
   protected setupKeyboardShortcuts(): void {
     this.addEventListener(document, "keydown", (event: KeyboardEvent) => {
@@ -350,7 +378,52 @@ export abstract class PageComponent {
   protected get layoutContext() {
     return this.mainContent.getLayoutContext();
   }
-
+  
+  // =================================================================================
+  // HotkeyProvider Implementation
+  // =================================================================================
+  
+  /**
+   * Default implementation - returns empty hotkeys
+   * Override in subclasses to provide page-specific hotkeys
+   */
+  getPageHotkeys(): Map<string, (event: KeyboardEvent) => void | boolean> | null {
+    return null; // Default: no page-specific hotkeys
+  }
+  
+  /**
+   * Component identifier for hotkey management
+   */
+  getHotkeyComponentId(): string {
+    return this.constructor.name;
+  }
+  
+  // =================================================================================
+  // ActivePage Implementation
+  // =================================================================================
+  
+  /**
+   * Get information about this page
+   */
+  getPageInfo(): PageInfo {
+    return {
+      id: this.pageId,
+      name: this.pageTitle,
+      path: this.pagePath,
+      metadata: {
+        className: this.constructor.name,
+        initialized: this.initialized,
+        destroyed: this.destroyed,
+      }
+    };
+  }
+  
+  /**
+   * Get unique identifier for this page instance
+   */
+  getPageId(): string {
+    return this.pageId;
+  }
 }
 
 export default PageComponent;

@@ -115,43 +115,21 @@ export class DashboardPageComponent extends PageComponent {
   }
 
   /**
-   * Handle keyboard shortcuts
+   * Handle keyboard shortcuts - now managed by HotkeyProvider
+   * Only keeping base class behavior
    */
   protected handleKeydown(event: KeyboardEvent): void {
     super.handleKeydown(event);
-    
-    // Dashboard-specific shortcuts
-    switch (event.key) {
-      case 's':
-        if (event.metaKey || event.ctrlKey) {
-          event.preventDefault();
-          this.toggleSidebar();
-        }
-        break;
-      case 'c':
-        if (event.metaKey || event.ctrlKey) {
-          event.preventDefault();
-          this.toggleCompactMode();
-        }
-        break;
-    }
+    // Dashboard-specific shortcuts now handled via getPageHotkeys()
   }
 
   /**
-   * Handle Escape key
+   * Handle Escape key - now managed by HotkeyProvider
+   * Only keeping base class behavior
    */
   protected handleEscape(event: KeyboardEvent): void {
     super.handleEscape(event);
-    
-    // Close user menu if open
-    if (this.userMenuDropdown?.style.display === 'block') {
-      this.closeUserMenu();
-    }
-    
-    // Close sidebar on mobile if open
-    if (this.isMobileView && !document.body.classList.contains('sidebar-closed')) {
-      this.closeSidebarOverlay();
-    }
+    // Dashboard-specific Escape behavior now handled via getPageHotkeys()
   }
 
   /**
@@ -503,6 +481,79 @@ export class DashboardPageComponent extends PageComponent {
    */
   public getLayout(): Layout | null {
     return this.layout;
+  }
+  
+  // =================================================================================
+  // HotkeyProvider Implementation (Override PageComponent defaults)
+  // =================================================================================
+  
+  /**
+   * Override to provide dashboard-specific hotkeys
+   */
+  getPageHotkeys(): Map<string, (event: KeyboardEvent) => void | boolean> {
+    const hotkeys = new Map();
+    
+    // Dashboard-specific hotkeys
+    hotkeys.set('Ctrl+s', (event: KeyboardEvent) => {
+      console.log('Dashboard: Ctrl+S pressed - Toggle sidebar');
+      event.preventDefault();
+      this.toggleSidebar();
+      return false; // prevent default & stop propagation
+    });
+    
+    hotkeys.set('Meta+s', (event: KeyboardEvent) => {
+      // Mac Cmd+S
+      console.log('Dashboard: Cmd+S pressed - Toggle sidebar');
+      event.preventDefault();
+      this.toggleSidebar();
+      return false;
+    });
+    
+    hotkeys.set('Ctrl+c', (event: KeyboardEvent) => {
+      console.log('Dashboard: Ctrl+C pressed - Toggle compact mode');
+      event.preventDefault();
+      this.toggleCompactMode();
+      return false;
+    });
+    
+    hotkeys.set('Meta+c', (event: KeyboardEvent) => {
+      // Mac Cmd+C
+      console.log('Dashboard: Cmd+C pressed - Toggle compact mode');
+      event.preventDefault();
+      this.toggleCompactMode();
+      return false;
+    });
+    
+    hotkeys.set('Escape', (event: KeyboardEvent) => {
+      console.log('Dashboard: Escape pressed - Close mobile menus');
+      // Dashboard-specific escape behavior
+      this.handleDashboardEscape(event);
+      // Don't return false - let other Escape handlers also run
+    });
+    
+    return hotkeys;
+  }
+  
+  /**
+   * Component identifier for hotkey management
+   */
+  getHotkeyComponentId(): string {
+    return 'DashboardPage';
+  }
+  
+  /**
+   * Handle dashboard-specific Escape key behavior
+   */
+  private handleDashboardEscape(event: KeyboardEvent): void {
+    // Close user menu if open
+    if (this.userMenuDropdown?.style.display === 'block') {
+      this.closeUserMenu();
+    }
+    
+    // Close sidebar on mobile if open
+    if (this.isMobileView && !document.body.classList.contains('sidebar-closed')) {
+      this.closeSidebarOverlay();
+    }
   }
 }
 

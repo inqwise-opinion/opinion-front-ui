@@ -249,7 +249,7 @@ export class AppHeaderImpl implements AppHeader {
       }
     });
 
-    // Mobile menu toggle handler
+    // Mobile menu toggle handler (disabled - managed by LayoutContext + Sidebar)
     this.setupMobileMenuHandler();
 
     // Header positioning is now fully CSS-based - no dynamic resize handling needed
@@ -301,10 +301,10 @@ export class AppHeaderImpl implements AppHeader {
    * Setup mobile menu toggle handler
    */
   private setupMobileMenuHandler(): void {
+    // Intentionally disabled: Sidebar visibility and behavior are coordinated by
+    // LayoutContext (mode changes) and handled internally by Sidebar.
+    // Leaving this as a no-op to avoid cross-component DOM manipulation from header.
     if (!this.config.showMobileToggle) {
-      console.log(
-        "AppHeaderImpl - Mobile toggle disabled in config, skipping handler setup",
-      );
       return;
     }
 
@@ -313,37 +313,11 @@ export class AppHeaderImpl implements AppHeader {
       mobileMenuToggle.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-
         console.log("📱 AppHeaderImpl - Mobile menu toggle clicked");
-
-        // Check if we're in mobile mode
-        const isMobile = this.layoutContext.isLayoutMobile();
-        if (!isMobile) {
-          console.log(
-            "⚠️ AppHeaderImpl - Not in mobile mode, ignoring mobile menu click",
-          );
-          return;
-        }
-
-        // Toggle mobile sidebar visibility via LayoutContext
-        const sidebar = this.layoutContext.getSidebar();
-        if (sidebar) {
-          console.log(
-            "🔄 AppHeaderImpl - Triggering sidebar mobile toggle via LayoutContext...",
-          );
-          sidebar.toggleMobileVisibility();
-        } else {
-          console.warn(
-            "❌ AppHeaderImpl - No sidebar registered in LayoutContext for mobile toggle",
-          );
-        }
+        
+        // Request mobile sidebar toggle through LayoutContext
+        this.layoutContext.toggleMobileSidebar();
       });
-
-      console.log(
-        "✅ AppHeaderImpl - Mobile menu toggle handler setup complete",
-      );
-    } else {
-      console.warn("⚠️ AppHeaderImpl - Mobile menu toggle button not found");
     }
   }
 
