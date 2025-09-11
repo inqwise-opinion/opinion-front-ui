@@ -43,7 +43,7 @@ export class MainContent {
   /**
    * Initialize the main content area
    */
-  init(): void {
+  public async init(): Promise<void> {
     console.log("MainContent - Initializing...");
 
     if (this.isInitialized) {
@@ -52,10 +52,12 @@ export class MainContent {
     }
 
     // Create the main content element (will use existing app-main if available)
-    this.createMainElement();
+    await this.createMainElement();
 
     // Subscribe to layout changes to ensure proper content positioning
     this.subscribeToLayoutContext();
+
+    this.layoutContext.registerMainContent(this);
 
     this.isInitialized = true;
     console.log("MainContent - Ready ✅");
@@ -64,7 +66,7 @@ export class MainContent {
   /**
    * Create or use the existing main element
    */
-  private createMainElement(): void {
+  private async createMainElement(): Promise<void> {
     // First, try to find the existing app-main element
     this.container = document.querySelector(".app-main");
 

@@ -77,7 +77,7 @@ export class AppHeaderImpl implements AppHeader {
       // Setup event listeners
       this.setupEventListeners();
 
-      this.layoutContext.subscribe();
+      this.layoutContext.registerHeader(this);
 
       console.log("AppHeaderImpl - Ready");
     } catch (error) {

@@ -106,7 +106,7 @@ export class LayoutContextImpl implements LayoutContext {
 
     // Check if layout mode type changed
     const layoutModeTypeChanged = oldModeType !== newModeType;
-    console.trace(
+    console.debug(
       `LayoutContext - Viewport changed: ${newViewPort.width}x${newViewPort.height}`,
     );
     // Only log if layout mode type changed, not every pixel change

@@ -132,11 +132,6 @@ export class Layout {
     console.log("🏢 LAYOUT - init() START");
 
     try {
-      // Register all components with LayoutContext before initialization
-      console.log("🏢 LAYOUT - Registering components with LayoutContext...");
-      this.registerComponentsWithContext();
-      console.log("✅ LAYOUT - Components registered with LayoutContext");
-
       console.log("🏢 LAYOUT - Starting layout initialization...");
 
       // Initialize header
@@ -170,7 +165,9 @@ export class Layout {
 
       // Initialize Messages component
       console.log("🏢 LAYOUT - Initializing MessagesComponent...");
-      this.messagesComponent = new MessagesComponent();
+      this.messagesComponent = new MessagesComponent(this.layoutContext);
+      await this.messagesComponent.init();
+
       console.log("✅ LAYOUT - MessagesComponent initialized");
 
       // Initialize sidebar component if enabled
@@ -190,14 +187,6 @@ export class Layout {
       } else {
         console.log("⚠️ LAYOUT - Footer disabled in config");
       }
-
-      // Re-register components with LayoutContext after initialization
-      // This ensures newly created components (MessagesComponent, Sidebar) are properly registered
-      console.log(
-        "🏢 LAYOUT - Re-registering components with LayoutContext after initialization...",
-      );
-      this.registerComponentsWithContext();
-      console.log("✅ LAYOUT - Components re-registered with LayoutContext");
 
       // Setup component coordination
       console.log("🏢 LAYOUT - Setting up component coordination...");
@@ -251,58 +240,10 @@ export class Layout {
 
       // Initialize the sidebar
       await this.sidebar.init();
-
-      // Update sidebar navigation with configured items
-      this.sidebar.updateNavigation(this.navigationItems);
     } catch (error) {
       console.error("❌ LAYOUT - Sidebar initialization failed:", error);
       throw error;
     }
-  }
-
-  /**
-   * Register all components with the LayoutContext instance
-   * This allows the context to know about and coordinate all layout components
-   * Safe to call multiple times - handles re-registration properly
-   */
-  private registerComponentsWithContext(): void {
-    console.log("Layout - Registering components with LayoutContext...");
-
-    // Register Layout itself with the context (safe to re-register)
-    this.layoutContext.registerLayout(this);
-    console.log("Layout - Registered Layout component with context");
-
-    // Register Header component (safe to re-register)
-    if (this.header) {
-      this.layoutContext.registerHeader(this.header);
-      console.log("Layout - Registered Header component with context");
-    }
-
-    // Register Footer component (safe to re-register)
-    if (this.footer) {
-      this.layoutContext.registerFooter(this.footer);
-      console.log("Layout - Registered Footer component with context");
-    }
-
-    // Register MainContent component (safe to re-register)
-    if (this.mainContent) {
-      this.layoutContext.registerMainContent(this.mainContent);
-      console.log("Layout - Registered MainContent component with context");
-    }
-
-    // Register MessagesComponent if it exists (created during init)
-    if (this.messagesComponent) {
-      this.layoutContext.registerMessages(this.messagesComponent);
-      console.log("Layout - Registered MessagesComponent with context");
-    }
-
-    // Register Sidebar if it exists (created during init)
-    if (this.sidebar) {
-      this.layoutContext.registerSidebar(this.sidebar);
-      console.log("Layout - Registered Sidebar component with context");
-    }
-
-    console.log("Layout - Component registration with LayoutContext completed");
   }
 
   /**
@@ -484,13 +425,6 @@ export class Layout {
       this.handleLayoutReady.bind(this),
     );
     this.layoutUnsubscribers.push(layoutReadyUnsubscribe);
-
-    // Subscribe to sidebar dimension changes for coordination
-    const sidebarDimensionsUnsubscribe = this.layoutContext.subscribe(
-      "sidebar-dimensions-change",
-      this.handleSidebarDimensionsChange.bind(this),
-    );
-    this.layoutUnsubscribers.push(sidebarDimensionsUnsubscribe);
 
     // Subscribe to layout mode changes for CSS class management
     const layoutModeUnsubscribe = this.layoutContext.subscribe(

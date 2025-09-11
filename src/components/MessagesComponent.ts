@@ -1,37 +1,46 @@
 /**
  * Messages Component - Clean Implementation
- * 
+ *
  * Simple, clean messages that display under the header.
  * Access via LayoutContext only - never directly from other components.
  */
 
 // Import clean CSS
+import { LayoutContext } from "@/contexts";
 import "../assets/styles/components/error-messages.css";
 
 // Import interfaces
-import type { Messages, Message, MessageOptions, MessageType } from "../interfaces/Messages";
+import type {
+  Messages,
+  Message,
+  MessageOptions,
+  MessageType,
+} from "../interfaces/Messages";
 
 export class MessagesComponent implements Messages {
   private container: HTMLElement | null = null;
   private messages: Map<string, Message> = new Map();
   private autoHideTimers: Map<string, NodeJS.Timeout> = new Map();
+  private layoutContext: LayoutContext;
 
-  constructor() {
-    this.init();
+  constructor(layoutContext: LayoutContext) {
+    this.layoutContext = layoutContext;
   }
 
   /**
    * Initialize - find the container
    */
-  private init(): void {
-    this.container = document.getElementById('app-error-messages');
-    
+  public async init(): Promise<void> {
+    this.container = document.getElementById("app-error-messages");
+
     if (!this.container) {
-      console.error('ErrorMessages - Container #app-error-messages not found');
+      console.error("ErrorMessages - Container #app-error-messages not found");
       return;
     }
-    
-    console.log('ErrorMessages - Ready ✅');
+
+    this.layoutContext.registerMessages(this);
+
+    console.log("ErrorMessages - Ready ✅");
   }
 
   /**
@@ -39,14 +48,14 @@ export class MessagesComponent implements Messages {
    */
   public addMessage(message: Message): void {
     if (!this.container) {
-      console.warn('ErrorMessages - Container not available');
+      console.warn("ErrorMessages - Container not available");
       return;
     }
 
     // Set simple defaults
     const messageWithDefaults: Message = {
       dismissible: true,
-      autoHide: message.type === 'success' || message.type === 'info',
+      autoHide: message.type === "success" || message.type === "info",
       autoHideDelay: 5000,
       persistent: false,
       ...message,
@@ -62,7 +71,10 @@ export class MessagesComponent implements Messages {
 
     // Auto-hide timer if needed
     if (messageWithDefaults.autoHide && messageWithDefaults.autoHideDelay) {
-      const timer = setTimeout(() => this.removeMessage(message.id), messageWithDefaults.autoHideDelay);
+      const timer = setTimeout(
+        () => this.removeMessage(message.id),
+        messageWithDefaults.autoHideDelay,
+      );
       this.autoHideTimers.set(message.id, timer);
     }
 
@@ -86,10 +98,12 @@ export class MessagesComponent implements Messages {
     this.messages.delete(id);
 
     // Add fade-out animation before removing from DOM
-    const messageElement = this.container.querySelector(`[data-message-id="${id}"]`) as HTMLElement;
+    const messageElement = this.container.querySelector(
+      `[data-message-id="${id}"]`,
+    ) as HTMLElement;
     if (messageElement) {
-      messageElement.style.animation = 'messageFadeOut 0.3s ease-in forwards';
-      
+      messageElement.style.animation = "messageFadeOut 0.3s ease-in forwards";
+
       // Remove after animation completes
       setTimeout(() => {
         if (messageElement.parentNode) {
@@ -115,7 +129,7 @@ export class MessagesComponent implements Messages {
       }
     });
 
-    messagesToRemove.forEach(id => this.removeMessage(id));
+    messagesToRemove.forEach((id) => this.removeMessage(id));
 
     console.log(`ErrorMessages - Cleared ${messagesToRemove.length} messages`);
   }
@@ -132,9 +146,11 @@ export class MessagesComponent implements Messages {
       }
     });
 
-    messagesToRemove.forEach(id => this.removeMessage(id));
+    messagesToRemove.forEach((id) => this.removeMessage(id));
 
-    console.log(`ErrorMessages - Cleared ${messagesToRemove.length} ${type} messages`);
+    console.log(
+      `ErrorMessages - Cleared ${messagesToRemove.length} ${type} messages`,
+    );
   }
 
   /**
@@ -152,31 +168,33 @@ export class MessagesComponent implements Messages {
       return this.messages.size > 0;
     }
 
-    return Array.from(this.messages.values()).some(message => message.type === type);
+    return Array.from(this.messages.values()).some(
+      (message) => message.type === type,
+    );
   }
 
   /**
    * Create message element - simplified version
    */
   private createMessageElement(message: Message): HTMLElement {
-    const messageEl = document.createElement('div');
+    const messageEl = document.createElement("div");
     messageEl.className = `error-message ${message.type}`;
-    messageEl.setAttribute('data-message-id', message.id);
+    messageEl.setAttribute("data-message-id", message.id);
 
     // Simple structure with close button
     messageEl.innerHTML = `
       <div class="error-content">
         <div class="error-title">${this.escapeHtml(message.title)}</div>
-        ${message.description ? `<div class="error-description">${this.escapeHtml(message.description)}</div>` : ''}
+        ${message.description ? `<div class="error-description">${this.escapeHtml(message.description)}</div>` : ""}
       </div>
-      ${message.dismissible ? `<button type="button" class="error-close">×</button>` : ''}
+      ${message.dismissible ? `<button type="button" class="error-close">×</button>` : ""}
     `;
 
     // Setup close button event listener
     if (message.dismissible) {
-      const closeButton = messageEl.querySelector('.error-close');
+      const closeButton = messageEl.querySelector(".error-close");
       if (closeButton) {
-        closeButton.addEventListener('click', () => {
+        closeButton.addEventListener("click", () => {
           this.removeMessage(message.id);
         });
       }
@@ -184,8 +202,6 @@ export class MessagesComponent implements Messages {
 
     return messageEl;
   }
-
-
 
   /**
    * Escape HTML for safety
@@ -202,10 +218,14 @@ export class MessagesComponent implements Messages {
   /**
    * Convenience methods for different message types
    */
-  public showError(title: string, description?: string, options?: MessageOptions): void {
+  public showError(
+    title: string,
+    description?: string,
+    options?: MessageOptions,
+  ): void {
     this.addMessage({
       id: options?.id || `error-${Date.now()}`,
-      type: 'error',
+      type: "error",
       title,
       description,
       autoHide: false, // Errors should not auto-hide by default
@@ -213,10 +233,14 @@ export class MessagesComponent implements Messages {
     });
   }
 
-  public showWarning(title: string, description?: string, options?: MessageOptions): void {
+  public showWarning(
+    title: string,
+    description?: string,
+    options?: MessageOptions,
+  ): void {
     this.addMessage({
       id: options?.id || `warning-${Date.now()}`,
-      type: 'warning',
+      type: "warning",
       title,
       description,
       autoHide: false, // Warnings should not auto-hide by default
@@ -224,10 +248,14 @@ export class MessagesComponent implements Messages {
     });
   }
 
-  public showInfo(title: string, description?: string, options?: MessageOptions): void {
+  public showInfo(
+    title: string,
+    description?: string,
+    options?: MessageOptions,
+  ): void {
     this.addMessage({
       id: options?.id || `info-${Date.now()}`,
-      type: 'info',
+      type: "info",
       title,
       description,
       autoHide: true, // Info messages can auto-hide
@@ -235,10 +263,14 @@ export class MessagesComponent implements Messages {
     });
   }
 
-  public showSuccess(title: string, description?: string, options?: MessageOptions): void {
+  public showSuccess(
+    title: string,
+    description?: string,
+    options?: MessageOptions,
+  ): void {
     this.addMessage({
       id: options?.id || `success-${Date.now()}`,
-      type: 'success',
+      type: "success",
       title,
       description,
       autoHide: true, // Success messages can auto-hide
@@ -257,10 +289,10 @@ export class MessagesComponent implements Messages {
    * Destroy the component
    */
   public destroy(): void {
-    console.log('ErrorMessages - Destroying...');
+    console.log("ErrorMessages - Destroying...");
 
     // Clear all auto-hide timers
-    this.autoHideTimers.forEach(timer => clearTimeout(timer));
+    this.autoHideTimers.forEach((timer) => clearTimeout(timer));
     this.autoHideTimers.clear();
 
     // Clear all messages
@@ -270,9 +302,8 @@ export class MessagesComponent implements Messages {
     this.messages.clear();
     this.container = null;
 
-    console.log('ErrorMessages - Destroyed');
+    console.log("ErrorMessages - Destroyed");
   }
 }
-
 
 export default MessagesComponent;

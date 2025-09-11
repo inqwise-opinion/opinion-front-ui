@@ -32,32 +32,23 @@ export class OpinionApp {
       console.error("❌ APP.TS - Constructor failed:", error);
       throw error;
     }
-    console.log("🎯 APP.TS - Constructor END");
   }
 
   public async init(): Promise<void> {
-    console.log("🎯 APP.TS - init() START");
+    console.log("🎯 APP.TS - init()");
     try {
       if (this.initialized) {
         console.warn("🎯 APP.TS - Application already initialized");
         return;
       }
 
-      console.log("🎯 APP.TS - Setting up event listeners...");
       this.setupEventListeners();
-      console.log("✅ APP.TS - Event listeners setup complete");
-
-      console.log("🎯 APP.TS - Loading initial data...");
-      await this.loadInitialData();
-      console.log("✅ APP.TS - Initial data loaded");
 
       console.log("🎯 APP.TS - Initializing global layout...");
       await this.initializeGlobalLayout();
-      console.log("✅ APP.TS - Global layout initialized");
 
       console.log("🎯 APP.TS - Initializing routing...");
       await this.initializeRouting();
-      console.log("✅ APP.TS - Routing initialized");
 
       this.initialized = true;
       console.log("✅ APP.TS - Opinion Front UI - Ready");
@@ -66,7 +57,6 @@ export class OpinionApp {
       console.error("❌ APP.TS - Error stack:", error.stack);
       throw error;
     }
-    console.log("🎯 APP.TS - init() END");
   }
 
   private setupEventListeners(): void {
@@ -100,16 +90,6 @@ export class OpinionApp {
         }
       }
     });
-  }
-
-  private async loadInitialData(): Promise<void> {
-    // Load initial application data
-    try {
-      // Load global configuration, user preferences, etc.
-      console.log("Loading initial application data...");
-    } catch (error) {
-      console.error("Failed to load initial data:", error);
-    }
   }
 
   /**
@@ -318,9 +298,9 @@ export class OpinionApp {
       // Pages will now render their content inside the semantic <main> element
       if (path === "/") {
         console.log("🎯 APP.TS - Creating DebugPage for root path...");
-        this.currentPage = new DebugPage();
+        this.currentPage = new DebugPage(this.layout?.getMainContent());
         console.log("🎯 APP.TS - Initializing DebugPage...");
-        await this.currentPage.handleLayout(this.layout?.getLayoutContext());
+        await this.currentPage.init();
         console.log("✅ APP.TS - DebugPage initialized successfully");
       } else if (path === "/dashboard") {
         console.log("🎯 APP.TS - Creating DashboardPage...");

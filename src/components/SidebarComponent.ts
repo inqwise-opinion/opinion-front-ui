@@ -8,7 +8,7 @@ import "../assets/styles/components/sidebar.css";
 // Import layout context
 import { getLayoutContext, type LayoutContext } from "../contexts/index";
 // Import sidebar interfaces and types
-import { Sidebar, SidebarConfig, NavigationItem, Dimensions } from "./Sidebar";
+import { Dimensions, NavigationItem, Sidebar, SidebarConfig } from "./Sidebar";
 
 export class SidebarComponent implements Sidebar {
   private sidebar: HTMLElement | null = null;
@@ -80,6 +80,9 @@ export class SidebarComponent implements Sidebar {
 
     // Initialize based on current layout mode (no events, just read state)
     this.initializeFromLayoutMode();
+
+    // Register the sidebar with the layout context
+    this.layoutContext.registerSidebar(this);
 
     this.isInitialized = true;
     console.log("Sidebar - Ready ✅");
@@ -497,8 +500,7 @@ export class SidebarComponent implements Sidebar {
    */
   private setCompactMode(compact: boolean): void {
     // Block compact mode on mobile - mobile uses overlay mode instead
-    const layoutMode = this.layoutContext.getLayoutMode();
-    if (layoutMode.isMobile) {
+    if (this.layoutContext.isLayoutMobile()) {
       console.log(
         "📱 Sidebar - Compact mode blocked on mobile (uses overlay mode instead)",
       );
@@ -535,20 +537,6 @@ export class SidebarComponent implements Sidebar {
 
       // Update toggle button
       this.updateCompactToggleButton();
-
-      // Log dimension changes after DOM updates
-      this.logDimensionChange(previousDimensions, compact);
-
-      // Notify listeners (DEPRECATED - direct callbacks)
-      // console.log(
-      //   `🔔 Sidebar - Firing direct compact mode callbacks to ${this.compactModeListeners.length} listeners`,
-      // );
-      // this.notifyCompactModeChange(compact);
-
-      // Publish dimension changes to layout context (CURRENT - event system)
-      console.log(`📡 Sidebar - Publishing to LayoutContext event system`);
-      // Publish expected dimensions immediately for responsive layout
-      this.publishExpectedDimensions();
 
       console.log(
         `✅ Sidebar - Compact mode ${compact ? "enabled" : "disabled"}`,
@@ -648,83 +636,6 @@ export class SidebarComponent implements Sidebar {
   }
 
   /**
-   * Log detailed dimension changes when compact mode changes
-   */
-  private logDimensionChange(
-    previousDimensions: any,
-    newCompactMode: boolean,
-  ): void {
-    if (!this.sidebar) return;
-
-    // Get new dimensions after DOM update
-    const currentDimensions = this.getCurrentDimensions();
-
-    if (!previousDimensions || !currentDimensions) {
-      console.log(
-        "📐 Sidebar - Unable to calculate dimension changes (null dimensions)",
-      );
-      return;
-    }
-
-    const layoutMode = this.layoutContext.getLayoutMode();
-    const viewport = {
-      width: layoutMode.viewport.width,
-      height: layoutMode.viewport.height,
-      isMobile: layoutMode.isMobile,
-    };
-
-    // Calculate changes
-    const widthChange =
-      currentDimensions.width - (previousDimensions.width || 0);
-    console.log("📐 Sidebar - Dimension Changes:");
-    console.log(
-      `   Mode: ${!this.compactMode ? "Compact" : "Expanded"} → ${newCompactMode ? "Compact" : "Expanded"}`,
-    );
-    console.log(
-      `   Width: ${previousDimensions.width}px → ${currentDimensions.width}px (${widthChange >= 0 ? "+" : ""}${widthChange}px)`,
-    );
-    console.log(
-      `   Viewport: ${viewport.width}x${viewport.height} (${viewport.isMobile ? "Mobile" : "Desktop"})`,
-    );
-    console.log(
-      `   Visible: ${previousDimensions.isVisible} → ${currentDimensions.isVisible}`,
-    );
-
-    // Calculate space impact
-    const contentAreaWidthChange = -widthChange; // Content area changes opposite to sidebar
-    if (contentAreaWidthChange !== 0) {
-      console.log(
-        `   📊 Content Area Impact: ${contentAreaWidthChange >= 0 ? "+" : ""}${contentAreaWidthChange}px ${contentAreaWidthChange > 0 ? "more" : "less"} space`,
-      );
-    }
-
-    // Log performance metrics if transition is animated
-    if (widthChange !== 0) {
-      console.log(
-        `   ⚡ Transition: ${Math.abs(widthChange)}px change with CSS animation`,
-      );
-    }
-
-    // Log grid layout impact
-    const appLayout = document.querySelector(".app-layout");
-    if (appLayout) {
-      const hasCompactClass = appLayout.classList.contains("sidebar-compact");
-      console.log(
-        `   🎯 Layout Grid: ${hasCompactClass ? "Compact" : "Standard"} mode applied`,
-      );
-    }
-
-    // Log if this affects other components
-    if (!viewport.isMobile) {
-      console.log(
-        `   🔄 Layout Context: Publishing dimensions to other components`,
-      );
-    }
-
-    console.log("📐 Sidebar - Dimension change complete\n");
-  }
-
-  /**
    * Update the compact toggle button appearance
    */
   private updateCompactToggleButton(): void {
@@ -758,46 +669,6 @@ export class SidebarComponent implements Sidebar {
         `Sidebar - Toggle button updated for ${this.compactMode ? "compact" : "normal"} mode`,
       );
     }
-  }
-
-  /**
-   * Publish expected dimensions immediately based on current state
-   * This provides instant layout response without waiting for CSS transitions
-   */
-  private publishExpectedDimensions(): void {
-    // Use layout context for viewport detection
-    const layoutMode = this.layoutContext.getLayoutMode();
-    const isMobile = layoutMode.isMobile;
-    const isVisible = !isMobile;
-    const viewport = {
-      width: layoutMode.viewport.width,
-      height: layoutMode.viewport.height,
-      isMobile,
-    };
-
-    // Calculate expected dimensions using CSS strict widths
-    let width = 0;
-
-    // Use layout mode to determine if sidebar should be visible
-    if (isVisible) {
-      // Use configured widths from sidebar config
-      width = this.compactMode
-        ? this.config.compactWidth
-        : this.config.defaultWidth;
-    }
-
-    console.log("📡 Sidebar - Publishing expected dimensions immediately:");
-    console.log(`   Expected Width: ${width}px (CSS strict)`);
-    console.log(`   Mode: ${this.compactMode ? "Compact" : "Expanded"}`);
-    console.log(
-      `   Viewport: ${viewport.width}x${viewport.height} (${viewport.isMobile ? "Mobile" : "Desktop"})`,
-    );
-    console.log(`   Visible: ${isVisible}`);
-    console.log(
-      `   🚀 Instant layout response - no waiting for CSS transitions`,
-    );
-
-    this.layoutContext.notifySidebarDimensionsChanged();
   }
 
   /**
@@ -974,7 +845,7 @@ export class SidebarComponent implements Sidebar {
     if (!this.sidebar) return null;
 
     // Use direct viewport calculation instead of layoutContext to avoid circular dependency
-    const isMobile = window.innerWidth <= 768;
+    const isMobile = this.layoutContext.isLayoutMobile();
     const isVisible = !isMobile;
 
     let width = 0;
@@ -1045,9 +916,9 @@ export class SidebarComponent implements Sidebar {
    */
   private initializeFromLayoutMode(): void {
     // Use direct viewport calculation to avoid circular dependency during initialization
-    const isMobile = window.innerWidth <= 768;
-    const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
-    const isDesktop = window.innerWidth > 1024;
+    const isMobile = this.layoutContext.isLayoutMobile();
+    const isTablet = this.layoutContext.isLayoutTablet();
+    const isDesktop = this.layoutContext.isLayoutDesktop();
 
     // Create a basic layout mode object based on viewport
     const currentMode = {
@@ -1170,12 +1041,6 @@ export class SidebarComponent implements Sidebar {
         "--sidebar-current-width",
         `${currentWidth}px`,
       );
-    }
-
-    // Publish updated dimensions based on new layout mode
-    // Only emit events if sidebar is fully initialized (not during initial setup)
-    if (this.isInitialized) {
-      this.publishExpectedDimensions();
     }
 
     console.log(`Sidebar - Updated for ${mode.type} mode complete`);

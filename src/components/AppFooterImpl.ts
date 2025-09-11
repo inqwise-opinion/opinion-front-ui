@@ -55,8 +55,8 @@ export class AppFooterImpl implements AppFooter {
     // Setup event listeners
     this.setupEventListeners();
 
-    // Footer is now fully CSS-based - no dynamic layout subscriptions needed
-    // this.subscribeToLayoutContext();
+    // Register footer with layout context
+    this.layoutContext.registerFooter(this);
 
     console.log("AppFooter - Ready");
   }

@@ -73,9 +73,6 @@ export interface LayoutContext {
   areAllComponentsRegistered(): boolean;
   unregisterAllComponents(): void;
 
-  // Notification System
-  notifySidebarDimensionsChanged(): void;
-
   // Messages Interface Access - EXCLUSIVE access point for all message functionality
   getMessages(): Messages | null;
 

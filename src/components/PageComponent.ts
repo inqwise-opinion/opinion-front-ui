@@ -21,6 +21,7 @@ export interface PageComponentConfig {
 export abstract class PageComponent {
   protected initialized: boolean = false;
   protected destroyed: boolean = false;
+  protected mainContent: MainContent;
   protected config: PageComponentConfig;
   protected eventListeners: Array<{
     element: Element | Window | Document;
@@ -28,9 +29,9 @@ export abstract class PageComponent {
     handler: EventListener;
   }> = [];
   protected pageTitle: string;
-  protected layoutContext?: LayoutContext;
 
-  constructor(config: PageComponentConfig = {}) {
+  constructor(mainContent: MainContent, config: PageComponentConfig = {}) {
+    this.mainContent = mainContent;
     this.config = {
       autoInit: false,
       ...config,
@@ -49,8 +50,8 @@ export abstract class PageComponent {
    * Called automatically if autoInit is true, or manually by subclasses
    */
   public async init(): Promise<void> {
-    if (!this.layoutContext) {
-      console.warn(`${this.constructor.name}: Layout context not set`);
+    if (!this.mainContent.isReady) {
+      console.warn(`${this.constructor.name}: mainContent not ready`);
       return;
     }
 

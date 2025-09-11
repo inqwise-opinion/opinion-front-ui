@@ -15,17 +15,16 @@ import type {
   LayoutModeType,
   LayoutViewPort,
 } from "../contexts/LayoutContext";
-import type { LayoutEvent, LayoutMode } from "../contexts/LayoutContext";
+import type { LayoutEvent } from "../contexts/LayoutContext";
 import { PageComponent } from "@/components";
 
 export class DebugPage extends PageComponent {
-  private layoutModeUnsubscribe: ((mode: LayoutMode) => void) | null = null;
   private sidebarDebugUnsubscribe: (() => void) | null = null;
   private headerDebugUnsubscribe: (() => void) | null = null;
   private responsiveModeUnsubscribe: (() => void) | null = null;
 
-  constructor() {
-    super();
+  constructor(mainContent: MainContent) {
+    super(mainContent);
     console.log("🛠️ DEBUGPAGE - Constructor");
   }
 
@@ -89,7 +88,7 @@ export class DebugPage extends PageComponent {
   private createFallbackTemplate(): void {
     console.log("DebugPage - Creating fallback template...");
 
-    const mainContent = this.layoutContext?.getMainContent();
+    const mainContent = this.mainContent;
     // Use MainContent component if available, otherwise fallback to #app
     const targetElement =
       mainContent?.getElement() || document.getElementById("app");
@@ -226,7 +225,7 @@ export class DebugPage extends PageComponent {
 
     // Update viewport info initially using LayoutContext data
 
-    this.updateViewportInfoFromContext(this.layoutContext);
+    this.updateViewportInfoFromContext(this.mainContent.getLayoutContext());
     this.updateLayoutStatus();
 
     // Setup responsive behavior
@@ -499,7 +498,7 @@ export class DebugPage extends PageComponent {
     const testViewportInfo = document.getElementById("test_viewport_info");
     if (testViewportInfo) {
       testViewportInfo.addEventListener("click", () => {
-        this.updateViewportInfoFromContext(this.layoutContext);
+        this.updateViewportInfoFromContext(this.mainContent.getLayoutContext());
         this.updateLayoutStatus();
         this.logToConsole("📐 Viewport info updated");
       });
@@ -847,34 +846,32 @@ export class DebugPage extends PageComponent {
     // Note: 'responsive-mode-change' is not available in the current LayoutContext
     // We'll rely on 'layout-mode-change' instead
     // this.responsiveModeUnsubscribe = null;
-
+    const layoutContext = this.mainContent.getLayoutContext();
     // Subscribe to layout mode changes
-    this.layoutContext?.subscribe(
-      "layout-mode-change",
-      (event: LayoutEvent) => {
-        const viewport = event.data.viewport as LayoutViewPort;
-        const type = event.data.modeType as LayoutModeType;
-        const sidebar = this.layoutContext?.getSidebar();
-        const isSidebarCompact = sidebar?.isCompactMode();
-        const isSidebarVisible = sidebar?.isVisible();
+    layoutContext.subscribe("layout-mode-change", (event: LayoutEvent) => {
+      console.log("event:", event);
+      const viewport = event.data.viewport as LayoutViewPort;
+      const type = event.data.modeType as LayoutModeType;
+      const sidebar = layoutContext.getSidebar();
+      const isSidebarCompact = sidebar?.isCompactMode();
+      const isSidebarVisible = sidebar?.isVisible();
 
-        const timestamp = new Date().toLocaleTimeString();
+      const timestamp = new Date().toLocaleTimeString();
 
-        // Update layout status display
-        this.updateLayoutStatus();
+      // Update layout status display
+      this.updateLayoutStatus();
 
-        // Log the layout mode change
-        this.logToConsole(
-          `<span style="color: #8e44ad; font-weight: bold;">[${timestamp}] 🏗️ LAYOUT MODE CHANGE</span>`,
-        );
-        this.logToConsole(`└─ Type: ${type.toUpperCase()}`);
-        this.logToConsole(`└─ Compact: ${isSidebarCompact ? "YES" : "NO"}`);
-        this.logToConsole(
-          `└─ Sidebar: ${sidebar?.getDimensions().width}px ${isSidebarVisible ? "(visible)" : "(hidden)"}`,
-        );
-        this.logToConsole(`└─ Viewport: ${viewport.width}x${viewport.height}`);
-      },
-    );
+      // Log the layout mode change
+      this.logToConsole(
+        `<span style="color: #8e44ad; font-weight: bold;">[${timestamp}] 🏗️ LAYOUT MODE CHANGE</span>`,
+      );
+      this.logToConsole(`└─ Type: ${type.toUpperCase()}`);
+      this.logToConsole(`└─ Compact: ${isSidebarCompact ? "YES" : "NO"}`);
+      this.logToConsole(
+        `└─ Sidebar: ${sidebar?.getDimensions().width}px ${isSidebarVisible ? "(visible)" : "(hidden)"}`,
+      );
+      this.logToConsole(`└─ Viewport: ${viewport.width}x${viewport.height}`);
+    });
 
     this.logToConsole("✅ Subscribed to LayoutContext layout mode changes");
     this.logToConsole(
@@ -956,12 +953,6 @@ export class DebugPage extends PageComponent {
       this.responsiveModeUnsubscribe();
       this.responsiveModeUnsubscribe = null;
       console.log("DebugPage - Unsubscribed from responsive mode changes");
-    }
-
-    if (this.layoutModeUnsubscribe) {
-      this.layoutModeUnsubscribe();
-      this.layoutModeUnsubscribe = null;
-      console.log("DebugPage - Unsubscribed from layout mode changes");
     }
 
     // Unsubscribe from sidebar events
