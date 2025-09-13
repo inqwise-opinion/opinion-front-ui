@@ -43,6 +43,7 @@ export {
 // Authentication services
 export { AuthService, AuthServiceConfig } from './AuthService';
 export { SessionAuthService, SessionAuthServiceConfig } from './SessionAuthService';
+export { AppHeaderBinderService, AppHeaderBinderServiceConfig } from './AppHeaderBinderService';
 
 // Implementation markers for future development
 /**
