@@ -40,6 +40,10 @@ export {
   isAuthEvent
 } from './AuthEvents';
 
+// Authentication services
+export { AuthService, AuthServiceConfig } from './AuthService';
+export { SessionAuthService, SessionAuthServiceConfig } from './SessionAuthService';
+
 // Implementation markers for future development
 /**
  * TODO: Implementation markers for Task 3.3.1 completion tracking

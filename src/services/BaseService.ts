@@ -196,34 +196,6 @@ export abstract class BaseService implements Service {
     return this._context.hasService(serviceName);
   }
 
-  /**
-   * Emit an event through the EventBus (via LayoutContext)
-   * 
-   * @param event - Event name
-   * @param data - Event data
-   */
-  protected emitEvent(event: string, data: any): void {
-    this._emitEvent(event, data);
-  }
-
-  /**
-   * Subscribe to events through the EventBus (via LayoutContext)
-   * 
-   * @param event - Event name to listen for
-   * @param handler - Event handler function
-   * @returns Unsubscribe function
-   */
-  protected onEvent(event: string, handler: (data: any) => void): () => void {
-    const eventBus = this.getEventBus();
-    // Use the correct EventBus interface method
-    if (typeof eventBus.on === 'function') {
-      return eventBus.on(event, handler);
-    } else {
-      // Fallback for different EventBus implementations
-      console.warn(`[Service:${this.getServiceId()}] EventBus.on method not available`);
-      return () => {};
-    }
-  }
 
   /**
    * Log a message with service context
@@ -280,18 +252,19 @@ export abstract class BaseService implements Service {
 
   /**
    * Internal event emission via LayoutContext EventBus
+   * Uses publish() to broadcast to all consumers
    */
   private _emitEvent(event: string, data: any): void {
     try {
       const eventBus = this.getEventBus();
-      // Use the correct EventBus interface method
-      if (typeof eventBus.emit === 'function') {
-        eventBus.emit(event, data);
+      // Use the correct EventBus interface method - publish for broadcasting
+      if (typeof eventBus.publish === 'function') {
+        eventBus.publish(event, data);
       } else {
-        console.warn(`[Service:${this.getServiceId()}] EventBus.emit method not available`);
+        console.warn(`[Service:${this.getServiceId()}] EventBus.publish method not available`);
       }
     } catch (error) {
-      console.error(`[Service:${this.getServiceId()}] Failed to emit event '${event}':`, error);
+      console.error(`[Service:${this.getServiceId()}] Failed to publish event '${event}':`, error);
     }
   }
 
