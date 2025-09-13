@@ -27,6 +27,19 @@ export {
   AuthErrors
 } from './exceptions/AuthenticationExceptions';
 
+// Authentication context and events
+export { AuthenticatedUser } from './AuthenticatedUser';
+export {
+  AUTH_EVENTS,
+  AuthEventName,
+  AuthEventPayloads,
+  AuthEvent,
+  UserAuthenticatedPayload,
+  createAuthEvent,
+  AuthEventFactory,
+  isAuthEvent
+} from './AuthEvents';
+
 // Implementation markers for future development
 /**
  * TODO: Implementation markers for Task 3.3.1 completion tracking
