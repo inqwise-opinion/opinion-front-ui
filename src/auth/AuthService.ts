@@ -22,6 +22,7 @@ import { AuthProvider } from './AuthProvider';
 import { AuthenticatedUser } from './AuthenticatedUser';
 import { AUTH_EVENTS, AuthEventFactory } from './AuthEvents';
 import { AuthenticationError } from './exceptions/AuthenticationExceptions';
+import { ServiceReference } from './ServiceReference';
 import { User } from '../types';
 import type { LayoutContext } from '../contexts/LayoutContext';
 import type { ServiceConfig } from '../interfaces/Service';
@@ -44,7 +45,7 @@ export interface AuthServiceConfig extends ServiceConfig {
  */
 export class AuthService extends BaseService {
   protected readonly authServiceConfig: Required<AuthServiceConfig>;
-  protected authProvider: AuthProvider | null = null;
+  protected authProviderWrapper: ServiceReference<AuthProvider>;
   protected currentUser: AuthenticatedUser | null = null;
   
   constructor(context: LayoutContext, config: AuthServiceConfig = {}) {
@@ -58,6 +59,13 @@ export class AuthService extends BaseService {
       autoValidate: false,
       ...config,
     };
+    
+    // Initialize service reference for AuthProvider
+    this.authProviderWrapper = new ServiceReference<AuthProvider>(
+      context,
+      this.authServiceConfig.authProviderServiceName,
+      { enableLogging: false }
+    );
     
     this.log('🔐', 'AuthService created', { 
       authProviderServiceName: this.authServiceConfig.authProviderServiceName,
@@ -97,15 +105,14 @@ export class AuthService extends BaseService {
    * @throws AuthenticationError if not authenticated or validation fails
    */
   async validateAuthentication(operation: string = 'validation'): Promise<AuthenticatedUser> {
-    if (!this.authProvider) {
-      throw new AuthenticationError('AuthProvider not available - service may not be initialized');
-    }
-    
     this.log('🔍', 'Validating authentication...', { operation });
     
     try {
+      // Get AuthProvider via lazy wrapper
+      const authProvider = await this.authProviderWrapper.get();
+      
       // Get current user from AuthProvider (this validates with server)
-      const user: User = await this.authProvider.getCurrentUser();
+      const user: User = await authProvider.getCurrentUser();
       
       // Create AuthenticatedUser (base class uses no account context)
       const authenticatedUser = this.createAuthenticatedUser(user);
@@ -145,14 +152,13 @@ export class AuthService extends BaseService {
    * @throws AuthenticationError if login initiation fails
    */
   async login(): Promise<void> {
-    if (!this.authProvider) {
-      throw new AuthenticationError('AuthProvider not available - service may not be initialized');
-    }
-    
     this.log('🚪', 'Initiating login...');
     
     try {
-      await this.authProvider.login();
+      // Get AuthProvider via lazy wrapper
+      const authProvider = await this.authProviderWrapper.get();
+      
+      await authProvider.login();
       this.log('✅', 'Login initiated successfully');
       
       // Note: user.authenticated event will be published later when 
@@ -174,17 +180,16 @@ export class AuthService extends BaseService {
    * @throws AuthenticationError if logout fails
    */
   async logout(): Promise<void> {
-    if (!this.authProvider) {
-      throw new AuthenticationError('AuthProvider not available - service may not be initialized');
-    }
-    
     const wasAuthenticated = this.isAuthenticated();
     const previousUser = this.currentUser;
     
     this.log('🚪', 'Performing logout...', { wasAuthenticated });
     
     try {
-      await this.authProvider.logout();
+      // Get AuthProvider via lazy wrapper
+      const authProvider = await this.authProviderWrapper.get();
+      
+      await authProvider.logout();
       
       // Clear internal state after successful logout
       this.currentUser = null;
@@ -248,21 +253,13 @@ export class AuthService extends BaseService {
   protected async onInit(): Promise<void> {
     this.log('🚀', 'Initializing AuthService...');
     
-    // Resolve AuthProvider from LayoutContext service registry
+    // Check if AuthProvider is available (without resolving it)
     const authProviderServiceName = this.authServiceConfig.authProviderServiceName;
-    this.authProvider = this.getService<AuthProvider>(authProviderServiceName);
-    
-    if (!this.authProvider) {
-      throw new AuthenticationError(
-        `AuthProvider service '${authProviderServiceName}' not found in LayoutContext. ` +
-        `Available services: [${this.getContext().getServiceNames().join(', ')}]`
-      );
+    if (!this.authProviderWrapper.isAvailable()) {
+      this.log('⚠️', `AuthProvider service '${authProviderServiceName}' not yet available - will resolve lazily`);
+    } else {
+      this.log('✅', `AuthProvider service '${authProviderServiceName}' is available`);
     }
-    
-    this.log('✅', 'AuthProvider resolved', { 
-      authProviderServiceName,
-      authProviderId: this.authProvider.getServiceId?.() || 'unknown'
-    });
     
     // Auto-validate if configured (but don't fail initialization if validation fails)
     if (this.authServiceConfig.autoValidate) {
@@ -286,7 +283,7 @@ export class AuthService extends BaseService {
     
     // Clear cached state
     this.currentUser = null;
-    this.authProvider = null;
+    this.authProviderWrapper.clearCache();
     
     this.log('✅', 'AuthService destroyed successfully');
   }

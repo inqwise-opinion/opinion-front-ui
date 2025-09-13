@@ -1130,6 +1130,18 @@ export class LayoutContextImpl implements LayoutContext {
   public getServiceNames(): string[] {
     return Array.from(this.serviceRegistry.keys());
   }
+  
+  /**
+   * Create a service reference for lazy service resolution
+   * Enables service dependency resolution without initialization order management
+   */
+  public getServiceReference<T extends Service>(
+    serviceName: string,
+    config?: import('../auth/ServiceReference').ServiceReferenceConfig
+  ): import('../auth/ServiceReference').ServiceReference<T> {
+    const { ServiceReference } = require('../auth/ServiceReference');
+    return new ServiceReference<T>(this, serviceName, config);
+  }
 
   /**
    * Initialize all registered services

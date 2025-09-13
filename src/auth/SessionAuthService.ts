@@ -21,6 +21,7 @@ import { SessionAuthProvider, Account } from './SessionAuthProvider';
 import { AuthenticatedUser } from './AuthenticatedUser';
 import { AUTH_EVENTS, AuthEventFactory } from './AuthEvents';
 import { AuthenticationError } from './exceptions/AuthenticationExceptions';
+import { ServiceReference } from './ServiceReference';
 import { User } from '../types';
 import type { LayoutContext } from '../contexts/LayoutContext';
 
@@ -39,7 +40,7 @@ export interface SessionAuthServiceConfig extends AuthServiceConfig {
  * for multi-tenant authentication scenarios.
  */
 export class SessionAuthService extends AuthService {
-  private sessionAuthProvider: SessionAuthProvider | null = null;
+  private sessionAuthProviderWrapper: ServiceReference<SessionAuthProvider>;
   
   constructor(context: LayoutContext, config: SessionAuthServiceConfig = {}) {
     const mergedConfig: Required<SessionAuthServiceConfig> = {
@@ -53,6 +54,13 @@ export class SessionAuthService extends AuthService {
     };
     
     super(context, mergedConfig);
+    
+    // Initialize service reference for SessionAuthProvider
+    this.sessionAuthProviderWrapper = new ServiceReference<SessionAuthProvider>(
+      context,
+      mergedConfig.sessionAuthProviderServiceName,
+      { enableLogging: false }
+    );
     
     this.log('🔐', 'SessionAuthService created', { 
       sessionAuthProviderServiceName: mergedConfig.sessionAuthProviderServiceName,

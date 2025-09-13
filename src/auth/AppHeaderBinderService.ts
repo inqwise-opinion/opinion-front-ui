@@ -23,6 +23,7 @@ import { AuthService } from './AuthService';
 import { AUTH_EVENTS, UserAuthenticatedPayload } from './AuthEvents';
 import { AuthenticatedUser } from './AuthenticatedUser';
 import { AuthenticationError } from './exceptions/AuthenticationExceptions';
+import { ServiceReference } from './ServiceReference';
 import { AppHeader, HeaderUser } from '../components/AppHeader';
 import { UserMenu } from '../components/UserMenu';
 import type { Consumer } from '../lib/EventBus';
@@ -47,7 +48,7 @@ export interface AppHeaderBinderServiceConfig extends ServiceConfig {
  */
 export class AppHeaderBinderService extends BaseService {
   private readonly binderConfig: Required<AppHeaderBinderServiceConfig>;
-  private authService: AuthService | null = null;
+  private authServiceWrapper: ServiceReference<AuthService>;
   private appHeader: AppHeader | null = null;
   private eventConsumer: Consumer | null = null;
   
@@ -62,6 +63,13 @@ export class AppHeaderBinderService extends BaseService {
       updateOnInit: true,
       ...config,
     };
+    
+    // Initialize service reference for AuthService
+    this.authServiceWrapper = new ServiceReference<AuthService>(
+      context,
+      this.binderConfig.authServiceName,
+      { enableLogging: false }
+    );
     
     this.log('🔗', 'AppHeaderBinderService created', { 
       authServiceName: this.binderConfig.authServiceName,

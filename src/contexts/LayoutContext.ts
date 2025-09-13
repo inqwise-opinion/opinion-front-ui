@@ -11,6 +11,7 @@ import { MainContent } from "@/components/MainContent.js";
 import { ActivePage, ActivePageConsumer, ActivePageProvider } from "../interfaces/ActivePage";
 import type { Service, ServiceRegistry, ServiceConfig } from "../interfaces/Service";
 import type { EventBus, Consumer } from "../lib/EventBus";
+import type { ServiceReference, ServiceReferenceConfig } from "../auth/ServiceReference";
 
 export interface LayoutViewPort {
   width: number;
@@ -68,6 +69,12 @@ export interface HotkeyProvider {
  * Defines all the methods that layout components can use
  */
 export interface LayoutContext extends ActivePageProvider, ServiceRegistry {
+  // Service Reference Management (Lazy service resolution)
+  getServiceReference<T extends Service>(
+    serviceName: string,
+    config?: ServiceReferenceConfig
+  ): ServiceReference<T>;
+  
   // Event Management (Layout-specific events)
   subscribe(
     eventType: LayoutEventType,

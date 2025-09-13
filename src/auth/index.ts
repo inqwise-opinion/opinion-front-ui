@@ -45,6 +45,14 @@ export { AuthService, AuthServiceConfig } from './AuthService';
 export { SessionAuthService, SessionAuthServiceConfig } from './SessionAuthService';
 export { AppHeaderBinderService, AppHeaderBinderServiceConfig } from './AppHeaderBinderService';
 
+// Service reference utilities
+export { 
+  ServiceReference, 
+  ServiceReferenceConfig, 
+  ServiceReferenceManager,
+  createServiceReference 
+} from './ServiceReference';
+
 // Implementation markers for future development
 /**
  * TODO: Implementation markers for Task 3.3.1 completion tracking
