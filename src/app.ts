@@ -103,7 +103,7 @@ export class OpinionApp {
       this.layout = new Layout();
 
       await this.layout
-        .withContext((ctx) => {
+        .onContextReady((ctx) => {
           ctx.getSidebar()?.updateNavigation([
             {
               id: "dashboard",
@@ -212,50 +212,50 @@ export class OpinionApp {
       `🎯 APP.TS - Showing ${type} message from ${source || "unknown"}`,
     );
 
-    // Use the layout's error message system
-    const layoutContext = this.layout.getLayoutContext();
-
-    switch (type) {
-      case "error":
-        layoutContext
-          .getMessages()
-          ?.showError(
-            title || "Test Error",
-            description || "This is a test error message from iframe testing.",
-          );
-        break;
-      case "warning":
-        layoutContext
-          .getMessages()
-          ?.showWarning(
-            title || "Test Warning",
-            description ||
-              "This is a test warning message from iframe testing.",
-          );
-        break;
-      case "info":
-        layoutContext
-          .getMessages()
-          ?.showInfo(
-            title || "Test Info",
-            description || "This is a test info message from iframe testing.",
-          );
-        break;
-      case "success":
-        layoutContext
-          .getMessages()
-          ?.showSuccess(
-            title || "Test Success",
-            description ||
-              "This is a test success message from iframe testing.",
-          );
-        break;
-      default:
-        console.warn("⚠️ APP.TS - Unknown message type:", type);
-        layoutContext
-          .getMessages()
-          ?.showInfo("Test Message", "Unknown message type: " + type);
-    }
+    // Use the layout's error message system via onContextReady pattern
+    this.layout.onContextReady((ctx) => {
+      switch (type) {
+        case "error":
+          ctx
+            .getMessages()
+            ?.showError(
+              title || "Test Error",
+              description || "This is a test error message from iframe testing.",
+            );
+          break;
+        case "warning":
+          ctx
+            .getMessages()
+            ?.showWarning(
+              title || "Test Warning",
+              description ||
+                "This is a test warning message from iframe testing.",
+            );
+          break;
+        case "info":
+          ctx
+            .getMessages()
+            ?.showInfo(
+              title || "Test Info",
+              description || "This is a test info message from iframe testing.",
+            );
+          break;
+        case "success":
+          ctx
+            .getMessages()
+            ?.showSuccess(
+              title || "Test Success",
+              description ||
+                "This is a test success message from iframe testing.",
+            );
+          break;
+        default:
+          console.warn("⚠️ APP.TS - Unknown message type:", type);
+          ctx
+            .getMessages()
+            ?.showInfo("Test Message", "Unknown message type: " + type);
+      }
+    });
   }
 
   /**
@@ -269,8 +269,9 @@ export class OpinionApp {
       return;
     }
 
-    const layoutContext = this.layout.getLayoutContext();
-    layoutContext.getMessages()?.clearAll();
+    this.layout.onContextReady((ctx) => {
+      ctx.getMessages()?.clearAll();
+    });
   }
 
   /**
@@ -319,7 +320,7 @@ export class OpinionApp {
         console.log("🎯 APP.TS - Fallback: Creating DebugPage...");
         this.currentPage = new DebugPage();
         console.log("🎯 APP.TS - Initializing fallback DebugPage...");
-        await this.currentPage.ha;
+        await this.currentPage.init();
         console.log("✅ APP.TS - Fallback DebugPage initialized successfully");
       }
     } catch (error) {

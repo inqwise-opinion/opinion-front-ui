@@ -37,6 +37,14 @@ npm run preview
 
 This arrangement allows the agent to continue with development tasks while the user maintains control over the development server lifecycle.
 
+### 📋 Current Development Mission: Service Architecture Implementation
+
+**Objective**: Implement service-oriented architecture with LayoutContext as application kernel for data binding and component coordination.
+
+**Implementation Strategy**: Infrastructure-first approach - build foundation before implementing specific user models.
+
+**Progress Tracking**: See `docs/service-architecture-progress.md` for detailed task status and implementation progress.
+
 ### Testing
 ```bash
 # Run all tests
@@ -61,12 +69,15 @@ npm run lint:fix
 
 ### Application Structure
 
-This is a **single-page application (SPA)** with a custom routing system built around a central `OpinionApp` class. The application uses a **micro-kernel design** with modular components.
+This is a **single-page application (SPA)** with a custom routing system built around a central `OpinionApp` class. The application uses a **micro-kernel design** with modular components and **service-oriented architecture**.
 
 **Key Architectural Components**:
 
-- **OpinionApp** (`src/app.ts`): Main application controller handling routing, global layout, and lifecycle
+- **OpinionApp** (`src/app.ts`): Main application controller and composition root - handles routing, service registration, and application lifecycle
+- **Layout** (`src/components/Layout.ts`): UI structure manager that owns and provides LayoutContext to OpinionApp via handler pattern
+- **LayoutContext** (`src/contexts/LayoutContextImpl.ts`): **Application Kernel** - manages component registry, service registry, EventBus, and coordinates all application resources
 - **PageComponent** (`src/components/PageComponent.ts`): Abstract base class providing common page functionality including lifecycle management, event handling, and keyboard shortcuts
+- **Service Layer**: Business logic services that register with LayoutContext and communicate via EventBus
 - **Global Layout System**: Header, Sidebar, and Footer components that persist across page navigation
 - **MockApiService** (`src/services/MockApiService.ts`): Development API layer with realistic test data
 
@@ -81,6 +92,39 @@ The codebase follows a **component-based architecture** where:
 - **Layout Context System**: Centralized layout coordination with `LayoutContextImpl`
 - **Error Message System**: Global error/warning/info/success message display
 - **Responsive Layout Modes**: Automatic CSS class management for different viewport modes
+
+### Service Architecture
+
+The application implements a **service-oriented architecture** with the following patterns:
+
+#### **LayoutContext as Application Kernel**
+- **Component Registry**: Manages all UI components (header, sidebar, footer)
+- **Service Registry**: Manages all business logic services
+- **EventBus Management**: Provides unified event system for service communication
+- **Lifecycle Coordination**: Handles initialization and cleanup for all registered resources
+
+#### **Handler Pattern for Service Registration**
+```typescript
+// OpinionApp sets handler before Layout initialization
+layout.setContextHandler(async (context: LayoutContext) => {
+  await this.registerServices(context);
+});
+
+// Layout provides configured context when ready
+await layout.init(); // Calls handler when LayoutContext is configured
+```
+
+#### **Service Interface Contracts**
+- Services work with **abstract interfaces**, not concrete components
+- **UserDisplay** interface for components that display user information
+- **DataLoader<T>** interface for data loading services
+- Services register target components that implement required interfaces
+
+#### **Data Binding Patterns**
+- **Reactive Updates**: Services automatically update registered components when data changes
+- **Event-Driven Communication**: Services communicate via LayoutContext's EventBus
+- **Lifecycle Integration**: Services automatically cleaned up when LayoutContext destroys
+- **Type Safety**: Full TypeScript interfaces throughout service layer
 
 ### TypeScript Configuration
 

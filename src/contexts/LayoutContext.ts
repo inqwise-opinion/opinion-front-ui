@@ -9,6 +9,8 @@ import type { Messages } from "../interfaces/Messages.js";
 import { AppFooter } from "@/components/AppFooter.js";
 import { MainContent } from "@/components/MainContent.js";
 import { ActivePage, ActivePageConsumer, ActivePageProvider } from "../interfaces/ActivePage";
+import type { Service, ServiceRegistry, ServiceConfig } from "../interfaces/Service";
+import type { EventBus, Consumer } from "../lib/EventBus";
 
 export interface LayoutViewPort {
   width: number;
@@ -65,13 +67,20 @@ export interface HotkeyProvider {
  * Main LayoutContext Interface
  * Defines all the methods that layout components can use
  */
-export interface LayoutContext extends ActivePageProvider {
-  // Event Management
+export interface LayoutContext extends ActivePageProvider, ServiceRegistry {
+  // Event Management (Layout-specific events)
   subscribe(
     eventType: LayoutEventType,
     listener: LayoutEventListener,
   ): () => void;
   emit(eventType: LayoutEventType, data: any): void;
+
+  // EventBus - Cross-component Communication
+  getEventBus(): EventBus;
+  publish(event: string, data: any): void;
+  send(event: string, data: any): void;
+  request(event: string, data: any, timeout?: number): Promise<any>;
+  consume(event: string, handler: (data: any) => any, component?: string): Consumer;
 
   // State Management
   getViewport(): LayoutViewPort;

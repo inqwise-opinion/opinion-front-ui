@@ -25,7 +25,7 @@ export interface Consumer {
   getEventName(): string;
 }
 
-export interface EventBusInterface {
+export interface EventBus {
   /**
    * PUBLISH - Broadcast to ALL consumers (non-blocking)
    * All registered consumers will receive the event

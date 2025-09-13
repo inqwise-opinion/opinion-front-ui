@@ -1,6 +1,6 @@
 import { 
   Consumer, 
-  EventBusInterface, 
+  EventBus, 
   EventBusError, 
   EventBusOptions 
 } from './EventBus';
@@ -19,7 +19,7 @@ interface ConsumerImpl extends Consumer {
  * - SEND: Deliver to FIRST consumer only
  * - REQUEST: Send to FIRST consumer and await response
  */
-export class EventBusImpl implements EventBusInterface {
+export class EventBusImpl implements EventBus {
   private listeners: Map<string, Set<ConsumerImpl>> = new Map();
   private options: EventBusOptions;
 

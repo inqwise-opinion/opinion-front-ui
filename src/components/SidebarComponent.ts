@@ -15,7 +15,7 @@ export class SidebarComponent implements Sidebar {
   private isInitialized: boolean = false;
   private navigationItems: NavigationItem[] = [];
   private compactMode: boolean = false;
-  //private compactModeListeners: Array<(isCompact: boolean) => void> = [];
+  private compactModeListeners: Array<(isCompact: boolean) => void> = [];
   private layoutContext: LayoutContext;
   private toggleCompactModeHandler?: (compactMode: boolean) => void;
 
@@ -538,6 +538,9 @@ export class SidebarComponent implements Sidebar {
       // Update toggle button
       this.updateCompactToggleButton();
 
+      // Notify listeners of the change
+      this.notifyCompactModeChange(compact);
+
       console.log(
         `✅ Sidebar - Compact mode ${compact ? "enabled" : "disabled"}`,
       );
@@ -547,32 +550,32 @@ export class SidebarComponent implements Sidebar {
   /**
    * Subscribe to compact mode changes
    */
-  // public onCompactModeChange(
-  //   callback: (isCompact: boolean) => void,
-  // ): () => void {
-  //   this.compactModeListeners.push(callback);
+  public onCompactModeChange(
+    callback: (isCompact: boolean) => void,
+  ): () => void {
+    this.compactModeListeners.push(callback);
 
-  //   // Return unsubscribe function
-  //   return () => {
-  //     const index = this.compactModeListeners.indexOf(callback);
-  //     if (index > -1) {
-  //       this.compactModeListeners.splice(index, 1);
-  //     }
-  //   };
-  // }
+    // Return unsubscribe function
+    return () => {
+      const index = this.compactModeListeners.indexOf(callback);
+      if (index > -1) {
+        this.compactModeListeners.splice(index, 1);
+      }
+    };
+  }
 
   /**
    * Notify all listeners of compact mode changes
    */
-  // private notifyCompactModeChange(isCompact: boolean): void {
-  //   this.compactModeListeners.forEach((listener) => {
-  //     try {
-  //       listener(isCompact);
-  //     } catch (error) {
-  //       console.error("Sidebar - Error in compact mode listener:", error);
-  //     }
-  //   });
-  // }
+  private notifyCompactModeChange(isCompact: boolean): void {
+    this.compactModeListeners.forEach((listener) => {
+      try {
+        listener(isCompact);
+      } catch (error) {
+        console.error("Sidebar - Error in compact mode change handler:", error);
+      }
+    });
+  }
 
   /**
    * Toggle compact mode

@@ -18,6 +18,19 @@ import {
   type LayoutModeType,
 } from "../contexts/index.js";
 import LayoutContextImpl from "../contexts/LayoutContextImpl.js";
+import type {
+  ContextHandler,
+  LifecycleHandler,
+  HandlerConfig,
+  HandlerRegistration,
+  HandlerResult,
+  HandlerPriority,
+} from "../types/LayoutHandlers";
+import { isLifecycleHandler, isContextHandler } from "../types/LayoutHandlers";
+
+// Re-export handler types for convenience
+export type { ContextHandler, LifecycleHandler, HandlerConfig, HandlerResult };
+export { HandlerPriority };
 
 /**
  * User menu item interface for configurable user menu
@@ -71,9 +84,9 @@ export class Layout {
   private isInitialized: boolean = false;
   private layoutContext: LayoutContextImpl;
   private layoutUnsubscribers: Array<() => void> = [];
-  private deferredContextHandlers: Array<
-    (layoutContext: LayoutContext) => void
-  > = [];
+  // Unified handler system (replaces old onReadyHandlers)
+  private registeredHandlers: Array<HandlerRegistration> = [];
+  private contextHandlers: Array<ContextHandler | LifecycleHandler> = [];
 
   // Navigation and user menu state
   private navigationItems: NavigationItem[] = [];
@@ -206,8 +219,8 @@ export class Layout {
       // Mark layout as ready
       this.layoutContext.markReady();
 
-      // Execute any deferred context handlers now that everything is ready
-      this.executeDeferredContextHandlers();
+      // Execute all registered handlers (unified system)
+      await this.executeRegisteredHandlers();
 
       this.isInitialized = true;
       console.log("✅ LAYOUT - Layout initialization completed successfully!");
@@ -291,12 +304,8 @@ export class Layout {
     return this.sidebar;
   }
 
-  /**
-   * Get layout context instance
-   */
-  getLayoutContext(): LayoutContext {
-    return this.layoutContext;
-  }
+  // Layout context access removed - use onContextReady() for setup/configuration
+  // Direct context access is available to pages via PageComponent.layoutContext
 
   /**
    * Update user information across all components
@@ -895,70 +904,306 @@ export class Layout {
   }
 
   /**
-   * Fluent interface method to work with LayoutContext
+   * Register a callback to execute when LayoutContext is ready
    * Provides safe access to LayoutContext with proper error handling
    * Defers handler execution until LayoutContext is fully initialized
+   * 
+   * NOTE: This method now uses the unified handler system internally
    *
-   * @param handler - Function that receives the LayoutContext instance
+   * @param handler - Function that receives the LayoutContext instance when ready
    * @returns Layout instance for method chaining
    */
-  public withContext<T>(handler: (layoutContext: LayoutContext) => T): Layout {
-    if (!this.layoutContext) {
-      console.warn("Layout - LayoutContext not initialized yet");
-      return this;
-    }
-
-    // If layout is already initialized and ready, execute immediately
-    if (this.isInitialized && this.layoutContext.isReady()) {
-      try {
-        handler(this.layoutContext);
-      } catch (error) {
-        console.error("Layout - Error in withContext handler:", error);
-      }
-    } else {
-      // Otherwise, save handler to class member for deferred execution
-      this.deferredContextHandlers.push(handler);
-      console.log(
-        `Layout - Handler deferred, total pending: ${this.deferredContextHandlers.length}`,
-      );
-    }
-
-    return this; // Return Layout for method chaining
+  public onContextReady<T>(handler: (layoutContext: LayoutContext) => T): Layout {
+    // Convert simple handler to ContextHandler and use new system
+    const contextHandler: ContextHandler<T> = handler;
+    
+    return this.setContextHandler(contextHandler, {
+      enableLogging: false, // Keep simple usage quiet by default
+      continueOnError: true,
+      timeout: 5000,
+    });
   }
 
   /**
-   * Execute all deferred context handlers
-   * Called when LayoutContext is fully ready
+   * Convenience method: Register a simple handler with standard configuration
+   * For more advanced scenarios, use setContextHandler() directly
+   * 
+   * @param handler - Simple context handler function
+   * @param priority - Execution priority (optional)
+   * @returns Layout instance for method chaining
    */
-  private executeDeferredContextHandlers(): void {
-    if (this.deferredContextHandlers.length === 0) {
+  public addHandler(handler: ContextHandler, priority?: number): Layout {
+    return this.setContextHandler(handler, {
+      enableLogging: false,
+      continueOnError: true, 
+      timeout: 5000,
+    });
+  }
+
+  /**
+   * Convenience method: Register a service registration handler
+   * 
+   * @param services - Array of services to register
+   * @param id - Handler identifier (optional)
+   * @param priority - Execution priority (optional)
+   * @returns Layout instance for method chaining
+   */
+  public addServiceRegistration(
+    services: Array<{ name: string; factory: (context: LayoutContext) => any; dependencies?: string[] }>,
+    id?: string,
+    priority: number = 500 // Default to high priority for service registration
+  ): Layout {
+    const lifecycleHandler: LifecycleHandler = {
+      id: id || 'service-registration',
+      priority,
+      onContextReady: (context) => {
+        services.forEach(({ name, factory, dependencies = [] }) => {
+          const service = factory(context);
+          context.registerService(name, service);
+        });
+      },
+    };
+
+    return this.setContextHandler(lifecycleHandler, {
+      enableLogging: true,
+      continueOnError: false, // Service registration should not fail silently
+      timeout: 10000, // More time for service initialization
+    });
+  }
+
+  // =====================================================================================
+  // FORMAL HANDLER SYSTEM (Advanced Pattern)
+  // =====================================================================================
+  
+  /**
+   * Register a formal context handler with lifecycle support
+   * This is the advanced handler pattern for complex service registration scenarios
+   *
+   * @param handler - ContextHandler or LifecycleHandler
+   * @param config - Handler configuration options
+   * @returns Layout instance for method chaining
+   */
+  public setContextHandler(
+    handler: ContextHandler | LifecycleHandler,
+    config: HandlerConfig = {}
+  ): Layout {
+    const defaultConfig: HandlerConfig = {
+      timeout: 5000,
+      continueOnError: true,
+      enableLogging: true,
+      ...config,
+    };
+
+    const registration: HandlerRegistration = {
+      handler,
+      config: defaultConfig,
+      registered: new Date(),
+    };
+
+    this.registeredHandlers.push(registration);
+    this.contextHandlers.push(handler);
+
+    if (defaultConfig.enableLogging) {
+      const handlerType = isLifecycleHandler(handler) ? 'LifecycleHandler' : 'ContextHandler';
+      const id = isLifecycleHandler(handler) ? handler.id : 'anonymous';
+      console.log(`Layout - Registered ${handlerType} (${id})`);
+    }
+
+    // If layout is already initialized, execute immediately
+    if (this.isInitialized && this.layoutContext.isReady()) {
+      this.executeHandler(registration);
+    }
+
+    return this;
+  }
+
+  /**
+   * Register multiple context handlers at once
+   * Handlers will be executed in the order they are provided
+   *
+   * @param handlers - Array of handler configurations
+   * @returns Layout instance for method chaining
+   */
+  public setContextHandlers(
+    handlers: Array<{ handler: ContextHandler | LifecycleHandler; config?: HandlerConfig }>
+  ): Layout {
+    handlers.forEach(({ handler, config }) => {
+      this.setContextHandler(handler, config);
+    });
+    return this;
+  }
+
+  /**
+   * Execute a single formal handler with full lifecycle support
+   * @private
+   */
+  private async executeHandler(registration: HandlerRegistration): Promise<HandlerResult> {
+    const { handler, config } = registration;
+    const startTime = Date.now();
+    
+    let result: HandlerResult = {
+      success: false,
+      executionTime: 0,
+    };
+
+    try {
+      if (isLifecycleHandler(handler)) {
+        await this.executeLifecycleHandler(handler, config);
+      } else {
+        await this.executeContextHandler(handler, config);
+      }
+      
+      result.success = true;
+    } catch (error) {
+      result.error = error as Error;
+      if (config.enableLogging) {
+        console.error('Layout - Handler execution failed:', error);
+      }
+      
+      // Execute error handler if it's a lifecycle handler
+      if (isLifecycleHandler(handler) && handler.onError) {
+        try {
+          await handler.onError(error as Error, this.layoutContext);
+        } catch (errorHandlerError) {
+          console.error('Layout - Error handler also failed:', errorHandlerError);
+        }
+      }
+      
+      if (!config.continueOnError) {
+        throw error;
+      }
+    } finally {
+      result.executionTime = Date.now() - startTime;
+    }
+
+    return result;
+  }
+
+  /**
+   * Execute a lifecycle handler with all phases
+   * @private
+   */
+  private async executeLifecycleHandler(handler: LifecycleHandler, config: HandlerConfig): Promise<void> {
+    const id = handler.id || 'anonymous';
+    
+    if (config.enableLogging) {
+      console.log(`Layout - Executing LifecycleHandler: ${id}`);
+    }
+
+    // Phase 1: Pre-init
+    if (handler.onPreInit) {
+      if (config.enableLogging) {
+        console.log(`Layout - Executing onPreInit for: ${id}`);
+      }
+      await this.executeWithTimeout(handler.onPreInit, config.timeout!);
+    }
+
+    // Phase 2: Main context ready
+    if (config.enableLogging) {
+      console.log(`Layout - Executing onContextReady for: ${id}`);
+    }
+    await this.executeWithTimeout(
+      () => handler.onContextReady(this.layoutContext),
+      config.timeout!
+    );
+
+    // Phase 3: Post-init
+    if (handler.onPostInit) {
+      if (config.enableLogging) {
+        console.log(`Layout - Executing onPostInit for: ${id}`);
+      }
+      await this.executeWithTimeout(
+        () => handler.onPostInit!(this.layoutContext),
+        config.timeout!
+      );
+    }
+
+    if (config.enableLogging) {
+      console.log(`Layout - Completed LifecycleHandler: ${id}`);
+    }
+  }
+
+  /**
+   * Execute a simple context handler
+   * @private
+   */
+  private async executeContextHandler(handler: ContextHandler, config: HandlerConfig): Promise<void> {
+    if (config.enableLogging) {
+      console.log('Layout - Executing ContextHandler');
+    }
+    
+    await this.executeWithTimeout(
+      () => handler(this.layoutContext),
+      config.timeout!
+    );
+  }
+
+  /**
+   * Execute a function with timeout support
+   * @private
+   */
+  private async executeWithTimeout<T>(
+    fn: () => T | Promise<T>,
+    timeoutMs: number
+  ): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error(`Handler execution timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+
+      Promise.resolve(fn())
+        .then((result) => {
+          clearTimeout(timeoutId);
+          resolve(result);
+        })
+        .catch((error) => {
+          clearTimeout(timeoutId);
+          reject(error);
+        });
+    });
+  }
+
+  /**
+   * Execute all registered formal handlers
+   * Called during layout initialization
+   * @private
+   */
+  private async executeRegisteredHandlers(): Promise<void> {
+    if (this.registeredHandlers.length === 0) {
       return;
     }
 
-    console.log(
-      `Layout - Executing ${this.deferredContextHandlers.length} deferred context handlers`,
-    );
+    console.log(`Layout - Executing ${this.registeredHandlers.length} registered handlers`);
 
-    const handlers = [...this.deferredContextHandlers];
-    this.deferredContextHandlers = []; // Clear the array
-
-    handlers.forEach((handler, index) => {
-      try {
-        console.log(
-          `Layout - Executing deferred handler ${index + 1}/${handlers.length}`,
-        );
-        handler(this.layoutContext);
-      } catch (error) {
-        console.error(
-          `Layout - Error in deferred context handler ${index + 1}:`,
-          error,
-        );
-      }
+    // Sort handlers by priority (higher priority = executed first)
+    const sortedRegistrations = [...this.registeredHandlers].sort((a, b) => {
+      const priorityA = isLifecycleHandler(a.handler) ? a.handler.priority || 0 : 0;
+      const priorityB = isLifecycleHandler(b.handler) ? b.handler.priority || 0 : 0;
+      return priorityB - priorityA;
     });
 
-    console.log(
-      `Layout - All ${handlers.length} deferred context handlers executed`,
-    );
+    for (const registration of sortedRegistrations) {
+      await this.executeHandler(registration);
+    }
+
+    console.log('Layout - All registered handlers executed');
+  }
+
+  /**
+   * Get information about registered handlers
+   */
+  public getRegisteredHandlers(): Array<{
+    type: 'ContextHandler' | 'LifecycleHandler';
+    id?: string;
+    priority?: number;
+    registered: Date;
+  }> {
+    return this.registeredHandlers.map(({ handler, registered }) => ({
+      type: isLifecycleHandler(handler) ? 'LifecycleHandler' : 'ContextHandler',
+      id: isLifecycleHandler(handler) ? handler.id : undefined,
+      priority: isLifecycleHandler(handler) ? handler.priority : undefined,
+      registered,
+    }));
   }
 
   // All message methods are now accessed exclusively through LayoutContext.getMessages()
@@ -983,12 +1228,13 @@ export class Layout {
     });
     this.layoutUnsubscribers = [];
 
-    // Clear any pending deferred context handlers
-    if (this.deferredContextHandlers.length > 0) {
+    // Clear all registered handlers (unified system)
+    if (this.registeredHandlers.length > 0) {
       console.log(
-        `Layout - Clearing ${this.deferredContextHandlers.length} pending deferred context handlers`,
+        `Layout - Clearing ${this.registeredHandlers.length} registered handlers`,
       );
-      this.deferredContextHandlers = [];
+      this.registeredHandlers = [];
+      this.contextHandlers = [];
     }
 
     // Unregister all components from LayoutContext

@@ -47,6 +47,9 @@ export interface Sidebar {
   init(): Promise<void>;
   destroy(): void;
 
+  // Event handling
+  onCompactModeChange(handler: CompactModeChangeHandler): () => void;
+
   /**
    * Set the toggle compact mode handler
    */
@@ -70,6 +73,11 @@ export interface NavigationItem {
 }
 
 /**
+ * Compact mode change handler function type
+ */
+export type CompactModeChangeHandler = (isCompact: boolean) => void;
+
+/**
  * Sidebar dimensions interface - pure dimensional data
  * Behavioral state should be accessed via dedicated methods or layout mode
  */
@@ -77,3 +85,9 @@ export interface Dimensions {
   width: number; // Current width in pixels
   isVisible: boolean; // Whether sidebar is visible
 }
+
+// Export concrete implementation (imported separately to avoid circular dependencies)
+// Use: import { SidebarComponent } from './Sidebar';
+// Or:  import { Sidebar } from './Sidebar'; // for tests
+export { default as SidebarComponent } from './SidebarComponent';
+export { default as Sidebar } from './SidebarComponent'; // For backward compatibility in tests

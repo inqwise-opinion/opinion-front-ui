@@ -23,6 +23,10 @@ import type {
   ActivePageConsumer,
   ActivePageProvider,
 } from "../interfaces/ActivePage";
+import type { Service, ServiceConfig } from "../interfaces/Service";
+import { ServiceError } from "../interfaces/Service";
+import type { EventBus, Consumer } from "../lib/EventBus";
+import { EventBusImpl } from "../lib/EventBusImpl";
 
 export class LayoutContextImpl implements LayoutContext {
   private listeners: Map<LayoutEventType, Set<LayoutEventListener>> = new Map();
@@ -51,11 +55,19 @@ export class LayoutContextImpl implements LayoutContext {
   private currentActivePage: ActivePage | null = null;
   private activePageConsumers: Set<ActivePageConsumer> = new Set();
 
+  // Service Registry Management
+  private serviceRegistry: Map<string, Service> = new Map();
+
+  // EventBus Management
+  private eventBus: EventBus;
+  private eventBusConsumers: Map<string, Consumer[]> = new Map(); // Track consumers by component
+
   public constructor() {
     this.viewport = this.calculateViewPort();
     this.modeType = this.identifyModeType(this.viewport);
     this.setupViewportObserver();
     this.setupHotkeyManager();
+    this.setupEventBus();
     console.log("LayoutContext - Initialized with viewport:", this.viewport);
     console.log("LayoutContext - Initialized layout mode type:", this.modeType);
   }
@@ -236,36 +248,6 @@ export class LayoutContextImpl implements LayoutContext {
     return this.isLayoutReady;
   }
 
-  /**
-   * Destroy context and cleanup
-   */
-  public destroy(): void {
-    console.log("LayoutContext - Destroying...");
-
-    // Reset ready state
-    this.isLayoutReady = false;
-
-    // Clear all listeners
-    this.listeners.clear();
-
-    // Cleanup resize observer
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-      this.resizeObserver = null;
-    }
-
-    // Clear timeout
-    if (this.resizeTimeout) {
-      clearTimeout(this.resizeTimeout);
-      this.resizeTimeout = null;
-    }
-
-    // Remove window listeners
-    // Note: In a real implementation, you'd want to track listeners to remove them properly
-
-    // No singleton cleanup needed
-    console.log("LayoutContext - Destroyed");
-  }
 
   /**
    * Emit layout mode change event and coordinate component states
@@ -688,6 +670,126 @@ export class LayoutContextImpl implements LayoutContext {
   }
 
   // =================================================================================
+  // EventBus Management System
+  // =================================================================================
+
+  /**
+   * Setup the EventBus for cross-component communication
+   */
+  private setupEventBus(): void {
+    console.log('LayoutContext - Setting up EventBus for cross-component communication...');
+    
+    this.eventBus = new EventBusImpl({
+      debug: false, // Set to true for development debugging
+      defaultTimeout: 5000,
+      maxConsumersPerEvent: 0 // Unlimited consumers
+    });
+    
+    console.log('LayoutContext - EventBus initialized ✅');
+  }
+
+  /**
+   * Get the EventBus instance for direct access
+   */
+  public getEventBus(): EventBus {
+    return this.eventBus;
+  }
+
+  /**
+   * PUBLISH - Broadcast event to ALL consumers (non-blocking)
+   */
+  public publish(event: string, data: any): void {
+    console.log(`LayoutContext - Publishing event: ${event}`);
+    this.eventBus.publish(event, data);
+  }
+
+  /**
+   * SEND - Deliver event to FIRST consumer only (non-blocking)
+   */
+  public send(event: string, data: any): void {
+    console.log(`LayoutContext - Sending event: ${event}`);
+    this.eventBus.send(event, data);
+  }
+
+  /**
+   * REQUEST - Send to FIRST consumer and await response (non-blocking Promise)
+   */
+  public request(event: string, data: any, timeout?: number): Promise<any> {
+    console.log(`LayoutContext - Requesting response for event: ${event}`);
+    return this.eventBus.request(event, data, timeout);
+  }
+
+  /**
+   * CONSUME - Subscribe to events with component tracking
+   */
+  public consume(event: string, handler: (data: any) => any, component?: string): Consumer {
+    console.log(`LayoutContext - Registering consumer for event: ${event}${component ? ` (component: ${component})` : ''}`);
+    
+    const consumer = this.eventBus.consume(event, handler);
+    
+    // Track consumer for component cleanup
+    if (component) {
+      if (!this.eventBusConsumers.has(component)) {
+        this.eventBusConsumers.set(component, []);
+      }
+      this.eventBusConsumers.get(component)!.push(consumer);
+    }
+    
+    return consumer;
+  }
+
+  /**
+   * Unregister all EventBus consumers for a specific component
+   */
+  public unregisterEventBusConsumers(component: string): number {
+    const consumers = this.eventBusConsumers.get(component);
+    if (!consumers) {
+      return 0;
+    }
+    
+    let unregisteredCount = 0;
+    consumers.forEach(consumer => {
+      if (consumer.isActive()) {
+        consumer.unregister();
+        unregisteredCount++;
+      }
+    });
+    
+    this.eventBusConsumers.delete(component);
+    
+    console.log(`LayoutContext - Unregistered ${unregisteredCount} EventBus consumers for component: ${component}`);
+    return unregisteredCount;
+  }
+
+  /**
+   * Get EventBus debug information
+   */
+  public getEventBusDebugInfo(): { 
+    eventCount: number; 
+    totalConsumers: number; 
+    events: Array<{ name: string; consumers: number }>
+    componentConsumers: Array<{ component: string; consumers: number }>
+  } {
+    const eventNames = this.eventBus.getEventNames();
+    const events = eventNames.map(name => ({
+      name,
+      consumers: this.eventBus.getConsumerCount(name)
+    }));
+    
+    const componentConsumers = Array.from(this.eventBusConsumers.entries()).map(([component, consumers]) => ({
+      component,
+      consumers: consumers.filter(c => c.isActive()).length
+    }));
+    
+    return {
+      eventCount: eventNames.length,
+      totalConsumers: events.reduce((sum, event) => sum + event.consumers, 0),
+      events,
+      componentConsumers
+    };
+  }
+
+  // =================================================================================
   // Active Hotkey Provider Management
   // =================================================================================
   
@@ -900,11 +1002,297 @@ export class LayoutContextImpl implements LayoutContext {
     // This would require extending the hotkey system to be aware of ActivePage instances
   }
   
+  // =================================================================================
+  // Service Registry Management Implementation
+  // =================================================================================
+
   /**
-   * Enhanced destroy method - cleanup hotkey manager and active page
+   * Register a service with the LayoutContext
+   * Services must implement the Service interface and will be included in lifecycle management
+   */
+  public registerService<T extends Service>(name: string, service: T): void {
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      throw new ServiceError('Service name must be a non-empty string', name || 'unknown', 'register');
+    }
+    
+    if (!service) {
+      throw new ServiceError('Service instance is required', name, 'register');
+    }
+    
+    // Validate service implements the Service interface
+    if (typeof service.getServiceId !== 'function') {
+      throw new ServiceError('Service must implement the Service interface (getServiceId method missing)', name, 'register');
+    }
+    
+    const serviceId = service.getServiceId();
+    
+    if (this.serviceRegistry.has(name)) {
+      console.warn(
+        `LayoutContext - Service '${name}' is already registered, replacing existing service`,
+        { existingServiceId: this.serviceRegistry.get(name)?.getServiceId(), newServiceId: serviceId }
+      );
+    }
+    
+    this.serviceRegistry.set(name, service);
+    
+    console.log(
+      `LayoutContext - Service '${name}' registered (${this.serviceRegistry.size} total services)`,
+      { serviceId, serviceType: service.constructor?.name || 'Unknown' }
+    );
+  }
+
+  /**
+   * Retrieve a registered service by name with type safety
+   */
+  public getService<T extends Service>(name: string): T | null {
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      console.warn('LayoutContext - Service name must be a non-empty string');
+      return null;
+    }
+    
+    const service = this.serviceRegistry.get(name) as T;
+    
+    if (!service) {
+      console.warn(`LayoutContext - Service '${name}' not found`);
+      return null;
+    }
+    
+    return service;
+  }
+
+  /**
+   * Check if a service is registered
+   */
+  public hasService(name: string): boolean {
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return false;
+    }
+    
+    return this.serviceRegistry.has(name);
+  }
+
+  /**
+   * Unregister a service by name
+   * Returns true if service was found and removed, false otherwise
+   * Calls destroy on the service if it has a destroy method
+   */
+  public async unregisterService(name: string): Promise<boolean> {
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      console.warn('LayoutContext - Service name must be a non-empty string');
+      return false;
+    }
+    
+    const service = this.serviceRegistry.get(name);
+    const wasRegistered = this.serviceRegistry.delete(name);
+    
+    if (wasRegistered && service) {
+      // Call destroy on the service if it has a destroy method
+      if (typeof service.destroy === 'function') {
+        try {
+          const result = service.destroy();
+          if (result instanceof Promise) {
+            await result;
+          }
+          console.log(
+            `LayoutContext - Service '${name}' destroyed during unregistration`,
+            { serviceId: service.getServiceId() }
+          );
+        } catch (error) {
+          console.error(
+            `LayoutContext - Service '${name}' destroy failed during unregistration:`,
+            error
+          );
+        }
+      }
+      
+      console.log(
+        `LayoutContext - Service '${name}' unregistered (${this.serviceRegistry.size} remaining services)`,
+        { serviceId: service.getServiceId() }
+      );
+    } else {
+      console.warn(`LayoutContext - Service '${name}' was not registered`);
+    }
+    
+    return wasRegistered;
+  }
+
+  /**
+   * Get all registered services as a Map
+   * Useful for debugging and testing
+   */
+  public getRegisteredServices(): Map<string, Service> {
+    return new Map(this.serviceRegistry);
+  }
+
+  /**
+   * Get names of all registered services
+   */
+  public getServiceNames(): string[] {
+    return Array.from(this.serviceRegistry.keys());
+  }
+
+  /**
+   * Initialize all registered services
+   * Services with init() method will be called in registration order
+   */
+  public async initializeServices(): Promise<void> {
+    if (this.serviceRegistry.size === 0) {
+      console.log('LayoutContext - No services to initialize');
+      return;
+    }
+
+    console.log(`LayoutContext - Initializing ${this.serviceRegistry.size} services...`);
+    
+    const initPromises: Promise<void>[] = [];
+    const errors: { name: string; error: Error }[] = [];
+
+    for (const [name, service] of this.serviceRegistry) {
+      if (typeof service.init === 'function') {
+        try {
+          const result = service.init();
+          
+          if (result instanceof Promise) {
+            initPromises.push(
+              result.catch(error => {
+                errors.push({ name, error });
+                throw new ServiceError(`Service '${name}' initialization failed: ${error.message}`, name, 'init');
+              })
+            );
+          }
+          
+          console.log(`LayoutContext - Service '${name}' initialized`, { serviceId: service.getServiceId() });
+        } catch (error) {
+          errors.push({ name, error: error as Error });
+          console.error(`LayoutContext - Service '${name}' initialization failed:`, error);
+        }
+      } else {
+        console.log(`LayoutContext - Service '${name}' has no init method, skipping`, { serviceId: service.getServiceId() });
+      }
+    }
+
+    // Wait for all async initializations
+    if (initPromises.length > 0) {
+      try {
+        await Promise.all(initPromises);
+      } catch (error) {
+        console.error('LayoutContext - Some services failed to initialize:', error);
+        // Continue execution - don't fail entire initialization for one service
+      }
+    }
+
+    if (errors.length > 0) {
+      console.warn(`LayoutContext - ${errors.length} services had initialization errors:`, errors);
+    }
+
+    console.log(`LayoutContext - Service initialization complete (${this.serviceRegistry.size - errors.length}/${this.serviceRegistry.size} successful)`);
+  }
+
+  /**
+   * Destroy all registered services
+   * Services with destroy() method will be called in reverse registration order
+   */
+  public async destroyServices(): Promise<void> {
+    if (this.serviceRegistry.size === 0) {
+      console.log('LayoutContext - No services to destroy');
+      return;
+    }
+
+    console.log(`LayoutContext - Destroying ${this.serviceRegistry.size} services...`);
+    
+    const destroyPromises: Promise<void>[] = [];
+    const errors: { name: string; error: Error }[] = [];
+    
+    // Destroy services in reverse order
+    const servicesArray = Array.from(this.serviceRegistry.entries()).reverse();
+
+    for (const [name, service] of servicesArray) {
+      if (typeof service.destroy === 'function') {
+        try {
+          const result = service.destroy();
+          
+          if (result instanceof Promise) {
+            destroyPromises.push(
+              result.catch(error => {
+                errors.push({ name, error });
+                console.error(`LayoutContext - Service '${name}' destruction failed:`, error);
+              })
+            );
+          }
+          
+          console.log(`LayoutContext - Service '${name}' destroyed`, { serviceId: service.getServiceId() });
+        } catch (error) {
+          errors.push({ name, error: error as Error });
+          console.error(`LayoutContext - Service '${name}' destruction failed:`, error);
+        }
+      } else {
+        console.log(`LayoutContext - Service '${name}' has no destroy method, skipping`, { serviceId: service.getServiceId() });
+      }
+    }
+
+    // Wait for all async destructions
+    if (destroyPromises.length > 0) {
+      try {
+        await Promise.all(destroyPromises);
+      } catch (error) {
+        console.error('LayoutContext - Some services failed to destroy cleanly:', error);
+        // Continue cleanup - don't fail entire destruction for one service
+      }
+    }
+
+    if (errors.length > 0) {
+      console.warn(`LayoutContext - ${errors.length} services had destruction errors:`, errors);
+    }
+
+    // Clear the registry after destruction attempts
+    this.serviceRegistry.clear();
+
+    console.log('LayoutContext - Service destruction complete');
+  }
+
+  /**
+   * Enhanced destroy method - cleanup all resources: services, hotkeys, active pages, layout state
    */
   public destroy(): void {
     console.log("LayoutContext - Destroying...");
+
+    // Cleanup services first (async services will be destroyed synchronously, warnings logged)
+    if (this.serviceRegistry.size > 0) {
+      console.log('LayoutContext - Cleaning up services during destroy...');
+      
+      // Call destroy synchronously - any async cleanup will be logged as warnings
+      for (const [name, service] of this.serviceRegistry) {
+        if (typeof service.destroy === 'function') {
+          try {
+            const result = service.destroy();
+            if (result instanceof Promise) {
+              console.warn(`LayoutContext - Service '${name}' returned Promise from destroy() during synchronous cleanup - async cleanup may not complete`);
+            }
+          } catch (error) {
+            console.error(`LayoutContext - Service '${name}' destruction failed during cleanup:`, error);
+          }
+        }
+      }
+      
+      this.serviceRegistry.clear();
+      console.log('LayoutContext - Service registry cleared');
+    }
+
+    // Cleanup EventBus consumers
+    console.log('LayoutContext - Cleaning up EventBus consumers...');
+    let totalUnregistered = 0;
+    for (const [component, consumers] of this.eventBusConsumers) {
+      const count = consumers.filter(c => c.isActive()).length;
+      consumers.forEach(consumer => {
+        if (consumer.isActive()) {
+          consumer.unregister();
+          totalUnregistered++;
+        }
+      });
+      console.log(`LayoutContext - Unregistered ${count} EventBus consumers for component: ${component}`);
+    }
+    this.eventBusConsumers.clear();
+    this.eventBus.removeAllConsumers();
+    console.log(`LayoutContext - EventBus cleanup complete (${totalUnregistered} consumers unregistered)`);
 
     // Cleanup active page tracking
     this.currentActivePage = null;
@@ -939,8 +1327,7 @@ export class LayoutContextImpl implements LayoutContext {
       this.resizeTimeout = null;
     }
 
-    // No singleton cleanup needed
-    console.log("LayoutContext - Destroyed");
+    console.log("LayoutContext - Destroyed successfully");
   }
 }
 

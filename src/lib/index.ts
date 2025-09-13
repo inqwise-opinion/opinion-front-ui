@@ -7,7 +7,7 @@
 // EventBus exports
 export { 
   Consumer, 
-  EventBusInterface, 
+  EventBus, 
   EventBusError, 
   EventBusOptions 
 } from './EventBus';

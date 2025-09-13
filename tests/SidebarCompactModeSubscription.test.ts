@@ -12,7 +12,23 @@ describe('Sidebar Compact Mode Subscription', () => {
 
   beforeEach(() => {
     // Set up DOM environment
-    document.body.innerHTML = '';
+    document.body.innerHTML = `
+      <div class="app-layout">
+        <nav class="app-sidebar" id="app-sidebar" aria-label="Main navigation">
+          <div class="sidebar-header">
+            <div class="sidebar-brand">
+              <h1 class="brand-title">Opinion</h1>
+            </div>
+          </div>
+          <div class="sidebar-navigation">
+            <!-- Navigation populated by Sidebar component -->
+          </div>
+          <div class="sidebar-footer">
+            <!-- Footer populated by Sidebar component -->
+          </div>
+        </nav>
+      </div>
+    `;
     
     // Create desktop viewport environment (compact mode is for desktop)
     Object.defineProperty(window, 'innerWidth', {
@@ -31,8 +47,8 @@ describe('Sidebar Compact Mode Subscription', () => {
     sidebar.init();
     
     // Get DOM references
-    sidebarElement = document.getElementById('app_sidebar') as HTMLElement;
-    compactToggleButton = document.getElementById('sidebar_compact_toggle') as HTMLElement;
+    sidebarElement = document.getElementById('app-sidebar') as HTMLElement;
+    compactToggleButton = document.querySelector('.compact-toggle-btn') as HTMLElement;
   });
 
   afterEach(() => {
