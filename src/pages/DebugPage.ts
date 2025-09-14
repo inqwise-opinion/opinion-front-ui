@@ -176,6 +176,12 @@ export class DebugPage extends PageComponent {
                   <h4 style="margin: 0 0 10px 0; color: #555;">Event Statistics:</h4>
                   <div id="event_stats" style="background: #e9ecef; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 13px;">Monitoring stopped. Click 'Start Monitor' to begin tracking events.</div>
                 </div>
+                <div style="margin-top: 15px;">
+                  <h4 style="margin: 0 0 10px 0; color: #555;">Layout Constraints:</h4>
+                  <div style="background: #fff3cd; padding: 10px; border-radius: 4px; font-size: 12px; color: #856404; border: 1px solid #ffeaa7;">
+                    📱 <strong>Mobile Layout:</strong> Compact mode is disabled on mobile layout. Mobile uses overlay sidebar mode instead of compact/expanded states.
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -840,9 +846,17 @@ export class DebugPage extends PageComponent {
       const type = ctx.getModeType();
       const sidebar = ctx.getSidebar();
       const sidebarDimensions = sidebar?.getDimensions();
+      const isMobile = ctx.isLayoutMobile();
+      const isCompact = sidebar?.isCompactMode() ?? false;
+
+      // Color coding based on mobile state
+      const modeColor = isMobile ? "#e74c3c" : "#e67e22";
+      const compactStatus = isMobile 
+        ? "N/A (uses overlay)" 
+        : (isCompact ? "✅ Compact" : "❌ Expanded");
 
       viewportInfo.innerHTML = `
-        <div style="color: #e67e22; font-weight: bold; margin-bottom: 8px;">📱 ${type.toUpperCase()} MODE</div>
+        <div style="color: ${modeColor}; font-weight: bold; margin-bottom: 8px;">📱 ${type.toUpperCase()} MODE</div>
         Width: ${viewport.width}px<br>
         Height: ${viewport.height}px<br>
         Ratio: ${(viewport.width / viewport.height).toFixed(2)}<br>
@@ -850,7 +864,8 @@ export class DebugPage extends PageComponent {
         <div style="font-size: 11px; color: #666;">
           Sidebar Behavior:<br>
           Visible: ${sidebar?.isVisible() ? "✅" : "❌"}<br>
-          Width: ${sidebarDimensions?.width}px
+          Width: ${sidebarDimensions?.width}px<br>
+          Compact: ${compactStatus}
         </div>
       `;
     }
@@ -926,7 +941,7 @@ export class DebugPage extends PageComponent {
       return;
     }
 
-    const ctx = this.mainContent.getLayoutContext();
+    const layoutCtx = this.mainContent.getLayoutContext();
     this.eventMonitoringActive = true;
     this.eventStats = {
       totalEvents: 0,
@@ -937,7 +952,7 @@ export class DebugPage extends PageComponent {
 
     // Subscribe to all known LayoutContext events
     const subscribe = (type: LayoutEventType) => {
-      const unsubscribe = ctx.subscribe(type, (event) => this.handleLayoutEvent(event));
+      const unsubscribe = layoutCtx.subscribe(type, (event) => this.handleLayoutEvent(event));
       this.layoutEventUnsubscribers.push(unsubscribe);
     };
 
@@ -947,6 +962,12 @@ export class DebugPage extends PageComponent {
 
     this.updateEventStatsDisplay();
     this.logLayoutEvent("✅ Layout event monitoring started");
+    
+    // Show mobile layout constraint info if currently in mobile mode
+    const layoutContext = this.mainContent.getLayoutContext();
+    if (layoutContext.isLayoutMobile()) {
+      this.logLayoutEvent("📱 Mobile layout active - compact mode changes will be blocked");
+    }
   }
 
   private stopEventMonitoring(): void {
@@ -984,10 +1005,15 @@ export class DebugPage extends PageComponent {
     try {
       if (event.type === "layout-mode-change") {
         const { viewport, modeType } = event.data || {};
-        return `→ modeType=${modeType}, viewport=${viewport?.width}x${viewport?.height}`;
+        const mobileNote = modeType === "mobile" ? " (compact mode disabled)" : "";
+        return `→ modeType=${modeType}${mobileNote}, viewport=${viewport?.width}x${viewport?.height}`;
       }
       if (event.type === "sidebar-compact-mode-change") {
-        return `→ compactMode=${event.data ? "true" : "false"}`;
+        const compactMode = event.data ? "true" : "false";
+        const layoutContext = this.mainContent.getLayoutContext();
+        const isMobile = layoutContext.isLayoutMobile();
+        const mobileNote = isMobile ? " (blocked on mobile)" : "";
+        return `→ compactMode=${compactMode}${mobileNote}`;
       }
       return event.data ? `→ data=${JSON.stringify(event.data)}` : "";
     } catch {
