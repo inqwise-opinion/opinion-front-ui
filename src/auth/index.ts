@@ -6,52 +6,55 @@
  */
 
 // Core authentication interfaces
+export type { 
+  AuthProvider
+} from './AuthProvider';
 export { 
-  AuthProvider, 
   isAuthProvider,
   AuthenticationError 
 } from './AuthProvider';
 
 // Session-based authentication
-export { 
+export type { 
   SessionAuthProvider, 
-  Account,
+  Account
+} from './SessionAuthProvider';
+export { 
   isSessionAuthProvider
 } from './SessionAuthProvider';
 
 // Exception handling
 export { 
-  AuthenticationError,
   isAuthenticationError,
   createAuthenticationError,
   AuthErrors
 } from './exceptions/AuthenticationExceptions';
 
 // Authentication context and events
-export { AuthenticatedUser } from './AuthenticatedUser';
-export {
-  AUTH_EVENTS,
+export type { AuthenticatedUser } from './AuthenticatedUser';
+export type {
   AuthEventName,
   AuthEventPayloads,
   AuthEvent,
-  UserAuthenticatedPayload,
+  UserAuthenticatedPayload
+} from './AuthEvents';
+export {
+  AUTH_EVENTS,
   createAuthEvent,
   AuthEventFactory,
   isAuthEvent
 } from './AuthEvents';
 
 // Authentication services
-export { AuthService, AuthServiceConfig } from './AuthService';
-export { SessionAuthService, SessionAuthServiceConfig } from './SessionAuthService';
-export { AppHeaderBinderService, AppHeaderBinderServiceConfig } from './AppHeaderBinderService';
+export type { AuthServiceConfig } from './AuthService';
+export { AuthService } from './AuthService';
+// AppHeaderBinderService moved to services directory
 
-// Service reference utilities
-export { 
-  ServiceReference, 
-  ServiceReferenceConfig, 
-  ServiceReferenceManager,
-  createServiceReference 
-} from './ServiceReference';
+// Mock implementations for development
+export type { MockSessionAuthProviderConfig } from './MockSessionAuthProvider';
+export { MockSessionAuthProvider } from './MockSessionAuthProvider';
+
+// Service reference utilities and Component reference utilities have been moved to their respective directories
 
 // Implementation markers for future development
 /**

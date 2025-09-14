@@ -10,7 +10,7 @@
  * - Used in authentication events and service communication
  */
 
-import { User } from '../types';
+import { User, UserRole } from '../types';
 
 /**
  * Extended user class with authentication context
@@ -23,7 +23,7 @@ export class AuthenticatedUser {
   public readonly id: number;
   public readonly username: string;
   public readonly email: string;
-  public readonly role: string;
+  public readonly role: UserRole;
   public readonly created: Date;
   public readonly lastLogin?: Date;
   

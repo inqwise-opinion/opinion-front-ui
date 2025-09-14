@@ -3,7 +3,7 @@
  * Provides realistic test data for development until real API is ready
  */
 
-import { Opinion, User } from '../types';
+import { Opinion, Survey, User, UserRole, OpinionStatus } from '../types';
 
 export interface AuthenticationInfo {
   userInfo: User;
@@ -44,26 +44,24 @@ export class MockApiService {
       id: 1001,
       username: 'john.developer',
       email: 'john@example.com',
-      firstName: 'John',
-      lastName: 'Developer',
-      role: 'admin',
-      created: new Date('2023-01-15').toISOString(),
-      updated: new Date().toISOString()
+      role: UserRole.ADMIN,
+      created: new Date('2023-01-15'),
+      lastLogin: new Date()
     };
   }
 
   /**
    * Generate mock survey data
    */
-  private createMockSurveys(): Opinion[] {
-    const surveys: Opinion[] = [
+  private createMockSurveys(): Survey[] {
+    const surveys: Survey[] = [
       {
         id: 101,
         title: 'Customer Satisfaction Survey 2024',
         description: 'Annual customer satisfaction survey to measure service quality',
-        status: 'active',
-        created: new Date('2024-01-15').toISOString(),
-        updated: new Date('2024-02-01').toISOString(),
+        status: OpinionStatus.ACTIVE,
+        created: new Date('2024-01-15'),
+        updated: new Date('2024-02-01'),
         responses: 245,
         completionRate: 78.5
       },
@@ -71,9 +69,9 @@ export class MockApiService {
         id: 102,
         title: 'Product Feature Feedback',
         description: 'Gather feedback on new product features and improvements',
-        status: 'active',
-        created: new Date('2024-02-10').toISOString(),
-        updated: new Date('2024-02-15').toISOString(),
+        status: OpinionStatus.ACTIVE,
+        created: new Date('2024-02-10'),
+        updated: new Date('2024-02-15'),
         responses: 156,
         completionRate: 65.2
       },
@@ -81,9 +79,9 @@ export class MockApiService {
         id: 103,
         title: 'Employee Engagement Survey',
         description: 'Internal survey to measure employee satisfaction and engagement',
-        status: 'draft',
-        created: new Date('2024-03-01').toISOString(),
-        updated: new Date('2024-03-05').toISOString(),
+        status: OpinionStatus.DRAFT,
+        created: new Date('2024-03-01'),
+        updated: new Date('2024-03-05'),
         responses: 89,
         completionRate: 45.8
       },
@@ -91,9 +89,9 @@ export class MockApiService {
         id: 104,
         title: 'Market Research - Tech Trends',
         description: 'Research on emerging technology trends and market preferences',
-        status: 'active',
-        created: new Date('2024-03-15').toISOString(),
-        updated: new Date('2024-03-20').toISOString(),
+        status: OpinionStatus.ACTIVE,
+        created: new Date('2024-03-15'),
+        updated: new Date('2024-03-20'),
         responses: 312,
         completionRate: 82.1
       },
@@ -101,9 +99,9 @@ export class MockApiService {
         id: 105,
         title: 'Website Usability Study',
         description: 'User experience survey for website navigation and functionality',
-        status: 'completed',
-        created: new Date('2024-01-01').toISOString(),
-        updated: new Date('2024-01-30').toISOString(),
+        status: OpinionStatus.COMPLETED,
+        created: new Date('2024-01-01'),
+        updated: new Date('2024-01-30'),
         responses: 189,
         completionRate: 91.3
       }
@@ -176,7 +174,7 @@ export class MockApiService {
     accountId: number;
     top?: number;
     orderByRecent?: boolean;
-  }): Promise<{ list: Opinion[] }> {
+  }): Promise<{ list: Survey[] }> {
     await this.simulateDelay();
     
     console.log('MockApiService: Fetching opinions list...', params);

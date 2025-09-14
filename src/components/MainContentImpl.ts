@@ -21,16 +21,18 @@ export class MainContentImpl implements MainContent {
   private layoutContext: LayoutContext;
   private layoutUnsubscribers: Array<() => void> = [];
 
-  constructor(config: MainContentConfig = {}) {
+  constructor(config: MainContentConfig = {}, layoutContext?: LayoutContext) {
     this.config = {
       className: "app-main main-content",
       id: "app", // Keep the existing id from HTML
       ...config,
     };
 
-    this.layoutContext = getLayoutContext();
+    // Use provided LayoutContext or fallback to global one
+    this.layoutContext = layoutContext || getLayoutContext();
     console.log(
       "MainContent - Creating clean component with Flexbox layout...",
+      layoutContext ? "(using provided LayoutContext)" : "(using global LayoutContext)"
     );
   }
 

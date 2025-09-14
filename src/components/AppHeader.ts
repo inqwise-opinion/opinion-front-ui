@@ -4,6 +4,8 @@
  */
 
 import UserMenu from "./UserMenu";
+import { ComponentReference, ComponentReferenceConfig } from "./ComponentReference";
+import type { LayoutContext } from "../contexts/LayoutContext";
 
 export interface HeaderUser {
   username: string;
@@ -72,4 +74,35 @@ export interface AppHeader {
    * Set user menu handler
    */
   setUserMenuHandler(handler: (userMenu: UserMenu) => void): void;
+}
+
+/**
+ * AppHeader reference utilities
+ */
+export class AppHeaderRef {
+  static readonly COMPONENT_ID = 'AppHeader' as const;
+  /**
+   * Get a ComponentReference for safely accessing registered AppHeader
+   * 
+   * @param context - The LayoutContext to resolve from
+   * @param config - Optional configuration for the ComponentReference
+   * @returns ComponentReference<AppHeader> for lazy resolution
+   * 
+   * @example
+   * ```typescript
+   * const headerRef = AppHeaderRef.getRegisteredReference(layoutContext);
+   * const header = await headerRef.get(); // Returns AppHeader | null
+   * ```
+   */
+  static getRegisteredReference(
+    context: LayoutContext,
+    config?: ComponentReferenceConfig
+  ): ComponentReference<AppHeader> {
+    return new ComponentReference<AppHeader>(
+      context,
+      AppHeaderRef.COMPONENT_ID,
+      () => context.getHeader(),
+      config
+    );
+  }
 }

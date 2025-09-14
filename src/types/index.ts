@@ -39,8 +39,22 @@ export interface Opinion {
   tags: string[];
 }
 
+// Survey types (for MockApiService compatibility)
+export interface Survey {
+  id: number;
+  title: string;
+  description: string;
+  status: OpinionStatus;
+  created: Date;
+  updated?: Date;
+  responses: number;
+  completionRate: number;
+}
+
 export enum OpinionStatus {
   DRAFT = 'draft',
+  ACTIVE = 'active',
+  COMPLETED = 'completed',
   PUBLISHED = 'published',
   ARCHIVED = 'archived'
 }

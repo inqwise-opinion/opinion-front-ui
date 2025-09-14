@@ -11,6 +11,7 @@
  */
 
 import { PageComponent, PageComponentConfig } from '../components/PageComponent';
+import MainContentImpl from '../components/MainContentImpl';
 import Layout from '../components/Layout';
 
 export interface DashboardPageConfig extends PageComponentConfig {
@@ -34,8 +35,8 @@ export class DashboardPageComponent extends PageComponent {
   private userMenuDropdown: HTMLElement | null = null;
   private copyrightText: HTMLElement | null = null;
 
-  constructor(config: DashboardPageConfig = {}) {
-    super({
+  constructor(mainContent: MainContentImpl, config: DashboardPageConfig = {}) {
+    super(mainContent, {
       pageTitle: 'Dashboard - Opinion',
       autoInit: false, // We'll initialize manually to control timing
       ...config

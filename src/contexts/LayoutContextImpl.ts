@@ -29,7 +29,7 @@ import type { EventBus, Consumer } from "../lib/EventBus";
 import { EventBusImpl } from "../lib/EventBusImpl";
 
 export class LayoutContextImpl implements LayoutContext {
-  private listeners: Map<LayoutEventType, Set<LayoutEventListener>> = new Map();
+  // Note: Removed dedicated listeners map - now using EventBus for all events
   private viewport: LayoutViewPort;
   private modeType: LayoutModeType;
   private resizeObserver: ResizeObserver | null = null;
@@ -59,7 +59,7 @@ export class LayoutContextImpl implements LayoutContext {
   private serviceRegistry: Map<string, Service> = new Map();
 
   // EventBus Management
-  private eventBus: EventBus;
+  private eventBus!: EventBus; // Initialized in setupEventBus() called from constructor
   private eventBusConsumers: Map<string, Consumer[]> = new Map(); // Track consumers by component
 
   public constructor() {
@@ -163,25 +163,32 @@ export class LayoutContextImpl implements LayoutContext {
     eventType: LayoutEventType,
     listener: LayoutEventListener,
   ): () => void {
-    if (!this.listeners.has(eventType)) {
-      this.listeners.set(eventType, new Set());
-    }
-
-    this.listeners.get(eventType)!.add(listener);
-
-    console.log(
-      `LayoutContext - Subscribed to ${eventType} (${this.listeners.get(eventType)!.size} total listeners)`,
-    );
-
-    // Return unsubscribe function
-    return () => {
-      const eventListeners = this.listeners.get(eventType);
-      if (eventListeners) {
-        eventListeners.delete(listener);
-        console.log(
-          `LayoutContext - Unsubscribed from ${eventType} (${eventListeners.size} remaining)`,
-        );
+    console.log(`📋 LayoutContextImpl: Adding listener for event: ${eventType}`);
+    
+    // Delegate to EventBus - wrap the listener to handle LayoutEvent structure
+    const wrappedListener = (data: any) => {
+      // If data is already a LayoutEvent, use it directly
+      // Otherwise wrap it in a LayoutEvent structure
+      let event: LayoutEvent;
+      if (data && typeof data === 'object' && 'type' in data && 'timestamp' in data) {
+        event = data as LayoutEvent;
+      } else {
+        event = {
+          type: eventType,
+          data,
+          timestamp: Date.now(),
+        };
       }
+      
+      return listener(event);
+    };
+    
+    // Use EventBus consume method and return its unsubscribe function
+    const consumer = this.eventBus.consume(eventType, wrappedListener);
+    
+    return () => {
+      console.log(`📋 LayoutContextImpl: Removing listener for event: ${eventType}`);
+      consumer.unregister();
     };
   }
 
@@ -195,31 +202,10 @@ export class LayoutContextImpl implements LayoutContext {
       timestamp: Date.now(),
     };
 
-    const eventListeners = this.listeners.get(eventType);
-    if (eventListeners && eventListeners.size > 0) {
-      console.log(
-        `LayoutContext - Emitting ${eventType} to ${eventListeners.size} listeners:`,
-        data,
-      );
-
-      eventListeners.forEach((listener) => {
-        try {
-          listener(event);
-        } catch (error) {
-          console.error(
-            `LayoutContext - Error in ${eventType} listener:`,
-            error,
-          );
-        }
-      });
-    } else {
-      // Only log on first occurrence or important events to reduce console noise
-      if (eventType === "layout-ready") {
-        console.log(
-          `LayoutContext - No listeners for ${eventType}, event ignored`,
-        );
-      }
-    }
+    console.log(`📋 LayoutContextImpl: Emitting event: ${eventType}`);
+    
+    // Delegate to EventBus publish method
+    this.eventBus.publish(eventType, event);
   }
 
   /**
@@ -348,6 +334,16 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public getSidebar(): Sidebar | null {
     return this.sidebarInstance;
+  }
+
+  /**
+   * Unregister the sidebar instance from the LayoutContext
+   */
+  public unregisterSidebar(): void {
+    if (this.sidebarInstance) {
+      console.log("LayoutContext - Sidebar instance unregistered");
+      this.sidebarInstance = null;
+    }
   }
 
   /**
@@ -716,7 +712,7 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public request(event: string, data: any, timeout?: number): Promise<any> {
     console.log(`LayoutContext - Requesting response for event: ${event}`);
-    return this.eventBus.request(event, data, timeout);
+    return this.eventBus.request(event, data);
   }
 
   /**
@@ -1137,10 +1133,10 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public getServiceReference<T extends Service>(
     serviceName: string,
-    config?: import('../auth/ServiceReference').ServiceReferenceConfig
-  ): import('../auth/ServiceReference').ServiceReference<T> {
-    const { ServiceReference } = require('../auth/ServiceReference');
-    return new ServiceReference<T>(this, serviceName, config);
+    config?: import('../services/ServiceReference').ServiceReferenceConfig
+  ): import('../services/ServiceReference').ServiceReference<T> {
+    const { ServiceReference } = require('../services/ServiceReference');
+    return new ServiceReference(this, serviceName, config) as import('../services/ServiceReference').ServiceReference<T>;
   }
 
   /**
@@ -1324,8 +1320,7 @@ export class LayoutContextImpl implements LayoutContext {
     // Reset ready state
     this.isLayoutReady = false;
 
-    // Clear all listeners
-    this.listeners.clear();
+    // Note: Layout event listeners now managed by EventBus (cleaned up above)
 
     // Cleanup resize observer
     if (this.resizeObserver) {

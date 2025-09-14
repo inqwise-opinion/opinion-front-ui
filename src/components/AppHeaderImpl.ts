@@ -35,7 +35,7 @@ export class AppHeaderImpl implements AppHeader {
   private layoutUnsubscribers: Array<() => void> = [];
   private config: Required<HeaderConfig>;
 
-  constructor(config: HeaderConfig = {}) {
+  constructor(config: HeaderConfig = {}, layoutContext?: LayoutContext) {
     // Apply configuration with defaults
     this.config = {
       brandTitle: config.brandTitle ?? "Opinion",
@@ -49,7 +49,13 @@ export class AppHeaderImpl implements AppHeader {
       "AppHeaderImpl - Creating clean header with config:",
       this.config,
     );
-    this.layoutContext = getLayoutContext();
+    
+    // Use provided LayoutContext or fallback to singleton (for backwards compatibility)
+    this.layoutContext = layoutContext || getLayoutContext();
+    console.log(`AppHeaderImpl - Using LayoutContext:`, {
+      provided: !!layoutContext,
+      contextType: this.layoutContext.constructor.name
+    });
   }
 
   public setUserMenuHandler(handler: (userMenu: UserMenu) => void): void {
@@ -331,11 +337,44 @@ export class AppHeaderImpl implements AppHeader {
       case "feedback":
         this.showFeedbackModal();
         break;
+      case "logout":
+        this.handleLogoutAction();
+        break;
       default:
         console.warn(`Unknown header action: ${action}`);
     }
   }
 
+  /**
+   * Handle logout action - delegate to AppHeaderBinderService via LayoutContext
+   */
+  private async handleLogoutAction(): Promise<void> {
+    console.log("🚺 AppHeaderImpl - Logout action triggered");
+    
+    try {
+      // Get the AppHeaderBinderService using the helper method
+      const { AppHeaderBinderService } = await import('../services/AppHeaderBinderService');
+      const binderRef = AppHeaderBinderService.getRegisteredReference(this.layoutContext, {
+        enableLogging: false,
+        maxRetries: 5
+      });
+      
+      const binderService = await binderRef.get();
+      if (binderService) {
+        // Delegate logout to the binder service
+        await binderService.handleLogoutAction();
+        console.log("✅ AppHeaderImpl - Logout action completed successfully");
+      } else {
+        console.warn("⚠️ AppHeaderImpl - AppHeaderBinderService not available for logout");
+        // Fallback: redirect to logout page
+        window.location.href = '/logout';
+      }
+    } catch (error) {
+      console.error("❌ AppHeaderImpl - Error handling logout action:", error);
+      // Fallback: redirect to logout page
+      window.location.href = '/logout';
+    }
+  }
   /**
    * Show feedback modal
    */
@@ -373,6 +412,20 @@ export class AppHeaderImpl implements AppHeader {
       console.log("AppHeaderImpl - User updated via UserMenu");
     } else {
       console.warn("AppHeaderImpl - UserMenu not available for user update");
+    }
+  }
+
+  /**
+   * Update user menu items
+   */
+  updateUserMenuItems(items: UserMenuItem[]): void {
+    console.log(`AppHeaderImpl - updateUserMenuItems called with ${items.length} items`);
+
+    if (this.userMenu) {
+      this.userMenu.updateMenuItems(items);
+      console.log("AppHeaderImpl - User menu items updated via UserMenu");
+    } else {
+      console.warn("AppHeaderImpl - UserMenu not available for menu items update");
     }
   }
 
@@ -526,13 +579,15 @@ export class AppHeaderImpl implements AppHeader {
     this.container.style.right = "";
 
     // Update CSS classes based on layout mode
+    const sidebar = ctx.getSidebar();
+    const isCompact = sidebar?.isCompactMode() || false;
     this.container.classList.toggle(
       "header-sidebar-compact",
-      ctx.isCompact() && !ctx.isLayoutMobile(),
+      isCompact && !ctx.isLayoutMobile(),
     );
     this.container.classList.toggle(
       "header-sidebar-normal",
-      ctx.isCompact() && !ctx.isLayoutMobile(),
+      !isCompact && !ctx.isLayoutMobile(),
     );
     this.container.classList.toggle("header-mobile", ctx.isLayoutMobile());
 

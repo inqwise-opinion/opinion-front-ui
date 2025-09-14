@@ -3,8 +3,10 @@
  * Manages all master page components (Header, Sidebar, Footer) and their coordination
  */
 
-import AppHeaderImpl, { HeaderUser, HeaderConfig } from "./AppHeaderImpl";
-import AppFooterImpl, { FooterConfig } from "./AppFooterImpl";
+import AppHeaderImpl, { HeaderConfig } from "./AppHeaderImpl";
+import { HeaderUser } from "./AppHeader";
+import AppFooterImpl from "./AppFooterImpl";
+import { FooterConfig } from "./AppFooter";
 import MainContentImpl from "./MainContentImpl";
 import { NavigationItem, Sidebar, SidebarConfig } from "./Sidebar";
 import SidebarComponent from "./SidebarComponent";
@@ -14,10 +16,9 @@ import type { Messages } from "../interfaces/Messages";
 import {
   type LayoutContext,
   type LayoutEvent,
-  type LayoutMode,
   type LayoutModeType,
-} from "../contexts/index.js";
-import LayoutContextImpl from "../contexts/LayoutContextImpl.js";
+} from "../contexts/index";
+import LayoutContextImpl from "../contexts/LayoutContextImpl";
 import type {
   ContextHandler,
   LifecycleHandler,
@@ -127,13 +128,14 @@ export class Layout {
     // Initialize layout context first
     this.layoutContext = new LayoutContextImpl();
 
-    this.header = new AppHeaderImpl(this.config.header);
+    // Pass the layoutContext to components so they register with the correct instance
+    this.header = new AppHeaderImpl(this.config.header, this.layoutContext);
     this.footer = new AppFooterImpl(this.config.footer);
     this.mainContent = new MainContentImpl({
       className: "main-content",
       id: "app",
       ariaLabel: "Main application content",
-    });
+    }, this.layoutContext);
 
     // Note: Components will be registered with LayoutContext at the start of init()
   }
@@ -293,7 +295,7 @@ export class Layout {
   /**
    * Get main content component reference
    */
-  getMainContent(): MainContent {
+  getMainContent(): MainContentImpl {
     return this.mainContent;
   }
 
@@ -499,7 +501,7 @@ export class Layout {
    * Handle layout mode changes and update component CSS classes
    */
   private handleLayoutModeChange(event: LayoutEvent): void {
-    const layoutMode = event.data as LayoutMode;
+    const layoutMode = event.data as LayoutModeType;
     console.log("Layout - Received layout mode change:", layoutMode);
 
     if (layoutMode) {
@@ -913,7 +915,7 @@ export class Layout {
    * @param handler - Function that receives the LayoutContext instance when ready
    * @returns Layout instance for method chaining
    */
-  public onContextReady<T>(handler: (layoutContext: LayoutContext) => T): Layout {
+  public onContextReady<T extends void>(handler: (layoutContext: LayoutContext) => T): Layout {
     // Convert simple handler to ContextHandler and use new system
     const contextHandler: ContextHandler<T> = handler;
     

@@ -3,6 +3,9 @@
  * Defines the contract for main content components
  */
 
+import { ComponentReference, ComponentReferenceConfig } from './ComponentReference';
+import type { LayoutContext } from '../contexts/LayoutContext';
+
 export interface MainContentConfig {
   className?: string;
   id?: string;
@@ -59,4 +62,36 @@ export interface MainContent {
    * Cleanup when component is destroyed
    */
   destroy(): void;
+}
+
+/**
+ * MainContent reference utilities
+ */
+export class MainContentRef {
+  static readonly COMPONENT_ID = 'MainContent' as const;
+  
+  /**
+   * Get a ComponentReference for safely accessing registered MainContent
+   * 
+   * @param context - The LayoutContext to resolve from
+   * @param config - Optional configuration for the ComponentReference
+   * @returns ComponentReference<MainContent> for lazy resolution
+   * 
+   * @example
+   * ```typescript
+   * const mainContentRef = MainContentRef.getRegisteredReference(layoutContext);
+   * const mainContent = await mainContentRef.get(); // Returns MainContent | null
+   * ```
+   */
+  static getRegisteredReference(
+    context: LayoutContext,
+    config?: ComponentReferenceConfig
+  ): ComponentReference<MainContent> {
+    return new ComponentReference<MainContent>(
+      context,
+      MainContentRef.COMPONENT_ID,
+      () => context.getMainContent(),
+      config
+    );
+  }
 }

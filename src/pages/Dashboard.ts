@@ -4,14 +4,14 @@
  */
 
 import { MockApiService, ChartData, AuthenticationInfo } from '../services/MockApiService';
-import { Opinion, User } from '../types';
+import { Opinion, Survey, User } from '../types';
 import Layout from '../components/Layout';
 import { DashboardPageComponent } from './DashboardPageComponent';
 
 export interface DashboardState {
   user?: User;
   accountId?: number;
-  surveys: Opinion[];
+  surveys: Survey[];
   selectedSurveyId: number;
   fromDate?: string;
   toDate?: string;
@@ -80,7 +80,8 @@ export class Dashboard {
       console.log('Dashboard - Layout initialized, footer should be visible');
       
       // Initialize page component with layout
-      this.pageComponent = new DashboardPageComponent({ layout: this.layout });
+      const mainContent = this.layout.getMainContent();
+      this.pageComponent = new DashboardPageComponent(mainContent, { layout: this.layout });
       await this.pageComponent.init();
       console.log('Dashboard - Page component initialized');
 

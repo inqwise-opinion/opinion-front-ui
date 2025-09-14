@@ -744,8 +744,8 @@ export class SidebarComponent implements Sidebar {
     }
 
     // Use layout context to check if we're in mobile mode
-    const layoutMode = this.layoutContext.getLayoutMode();
-    if (!layoutMode.isMobile) {
+    const isMobile = this.layoutContext.isLayoutMobile();
+    if (!isMobile) {
       console.warn(
         "⚠️ Sidebar - toggleMobileVisibility called but not in mobile mode",
       );

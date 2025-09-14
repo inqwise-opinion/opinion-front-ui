@@ -3,6 +3,9 @@
  * Defines the contract for sidebar components
  */
 
+import { ComponentReference, ComponentReferenceConfig } from './ComponentReference';
+import type { LayoutContext } from '../contexts/LayoutContext';
+
 /**
  * Configuration interface for sidebar dimensions and behavior
  */
@@ -86,8 +89,38 @@ export interface Dimensions {
   isVisible: boolean; // Whether sidebar is visible
 }
 
+/**
+ * Sidebar reference utilities
+ */
+export class SidebarRef {
+  static readonly COMPONENT_ID = 'Sidebar' as const;
+  
+  /**
+   * Get a ComponentReference for safely accessing registered Sidebar
+   * 
+   * @param context - The LayoutContext to resolve from
+   * @param config - Optional configuration for the ComponentReference
+   * @returns ComponentReference<Sidebar> for lazy resolution
+   * 
+   * @example
+   * ```typescript
+   * const sidebarRef = SidebarRef.getRegisteredReference(layoutContext);
+   * const sidebar = await sidebarRef.get(); // Returns Sidebar | null
+   * ```
+   */
+  static getRegisteredReference(
+    context: LayoutContext,
+    config?: ComponentReferenceConfig
+  ): ComponentReference<Sidebar> {
+    return new ComponentReference<Sidebar>(
+      context,
+      SidebarRef.COMPONENT_ID,
+      () => context.getSidebar(),
+      config
+    );
+  }
+}
+
 // Export concrete implementation (imported separately to avoid circular dependencies)
 // Use: import { SidebarComponent } from './Sidebar';
-// Or:  import { Sidebar } from './Sidebar'; // for tests
 export { default as SidebarComponent } from './SidebarComponent';
-export { default as Sidebar } from './SidebarComponent'; // For backward compatibility in tests

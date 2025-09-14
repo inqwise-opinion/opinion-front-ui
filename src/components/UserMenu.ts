@@ -274,7 +274,7 @@ export class UserMenu {
             </li>
             <li style="height: 1px; background: #e9ecef; margin: 8px 16px;"></li>
             <li>
-              <a href="/logout" class="user-menu-item user-menu-signout" style="
+              <a href="javascript:;" class="user-menu-item user-menu-signout" data-action="logout" style="
                 display: flex;
                 align-items: center;
                 padding: 12px 20px;
@@ -567,8 +567,8 @@ export class UserMenu {
     );
 
     const user = this.getUser();
-    const username = user?.username || "Guest User";
-    const email = user?.email || "guest@example.com";
+    const username = user?.username || "Loading...";
+    const email = user?.email || "Please wait...";
 
     mobileDropdown.innerHTML = `
       <div class="user-menu-header" style="
@@ -677,7 +677,7 @@ export class UserMenu {
         </li>
         <li style="height: 1px !important; background: #e9ecef !important; margin: 8px 16px !important;"></li>
         <li>
-          <a href="/logout" class="user-menu-item user-menu-signout" style="
+          <a href="javascript:;" class="user-menu-item user-menu-signout" data-action="logout" style="
             display: flex !important;
             align-items: center !important;
             padding: 12px 20px !important;
@@ -846,16 +846,12 @@ export class UserMenu {
   }
 
   /**
-   * Initialize with default user data to avoid showing "Loading..." indefinitely
+   * Initialize with loading state - authentication service will update user data
    */
   private initializeWithDefaultUser(): void {
-    const defaultUser: User = {
-      username: "Guest User",
-      email: "guest@example.com",
-    };
-
-    console.log("UserMenu - Setting default user data:", defaultUser);
-    this.updateUser(defaultUser);
+    console.log("UserMenu - Initializing with loading state, waiting for authentication service...");
+    // Keep "Loading..." text to indicate authentication is in progress
+    // AppHeaderBinderService will call updateUser() once authentication completes
   }
 
   /**

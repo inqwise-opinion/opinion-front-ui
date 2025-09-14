@@ -262,15 +262,14 @@ export class AppFooterImpl implements AppFooter {
   private subscribeToLayoutContext(): void {
     console.log("AppFooter - Subscribing to layout context events...");
 
-    // Subscribe to sidebar dimension changes
-    const sidebarDimensionsUnsubscribe = this.layoutContext.subscribe(
-      "sidebar-dimensions-change",
-      this.handleSidebarDimensionsChange.bind(this),
+    // Subscribe to layout mode changes (which include sidebar state changes)
+    const layoutModeChangeUnsubscribe = this.layoutContext.subscribe(
+      "layout-mode-change",
+      this.handleLayoutModeChange.bind(this),
     );
-    this.layoutUnsubscribers.push(sidebarDimensionsUnsubscribe);
+    this.layoutUnsubscribers.push(layoutModeChangeUnsubscribe);
 
-    // Note: No longer subscribing to viewport-change - sidebar-dimensions-change is sufficient
-    // The sidebar dimensions already encode all the viewport information we need
+    // Note: Using layout-mode-change which provides complete layout state information
 
     // Set initial layout based on current layout mode
     this.updateFooterLayout();
@@ -281,11 +280,11 @@ export class AppFooterImpl implements AppFooter {
   }
 
   /**
-   * Handle sidebar dimension changes from layout context
+   * Handle layout mode changes from layout context
    */
-  private handleSidebarDimensionsChange(event: LayoutEvent): void {
-    const dimensions = event.data as Dimensions;
-    console.log("AppFooter - Received sidebar dimensions change:", dimensions);
+  private handleLayoutModeChange(event: LayoutEvent): void {
+    const layoutData = event.data;
+    console.log("AppFooter - Received layout mode change:", layoutData);
     this.updateFooterLayout();
   }
 
@@ -295,12 +294,14 @@ export class AppFooterImpl implements AppFooter {
   private updateFooterLayout(): void {
     if (!this.container) return;
 
-    // Get layout state directly from LayoutContext
-    const layoutMode = this.layoutContext.getLayoutMode();
-    const { isCompact, isMobile } = layoutMode;
+    // Get layout state from LayoutContext
+    const modeType = this.layoutContext.getModeType();
+    const sidebar = this.layoutContext.getSidebar();
+    const isCompact = sidebar?.isCompactMode() || false;
+    const isMobile = modeType === 'mobile';
 
     console.log("AppFooter - Updating layout for layout mode:", {
-      type: layoutMode.type,
+      type: modeType,
       isCompact,
       isMobile,
     });
@@ -329,14 +330,14 @@ export class AppFooterImpl implements AppFooter {
     // Dispatch custom event for other components that might need to know
     const event = new CustomEvent("footer-layout-updated", {
       detail: {
-        layoutMode: { type: layoutMode.type, isCompact, isMobile },
+        layoutMode: { type: modeType, isCompact, isMobile },
         footerElement: this.container,
       },
     });
     document.dispatchEvent(event);
 
     console.log("AppFooter - Layout updated:", {
-      layoutMode: { type: layoutMode.type, isCompact, isMobile },
+      layoutMode: { type: modeType, isCompact, isMobile },
       cssClasses: Array.from(this.container.classList).filter((cls) =>
         cls.startsWith("footer-"),
       ),

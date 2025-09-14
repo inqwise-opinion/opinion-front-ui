@@ -8,8 +8,15 @@ import DashboardPage from "./pages/DashboardPage";
 import DebugPage from "./pages/DebugPage";
 import { AppHeaderImpl } from "./components/AppHeaderImpl";
 import AppFooterImpl from "./components/AppFooterImpl";
-import MainContent from "./components/MainContent";
+import { MainContentImpl } from "./components/MainContentImpl";
 import Layout from "./components/Layout";
+import {
+  AuthService,
+  MockSessionAuthProvider,
+} from "./auth";
+import { AppHeaderBinderService } from "./services/AppHeaderBinderService";
+import { UserService } from "./services/UserService";
+import { registerService } from "./core/ServiceIdentity";
 
 export class OpinionApp {
   private initialized: boolean = false;
@@ -19,7 +26,7 @@ export class OpinionApp {
   // Global layout components
   private appHeader: AppHeaderImpl | null = null;
   private appFooter: AppFooterImpl | null = null;
-  private mainContent: MainContent | null = null;
+  private mainContent: MainContentImpl | null = null;
   private layout: Layout | null = null;
 
   constructor() {
@@ -102,8 +109,9 @@ export class OpinionApp {
       console.log("🏗️ APP.TS - Initializing Layout coordinator...");
       this.layout = new Layout();
 
-      await this.layout
+        await this.layout
         .onContextReady((ctx) => {
+          console.log('🏗️ APP.TS - Layout context ready callback 1 - setting up sidebar navigation');
           ctx.getSidebar()?.updateNavigation([
             {
               id: "dashboard",
@@ -159,21 +167,25 @@ export class OpinionApp {
                 id: "logout",
                 text: "Sign Out",
                 icon: "logout",
-                href: "/logout",
-                type: "link",
+                action: "logout",
+                type: "action",
                 className: "user-menu-signout",
                 style: "color: #dc3545;",
               },
             ]);
           });
 
-          ctx.getHeader()?.updateUser({
-            username: "Demo User",
-            email: "demo@opinion.app",
-          });
+          // Note: User data will be set by AppHeaderBinderService after authentication
+          // No hardcoded user data here
+          console.log('🏗️ APP.TS - Layout context ready callback 1 - configuration complete');
         })
         .init();
       console.log("✅ APP.TS - Layout coordinator initialized");
+
+      // Register authentication services after layout is ready
+      console.log("🔐 APP.TS - Registering authentication services...");
+      await this.initializeAuthenticationServices();
+      console.log("✅ APP.TS - Authentication services registered");
 
       // Semantic structure is now complete:
       // <nav class="app-sidebar"> (created by AppHeader)
@@ -184,6 +196,96 @@ export class OpinionApp {
       console.error("❌ APP.TS - Failed to initialize global layout:", error);
       throw error;
     }
+  }
+
+  /**
+   * Initialize and register authentication services
+   */
+  private async initializeAuthenticationServices(): Promise<void> {
+    if (!this.layout) {
+      throw new Error(
+        "Layout must be initialized before authentication services",
+      );
+    }
+
+    // Get the layout context for service registration
+    this.layout.onContextReady(async (ctx) => {
+      console.log('🔐 APP.TS - Layout context ready callback 2 - starting authentication services initialization');
+      console.log(
+        '🔐 APP.TS - Initializing authentication services with layout context...',
+      );
+
+      try {
+        // Create MockSessionAuthProvider instance
+        const mockAuthProvider = new MockSessionAuthProvider(this.apiService, {
+          authDelay: 300, // Shorter delay for development
+          enableAccountSwitching: true,
+          mockAccountCount: 3,
+        });
+
+        // Register MockSessionAuthProvider using type-safe registration
+        registerService(ctx, MockSessionAuthProvider, mockAuthProvider);
+
+        // Register AuthService using type-safe registration and configuration
+        const authService = new AuthService(ctx, {
+          authProviderServiceId: MockSessionAuthProvider.SERVICE_ID, // Type-safe reference!
+          autoValidate: false,
+        });
+        registerService(ctx, AuthService, authService);
+
+        // Register UserService using type-safe registration and configuration
+        const userService = new UserService(ctx, {
+          authServiceId: AuthService.SERVICE_ID,                        // Type-safe reference!
+          sessionAuthProviderServiceId: MockSessionAuthProvider.SERVICE_ID, // Type-safe reference!
+        });
+        registerService(ctx, UserService, userService);
+
+        // Register AppHeaderBinderService with type-safe service references
+        const authServiceRef = AuthService.getRegisteredReference(ctx);
+        const appHeaderBinderService = new AppHeaderBinderService(
+          authServiceRef,
+          ctx,
+          { updateOnInit: true },
+        );
+        // Use self-identifying service ID for registration
+        registerService(ctx, AppHeaderBinderService, appHeaderBinderService);
+        console.log(
+          `✅ APP.TS - AppHeaderBinderService registered as '${AppHeaderBinderService.SERVICE_ID}'`,
+        );
+
+        // Initialize services in dependency order (dependencies first)
+        await mockAuthProvider.init();
+        await authService.init();        // AuthService depends on mockAuthProvider
+        await userService.init();        // UserService depends on authService and mockAuthProvider
+        await appHeaderBinderService.init(); // AppHeaderBinderService depends on authService
+        console.log("✅ APP.TS - All authentication services initialized");
+
+        // Perform initial authentication validation
+        console.log(
+          "🔍 APP.TS - Performing initial authentication validation...",
+        );
+        try {
+          const authenticatedUser =
+            await authService.validateAuthentication("app-startup");
+          console.log("✅ APP.TS - User is authenticated:", {
+            username: authenticatedUser.username,
+            userId: authenticatedUser.id,
+            accountId: authenticatedUser.accountId,
+          });
+        } catch (error) {
+          console.error("❌ APP.TS - Authentication validation failed:", error);
+          console.log(
+            "⚠️ APP.TS - App will continue in non-authenticated state",
+          );
+        }
+      } catch (error) {
+        console.error(
+          "❌ APP.TS - Failed to initialize authentication services:",
+          error,
+        );
+        throw error;
+      }
+    });
   }
 
   /**
@@ -220,7 +322,8 @@ export class OpinionApp {
             .getMessages()
             ?.showError(
               title || "Test Error",
-              description || "This is a test error message from iframe testing.",
+              description ||
+                "This is a test error message from iframe testing.",
             );
           break;
         case "warning":
@@ -318,7 +421,7 @@ export class OpinionApp {
       else {
         console.warn(`⚠️ APP.TS - Unknown route: ${path}`);
         console.log("🎯 APP.TS - Fallback: Creating DebugPage...");
-        this.currentPage = new DebugPage();
+        this.currentPage = new DebugPage(this.layout.getMainContent());
         console.log("🎯 APP.TS - Initializing fallback DebugPage...");
         await this.currentPage.init();
         console.log("✅ APP.TS - Fallback DebugPage initialized successfully");

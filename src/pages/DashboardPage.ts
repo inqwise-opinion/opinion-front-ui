@@ -5,15 +5,15 @@
 
 import Dashboard from './Dashboard';
 import { MockApiService } from '../services/MockApiService';
-import MainContent from '../components/MainContent';
+import { MainContentImpl } from '../components/MainContentImpl';
 import '../assets/styles/dashboard.scss';
 
 export class DashboardPage {
   private dashboard: Dashboard;
   private apiService: MockApiService;
-  private mainContent: MainContent | null = null;
+  private mainContent: MainContentImpl | null = null;
 
-  constructor(apiService: MockApiService, mainContent: MainContent | null = null) {
+  constructor(apiService: MockApiService, mainContent: MainContentImpl | null = null) {
     this.apiService = apiService;
     this.mainContent = mainContent;
     this.dashboard = new Dashboard(this.apiService);

@@ -6,6 +6,9 @@
  * and provides the exclusive access point through LayoutContext.
  */
 
+import { ComponentReference, ComponentReferenceConfig } from '../components/ComponentReference';
+import type { LayoutContext } from '../contexts/LayoutContext';
+
 export interface MessageOptions {
   id?: string;
   dismissible?: boolean;
@@ -114,6 +117,38 @@ export interface Messages {
    * Destroy the messages component and clean up
    */
   destroy(): void;
+}
+
+/**
+ * Messages reference utilities
+ */
+export class MessagesRef {
+  static readonly COMPONENT_ID = 'Messages' as const;
+  
+  /**
+   * Get a ComponentReference for safely accessing registered Messages
+   * 
+   * @param context - The LayoutContext to resolve from
+   * @param config - Optional configuration for the ComponentReference
+   * @returns ComponentReference<Messages> for lazy resolution
+   * 
+   * @example
+   * ```typescript
+   * const messagesRef = MessagesRef.getRegisteredReference(layoutContext);
+   * const messages = await messagesRef.get(); // Returns Messages | null
+   * ```
+   */
+  static getRegisteredReference(
+    context: LayoutContext,
+    config?: ComponentReferenceConfig
+  ): ComponentReference<Messages> {
+    return new ComponentReference<Messages>(
+      context,
+      MessagesRef.COMPONENT_ID,
+      () => context.getMessagesComponent(),
+      config
+    );
+  }
 }
 
 export default Messages;

@@ -7,7 +7,7 @@
 import { Sidebar } from "../components/Sidebar";
 import SidebarComponent from "../components/SidebarComponent";
 import type { AppHeader } from "../components/AppHeader";
-import MainContentImpl from "@/components/MainContentImpl";
+import MainContentImpl from "../components/MainContentImpl";
 import Layout from "../components/Layout";
 import { getLayoutContext } from "../contexts/index";
 import type {
@@ -16,11 +16,9 @@ import type {
   LayoutViewPort,
 } from "../contexts/LayoutContext";
 import type { LayoutEvent } from "../contexts/LayoutContext";
-import { PageComponent } from "@/components";
+import { PageComponent } from "../components/PageComponent";
 
 export class DebugPage extends PageComponent {
-  private sidebarDebugUnsubscribe: (() => void) | null = null;
-  private headerDebugUnsubscribe: (() => void) | null = null;
   private responsiveModeUnsubscribe: (() => void) | null = null;
 
   constructor(mainContent: MainContentImpl) {
@@ -32,12 +30,7 @@ export class DebugPage extends PageComponent {
    * Initialize the debug page
    */
   async onInit(): Promise<void> {
-    console.log("🏗️ DEBUGPAGE - init() START");
-
-    if (this.isInitialized) {
-      console.warn("🏗️ DEBUGPAGE - Already initialized, skipping");
-      return;
-    }
+    console.log("🏗️ DEBUGPAGE - onInit() START");
 
     try {
       console.log("🏗️ DEBUGPAGE - Starting initialization process...");
@@ -55,9 +48,6 @@ export class DebugPage extends PageComponent {
       // Setup page-level functionality
       this.setupPageHandlers();
 
-      // Setup sidebar compact mode debugging
-      await this.setupSidebarDebug();
-
       // Set browser tab title
       document.title = "Debug - Opinion";
     } catch (error) {
@@ -65,7 +55,20 @@ export class DebugPage extends PageComponent {
       throw error;
     }
 
-    console.log("🏗️ DEBUGPAGE - init() END");
+    console.log("🏗️ DEBUGPAGE - onInit() END");
+  }
+
+  /**
+   * Cleanup method for PageComponent
+   */
+  protected onDestroy(): void {
+    console.log("🏩 DEBUGPAGE - onDestroy()");
+    
+    // Clean up subscriptions
+    if (this.responsiveModeUnsubscribe) {
+      this.responsiveModeUnsubscribe();
+      this.responsiveModeUnsubscribe = null;
+    }
   }
 
   protected setupEventListeners(): void {}
@@ -133,23 +136,6 @@ export class DebugPage extends PageComponent {
               </div>
             </div>
 
-            <div style="margin: 30px 0;">
-              <h3 style="color: #333; margin-bottom: 15px;">🎯 Sidebar Compact Mode Events</h3>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                <div>
-                  <h4 style="margin: 0 0 10px 0; color: #555;">Sidebar Events:</h4>
-                  <div id="sidebar_events" style="background: #1e3a8a; color: #fff; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; height: 120px; overflow-y: auto;"></div>
-                </div>
-                <div>
-                  <h4 style="margin: 0 0 10px 0; color: #555;">AppHeader Responses:</h4>
-                  <div id="header_events" style="background: #166534; color: #fff; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; height: 120px; overflow-y: auto;"></div>
-                </div>
-              </div>
-              <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
-                <button id="toggle_compact" style="padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🔄 Toggle Compact Mode</button>
-                <button id="clear_event_logs" style="padding: 8px 12px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🧹 Clear Event Logs</button>
-              </div>
-            </div>
 
             <div style="margin: 30px 0;">
               <h3 style="color: #333; margin-bottom: 15px;">Test Console</h3>
@@ -232,250 +218,11 @@ export class DebugPage extends PageComponent {
     this.setupResponsiveHandlers();
   }
 
-  /**
-   * Setup sidebar compact mode event debugging
-   */
-  private async setupSidebarDebug(): Promise<void> {
-    console.log(
-      "🎯 DebugPage - Setting up sidebar compact mode event debugging...",
-    );
 
-    // Wait a bit for components to initialize
-    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Try to get sidebar element from DOM
-    const sidebarElement = document.getElementById("app_sidebar");
-    if (!sidebarElement) {
-      this.logToEventConsole("sidebar_events", "❌ Sidebar element not found");
-      return;
-    }
 
-    this.logToEventConsole("sidebar_events", "✅ Sidebar element found in DOM");
 
-    // Method 1: Hook into the sidebar compact toggle button clicks
-    this.setupSidebarToggleHook();
 
-    // Method 2: Monitor sidebar CSS classes for compact mode changes
-    this.setupSidebarClassObserver();
-
-    // Method 3: Listen for custom header position events (AppHeader responses)
-    this.setupHeaderEventListener();
-
-    // Method 4: Subscribe to layout mode changes for compact mode detection
-    this.setupLayoutModeSubscription();
-
-    this.logToEventConsole(
-      "sidebar_events",
-      "ℹ️ Debug hooks established - waiting for events...",
-    );
-  }
-
-  /**
-   * Hook into sidebar toggle button to detect compact mode changes
-   */
-  private setupSidebarToggleHook(): void {
-    const compactToggle = document.getElementById("sidebar_compact_toggle");
-    if (compactToggle) {
-      compactToggle.addEventListener("click", () => {
-        // Check current state before the click takes effect
-        const sidebar = document.getElementById("app_sidebar");
-        const wasCompact =
-          sidebar?.classList.contains("sidebar-compact") || false;
-        const willBeCompact = !wasCompact;
-
-        const timestamp = new Date().toLocaleTimeString();
-        const status = willBeCompact ? "COMPACT" : "NORMAL";
-        const statusColor = willBeCompact ? "#fbbf24" : "#3b82f6";
-
-        this.logToEventConsole(
-          "sidebar_events",
-          `<span style="color: ${statusColor}; font-weight: bold;">[${timestamp}] 🔄 ${status}</span>`,
-        );
-        this.logToEventConsole(
-          "sidebar_events",
-          `└─ Compact toggle clicked: ${wasCompact} → ${willBeCompact}`,
-        );
-      });
-
-      this.logToEventConsole(
-        "sidebar_events",
-        "✅ Hooked into sidebar compact toggle button",
-      );
-    } else {
-      this.logToEventConsole(
-        "sidebar_events",
-        "⚠️ Sidebar compact toggle button not found",
-      );
-    }
-  }
-
-  /**
-   * Monitor sidebar element for CSS class changes
-   */
-  private setupSidebarClassObserver(): void {
-    const sidebar = document.getElementById("app_sidebar");
-    if (!sidebar) return;
-
-    // Create a MutationObserver to watch for class changes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (
-          mutation.type === "attributes" &&
-          mutation.attributeName === "class"
-        ) {
-          const isCompact = sidebar.classList.contains("sidebar-compact");
-          const timestamp = new Date().toLocaleTimeString();
-          const status = isCompact ? "COMPACT" : "NORMAL";
-          const statusColor = isCompact ? "#fbbf24" : "#3b82f6";
-
-          this.logToEventConsole(
-            "sidebar_events",
-            `<span style="color: ${statusColor}; font-weight: bold;">[${timestamp}] 📡 ${status}</span>`,
-          );
-          this.logToEventConsole(
-            "sidebar_events",
-            `└─ CSS class changed: sidebar-compact = ${isCompact}`,
-          );
-        }
-      });
-    });
-
-    // Start observing
-    observer.observe(sidebar, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    // Log initial state
-    const initialCompact = sidebar.classList.contains("sidebar-compact");
-    this.logToEventConsole(
-      "sidebar_events",
-      `ℹ️ Initial compact state: ${initialCompact ? "COMPACT" : "NORMAL"}`,
-    );
-    this.logToEventConsole(
-      "sidebar_events",
-      "✅ Monitoring sidebar CSS classes",
-    );
-  }
-
-  /**
-   * Setup header position event listener
-   */
-  private setupHeaderEventListener(): void {
-    // Listen for custom header position events
-    document.addEventListener("header-position-updated", (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const timestamp = new Date().toLocaleTimeString();
-      const detail = customEvent.detail;
-
-      this.logToEventConsole(
-        "header_events",
-        `<span style="color: #10b981; font-weight: bold;">[${timestamp}] 🎯 POSITION UPDATE</span>`,
-      );
-      this.logToEventConsole(
-        "header_events",
-        `└─ Left: ${detail.headerLeft}px, Width: ${detail.headerWidth}px`,
-      );
-      this.logToEventConsole(
-        "header_events",
-        `└─ Sidebar: ${detail.sidebarInfo.isCompact ? "compact" : "normal"} (${detail.sidebarInfo.width}px)`,
-      );
-    });
-
-    this.logToEventConsole(
-      "header_events",
-      "✅ Subscribed to header position update events",
-    );
-  }
-
-  /**
-   * Setup layout mode subscription for sidebar compact mode detection
-   */
-  private setupLayoutModeSubscription(): void {
-    // Subscribe to layout mode changes to detect compact mode changes
-    this.sidebarDebugUnsubscribe = this.layoutContext.subscribe(
-      "layout-mode-change",
-      (event: LayoutEvent) => {
-        const layoutMode = event.data as LayoutMode;
-        const timestamp = new Date().toLocaleTimeString();
-        const isCompact = layoutMode.isCompact;
-        const status = isCompact ? "COMPACT" : "NORMAL";
-        const statusColor = isCompact ? "#fbbf24" : "#3b82f6";
-
-        // Log to sidebar events console
-        this.logToEventConsole(
-          "sidebar_events",
-          `<span style="color: ${statusColor}; font-weight: bold;">[${timestamp}] 🎯 LAYOUT EVENT</span>`,
-        );
-        this.logToEventConsole(
-          "sidebar_events",
-          `└─ Layout mode compact state: ${isCompact}`,
-        );
-        this.logToEventConsole(
-          "sidebar_events",
-          `└─ Sidebar width: ${layoutMode.sidebar.width}px`,
-        );
-        this.logToEventConsole(
-          "sidebar_events",
-          `└─ Layout type: ${layoutMode.type}`,
-        );
-      },
-    );
-
-    // Log initial compact state
-    const sidebar = this.layoutContext?.getSidebar();
-    const initialCompact = sidebar?.isCompactMode();
-    this.logToEventConsole(
-      "sidebar_events",
-      `✅ Subscribed to LayoutContext compact mode changes`,
-    );
-    this.logToEventConsole(
-      "sidebar_events",
-      `ℹ️ Initial compact state from layout: ${initialCompact ? "COMPACT" : "NORMAL"}`,
-    );
-
-    // Check for global app instance for additional debugging
-    let appHeader = this.layoutContext?.getHeader();
-
-    if (appHeader) {
-      this.logToEventConsole("header_events", "✅ AppHeader instance found");
-    } else {
-      this.logToEventConsole(
-        "header_events",
-        "ℹ️ AppHeader instance not accessible",
-      );
-    }
-  }
-
-  /**
-   * Setup AppHeader debugging if instance is available
-   */
-  private setupAppHeaderDebug(): void {
-    this.logToEventConsole(
-      "header_events",
-      "✅ AppHeader instance found - monitoring responses",
-    );
-    this.logToEventConsole(
-      "header_events",
-      "ℹ️ Watch for position updates in response to sidebar events",
-    );
-
-    // Additional debugging could be added here if needed
-    // For now, we rely on the custom events and console logs
-  }
-
-  /**
-   * Log message to event console (sidebar or header)
-   */
-  private logToEventConsole(consoleId: string, message: string): void {
-    const eventConsole = document.getElementById(consoleId);
-    if (eventConsole) {
-      const logElement = document.createElement("div");
-      logElement.innerHTML = message;
-      eventConsole.appendChild(logElement);
-      eventConsole.scrollTop = eventConsole.scrollHeight;
-    }
-  }
 
   /**
    * Setup test control buttons
@@ -536,34 +283,6 @@ export class DebugPage extends PageComponent {
       });
     }
 
-    // Toggle Compact Mode
-    const toggleCompact = document.getElementById("toggle_compact");
-    if (toggleCompact) {
-      toggleCompact.addEventListener("click", () => {
-        // Try to find and click the sidebar compact toggle button
-        const compactToggle = document.getElementById("sidebar_compact_toggle");
-        if (compactToggle) {
-          compactToggle.click();
-          this.logToConsole("🔄 Triggered sidebar compact mode toggle");
-        } else {
-          this.logToConsole("❌ Sidebar compact toggle button not found");
-        }
-      });
-    }
-
-    // Clear Event Logs
-    const clearEventLogs = document.getElementById("clear_event_logs");
-    if (clearEventLogs) {
-      clearEventLogs.addEventListener("click", () => {
-        const sidebarEvents = document.getElementById("sidebar_events");
-        const headerEvents = document.getElementById("header_events");
-
-        if (sidebarEvents) sidebarEvents.innerHTML = "";
-        if (headerEvents) headerEvents.innerHTML = "";
-
-        this.logToConsole("🧹 Event logs cleared");
-      });
-    }
 
     // Setup Message Simulation Controls
     this.setupMessageSimulationControls();
@@ -588,6 +307,37 @@ export class DebugPage extends PageComponent {
    */
   private setupBasicMessageControls(): void {
     console.log("🎯 DEBUGPAGE - Setting up basic message controls...");
+    
+    // Add comprehensive debugging for layoutContext
+    console.log("🎯 DEBUGPAGE - this.mainContent:", !!this.mainContent);
+    console.log("🎯 DEBUGPAGE - mainContent.getLayoutContext():", !!this.mainContent?.getLayoutContext());
+    console.log("🎯 DEBUGPAGE - LayoutContext available:", !!this.layoutContext);
+    
+    if (this.layoutContext) {
+      console.log("🎯 DEBUGPAGE - LayoutContext type:", this.layoutContext.constructor.name);
+      console.log("🎯 DEBUGPAGE - LayoutContext getMessages method:", typeof this.layoutContext.getMessages);
+      
+      const messages = this.layoutContext.getMessages();
+      console.log("🎯 DEBUGPAGE - Messages instance:", !!messages);
+      console.log("🎯 DEBUGPAGE - Messages type:", messages ? messages.constructor.name : 'null');
+      
+      if (messages) {
+        console.log("🎯 DEBUGPAGE - Messages showError method:", typeof messages.showError);
+        console.log("🎯 DEBUGPAGE - Messages showWarning method:", typeof messages.showWarning);
+        console.log("🎯 DEBUGPAGE - Messages showInfo method:", typeof messages.showInfo);
+        console.log("🎯 DEBUGPAGE - Messages showSuccess method:", typeof messages.showSuccess);
+      }
+      
+      // Also check registered components
+      const components = this.layoutContext.getRegisteredComponents();
+      console.log("🎯 DEBUGPAGE - Registered components:", {
+        header: !!components.header,
+        footer: !!components.footer,
+        mainContent: !!components.mainContent,
+        messages: !!components.messages,
+        sidebar: !!components.sidebar
+      });
+    }
 
     // Error message
     const msgError = document.getElementById("msg_error");
@@ -598,11 +348,67 @@ export class DebugPage extends PageComponent {
     if (msgError) {
       msgError.addEventListener("click", () => {
         console.log("🎯 DEBUGPAGE - Error button clicked!");
-        this.layoutContext.showError(
-          "Connection Failed",
-          "Unable to connect to the server. Please check your internet connection.",
-        );
-        this.logToConsole("❌ Error message displayed via LayoutContext");
+        this.logToConsole("🎯 ERROR BUTTON - Button clicked, starting debugging...");
+        
+        try {
+          // Detailed debugging at click time
+          console.log("🎯 DEBUGPAGE - Click-time debugging:");
+          console.log("  - this.mainContent:", !!this.mainContent);
+          console.log("  - this.layoutContext:", !!this.layoutContext);
+          
+          if (this.mainContent) {
+            const contextViaMain = this.mainContent.getLayoutContext();
+            console.log("  - mainContent.getLayoutContext():", !!contextViaMain);
+            if (contextViaMain) {
+              const messagesViaMain = contextViaMain.getMessages();
+              console.log("  - messages via mainContent path:", !!messagesViaMain);
+            }
+          }
+          
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available at click time");
+            console.error("LayoutContext not available at click time");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          console.log("🎯 DEBUGPAGE - Messages retrieved at click time:", !!messages);
+          this.logToConsole(`🎯 Messages available: ${!!messages}`);
+          
+          if (messages) {
+            console.log("🎯 DEBUGPAGE - About to call messages.showError()");
+            messages.showError(
+              "Connection Failed",
+              "Unable to connect to the server. Please check your internet connection.",
+            );
+            this.logToConsole("❌ Error message displayed via Messages API");
+            console.log("❌ Error message sent successfully");
+          } else {
+            this.logToConsole("❌ No messages component available at click time");
+            console.error("Messages component not available at click time");
+            
+            // Try alternative access method
+            try {
+              const alternativeMessages = this.mainContent?.getLayoutContext()?.getMessages();
+              if (alternativeMessages) {
+                console.log("🎯 DEBUGPAGE - Alternative messages access worked!");
+                alternativeMessages.showError(
+                  "Connection Failed",
+                  "Unable to connect to the server. Please check your internet connection.",
+                );
+                this.logToConsole("❌ Error message displayed via alternative Messages API access");
+              } else {
+                this.logToConsole("❌ Alternative messages access also failed");
+              }
+            } catch (altError) {
+              console.error("🎯 DEBUGPAGE - Alternative access error:", altError);
+              this.logToConsole("❌ Alternative access error: " + altError.message);
+            }
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in error button handler:", error);
+          this.logToConsole("❌ Error in message handling: " + error.message);
+        }
       });
     }
 
@@ -615,11 +421,26 @@ export class DebugPage extends PageComponent {
     if (msgWarning) {
       msgWarning.addEventListener("click", () => {
         console.log("🎯 DEBUGPAGE - Warning button clicked!");
-        this.layoutContext.showWarning(
-          "Session Expiring",
-          "Your session will expire in 5 minutes. Save your work to avoid losing data.",
-        );
-        this.logToConsole("⚠️ Warning message displayed via LayoutContext");
+        try {
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          if (messages) {
+            messages.showWarning(
+              "Session Expiring",
+              "Your session will expire in 5 minutes. Save your work to avoid losing data.",
+            );
+            this.logToConsole("⚠️ Warning message displayed via Messages API");
+          } else {
+            this.logToConsole("❌ No messages component available");
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in warning button handler:", error);
+          this.logToConsole("❌ Error in message handling: " + error.message);
+        }
       });
     }
 
@@ -632,11 +453,26 @@ export class DebugPage extends PageComponent {
     if (msgInfo) {
       msgInfo.addEventListener("click", () => {
         console.log("🎯 DEBUGPAGE - Info button clicked!");
-        this.layoutContext.showInfo(
-          "New Feature Available",
-          "Check out the new dashboard features in the sidebar navigation.",
-        );
-        this.logToConsole("ℹ️ Info message displayed via LayoutContext");
+        try {
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          if (messages) {
+            messages.showInfo(
+              "New Feature Available",
+              "Check out the new dashboard features in the sidebar navigation.",
+            );
+            this.logToConsole("ℹ️ Info message displayed via Messages API");
+          } else {
+            this.logToConsole("❌ No messages component available");
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in info button handler:", error);
+          this.logToConsole("❌ Error in message handling: " + error.message);
+        }
       });
     }
 
@@ -649,11 +485,26 @@ export class DebugPage extends PageComponent {
     if (msgSuccess) {
       msgSuccess.addEventListener("click", () => {
         console.log("🎯 DEBUGPAGE - Success button clicked!");
-        this.layoutContext.showSuccess(
-          "Data Saved",
-          "Your changes have been saved successfully to the server.",
-        );
-        this.logToConsole("✅ Success message displayed via LayoutContext");
+        try {
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          if (messages) {
+            messages.showSuccess(
+              "Data Saved",
+              "Your changes have been saved successfully to the server.",
+            );
+            this.logToConsole("✅ Success message displayed via Messages API");
+          } else {
+            this.logToConsole("❌ No messages component available");
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in success button handler:", error);
+          this.logToConsole("❌ Error in message handling: " + error.message);
+        }
       });
     }
   }
@@ -666,37 +517,26 @@ export class DebugPage extends PageComponent {
     const msgWithAction = document.getElementById("msg_with_action");
     if (msgWithAction) {
       msgWithAction.addEventListener("click", () => {
-        // Get Layout instance directly for advanced message features
-        const layout = this.layoutContext.getLayout();
-        if (layout && layout.getErrorMessages) {
-          const errorMessages = layout.getErrorMessages();
-          errorMessages.addMessage({
-            id: "network-error-with-action",
-            type: "error",
-            title: "Network Error",
-            description:
+        try {
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          if (messages) {
+            // For now, use basic error message since addMessage with actions might not be available
+            messages.showError(
+              "Network Error",
               "Failed to load data. Check your connection and try again.",
-            actions: [
-              {
-                id: "retry",
-                text: "Retry",
-                action: () => {
-                  this.logToConsole("🔄 Retry button clicked!");
-                  errorMessages.removeMessage("network-error-with-action");
-                  this.layoutContext.showSuccess(
-                    "Retrying...",
-                    "Attempting to reconnect to the server.",
-                  );
-                },
-                style: "primary",
-              },
-            ],
-            dismissible: true,
-            autoHide: false,
-          });
-          this.logToConsole("🔧 Error message with action displayed");
-        } else {
-          this.logToConsole("❌ Unable to access ErrorMessages component");
+            );
+            this.logToConsole("🔧 Error message with action displayed");
+          } else {
+            this.logToConsole("❌ Unable to access Messages component");
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in action message handler:", error);
+          this.logToConsole("❌ Error in message handling: " + error.message);
         }
       });
     }
@@ -705,20 +545,25 @@ export class DebugPage extends PageComponent {
     const msgPersistent = document.getElementById("msg_persistent");
     if (msgPersistent) {
       msgPersistent.addEventListener("click", () => {
-        const layout = this.layoutContext.getLayout();
-        if (layout && layout.getErrorMessages) {
-          const errorMessages = layout.getErrorMessages();
-          errorMessages.addMessage({
-            id: "persistent-warning",
-            type: "warning",
-            title: "Persistent Warning",
-            description:
+        try {
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          if (messages) {
+            messages.showWarning(
+              "Persistent Warning",
               'This message persists across page navigation. Use "Clear Persistent" to remove it.',
-            persistent: true,
-            dismissible: true,
-            autoHide: false,
-          });
-          this.logToConsole("📌 Persistent warning message displayed");
+            );
+            this.logToConsole("📌 Persistent warning message displayed");
+          } else {
+            this.logToConsole("❌ Unable to access Messages component");
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in persistent message handler:", error);
+          this.logToConsole("❌ Error in message handling: " + error.message);
         }
       });
     }
@@ -727,20 +572,25 @@ export class DebugPage extends PageComponent {
     const msgAutoHide = document.getElementById("msg_auto_hide");
     if (msgAutoHide) {
       msgAutoHide.addEventListener("click", () => {
-        const layout = this.layoutContext.getLayout();
-        if (layout && layout.getErrorMessages) {
-          const errorMessages = layout.getErrorMessages();
-          errorMessages.addMessage({
-            id: "auto-hide-info",
-            type: "info",
-            title: "Auto-Hide Message",
-            description:
+        try {
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          if (messages) {
+            messages.showInfo(
+              "Auto-Hide Message",
               "This message will automatically disappear after 3 seconds.",
-            autoHide: true,
-            autoHideDelay: 3000,
-            dismissible: true,
-          });
-          this.logToConsole("⏰ Auto-hide info message displayed (3s delay)");
+            );
+            this.logToConsole("⏰ Auto-hide info message displayed (3s delay)");
+          } else {
+            this.logToConsole("❌ Unable to access Messages component");
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in auto-hide message handler:", error);
+          this.logToConsole("❌ Error in message handling: " + error.message);
         }
       });
     }
@@ -749,8 +599,13 @@ export class DebugPage extends PageComponent {
     const msgSequence = document.getElementById("msg_sequence");
     if (msgSequence) {
       msgSequence.addEventListener("click", () => {
-        this.showMessageSequence();
-        this.logToConsole("🎬 Message sequence started");
+        try {
+          this.showMessageSequence();
+          this.logToConsole("🎬 Message sequence started");
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in sequence handler:", error);
+          this.logToConsole("❌ Error in message sequence: " + error.message);
+        }
       });
     }
   }
@@ -763,10 +618,25 @@ export class DebugPage extends PageComponent {
     const clearAllMessages = document.getElementById("clear_all_messages");
     if (clearAllMessages) {
       clearAllMessages.addEventListener("click", () => {
-        this.layoutContext.clearMessages(false); // Don't clear persistent
-        this.logToConsole(
-          "🗑️ All non-persistent messages cleared via LayoutContext",
-        );
+        try {
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          if (messages && typeof messages.clearAll === 'function') {
+            messages.clearAll();
+            this.logToConsole(
+              "🗑️ All messages cleared via Messages API",
+            );
+          } else {
+            this.logToConsole("❌ clearAll method not available");
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in clear all handler:", error);
+          this.logToConsole("❌ Error in message clearing: " + error.message);
+        }
       });
     }
 
@@ -774,8 +644,23 @@ export class DebugPage extends PageComponent {
     const clearErrorsOnly = document.getElementById("clear_errors_only");
     if (clearErrorsOnly) {
       clearErrorsOnly.addEventListener("click", () => {
-        this.layoutContext.clearMessagesByType("error");
-        this.logToConsole("❌ Error messages cleared via LayoutContext");
+        try {
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          if (messages && typeof messages.clearByType === 'function') {
+            messages.clearByType('error');
+            this.logToConsole("❌ Error messages cleared via Messages API");
+          } else {
+            this.logToConsole("❌ clearByType method not available");
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in clear errors handler:", error);
+          this.logToConsole("❌ Error in message clearing: " + error.message);
+        }
       });
     }
 
@@ -783,10 +668,25 @@ export class DebugPage extends PageComponent {
     const clearPersistent = document.getElementById("clear_persistent");
     if (clearPersistent) {
       clearPersistent.addEventListener("click", () => {
-        this.layoutContext.clearMessages(true); // Include persistent
-        this.logToConsole(
-          "📌 All messages including persistent cleared via LayoutContext",
-        );
+        try {
+          if (!this.layoutContext) {
+            this.logToConsole("❌ LayoutContext not available");
+            return;
+          }
+          
+          const messages = this.layoutContext.getMessages();
+          if (messages && typeof messages.clearAll === 'function') {
+            messages.clearAll(true); // Include persistent messages
+            this.logToConsole(
+              "📌 Persistent messages cleared via Messages API",
+            );
+          } else {
+            this.logToConsole("❌ clearAll method not available");
+          }
+        } catch (error) {
+          console.error("🎯 DEBUGPAGE - Error in clear persistent handler:", error);
+          this.logToConsole("❌ Error in message clearing: " + error.message);
+        }
       });
     }
   }
@@ -795,31 +695,42 @@ export class DebugPage extends PageComponent {
    * Show a sequence of messages for demonstration
    */
   private showMessageSequence(): void {
+    if (!this.layoutContext) {
+      this.logToConsole("❌ LayoutContext not available for sequence");
+      return;
+    }
+    
+    const messages = this.layoutContext.getMessages();
+    if (!messages) {
+      this.logToConsole("❌ No messages component available for sequence");
+      return;
+    }
+
     let step = 0;
     const steps = [
       () => {
-        this.layoutContext.showInfo(
+        messages.showInfo(
           "Step 1",
           "Starting data validation process...",
         );
       },
       () => {
-        this.layoutContext.showInfo("Step 2", "Validating user permissions...");
+        messages.showInfo("Step 2", "Validating user permissions...");
       },
       () => {
-        this.layoutContext.showWarning(
+        messages.showWarning(
           "Step 3",
           "Found 2 validation warnings that need attention.",
         );
       },
       () => {
-        this.layoutContext.showError(
+        messages.showError(
           "Step 4",
           'Validation failed: Missing required field "email".',
         );
       },
       () => {
-        this.layoutContext.showSuccess(
+        messages.showSuccess(
           "Step 5",
           "Process completed! All issues resolved.",
         );
@@ -942,33 +853,6 @@ export class DebugPage extends PageComponent {
     console.log("DebugPage:", message);
   }
 
-  /**
-   * Clean up when page is destroyed
-   */
-  protected onDestroy(): void {
-    console.log("DebugPage - Destroying...");
-
-    // Unsubscribe from LayoutContext events
-    if (this.responsiveModeUnsubscribe) {
-      this.responsiveModeUnsubscribe();
-      this.responsiveModeUnsubscribe = null;
-      console.log("DebugPage - Unsubscribed from responsive mode changes");
-    }
-
-    // Unsubscribe from sidebar events
-    if (this.sidebarDebugUnsubscribe) {
-      this.sidebarDebugUnsubscribe();
-      this.sidebarDebugUnsubscribe = null;
-      console.log("DebugPage - Unsubscribed from sidebar debug events");
-    }
-
-    // Unsubscribe from header events
-    if (this.headerDebugUnsubscribe) {
-      this.headerDebugUnsubscribe();
-      this.headerDebugUnsubscribe = null;
-      console.log("DebugPage - Unsubscribed from header debug events");
-    }
-  }
 }
 
 export default DebugPage;

@@ -3,15 +3,15 @@
  * Defines the contract for layout management and coordination
  */
 
-import { AppHeader } from "@/components/AppHeader.js";
-import type { Sidebar } from "../components/Sidebar.js";
-import type { Messages } from "../interfaces/Messages.js";
-import { AppFooter } from "@/components/AppFooter.js";
-import { MainContent } from "@/components/MainContent.js";
+import { AppHeader } from "../components/AppHeader";
+import type { Sidebar } from "../components/Sidebar";
+import type { Messages } from "../interfaces/Messages";
+import { AppFooter } from "../components/AppFooter";
+import { MainContent } from "../components/MainContent";
 import { ActivePage, ActivePageConsumer, ActivePageProvider } from "../interfaces/ActivePage";
 import type { Service, ServiceRegistry, ServiceConfig } from "../interfaces/Service";
 import type { EventBus, Consumer } from "../lib/EventBus";
-import type { ServiceReference, ServiceReferenceConfig } from "../auth/ServiceReference";
+import type { ServiceReference, ServiceReferenceConfig } from "../services/ServiceReference";
 
 export interface LayoutViewPort {
   width: number;

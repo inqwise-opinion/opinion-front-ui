@@ -6,7 +6,7 @@
  */
 
 // Import clean CSS
-import { LayoutContext } from "@/contexts";
+import { LayoutContext } from "../contexts/LayoutContext";
 import "../assets/styles/components/error-messages.css";
 
 // Import interfaces

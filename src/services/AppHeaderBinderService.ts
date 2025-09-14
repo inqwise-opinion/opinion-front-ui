@@ -19,16 +19,18 @@
  */
 
 import { BaseService } from '../services/BaseService';
-import { AuthService } from './AuthService';
-import { AUTH_EVENTS, UserAuthenticatedPayload } from './AuthEvents';
-import { AuthenticatedUser } from './AuthenticatedUser';
-import { AuthenticationError } from './exceptions/AuthenticationExceptions';
-import { ServiceReference } from './ServiceReference';
-import { AppHeader, HeaderUser } from '../components/AppHeader';
+import { AuthService } from '../auth/AuthService';
+import { AUTH_EVENTS, UserAuthenticatedPayload } from '../auth/AuthEvents';
+import { AuthenticatedUser } from '../auth/AuthenticatedUser';
+import { AuthenticationError } from '../auth/exceptions/AuthenticationExceptions';
+import { ServiceReference, ServiceReferenceConfig } from './ServiceReference';
+import { ComponentReference } from '../components/ComponentReference';
+import { AppHeader, HeaderUser, AppHeaderRef } from '../components/AppHeader';
 import { UserMenu } from '../components/UserMenu';
 import type { Consumer } from '../lib/EventBus';
 import type { LayoutContext } from '../contexts/LayoutContext';
 import type { ServiceConfig } from '../interfaces/Service';
+import { SelfIdentifyingService, ServiceIdentity, validateServiceIdentity } from '../core/ServiceIdentity';
 
 /**
  * AppHeader binder service configuration
@@ -46,16 +48,24 @@ export interface AppHeaderBinderServiceConfig extends ServiceConfig {
  * Provides UI binding between authentication services and AppHeader components.
  * Handles event subscription, UI updates, and user action delegation.
  */
-export class AppHeaderBinderService extends BaseService {
+export class AppHeaderBinderService extends BaseService implements SelfIdentifyingService {
+  // 🎯 SELF-DECLARED IDENTITY CONSTANTS
+  static readonly SERVICE_ID = 'auth.header-binder' as const;
+  static readonly SERVICE_DESCRIPTION = 'Authentication UI binding service - bridges AuthService and AppHeader component';
+  static readonly SERVICE_DEPENDENCIES = [
+    AuthService.SERVICE_ID
+  ] as const;
   private readonly binderConfig: Required<AppHeaderBinderServiceConfig>;
-  private authServiceWrapper: ServiceReference<AuthService>;
-  private appHeader: AppHeader | null = null;
+  private authServiceRef: ServiceReference<AuthService>;
+  private appHeaderRef: ComponentReference<AppHeader>;
   private eventConsumer: Consumer | null = null;
   
-  constructor(context: LayoutContext, config: AppHeaderBinderServiceConfig = {}) {
-    super(context, config);
-    
-    this.binderConfig = {
+  constructor(
+    authServiceRef: ServiceReference<AuthService>,
+    context: LayoutContext,
+    config: AppHeaderBinderServiceConfig = {}
+  ) {
+    const finalConfig = {
       autoInit: true,
       allowReplace: false,
       initTimeout: 5000,
@@ -64,16 +74,28 @@ export class AppHeaderBinderService extends BaseService {
       ...config,
     };
     
-    // Initialize service reference for AuthService
-    this.authServiceWrapper = new ServiceReference<AuthService>(
-      context,
-      this.binderConfig.authServiceName,
-      { enableLogging: false }
-    );
+    super(context, finalConfig);
+    
+    this.binderConfig = finalConfig;
+    
+    // Store service reference for AuthService
+    this.authServiceRef = authServiceRef;
+    
+    // Initialize ComponentReference for AppHeader
+    this.appHeaderRef = AppHeaderRef.getRegisteredReference(context, {
+      enableLogging: false, // Disable logging now that issue is resolved
+      retryInterval: 100,
+      maxRetries: 50 // Keep higher retry count for robustness
+    });
+    
+    // Validate this service implements required identity interface
+    validateServiceIdentity(AppHeaderBinderService, this);
     
     this.log('🔗', 'AppHeaderBinderService created', { 
+      serviceId: AppHeaderBinderService.SERVICE_ID,
       authServiceName: this.binderConfig.authServiceName,
-      updateOnInit: this.binderConfig.updateOnInit
+      updateOnInit: this.binderConfig.updateOnInit,
+      dependencies: AppHeaderBinderService.SERVICE_DEPENDENCIES
     });
   }
   
@@ -81,7 +103,7 @@ export class AppHeaderBinderService extends BaseService {
    * Get service identifier for registration
    */
   getServiceId(): string {
-    return 'appHeaderBinder';
+    return AppHeaderBinderService.SERVICE_ID;
   }
   
   /**
@@ -90,20 +112,22 @@ export class AppHeaderBinderService extends BaseService {
    * @param force - Force update even if no authenticated user
    */
   async updateAppHeader(force: boolean = false): Promise<void> {
-    if (!this.appHeader) {
+    const appHeader = await this.appHeaderRef.get();
+    if (!appHeader) {
       this.log('⚠️', 'AppHeader not available - cannot update UI');
       return;
     }
     
-    if (!this.authService) {
+    const authService = await this.authServiceRef.get();
+    if (!authService) {
       this.log('⚠️', 'AuthService not available - cannot get authentication state');
       return;
     }
     
-    const authenticatedUser = this.authService.getCurrentUser();
+    const authenticatedUser = authService.getCurrentUser();
     
     if (authenticatedUser) {
-      this.updateAppHeaderWithUser(authenticatedUser);
+      await this.updateAppHeaderWithUser(authenticatedUser);
     } else if (force) {
       this.log('⚠️', 'No authenticated user available for AppHeader update');
       // Could set default/guest state here if needed
@@ -115,15 +139,16 @@ export class AppHeaderBinderService extends BaseService {
    * Delegates to AuthService for actual logout operation
    */
   async handleLogoutAction(): Promise<void> {
-    if (!this.authService) {
+    const authService = await this.authServiceRef.get();
+    if (!authService) {
       this.log('❌', 'AuthService not available - cannot perform logout');
       return;
     }
     
-    this.log('🚪', 'Handling logout action from UI...');
+    this.log('🚺', 'Handling logout action from UI...');
     
     try {
-      await this.authService.logout();
+      await authService.logout();
       this.log('✅', 'Logout action completed successfully');
     } catch (error) {
       this.log('❌', 'Logout action failed', { error });
@@ -164,7 +189,7 @@ export class AppHeaderBinderService extends BaseService {
   /**
    * Handle user authenticated event from AuthService
    */
-  private handleUserAuthenticated(payload: UserAuthenticatedPayload): void {
+  private async handleUserAuthenticated(payload: UserAuthenticatedPayload): Promise<void> {
     this.log('📥', 'Received user authenticated event', { 
       userId: payload.user.id,
       username: payload.user.username,
@@ -173,7 +198,7 @@ export class AppHeaderBinderService extends BaseService {
     });
     
     try {
-      this.updateAppHeaderWithUser(payload.user);
+      await this.updateAppHeaderWithUser(payload.user);
     } catch (error) {
       this.log('❌', 'Failed to update AppHeader with authenticated user', { error });
     }
@@ -182,8 +207,9 @@ export class AppHeaderBinderService extends BaseService {
   /**
    * Update AppHeader and UserMenu with authenticated user data
    */
-  private updateAppHeaderWithUser(authenticatedUser: AuthenticatedUser): void {
-    if (!this.appHeader) {
+  private async updateAppHeaderWithUser(authenticatedUser: AuthenticatedUser): Promise<void> {
+    const appHeader = await this.appHeaderRef.get();
+    if (!appHeader) {
       this.log('⚠️', 'AppHeader not available - skipping UI update');
       return;
     }
@@ -196,7 +222,7 @@ export class AppHeaderBinderService extends BaseService {
     };
     
     try {
-      this.appHeader.updateUser(headerUser);
+      appHeader.updateUser(headerUser);
       
       this.log('✅', 'AppHeader updated with authenticated user', {
         userId: authenticatedUser.id,
@@ -225,45 +251,19 @@ export class AppHeaderBinderService extends BaseService {
     }
   }
   
-  /**
-   * Resolve AppHeader component from LayoutContext
-   */
-  private resolveAppHeader(): void {
-    // Try to get AppHeader from LayoutContext (registered components)
-    // Note: This depends on how AppHeader is registered in the system
-    
-    // Method 1: Try to get from LayoutContext component registry (if exists)
-    const layoutContext = this.getContext();
-    if (typeof layoutContext.getHeader === 'function') {
-      this.appHeader = layoutContext.getHeader() as AppHeader;
-      this.log('✅', 'AppHeader resolved from LayoutContext.getHeader()');
-      return;
-    }
-    
-    // Method 2: Try to get from service registry (if AppHeader is registered as service)
-    const appHeaderService = this.getService<AppHeader>('appHeader');
-    if (appHeaderService) {
-      this.appHeader = appHeaderService;
-      this.log('✅', 'AppHeader resolved from service registry');
-      return;
-    }
-    
-    // Method 3: Could try DOM-based approach as fallback
-    this.log('⚠️', 'AppHeader not found in LayoutContext - will try to resolve later');
-    this.appHeader = null;
-  }
   
   /**
    * Setup user action handlers for UserMenu
    */
-  private setupUserActionHandlers(): void {
-    if (!this.appHeader) {
+  private async setupUserActionHandlers(): Promise<void> {
+    const appHeader = await this.appHeaderRef.get();
+    if (!appHeader) {
       this.log('⚠️', 'AppHeader not available - cannot setup user action handlers');
       return;
     }
     
     // Set up UserMenu handler for logout actions
-    this.appHeader.setUserMenuHandler((userMenu: UserMenu) => {
+    appHeader.setUserMenuHandler((userMenu: UserMenu) => {
       this.log('🔧', 'Setting up UserMenu action handlers');
       
       // Note: This is a conceptual approach - actual implementation 
@@ -286,30 +286,24 @@ export class AppHeaderBinderService extends BaseService {
   protected async onInit(): Promise<void> {
     this.log('🚀', 'Initializing AppHeaderBinderService...');
     
-    // Resolve AuthService dependency
-    const authServiceName = this.binderConfig.authServiceName;
-    this.authService = this.getService<AuthService>(authServiceName);
-    
-    if (!this.authService) {
+    // Test AuthService dependency via ServiceReference
+    const authService = await this.authServiceRef.get();
+    if (!authService) {
       throw new AuthenticationError(
-        `AuthService '${authServiceName}' not found in LayoutContext. ` +
-        `Available services: [${this.getContext().getServiceNames().join(', ')}]`
+        `AuthService could not be resolved via ServiceReference. ` +
+        `Check that AuthService is properly registered in LayoutContext.`
       );
     }
     
     this.log('✅', 'AuthService resolved', { 
-      authServiceName,
-      authServiceId: this.authService.getServiceId()
+      authServiceId: authService.getServiceId()
     });
-    
-    // Resolve AppHeader component
-    this.resolveAppHeader();
     
     // Subscribe to authentication events
     this.subscribeToAuthEvents();
     
     // Setup user action handlers
-    this.setupUserActionHandlers();
+    await this.setupUserActionHandlers();
     
     // Update UI with current authentication state if configured
     if (this.binderConfig.updateOnInit) {
@@ -328,10 +322,35 @@ export class AppHeaderBinderService extends BaseService {
     // Unsubscribe from events
     this.unsubscribeFromAuthEvents();
     
-    // Clear references
-    this.authService = null;
-    this.appHeader = null;
+    // ComponentReference will be cleaned up automatically
     
     this.log('✅', 'AppHeaderBinderService destroyed successfully');
+  }
+  
+  /**
+   * Get a ServiceReference for safely accessing registered AppHeaderBinderService
+   * 
+   * @param context - The LayoutContext to resolve from
+   * @param config - Optional configuration for the ServiceReference
+   * @returns ServiceReference<AppHeaderBinderService> for lazy resolution
+   * 
+   * @example
+   * ```typescript
+   * const binderRef = AppHeaderBinderService.getRegisteredReference(layoutContext);
+   * const binder = await binderRef.get(); // Returns AppHeaderBinderService | null
+   * if (binder) {
+   *   await binder.handleLogoutAction();
+   * }
+   * ```
+   */
+  static getRegisteredReference(
+    context: LayoutContext,
+    config?: ServiceReferenceConfig
+  ): ServiceReference<AppHeaderBinderService> {
+    return new ServiceReference<AppHeaderBinderService>(
+      context,
+      'auth.header-binder', // Standard service key for AppHeaderBinderService
+      config
+    );
   }
 }
