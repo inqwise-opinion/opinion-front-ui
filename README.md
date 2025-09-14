@@ -8,8 +8,8 @@ This project represents a **complete architectural migration** from a traditiona
 
 ### Reference Projects
 
-- **Admin UI Reference**: `/Users/glassfox/git/inqwise/opinion opensource/opinion-admin-ui`
-- **Admin App Reference**: `/Users/glassfox/git/inqwise/opinion opensource/opinion-app-admin`
+- **Admin UI Reference**: `../opinion opensource/opinion-admin-ui`
+- **Admin App Reference**: `../opinion opensource/opinion-app-admin`
 
 ## Architecture
 

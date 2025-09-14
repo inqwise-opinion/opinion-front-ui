@@ -283,7 +283,7 @@ The application includes comprehensive error handling:
 
 ### Reference Projects
 When working on this codebase, refer to these related projects for context:
-- **Admin UI Reference**: `/Users/glassfox/git/inqwise/opinion opensource/opinion-admin-ui`  
-- **Admin App Reference**: `/Users/glassfox/git/inqwise/opinion opensource/opinion-app-admin`
+- **Admin UI Reference**: `../opinion opensource/opinion-admin-ui`  
+- **Admin App Reference**: `../opinion opensource/opinion-app-admin`
 
 These contain the original servlet-based implementation patterns being migrated to TypeScript.
