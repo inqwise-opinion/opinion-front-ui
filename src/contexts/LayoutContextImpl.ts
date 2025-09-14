@@ -27,6 +27,7 @@ import type { Service, ServiceConfig } from "../interfaces/Service";
 import { ServiceError } from "../interfaces/Service";
 import type { EventBus, Consumer } from "../lib/EventBus";
 import { EventBusImpl } from "../lib/EventBusImpl";
+import { LayoutEventFactory, type TypedLayoutEvent } from "./LayoutEventFactory";
 
 export class LayoutContextImpl implements LayoutContext {
   // Note: Removed dedicated listeners map - now using EventBus for all events
@@ -152,7 +153,7 @@ export class LayoutContextImpl implements LayoutContext {
       );
 
       // Emit layout mode change event when layout mode type actually changes
-      this.emitLayoutModeChange(newViewPort, newModeType);
+      this.emitLayoutModeChange(newViewPort, newModeType, oldModeType);
     }
   }
 
@@ -224,7 +225,9 @@ export class LayoutContextImpl implements LayoutContext {
     // Set ready state
     this.isLayoutReady = true;
 
-    this.emit("layout-ready", this);
+    // Create properly typed layout-ready event
+    const event = LayoutEventFactory.createLayoutReadyEvent(this);
+    this.emit("layout-ready", event.data);
   }
 
   /**
@@ -241,6 +244,7 @@ export class LayoutContextImpl implements LayoutContext {
   private emitLayoutModeChange(
     newViewPort: LayoutViewPort,
     newModeType: LayoutModeType,
+    previousModeType?: LayoutModeType,
   ): void {
     console.log(`LayoutContext - Layout mode switching to: ${newModeType}`);
     
@@ -249,11 +253,17 @@ export class LayoutContextImpl implements LayoutContext {
     
     // Emit layout mode change event for components that need to respond
     console.log("LayoutContext - Firing layout-mode-change event");
-    this.emit("layout-mode-change", {
-      context: this,
-      viewport: newViewPort,
-      modeType: newModeType,
-    });
+    
+    // Create properly typed event using the factory
+    const event = LayoutEventFactory.createLayoutModeChangeEvent(
+      this,
+      newViewPort,
+      newModeType,
+      previousModeType || this.modeType,
+    );
+    
+    // Emit the typed event
+    this.emit("layout-mode-change", event.data);
   }
 
   /**

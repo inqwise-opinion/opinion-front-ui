@@ -17,6 +17,7 @@ import type {
   LayoutEvent,
   LayoutEventType,
 } from "../contexts/LayoutContext";
+import { LayoutEventFactory, type TypedLayoutEvent } from "../contexts/LayoutEventFactory";
 import { PageComponent } from "../components/PageComponent";
 
 export class DebugPage extends PageComponent {
@@ -1003,31 +1004,21 @@ export class DebugPage extends PageComponent {
 
   private formatEventData(event: LayoutEvent): string {
     try {
-      if (event.type === "layout-mode-change") {
-        const { viewport, modeType } = event.data || {};
-        const mobileNote = modeType === "mobile" ? " (compact mode disabled)" : "";
-        return `→ modeType=${modeType}${mobileNote}, viewport=${viewport?.width}x${viewport?.height}`;
-      }
-      if (event.type === "sidebar-compact-mode-change") {
-        const compactMode = event.data ? "true" : "false";
-        const layoutContext = this.mainContent.getLayoutContext();
-        const isMobile = layoutContext.isLayoutMobile();
-        const mobileNote = isMobile ? " (blocked on mobile)" : "";
-        return `→ compactMode=${compactMode}${mobileNote}`;
-      }
-      return event.data ? `→ data=${JSON.stringify(event.data)}` : "";
+      // Use the factory's formatting method for typed events
+      const typedEvent = event as TypedLayoutEvent;
+      return LayoutEventFactory.formatEventDataForLogging(typedEvent);
     } catch {
-      return "";
+      // Fallback to generic formatting for non-typed events
+      try {
+        return event.data ? `→ data=${JSON.stringify(event.data)}` : "";
+      } catch {
+        return "→ [complex data]";
+      }
     }
   }
 
   private badgeForEvent(type: LayoutEventType): string {
-    switch (type) {
-      case "layout-ready": return "🟩";
-      case "layout-mode-change": return "🟦";
-      case "sidebar-compact-mode-change": return "🟨";
-      default: return "⬜";
-    }
+    return LayoutEventFactory.getEventBadge(type);
   }
 
   private logLayoutEvent(message: string): void {

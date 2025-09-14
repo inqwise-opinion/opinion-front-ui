@@ -9,6 +9,8 @@ import "../assets/styles/components/sidebar.css";
 import { getLayoutContext, type LayoutContext } from "../contexts/index";
 // Import sidebar interfaces and types
 import { Dimensions, NavigationItem, Sidebar, SidebarConfig } from "./Sidebar";
+// Import layout event factory for typed events
+import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
 
 export class SidebarComponent implements Sidebar {
   private sidebar: HTMLElement | null = null;
@@ -499,11 +501,27 @@ export class SidebarComponent implements Sidebar {
    * Set compact mode state
    */
   private setCompactMode(compact: boolean): void {
+    const previousCompactMode = this.compactMode;
+    
     // Block compact mode on mobile - mobile uses overlay mode instead
     if (this.layoutContext.isLayoutMobile()) {
       console.log(
         "📱 Sidebar - Compact mode blocked on mobile (uses overlay mode instead)",
       );
+      
+      // Emit blocked event
+      this.emitCompactModeChangeEvent(false, previousCompactMode, "mobile-layout");
+      return;
+    }
+    
+    // Check if locked in expanded mode
+    if (compact && this.isLocked()) {
+      console.log(
+        "🔒 Sidebar - Compact mode blocked (sidebar is locked in expanded mode)",
+      );
+      
+      // Emit blocked event
+      this.emitCompactModeChangeEvent(false, previousCompactMode, "sidebar-locked");
       return;
     }
 
@@ -538,7 +556,10 @@ export class SidebarComponent implements Sidebar {
       // Update toggle button
       this.updateCompactToggleButton();
 
-      // Notify listeners of the change
+      // Emit successful compact mode change event
+      this.emitCompactModeChangeEvent(compact, previousCompactMode);
+
+      // Notify local listeners of the change
       this.notifyCompactModeChange(compact);
 
       console.log(
@@ -575,6 +596,29 @@ export class SidebarComponent implements Sidebar {
         console.error("Sidebar - Error in compact mode change handler:", error);
       }
     });
+  }
+
+  /**
+   * Emit typed compact mode change event to LayoutContext
+   */
+  private emitCompactModeChangeEvent(
+    compactMode: boolean,
+    previousCompactMode: boolean,
+    blockedReason?: "mobile-layout" | "sidebar-locked",
+  ): void {
+    // Create typed event using the factory
+    const event = LayoutEventFactory.createSidebarCompactModeChangeEvent(
+      compactMode,
+      previousCompactMode,
+      blockedReason,
+    );
+
+    // Emit the event through the LayoutContext
+    this.layoutContext.emit("sidebar-compact-mode-change", event.data);
+
+    console.log(
+      `📡 Sidebar - Emitted compact mode change event: ${previousCompactMode} → ${compactMode}${blockedReason ? ` (blocked: ${blockedReason})` : ""}`,
+    );
   }
 
   /**
