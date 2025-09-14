@@ -14,12 +14,23 @@ import type {
   LayoutContext,
   LayoutModeType,
   LayoutViewPort,
+  LayoutEvent,
+  LayoutEventType,
 } from "../contexts/LayoutContext";
-import type { LayoutEvent } from "../contexts/LayoutContext";
 import { PageComponent } from "../components/PageComponent";
 
 export class DebugPage extends PageComponent {
   private responsiveModeUnsubscribe: (() => void) | null = null;
+  
+  // Layout Events Monitoring
+  private eventMonitoringActive: boolean = false;
+  private layoutEventUnsubscribers: Array<() => void> = [];
+  private eventStats = {
+    totalEvents: 0,
+    eventCounts: new Map<string, number>(),
+    startTime: 0,
+    lastEventTime: 0
+  };
 
   constructor(mainContent: MainContentImpl) {
     super(mainContent);
@@ -69,6 +80,9 @@ export class DebugPage extends PageComponent {
       this.responsiveModeUnsubscribe();
       this.responsiveModeUnsubscribe = null;
     }
+    
+    // Clean up layout event monitoring
+    this.stopEventMonitoring();
   }
 
   protected setupEventListeners(): void {}
@@ -140,6 +154,29 @@ export class DebugPage extends PageComponent {
             <div style="margin: 30px 0;">
               <h3 style="color: #333; margin-bottom: 15px;">Test Console</h3>
               <div id="test_console" style="background: #1e1e1e; color: #fff; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 13px; height: 200px; overflow-y: auto;"></div>
+            </div>
+
+            <div style="margin: 30px 0;">
+              <h3 style="color: #333; margin-bottom: 15px;">📡 Layout Events Monitor</h3>
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="margin-bottom: 15px;">
+                  <h4 style="margin: 0 0 10px 0; color: #555;">Event Controls:</h4>
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <button id="start_event_monitor" style="padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">▶️ Start Monitor</button>
+                    <button id="stop_event_monitor" style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">⏹️ Stop Monitor</button>
+                    <button id="clear_event_log" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🗑️ Clear Events</button>
+                    <button id="trigger_layout_test" style="padding: 8px 12px; background: #fd7e14; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🔄 Trigger Test Event</button>
+                  </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                  <h4 style="margin: 0 0 10px 0; color: #555;">Event Log:</h4>
+                  <div id="layout_events_console" style="background: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; height: 300px; overflow-y: auto; border: 1px solid #333;"></div>
+                </div>
+                <div>
+                  <h4 style="margin: 0 0 10px 0; color: #555;">Event Statistics:</h4>
+                  <div id="event_stats" style="background: #e9ecef; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 13px;">Monitoring stopped. Click 'Start Monitor' to begin tracking events.</div>
+                </div>
+              </div>
             </div>
 
             <div style="margin: 30px 0;">
@@ -286,6 +323,9 @@ export class DebugPage extends PageComponent {
 
     // Setup Message Simulation Controls
     this.setupMessageSimulationControls();
+    
+    // Setup Layout Events Monitoring
+    this.setupLayoutEventsMonitoring();
   }
 
   /**
@@ -853,6 +893,170 @@ export class DebugPage extends PageComponent {
     console.log("DebugPage:", message);
   }
 
+  // =================================================================================
+  // Layout Events Monitoring Implementation
+  // =================================================================================
+  
+  private setupLayoutEventsMonitoring(): void {
+    const startBtn = document.getElementById("start_event_monitor");
+    const stopBtn = document.getElementById("stop_event_monitor");
+    const clearBtn = document.getElementById("clear_event_log");
+    const triggerBtn = document.getElementById("trigger_layout_test");
+
+    if (startBtn) {
+      startBtn.addEventListener("click", () => this.startEventMonitoring());
+    }
+    if (stopBtn) {
+      stopBtn.addEventListener("click", () => this.stopEventMonitoring());
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => this.clearLayoutEventsLog());
+    }
+    if (triggerBtn) {
+      triggerBtn.addEventListener("click", () => this.triggerLayoutTestEvent());
+    }
+
+    // Auto-start monitoring on page load for convenience
+    setTimeout(() => this.startEventMonitoring(), 500);
+  }
+
+  private startEventMonitoring(): void {
+    if (this.eventMonitoringActive) {
+      this.logLayoutEvent("ℹ️ Event monitoring is already active");
+      return;
+    }
+
+    const ctx = this.mainContent.getLayoutContext();
+    this.eventMonitoringActive = true;
+    this.eventStats = {
+      totalEvents: 0,
+      eventCounts: new Map<string, number>(),
+      startTime: Date.now(),
+      lastEventTime: 0,
+    };
+
+    // Subscribe to all known LayoutContext events
+    const subscribe = (type: LayoutEventType) => {
+      const unsubscribe = ctx.subscribe(type, (event) => this.handleLayoutEvent(event));
+      this.layoutEventUnsubscribers.push(unsubscribe);
+    };
+
+    subscribe("layout-ready");
+    subscribe("layout-mode-change");
+    subscribe("sidebar-compact-mode-change");
+
+    this.updateEventStatsDisplay();
+    this.logLayoutEvent("✅ Layout event monitoring started");
+  }
+
+  private stopEventMonitoring(): void {
+    if (!this.eventMonitoringActive) return;
+
+    this.layoutEventUnsubscribers.forEach((fn) => {
+      try { fn(); } catch {}
+    });
+    this.layoutEventUnsubscribers = [];
+    this.eventMonitoringActive = false;
+    this.logLayoutEvent("⏹️ Layout event monitoring stopped");
+  }
+
+  private handleLayoutEvent(event: LayoutEvent): void {
+    if (!this.eventMonitoringActive) return;
+
+    const now = Date.now();
+    this.eventStats.totalEvents++;
+    this.eventStats.lastEventTime = now;
+    this.eventStats.eventCounts.set(
+      event.type,
+      (this.eventStats.eventCounts.get(event.type) || 0) + 1,
+    );
+
+    // Pretty-print event
+    const dataPreview = this.formatEventData(event);
+    this.logLayoutEvent(
+      `${this.badgeForEvent(event.type)} ${event.type} ${dataPreview}`,
+    );
+
+    this.updateEventStatsDisplay();
+  }
+
+  private formatEventData(event: LayoutEvent): string {
+    try {
+      if (event.type === "layout-mode-change") {
+        const { viewport, modeType } = event.data || {};
+        return `→ modeType=${modeType}, viewport=${viewport?.width}x${viewport?.height}`;
+      }
+      if (event.type === "sidebar-compact-mode-change") {
+        return `→ compactMode=${event.data ? "true" : "false"}`;
+      }
+      return event.data ? `→ data=${JSON.stringify(event.data)}` : "";
+    } catch {
+      return "";
+    }
+  }
+
+  private badgeForEvent(type: LayoutEventType): string {
+    switch (type) {
+      case "layout-ready": return "🟩";
+      case "layout-mode-change": return "🟦";
+      case "sidebar-compact-mode-change": return "🟨";
+      default: return "⬜";
+    }
+  }
+
+  private logLayoutEvent(message: string): void {
+    const consoleEl = document.getElementById("layout_events_console");
+    if (consoleEl) {
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = document.createElement("div");
+      entry.textContent = `[${timestamp}] ${message}`;
+      consoleEl.appendChild(entry);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+    // Also mirror to main test console
+    this.logToConsole(message);
+  }
+
+  private updateEventStatsDisplay(): void {
+    const statsEl = document.getElementById("event_stats");
+    if (!statsEl) return;
+
+    if (!this.eventMonitoringActive) {
+      statsEl.textContent = "Monitoring stopped. Click 'Start Monitor' to begin tracking events.";
+      return;
+    }
+
+    const durationSec = ((Date.now() - this.eventStats.startTime) / 1000).toFixed(1);
+    const parts = [
+      `⏱️ Duration: ${durationSec}s`,
+      `📈 Total events: ${this.eventStats.totalEvents}`,
+    ];
+
+    const counts: string[] = [];
+    this.eventStats.eventCounts.forEach((count, type) => {
+      counts.push(`${type}: ${count}`);
+    });
+    parts.push(`📊 By type: { ${counts.join(", ")} }`);
+
+    statsEl.textContent = parts.join(" | ");
+  }
+
+  private clearLayoutEventsLog(): void {
+    const consoleEl = document.getElementById("layout_events_console");
+    if (consoleEl) consoleEl.innerHTML = "";
+    this.logToConsole("🧹 Event log cleared");
+  }
+
+  private triggerLayoutTestEvent(): void {
+    try {
+      const ctx = this.mainContent.getLayoutContext();
+      // Emit a synthetic layout-ready event to verify pipeline
+      ctx.emit("layout-ready", { source: "DebugPage", at: Date.now() });
+      this.logToConsole("🔄 Triggered synthetic 'layout-ready' event");
+    } catch (e) {
+      this.logToConsole("❌ Failed to trigger test event");
+    }
+  }
 }
 
 export default DebugPage;
