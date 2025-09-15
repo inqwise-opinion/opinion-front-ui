@@ -338,23 +338,37 @@ export class DebugPage extends PageComponent {
       });
     }
 
-    // Test User Menu Toggle - Use a different approach to avoid deadlock
+    // Test User Menu Toggle
     const testUserMenu = document.getElementById("test_user_menu");
     if (testUserMenu) {
-      testUserMenu.addEventListener("click", () => {
-        // Check current state of user menu to determine toggle direction
-        const userMenuDropdown = document.getElementById("user_menu_dropdown");
-        const mobileDropdown = document.querySelector(".user-menu-mobile-dropdown");
-        const isCurrentlyOpen = (userMenuDropdown && userMenuDropdown.style.display === "block") || 
-                               !!mobileDropdown;
+      let isToggling = false; // Prevent rapid toggle calls
+      
+      testUserMenu.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         
+        // Prevent rapid clicking
+        if (isToggling) {
+          this.logToConsole("👤 User menu toggle already in progress, ignoring click");
+          return;
+        }
+        
+        isToggling = true;
         const layoutContext = this.mainContent.getLayoutContext();
-        // Emit request event instead of notification event
-        layoutContext.emit("user-menu-request", {
-          requestedAction: "toggle",
-          trigger: "debug-page"
-        });
-        this.logToConsole(`👤 User menu request event emitted`);
+        
+        // Use setTimeout to allow the click event to finish before emitting the request
+        setTimeout(() => {
+          layoutContext.emit("user-menu-request", {
+            requestedAction: "toggle",
+            trigger: "debug-page"
+          });
+          this.logToConsole(`👤 User menu request event emitted`);
+          
+          // Reset the toggle flag after a short delay
+          setTimeout(() => {
+            isToggling = false;
+          }, 100);
+        }, 50);
       });
     }
 
