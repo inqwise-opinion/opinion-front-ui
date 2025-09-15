@@ -15,6 +15,7 @@ import { Dimensions } from "./Sidebar";
 // Import layout context
 import { getLayoutContext } from "../contexts/index";
 import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
+import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
 import { AppHeader, HeaderUser } from "./AppHeader";
 
 export interface HeaderConfig {
@@ -49,12 +50,12 @@ export class AppHeaderImpl implements AppHeader {
       "AppHeaderImpl - Creating clean header with config:",
       this.config,
     );
-    
+
     // Use provided LayoutContext or fallback to singleton (for backwards compatibility)
     this.layoutContext = layoutContext || getLayoutContext();
     console.log(`AppHeaderImpl - Using LayoutContext:`, {
       provided: !!layoutContext,
-      contextType: this.layoutContext.constructor.name
+      contextType: this.layoutContext.constructor.name,
     });
   }
 
@@ -320,9 +321,16 @@ export class AppHeaderImpl implements AppHeader {
         e.preventDefault();
         e.stopPropagation();
         console.log("📱 AppHeaderImpl - Mobile menu toggle clicked");
+
+        // Emit mobile menu request event instead of directly calling sidebar
+        // This decouples header from sidebar and allows sidebar to handle the request when ready
+        const requestEvent = LayoutEventFactory.createMobileMenuRequestEvent(
+          "show",
+          "menu-button"
+        );
         
-        // Request mobile sidebar toggle through LayoutContext
-        this.layoutContext.toggleMobileSidebar();
+        this.layoutContext.emit("mobile-menu-request", requestEvent.data);
+        console.log("📡 AppHeaderImpl - Mobile menu request event emitted");
       });
     }
   }
@@ -350,29 +358,36 @@ export class AppHeaderImpl implements AppHeader {
    */
   private async handleLogoutAction(): Promise<void> {
     console.log("🚺 AppHeaderImpl - Logout action triggered");
-    
+
     try {
       // Get the AppHeaderBinderService using the helper method
-      const { AppHeaderBinderService } = await import('../services/AppHeaderBinderService');
-      const binderRef = AppHeaderBinderService.getRegisteredReference(this.layoutContext, {
-        enableLogging: false,
-        maxRetries: 5
-      });
-      
+      const { AppHeaderBinderService } = await import(
+        "../services/AppHeaderBinderService"
+      );
+      const binderRef = AppHeaderBinderService.getRegisteredReference(
+        this.layoutContext,
+        {
+          enableLogging: false,
+          maxRetries: 5,
+        },
+      );
+
       const binderService = await binderRef.get();
       if (binderService) {
         // Delegate logout to the binder service
         await binderService.handleLogoutAction();
         console.log("✅ AppHeaderImpl - Logout action completed successfully");
       } else {
-        console.warn("⚠️ AppHeaderImpl - AppHeaderBinderService not available for logout");
+        console.warn(
+          "⚠️ AppHeaderImpl - AppHeaderBinderService not available for logout",
+        );
         // Fallback: redirect to logout page
-        window.location.href = '/logout';
+        window.location.href = "/logout";
       }
     } catch (error) {
       console.error("❌ AppHeaderImpl - Error handling logout action:", error);
       // Fallback: redirect to logout page
-      window.location.href = '/logout';
+      window.location.href = "/logout";
     }
   }
   /**
@@ -419,13 +434,17 @@ export class AppHeaderImpl implements AppHeader {
    * Update user menu items
    */
   updateUserMenuItems(items: UserMenuItem[]): void {
-    console.log(`AppHeaderImpl - updateUserMenuItems called with ${items.length} items`);
+    console.log(
+      `AppHeaderImpl - updateUserMenuItems called with ${items.length} items`,
+    );
 
     if (this.userMenu) {
       this.userMenu.updateMenuItems(items);
       console.log("AppHeaderImpl - User menu items updated via UserMenu");
     } else {
-      console.warn("AppHeaderImpl - UserMenu not available for menu items update");
+      console.warn(
+        "AppHeaderImpl - UserMenu not available for menu items update",
+      );
     }
   }
 

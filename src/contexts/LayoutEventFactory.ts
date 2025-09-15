@@ -37,12 +37,31 @@ export interface SidebarCompactModeChangeEventData {
 }
 
 /**
+ * Data payload for mobile-menu-request events
+ */
+export interface MobileMenuRequestEventData {
+  requestedAction: "show" | "hide" | "toggle";
+  trigger: "menu-button" | "programmatic";
+}
+
+/**
+ * Data payload for mobile-menu-toggle events
+ */
+export interface MobileMenuToggleEventData {
+  isVisible: boolean;
+  previousVisibility: boolean;
+  trigger: "close-button" | "backdrop" | "menu-button" | "programmatic";
+}
+
+/**
  * Union type for all layout event data types
  */
 export type LayoutEventData = 
   | LayoutReadyEventData
   | LayoutModeChangeEventData
-  | SidebarCompactModeChangeEventData;
+  | SidebarCompactModeChangeEventData
+  | MobileMenuToggleEventData
+  | MobileMenuRequestEventData;
 
 /**
  * Strongly typed layout event structure
@@ -116,6 +135,42 @@ export class LayoutEventFactory {
   }
 
   /**
+   * Create a mobile-menu-request event
+   */
+  static createMobileMenuRequestEvent(
+    requestedAction: "show" | "hide" | "toggle",
+    trigger: "menu-button" | "programmatic",
+  ): TypedLayoutEvent<MobileMenuRequestEventData> {
+    return {
+      type: "mobile-menu-request",
+      data: {
+        requestedAction,
+        trigger,
+      },
+      timestamp: Date.now(),
+    };
+  }
+
+  /**
+   * Create a mobile-menu-toggle event
+   */
+  static createMobileMenuToggleEvent(
+    isVisible: boolean,
+    previousVisibility: boolean,
+    trigger: "close-button" | "backdrop" | "menu-button" | "programmatic",
+  ): TypedLayoutEvent<MobileMenuToggleEventData> {
+    return {
+      type: "mobile-menu-toggle",
+      data: {
+        isVisible,
+        previousVisibility,
+        trigger,
+      },
+      timestamp: Date.now(),
+    };
+  }
+
+  /**
    * Create a generic layout event (for backward compatibility)
    */
   static createGenericEvent(
@@ -162,6 +217,21 @@ export class LayoutEventFactory {
           typeof sidebarData.previousCompactMode === "boolean"
         );
 
+      case "mobile-menu-request":
+        const mobileMenuRequestData = event.data as MobileMenuRequestEventData;
+        return (
+          ["show", "hide", "toggle"].includes(mobileMenuRequestData.requestedAction) &&
+          ["menu-button", "programmatic"].includes(mobileMenuRequestData.trigger)
+        );
+
+      case "mobile-menu-toggle":
+        const mobileMenuData = event.data as MobileMenuToggleEventData;
+        return (
+          typeof mobileMenuData.isVisible === "boolean" &&
+          typeof mobileMenuData.previousVisibility === "boolean" &&
+          ["close-button", "backdrop", "menu-button", "programmatic"].includes(mobileMenuData.trigger)
+        );
+
       default:
         return true; // Generic events are always valid
     }
@@ -193,6 +263,22 @@ export class LayoutEventFactory {
           : "";
         return `→ compactMode=${sidebarData.compactMode}${blockedNote}${changeNote}`;
 
+      case "mobile-menu-request":
+        const mobileMenuRequestData = event.data as MobileMenuRequestEventData;
+        const requestIcon = mobileMenuRequestData.requestedAction === "show" ? "📢" : 
+                           mobileMenuRequestData.requestedAction === "hide" ? "🔄" : "⚙️";
+        const requestTriggerNote = ` (via ${mobileMenuRequestData.trigger})`;
+        return `${requestIcon} request ${mobileMenuRequestData.requestedAction} mobile menu${requestTriggerNote}`;
+
+      case "mobile-menu-toggle":
+        const mobileMenuData = event.data as MobileMenuToggleEventData;
+        const actionIcon = mobileMenuData.isVisible ? "📱" : "❌";
+        const toggleTriggerNote = ` (via ${mobileMenuData.trigger})`;
+        const stateChange = mobileMenuData.previousVisibility !== mobileMenuData.isVisible 
+          ? ` ${mobileMenuData.previousVisibility} → ${mobileMenuData.isVisible}`
+          : "";
+        return `${actionIcon} mobile menu${stateChange}${toggleTriggerNote}`;
+
       default:
         try {
           return event.data ? `→ data=${JSON.stringify(event.data)}` : "";
@@ -210,6 +296,8 @@ export class LayoutEventFactory {
       case "layout-ready": return "🟩";
       case "layout-mode-change": return "🟦";
       case "sidebar-compact-mode-change": return "🟨";
+      case "mobile-menu-request": return "📢";
+      case "mobile-menu-toggle": return "📱";
       default: return "⬜";
     }
   }
@@ -235,4 +323,16 @@ export function isSidebarCompactModeChangeEvent(
   event: TypedLayoutEvent,
 ): event is TypedLayoutEvent<SidebarCompactModeChangeEventData> {
   return event.type === "sidebar-compact-mode-change";
+}
+
+export function isMobileMenuRequestEvent(
+  event: TypedLayoutEvent,
+): event is TypedLayoutEvent<MobileMenuRequestEventData> {
+  return event.type === "mobile-menu-request";
+}
+
+export function isMobileMenuToggleEvent(
+  event: TypedLayoutEvent,
+): event is TypedLayoutEvent<MobileMenuToggleEventData> {
+  return event.type === "mobile-menu-toggle";
 }

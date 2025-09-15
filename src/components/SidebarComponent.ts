@@ -24,7 +24,7 @@ export class SidebarComponent implements Sidebar {
   // Configuration
   private config: Required<SidebarConfig>;
 
-  constructor(config: SidebarConfig = {}) {
+  constructor(config: SidebarConfig = {}, layoutContext?: LayoutContext) {
     // Apply configuration with hardcoded defaults
     this.config = {
       defaultWidth: config.defaultWidth ?? 280,
@@ -37,7 +37,8 @@ export class SidebarComponent implements Sidebar {
 
     console.log("Sidebar - Creating sidebar with config:", this.config);
 
-    this.layoutContext = getLayoutContext();
+    // Use provided LayoutContext or fallback to singleton (for backwards compatibility)
+    this.layoutContext = layoutContext || getLayoutContext();
     this.setupDefaultNavigation();
   }
 
@@ -347,7 +348,7 @@ export class SidebarComponent implements Sidebar {
         event.preventDefault();
         event.stopPropagation();
         console.log("📱 Sidebar - Mobile close button clicked");
-        this.toggleMobileVisibility();
+        this.hideMobileMenu("close-button");
         return;
       }
     });
@@ -622,6 +623,29 @@ export class SidebarComponent implements Sidebar {
   }
 
   /**
+   * Emit typed mobile menu toggle event to LayoutContext
+   */
+  private emitMobileMenuToggleEvent(
+    isVisible: boolean,
+    previousVisibility: boolean,
+    trigger: "close-button" | "backdrop" | "menu-button" | "programmatic",
+  ): void {
+    // Create typed event using the factory
+    const event = LayoutEventFactory.createMobileMenuToggleEvent(
+      isVisible,
+      previousVisibility,
+      trigger,
+    );
+
+    // Emit the event through the LayoutContext
+    this.layoutContext.emit("mobile-menu-toggle", event.data);
+
+    console.log(
+      `📡 Sidebar - Emitted mobile menu toggle event: ${previousVisibility} → ${isVisible} (via ${trigger})`,
+    );
+  }
+
+  /**
    * Toggle compact mode
    */
   public toggleCompactMode(): void {
@@ -777,9 +801,101 @@ export class SidebarComponent implements Sidebar {
   }
 
   /**
+   * Show mobile sidebar (overlay mode)
+   */
+  public showMobileMenu(trigger: "close-button" | "backdrop" | "menu-button" | "programmatic" = "programmatic"): void {
+    if (!this.sidebar) {
+      console.warn(
+        "❌ Sidebar - Cannot show mobile menu: sidebar element not found",
+      );
+      return;
+    }
+
+    const isMobile = this.layoutContext.isLayoutMobile();
+    if (!isMobile) {
+      console.warn(
+        "⚠️ Sidebar - showMobileMenu called but not in mobile mode",
+      );
+      return;
+    }
+
+    const isCurrentlyVisible = !this.sidebar.classList.contains("sidebar-hidden");
+    if (isCurrentlyVisible) {
+      console.log("📱 Sidebar - Mobile menu already visible");
+      return;
+    }
+
+    // Emit mobile menu toggle event
+    this.emitMobileMenuToggleEvent(true, false, trigger);
+
+    // Show mobile sidebar overlay
+    console.log("📱 Sidebar - Showing mobile sidebar overlay");
+    this.sidebar.classList.remove("sidebar-hidden");
+    this.sidebar.classList.add("sidebar-mobile-visible");
+
+    // Remove inline display:none that was set by responsive mode
+    this.sidebar.style.display = "";
+    console.log("📱 Sidebar - Removed inline display:none style");
+
+    // Add body class for blur effect
+    document.body.classList.add("sidebar-mobile-open");
+
+    // Add backdrop for mobile overlay
+    this.createMobileBackdrop();
+
+    console.log("✅ Sidebar - Mobile menu shown");
+  }
+
+  /**
+   * Hide mobile sidebar (overlay mode)
+   */
+  public hideMobileMenu(trigger: "close-button" | "backdrop" | "menu-button" | "programmatic" = "programmatic"): void {
+    if (!this.sidebar) {
+      console.warn(
+        "❌ Sidebar - Cannot hide mobile menu: sidebar element not found",
+      );
+      return;
+    }
+
+    const isMobile = this.layoutContext.isLayoutMobile();
+    if (!isMobile) {
+      console.warn(
+        "⚠️ Sidebar - hideMobileMenu called but not in mobile mode",
+      );
+      return;
+    }
+
+    const isCurrentlyVisible = !this.sidebar.classList.contains("sidebar-hidden");
+    if (!isCurrentlyVisible) {
+      console.log("📱 Sidebar - Mobile menu already hidden");
+      return;
+    }
+
+    // Emit mobile menu toggle event
+    this.emitMobileMenuToggleEvent(false, true, trigger);
+
+    // Hide mobile sidebar overlay
+    console.log("📱 Sidebar - Hiding mobile sidebar overlay");
+    this.sidebar.classList.add("sidebar-hidden");
+    this.sidebar.classList.remove("sidebar-mobile-visible");
+
+    // Remove body class for blur effect
+    document.body.classList.remove("sidebar-mobile-open");
+
+    // Remove backdrop if it exists
+    const backdrop = document.querySelector(".mobile-sidebar-backdrop");
+    if (backdrop) {
+      backdrop.classList.remove("show");
+      backdrop.remove();
+    }
+
+    console.log("✅ Sidebar - Mobile menu hidden");
+  }
+
+  /**
    * Toggle mobile sidebar visibility (overlay mode)
    */
-  public toggleMobileVisibility(): void {
+  public toggleMobileVisibility(trigger: "close-button" | "backdrop" | "menu-button" | "programmatic" = "programmatic"): void {
     if (!this.sidebar) {
       console.warn(
         "❌ Sidebar - Cannot toggle mobile visibility: sidebar element not found",
@@ -798,10 +914,19 @@ export class SidebarComponent implements Sidebar {
 
     const isCurrentlyVisible =
       !this.sidebar.classList.contains("sidebar-hidden");
+    const newVisibility = !isCurrentlyVisible;
+    
     console.log(
-      `📱 Sidebar - Toggling mobile visibility: ${isCurrentlyVisible} → ${!isCurrentlyVisible}`,
+      `📱 Sidebar - Toggling mobile visibility: ${isCurrentlyVisible} → ${newVisibility}`,
     );
     console.log(`📱 Sidebar - Current classes: ${this.sidebar.className}`);
+
+    // Emit mobile menu toggle event before changing state
+    this.emitMobileMenuToggleEvent(
+      newVisibility,
+      isCurrentlyVisible,
+      trigger,
+    );
 
     if (isCurrentlyVisible) {
       // Hide mobile sidebar overlay
@@ -848,7 +973,7 @@ export class SidebarComponent implements Sidebar {
     }
 
     console.log(
-      `✅ Sidebar - Mobile visibility toggled to: ${!isCurrentlyVisible}`,
+      `✅ Sidebar - Mobile visibility toggled to: ${newVisibility}`,
     );
     console.log(`📱 Sidebar - Final classes: ${this.sidebar.className}`);
   }
@@ -877,7 +1002,7 @@ export class SidebarComponent implements Sidebar {
 
     // Close sidebar when backdrop is clicked
     backdrop.addEventListener("click", () => {
-      this.toggleMobileVisibility();
+      this.hideMobileMenu("backdrop");
     });
 
     console.log("📱 Sidebar - Mobile backdrop created with blur effects");
@@ -955,68 +1080,91 @@ export class SidebarComponent implements Sidebar {
       },
     );
 
-    console.log("Sidebar - Layout mode subscriptions setup complete");
+    // Subscribe to mobile menu requests from other components (e.g., header)
+    const mobileMenuRequestUnsubscribe = this.layoutContext.subscribe(
+      "mobile-menu-request",
+      (event) => {
+        this.handleMobileMenuRequest(event.data);
+      },
+    );
+
+    console.log("Sidebar - Layout mode and mobile menu request subscriptions setup complete");
   }
 
   /**
    * Initialize sidebar based on current layout mode
    */
   private initializeFromLayoutMode(): void {
-    // Use direct viewport calculation to avoid circular dependency during initialization
-    const isMobile = this.layoutContext.isLayoutMobile();
-    const isTablet = this.layoutContext.isLayoutTablet();
-    const isDesktop = this.layoutContext.isLayoutDesktop();
-
-    // Create a basic layout mode object based on viewport
-    const currentMode = {
-      type: isMobile ? "mobile" : isTablet ? "tablet" : "desktop",
-      isMobile,
-      isTablet,
-      isDesktop,
-      sidebarBehavior: {
-        isVisible: !isMobile, // Hide on mobile, show on tablet/desktop
-        canToggle: !isMobile, // Can toggle on tablet/desktop, not on mobile
-        defaultWidth: 280,
-        compactWidth: 80,
-      },
-    };
-
-    console.log(
-      "Sidebar - Initializing from current layout mode:",
-      currentMode.type,
-    );
-
-    this.updateSidebarForLayoutMode(currentMode);
+    const currentModeType = this.layoutContext.getModeType();
+    
+    console.log("Sidebar - Initializing from current layout mode:", currentModeType);
+    
+    this.updateSidebarForModeType(currentModeType);
   }
 
   /**
    * Handle layout mode changes
    */
-  private handleLayoutModeChange(mode: any): void {
-    console.log(`Sidebar - Layout mode changed to: ${mode.type}`, mode);
-    this.updateSidebarForLayoutMode(mode);
+  private handleLayoutModeChange(eventData: any): void {
+    console.log(`Sidebar - Layout mode changed to: ${eventData.modeType}`, eventData);
+    
+    // Clean up mobile overlay if transitioning FROM mobile mode
+    if (eventData.previousModeType === 'mobile' && eventData.modeType !== 'mobile') {
+      this.cleanupMobileOverlayState();
+    }
+    
+    // Update sidebar for new mode
+    this.updateSidebarForModeType(eventData.modeType);
   }
 
   /**
-   * Update sidebar visibility and style based on layout mode
+   * Handle mobile menu requests from other components
    */
-  private updateSidebarForLayoutMode(mode: any): void {
+  private handleMobileMenuRequest(requestData: any): void {
+    console.log(`Sidebar - Mobile menu request received:`, requestData);
+    
+    // Only handle mobile menu requests when in mobile mode
+    if (!this.layoutContext.isLayoutMobile()) {
+      console.log(`Sidebar - Ignoring mobile menu request: not in mobile mode`);
+      return;
+    }
+    
+    const { requestedAction, trigger } = requestData;
+    
+    switch (requestedAction) {
+      case "show":
+        this.showMobileMenu(trigger);
+        break;
+      case "hide":
+        this.hideMobileMenu(trigger);
+        break;
+      case "toggle":
+        this.toggleMobileVisibility(trigger);
+        break;
+      default:
+        console.warn(`Sidebar - Unknown mobile menu request action: ${requestedAction}`);
+    }
+  }
+
+  /**
+   * Update sidebar visibility and style based on layout mode type
+   */
+  private updateSidebarForModeType(modeType: "mobile" | "tablet" | "desktop"): void {
     if (!this.sidebar) return;
 
-    console.log(`Sidebar - Updating for ${mode.type} mode:`);
-    console.log(`  - Visible: ${mode.sidebarBehavior.isVisible}`);
-    console.log(`  - Can Toggle: ${mode.sidebarBehavior.canToggle}`);
-    console.log(`  - Default Width: ${mode.sidebarBehavior.defaultWidth}px`);
-    console.log(`  - Compact Width: ${mode.sidebarBehavior.compactWidth}px`);
+    const isMobile = modeType === "mobile";
+    const isTablet = modeType === "tablet";
+    const isDesktop = modeType === "desktop";
+    const isVisible = !isMobile; // Hide on mobile, show on tablet/desktop
+    const canToggle = !isMobile; // Can toggle on tablet/desktop, not on mobile
+
+    console.log(`Sidebar - Updating for ${modeType} mode:`);
+    console.log(`  - Visible: ${isVisible}`);
+    console.log(`  - Can Toggle: ${canToggle}`);
 
     // Update sidebar visibility
-    console.log(
-      `🔍 Sidebar - Setting visibility for ${mode.type} mode: ${mode.sidebarBehavior.isVisible}`,
-    );
-    if (mode.sidebarBehavior.isVisible) {
-      console.log(
-        "  ✅ Showing sidebar: display=flex, removing .sidebar-hidden",
-      );
+    if (isVisible) {
+      console.log("  ✅ Showing sidebar: display=flex, removing .sidebar-hidden");
       this.sidebar.style.display = "flex";
       this.sidebar.classList.remove("sidebar-hidden");
     } else {
@@ -1025,37 +1173,10 @@ export class SidebarComponent implements Sidebar {
       this.sidebar.classList.add("sidebar-hidden");
     }
 
-    // Debug: Log actual computed styles after setting
-    const computedStyle = getComputedStyle(this.sidebar);
-    console.log(`🎨 Sidebar - Computed styles after update:`);
-    console.log(`   display: ${computedStyle.display}`);
-    console.log(`   visibility: ${computedStyle.visibility}`);
-    console.log(`   opacity: ${computedStyle.opacity}`);
-    console.log(`   width: ${computedStyle.width}`);
-    console.log(`   transform: ${computedStyle.transform}`);
-    console.log(`   classes: ${this.sidebar.className}`);
-
-    // Check if any parent element might be hiding us
-    let parent = this.sidebar.parentElement;
-    while (parent) {
-      const parentStyle = getComputedStyle(parent);
-      if (
-        parentStyle.display === "none" ||
-        parentStyle.visibility === "hidden"
-      ) {
-        console.log(
-          `🚨 Parent element ${parent.tagName}.${parent.className} is hidden!`,
-        );
-      }
-      parent = parent.parentElement;
-    }
-
     // Update toggle button availability
-    const toggleButton = this.sidebar.querySelector(
-      ".compact-toggle-btn",
-    ) as HTMLButtonElement;
+    const toggleButton = this.sidebar.querySelector(".compact-toggle-btn") as HTMLButtonElement;
     if (toggleButton) {
-      if (mode.sidebarBehavior.canToggle) {
+      if (canToggle) {
         toggleButton.style.display = "flex";
         toggleButton.disabled = false;
         toggleButton.classList.remove("disabled");
@@ -1067,30 +1188,44 @@ export class SidebarComponent implements Sidebar {
     }
 
     // Update CSS classes for layout mode
-    this.sidebar.classList.toggle("sidebar-mobile", mode.isMobile);
-    this.sidebar.classList.toggle("sidebar-tablet", mode.isTablet);
-    this.sidebar.classList.toggle("sidebar-desktop", mode.isDesktop);
+    this.sidebar.classList.toggle("sidebar-mobile", isMobile);
+    this.sidebar.classList.toggle("sidebar-tablet", isTablet);
+    this.sidebar.classList.toggle("sidebar-desktop", isDesktop);
 
-    // Update CSS custom properties for layout mode dimensions
-    if (mode.sidebarBehavior.isVisible) {
-      const currentWidth = this.compactMode
-        ? mode.sidebarBehavior.compactWidth
-        : mode.sidebarBehavior.defaultWidth;
-      this.sidebar.style.setProperty(
-        "--sidebar-default-width",
-        `${mode.sidebarBehavior.defaultWidth}px`,
-      );
-      this.sidebar.style.setProperty(
-        "--sidebar-compact-width",
-        `${mode.sidebarBehavior.compactWidth}px`,
-      );
-      this.sidebar.style.setProperty(
-        "--sidebar-current-width",
-        `${currentWidth}px`,
-      );
+    // Update CSS custom properties for dimensions
+    if (isVisible) {
+      const currentWidth = this.compactMode ? this.config.compactWidth : this.config.defaultWidth;
+      this.sidebar.style.setProperty("--sidebar-default-width", `${this.config.defaultWidth}px`);
+      this.sidebar.style.setProperty("--sidebar-compact-width", `${this.config.compactWidth}px`);
+      this.sidebar.style.setProperty("--sidebar-current-width", `${currentWidth}px`);
     }
 
-    console.log(`Sidebar - Updated for ${mode.type} mode complete`);
+    console.log(`Sidebar - Updated for ${modeType} mode complete`);
+  }
+
+  /**
+   * Clean up mobile overlay state when transitioning from mobile to desktop/tablet
+   */
+  private cleanupMobileOverlayState(): void {
+    if (!this.sidebar) return;
+    
+    console.log("🧹 Sidebar - Cleaning up mobile overlay state");
+    
+    // Remove mobile overlay classes
+    this.sidebar.classList.remove("sidebar-mobile-visible");
+    document.body.classList.remove("sidebar-mobile-open");
+    
+    // Remove backdrop if it exists
+    const backdrop = document.querySelector(".mobile-sidebar-backdrop");
+    if (backdrop) {
+      backdrop.remove();
+      console.log("🧹 Sidebar - Removed mobile backdrop");
+    }
+    
+    // Emit cleanup event for debugging
+    this.emitMobileMenuToggleEvent(false, true, "programmatic");
+    
+    console.log("✅ Sidebar - Mobile overlay state cleaned up");
   }
 
   /**

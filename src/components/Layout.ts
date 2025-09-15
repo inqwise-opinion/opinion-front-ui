@@ -251,7 +251,7 @@ export class Layout {
       };
 
       console.log("🏢 LAYOUT - Creating sidebar with config:", sidebarConfig);
-      this.sidebar = new SidebarComponent(sidebarConfig);
+      this.sidebar = new SidebarComponent(sidebarConfig, this.layoutContext);
 
       // Initialize the sidebar
       await this.sidebar.init();

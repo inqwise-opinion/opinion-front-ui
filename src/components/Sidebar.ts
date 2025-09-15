@@ -36,7 +36,9 @@ export interface Sidebar {
   unlockSidebar(): void;
 
   // Mobile behavior
-  toggleMobileVisibility(): void;
+  toggleMobileVisibility(trigger?: "close-button" | "backdrop" | "menu-button" | "programmatic"): void;
+  showMobileMenu(trigger?: "close-button" | "backdrop" | "menu-button" | "programmatic"): void;
+  hideMobileMenu(trigger?: "close-button" | "backdrop" | "menu-button" | "programmatic"): void;
 
   // Navigation
   updateNavigation(items: NavigationItem[]): void;

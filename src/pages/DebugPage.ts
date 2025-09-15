@@ -960,6 +960,8 @@ export class DebugPage extends PageComponent {
     subscribe("layout-ready");
     subscribe("layout-mode-change");
     subscribe("sidebar-compact-mode-change");
+    subscribe("mobile-menu-request");
+    subscribe("mobile-menu-toggle");
 
     this.updateEventStatsDisplay();
     this.logLayoutEvent("✅ Layout event monitoring started");
