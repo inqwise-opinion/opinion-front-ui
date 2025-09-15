@@ -75,6 +75,20 @@ export class DebugPage extends PageComponent {
   }
 
   /**
+   * Post-initialization hook - called after chain provider registration
+   */
+  protected async onPostInit(): Promise<void> {
+    console.log("🔄 DEBUGPAGE - onPostInit() - Updating status displays after chain registration");
+    
+    // Now that chain provider is registered, update status displays
+    this.updateViewportInfoFromContext(this.mainContent.getLayoutContext());
+    this.updateLayoutStatus();
+    this.updateHotkeyStatus();
+    
+    console.log("✅ DEBUGPAGE - onPostInit() complete");
+  }
+
+  /**
    * Cleanup method for PageComponent
    */
   protected onDestroy(): void {
@@ -304,11 +318,7 @@ export class DebugPage extends PageComponent {
     // Setup test controls
     this.setupTestControls();
 
-    // Update viewport info initially using LayoutContext data
-
-    this.updateViewportInfoFromContext(this.mainContent.getLayoutContext());
-    this.updateLayoutStatus();
-    this.updateHotkeyStatus();
+    // Initial status updates will happen in onPostInit() after chain registration
 
     // Setup responsive behavior
     this.setupResponsiveHandlers();
@@ -1003,8 +1013,10 @@ export class DebugPage extends PageComponent {
         chainManagerStatus = 'Error';
       }
       
-      // Check if our provider is registered (based on logs showing execution)
-      const debugPageRegistered = this.chainProviderUnsubscriber ? '✅ Registered' : '❌ Not Registered';
+      // Check if our provider is registered - look for both unsubscriber and initialized state
+      const hasUnsubscriber = !!this.chainProviderUnsubscriber;
+      const isInitialized = this.initialized;
+      const debugPageRegistered = (hasUnsubscriber && isInitialized) ? '✅ Registered' : '❌ Not Registered';
       
       // Get our hotkey details
       let hotkeyBreakdown = 'None';
@@ -1045,25 +1057,18 @@ export class DebugPage extends PageComponent {
       const messages = this.layoutContext.getMessages();
       const sidebar = this.layoutContext.getSidebar();
       
-      // Try multiple ways to get subscriber count
+      // Get subscriber count from EventBus debug info
       let subscriberCount = 'N/A';
+      let eventBusEventCount = 'N/A';
       try {
-        // Try different possible property names for subscribers
-        const ctx = this.layoutContext as any;
-        if (ctx._subscribers?.size !== undefined) {
-          subscriberCount = ctx._subscribers.size.toString();
-        } else if (ctx.subscribers?.size !== undefined) {
-          subscriberCount = ctx.subscribers.size.toString();
-        } else if (ctx.eventBus?._subscribers?.size !== undefined) {
-          subscriberCount = ctx.eventBus._subscribers.size.toString();
-        } else if (ctx.getEventBus && typeof ctx.getEventBus === 'function') {
-          const eventBus = ctx.getEventBus();
-          if (eventBus && eventBus._subscribers?.size !== undefined) {
-            subscriberCount = eventBus._subscribers.size.toString();
-          }
+        if (typeof this.layoutContext.getEventBusDebugInfo === 'function') {
+          const debugInfo = this.layoutContext.getEventBusDebugInfo();
+          subscriberCount = debugInfo.totalConsumers.toString();
+          eventBusEventCount = debugInfo.eventCount.toString();
         }
       } catch (e) {
         subscriberCount = 'Error';
+        eventBusEventCount = 'Error';
       }
       
       // Enhanced component status checking
@@ -1124,8 +1129,9 @@ export class DebugPage extends PageComponent {
           📄 Footer: ${footerProvider}${footerDetails}
         </div>
         <div style="padding-top: 6px; border-top: 1px solid #ddd; font-size: 11px; color: #666;">
-          📡 Event Bus: ${eventBusStatus}<br>
-          📧 Subscribers: ${subscriberCount}<br>
+          📧 Event Subscribers: ${subscriberCount}<br>
+          📨 EventBus Events: ${eventBusEventCount}<br>
+          📡 EventBus Status: ${eventBusStatus}<br>
           🔍 Mode Detection: ${this.layoutContext.isLayoutMobile() ? '📱 Mobile' : '💻 Desktop'}<br>
           🔄 Auto Updates: ${this.eventMonitoringActive ? '✅ Active' : '❌ Stopped'}
         </div>
