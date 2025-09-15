@@ -130,7 +130,7 @@ export class Layout {
 
     // Pass the layoutContext to components so they register with the correct instance
     this.header = new AppHeaderImpl(this.config.header, this.layoutContext);
-    this.footer = new AppFooterImpl(this.config.footer);
+    this.footer = new AppFooterImpl(this.config.footer, this.layoutContext);
     this.mainContent = new MainContentImpl({
       className: "main-content",
       id: "app",

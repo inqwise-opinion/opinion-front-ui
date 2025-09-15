@@ -11,8 +11,15 @@ import { getLayoutContext, type LayoutContext } from "../contexts/index";
 import { Dimensions, NavigationItem, Sidebar, SidebarConfig } from "./Sidebar";
 // Import layout event factory for typed events
 import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
+// Import hotkey interfaces
+import { HotkeyProvider } from "../contexts/LayoutContext";
+import {
+  ChainHotkeyProvider,
+  ChainHotkeyHandler,
+  HotkeyExecutionContext,
+} from "../hotkeys/HotkeyChainSystem";
 
-export class SidebarComponent implements Sidebar {
+export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyProvider {
   private sidebar: HTMLElement | null = null;
   private isInitialized: boolean = false;
   private navigationItems: NavigationItem[] = [];
@@ -20,6 +27,7 @@ export class SidebarComponent implements Sidebar {
   private compactModeListeners: Array<(isCompact: boolean) => void> = [];
   private layoutContext: LayoutContext;
   private toggleCompactModeHandler?: (compactMode: boolean) => void;
+  private chainProviderUnsubscriber: (() => void) | null = null;
 
   // Configuration
   private config: Required<SidebarConfig>;
@@ -86,6 +94,9 @@ export class SidebarComponent implements Sidebar {
 
     // Register the sidebar with the layout context
     this.layoutContext.registerSidebar(this);
+    
+    // Register as chain hotkey provider for mobile ESC handling
+    this.chainProviderUnsubscriber = this.layoutContext.registerChainProvider(this);
 
     this.isInitialized = true;
     console.log("Sidebar - Ready ✅");
@@ -623,25 +634,24 @@ export class SidebarComponent implements Sidebar {
   }
 
   /**
-   * Emit typed mobile menu toggle event to LayoutContext
+   * Emit typed mobile menu mode change event to LayoutContext
    */
-  private emitMobileMenuToggleEvent(
+  private emitMobileMenuModeChangeEvent(
     isVisible: boolean,
     previousVisibility: boolean,
     trigger: "close-button" | "backdrop" | "menu-button" | "programmatic",
   ): void {
     // Create typed event using the factory
-    const event = LayoutEventFactory.createMobileMenuToggleEvent(
+    const event = LayoutEventFactory.createMobileMenuModeChangeEvent(
       isVisible,
       previousVisibility,
-      trigger,
+      trigger
     );
 
-    // Emit the event through the LayoutContext
-    this.layoutContext.emit("mobile-menu-toggle", event.data);
+    this.layoutContext.emit("mobile-menu-mode-change", event.data);
 
     console.log(
-      `📡 Sidebar - Emitted mobile menu toggle event: ${previousVisibility} → ${isVisible} (via ${trigger})`,
+      `📡 Sidebar - Emitted mobile menu mode change event: ${previousVisibility} → ${isVisible} (via ${trigger})`,
     );
   }
 
@@ -825,8 +835,8 @@ export class SidebarComponent implements Sidebar {
       return;
     }
 
-    // Emit mobile menu toggle event
-    this.emitMobileMenuToggleEvent(true, false, trigger);
+    // Emit mobile menu mode change event
+    this.emitMobileMenuModeChangeEvent(true, false, trigger);
 
     // Show mobile sidebar overlay
     console.log("📱 Sidebar - Showing mobile sidebar overlay");
@@ -836,6 +846,9 @@ export class SidebarComponent implements Sidebar {
     // Remove inline display:none that was set by responsive mode
     this.sidebar.style.display = "";
     console.log("📱 Sidebar - Removed inline display:none style");
+    
+    // Register sidebar as hotkey provider for ESC key handling
+    this.registerAsHotkeyProvider();
 
     // Add body class for blur effect
     document.body.classList.add("sidebar-mobile-open");
@@ -871,8 +884,8 @@ export class SidebarComponent implements Sidebar {
       return;
     }
 
-    // Emit mobile menu toggle event
-    this.emitMobileMenuToggleEvent(false, true, trigger);
+    // Emit mobile menu mode change event
+    this.emitMobileMenuModeChangeEvent(false, true, trigger);
 
     // Hide mobile sidebar overlay
     console.log("📱 Sidebar - Hiding mobile sidebar overlay");
@@ -888,6 +901,9 @@ export class SidebarComponent implements Sidebar {
       backdrop.classList.remove("show");
       backdrop.remove();
     }
+    
+    // Unregister sidebar as hotkey provider since ESC key no longer needed
+    this.unregisterAsHotkeyProvider();
 
     console.log("✅ Sidebar - Mobile menu hidden");
   }
@@ -921,8 +937,8 @@ export class SidebarComponent implements Sidebar {
     );
     console.log(`📱 Sidebar - Current classes: ${this.sidebar.className}`);
 
-    // Emit mobile menu toggle event before changing state
-    this.emitMobileMenuToggleEvent(
+    // Emit mobile menu mode change event before changing state
+    this.emitMobileMenuModeChangeEvent(
       newVisibility,
       isCurrentlyVisible,
       trigger,
@@ -946,6 +962,9 @@ export class SidebarComponent implements Sidebar {
         backdrop.remove();
         //}, 300);
       }
+      
+      // Unregister sidebar as hotkey provider since ESC key no longer needed
+      this.unregisterAsHotkeyProvider();
     } else {
       // Show mobile sidebar overlay
       console.log("📱 Sidebar - Showing mobile sidebar overlay");
@@ -961,6 +980,9 @@ export class SidebarComponent implements Sidebar {
 
       // Add backdrop for mobile overlay
       this.createMobileBackdrop();
+      
+      // Register sidebar as hotkey provider for ESC key handling
+      this.registerAsHotkeyProvider();
 
       // Debug: Log the sidebar's computed styles
       const computedStyle = getComputedStyle(this.sidebar);
@@ -1088,7 +1110,15 @@ export class SidebarComponent implements Sidebar {
       },
     );
 
-    console.log("Sidebar - Layout mode and mobile menu request subscriptions setup complete");
+    // Subscribe to sidebar compact mode requests from other components (e.g., debug page)
+    const sidebarCompactRequestUnsubscribe = this.layoutContext.subscribe(
+      "sidebar-compact-request",
+      (event) => {
+        this.handleSidebarCompactRequest(event.data);
+      },
+    );
+
+    console.log("Sidebar - Layout mode, mobile menu, and compact mode request subscriptions setup complete");
   }
 
   /**
@@ -1143,6 +1173,31 @@ export class SidebarComponent implements Sidebar {
         break;
       default:
         console.warn(`Sidebar - Unknown mobile menu request action: ${requestedAction}`);
+    }
+  }
+
+  /**
+   * Handle sidebar compact mode requests from other components
+   */
+  private handleSidebarCompactRequest(requestData: any): void {
+    console.log(`Sidebar - Sidebar compact request received:`, requestData);
+    
+    const { requestedAction, trigger } = requestData;
+    
+    switch (requestedAction) {
+      case "show":
+        // Show = expand (not compact)
+        this.expandSidebar();
+        break;
+      case "hide":
+        // Hide = compact
+        this.compactSidebar();
+        break;
+      case "toggle":
+        this.toggleCompactMode();
+        break;
+      default:
+        console.warn(`Sidebar - Unknown compact mode request action: ${requestedAction}`);
     }
   }
 
@@ -1223,9 +1278,162 @@ export class SidebarComponent implements Sidebar {
     }
     
     // Emit cleanup event for debugging
-    this.emitMobileMenuToggleEvent(false, true, "programmatic");
+    this.emitMobileMenuModeChangeEvent(false, true, "programmatic");
     
     console.log("✅ Sidebar - Mobile overlay state cleaned up");
+  }
+
+  // =================================================================================
+  // HotkeyProvider Implementation - Conditional ESC Key for Mobile Menu
+  // =================================================================================
+  
+  /**
+   * Provide conditional hotkeys based on mobile menu visibility
+   * ESC key is only active when in mobile mode AND mobile menu is visible
+   */
+  getPageHotkeys(): Map<string, (event: KeyboardEvent) => void | boolean> | null {
+    // Only provide ESC hotkey when in mobile mode and mobile menu is visible
+    const isMobile = this.layoutContext.isLayoutMobile();
+    const isMobileMenuVisible = this.isMobileMenuVisible();
+    
+    if (isMobile && isMobileMenuVisible) {
+      const hotkeys = new Map<string, (event: KeyboardEvent) => void | boolean>();
+      
+      hotkeys.set('Escape', (event: KeyboardEvent) => {
+        console.log('📱 Sidebar - ESC key pressed: closing mobile menu');
+        this.hideMobileMenu('programmatic');
+        return false; // Prevent default and stop propagation
+      });
+      
+      console.log('📱 Sidebar - ESC hotkey enabled (mobile menu visible)');
+      return hotkeys;
+    }
+    
+    // No hotkeys when not in mobile mode or when mobile menu is hidden
+    return null;
+  }
+  
+  /**
+   * Component identifier for hotkey management
+   */
+  getHotkeyComponentId(): string {
+    return 'SidebarComponent';
+  }
+  
+  /**
+   * Check if mobile menu is currently visible
+   */
+  private isMobileMenuVisible(): boolean {
+    if (!this.sidebar) return false;
+    
+    return this.sidebar.classList.contains('sidebar-mobile-visible') && 
+           !this.sidebar.classList.contains('sidebar-hidden');
+  }
+  
+  /**
+   * Register sidebar as active hotkey provider for conditional ESC key handling
+   */
+  private registerAsHotkeyProvider(): void {
+    this.layoutContext.setActiveHotkeyProvider(this);
+    console.log('⌨️ Sidebar - Registered as hotkey provider for ESC key');
+  }
+  
+  /**
+   * Unregister sidebar as active hotkey provider
+   */
+  private unregisterAsHotkeyProvider(): void {
+    this.layoutContext.removeActiveHotkeyProvider(this);
+    console.log('⌨️ Sidebar - Unregistered as hotkey provider');
+  }
+  
+  // =================================================================================
+  // ChainHotkeyProvider Implementation (New System)
+  // =================================================================================
+  
+  /**
+   * Get provider identifier for chain hotkey system
+   */
+  getHotkeyProviderId(): string {
+    return 'MobileSidebar'; // Use semantic name for debugging
+  }
+  
+  /**
+   * Get provider priority - Mobile/overlay components get high priority (800)
+   */
+  getProviderPriority(): number {
+    return 800; // High priority for mobile overlay components
+  }
+  
+  /**
+   * Get chain hotkeys - only provide ESC when mobile menu is visible
+   */
+  getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
+    // Only provide ESC hotkey when in mobile mode and mobile menu is visible
+    const isMobile = this.layoutContext.isLayoutMobile();
+    const isMobileMenuVisible = this.isMobileMenuVisible();
+    
+    if (!isMobile || !isMobileMenuVisible) {
+      return null; // No hotkeys when not applicable
+    }
+    
+    const hotkeys = new Map<string, ChainHotkeyHandler>();
+    
+    hotkeys.set('Escape', {
+      key: 'Escape',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        this.handleEscapeKeyChain(ctx);
+      },
+      description: 'Close mobile sidebar menu via chain system',
+      priority: this.getProviderPriority(),
+      enable: () => { /* Mobile ESC is enabled when mobile menu is visible */ },
+      disable: () => { /* Could disable if needed */ },
+      isEnabled: () => this.layoutContext.isLayoutMobile() && this.isMobileMenuVisible()
+    });
+    
+    return hotkeys;
+  }
+  
+  /**
+   * Default chain behavior - cooperative with user menu
+   */
+  getDefaultChainBehavior(): 'next' | 'break' {
+    return 'next'; // Allow user menu to also close on ESC
+  }
+  
+  /**
+   * Handle ESC key via chain system with smart cooperation
+   */
+  private handleEscapeKeyChain(ctx: HotkeyExecutionContext): void {
+    console.log('📱 MobileSidebar - ESC key pressed via chain system');
+    
+    // Close mobile menu
+    this.hideMobileMenu('programmatic');
+    ctx.preventDefault();
+    
+    console.log('📡 MobileSidebar - ESC handled: mobile menu closed');
+    
+    // Smart chain control:
+    // Check if user menu is also in the chain and potentially open
+    if (ctx.hasProvider('AppHeaderImpl') || ctx.hasProvider('UserMenu')) {
+      // Let user menu also handle ESC if it needs to
+      ctx.next();
+    } else {
+      // We're the primary handler, stop chain
+      ctx.break();
+    }
+  }
+  
+  /**
+   * Cleanup chain provider
+   */
+  private cleanupChainProvider(): void {
+    if (this.chainProviderUnsubscriber) {
+      this.chainProviderUnsubscriber();
+      this.chainProviderUnsubscriber = null;
+      console.log('MobileSidebar - Chain provider unregistered');
+    }
   }
 
   /**
@@ -1233,6 +1441,12 @@ export class SidebarComponent implements Sidebar {
    */
   public destroy(): void {
     console.log("Sidebar - Destroying...");
+    
+    // Cleanup chain provider (new system)
+    this.cleanupChainProvider();
+    
+    // Unregister hotkey provider if still registered (legacy system)
+    this.unregisterAsHotkeyProvider();
 
     if (this.sidebar) {
       this.sidebar.remove();

@@ -92,6 +92,7 @@ The codebase follows a **component-based architecture** where:
 - **Layout Context System**: Centralized layout coordination with `LayoutContextImpl`
 - **Error Message System**: Global error/warning/info/success message display
 - **Responsive Layout Modes**: Automatic CSS class management for different viewport modes
+- **Chain-Based Hotkey System**: Priority-based cooperative hotkey handling with chain execution control
 
 ### Service Architecture
 
@@ -218,6 +219,78 @@ The application uses a **CSS Grid + Flexbox hybrid layout system**:
 
 ## Key Implementation Details
 
+### Chain-Based Hotkey Architecture
+
+> **🔥 NEW SYSTEM:** Advanced priority-based hotkey management with cooperative chain execution
+
+The application uses a sophisticated **Chain-Based Hotkey System** that resolves hotkey conflicts through priority-based execution with cooperative chain control. This replaces the old simple hotkey registration to solve complex scenarios like ESC key conflicts between mobile menu, user menu, and modal dialogs.
+
+**Key Features:**
+- **Priority-Based Execution**: Higher priority providers execute first (Modal: 1000, Sidebar: 800, UserMenu: 600)
+- **Chain Control**: Handlers use `ctx.next()` to continue or `ctx.break()` to stop the chain
+- **Dynamic Enable/Disable**: Individual hotkeys and entire providers can be enabled/disabled
+- **State-Based Activation**: Providers only activate hotkeys when components are in relevant states
+- **Error Resilience**: Errors in one handler don't affect others in the chain
+- **Backward Compatibility**: Legacy `registerHotkey()` calls automatically converted via adapter
+
+**Chain Execution Example (ESC Key)**:
+```typescript
+// Priority Order: Modal (1000) → MobileSidebar (800) → UserMenu (600) → Page (100)
+
+// When all are active:
+// 1. Modal executes first, calls ctx.break() → chain stops (modal has priority)
+// 2. When only sidebar + menu active:
+//    - Sidebar executes, calls ctx.next() → continues to user menu
+//    - UserMenu executes, calls ctx.break() → both components handled cooperatively
+```
+
+**Implementation Pattern**:
+```typescript
+// New Chain-Based Provider (Recommended)
+class MyComponentProvider implements ChainHotkeyProvider {
+  getHotkeyProviderId(): string { return 'MyComponent'; }
+  getProviderPriority(): number { return 600; }
+  
+  getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
+    if (!this.isComponentActive) return null; // State-based activation
+    
+    return new Map([['Escape', {
+      key: 'Escape',
+      providerId: 'MyComponent',
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        this.handleEscape();
+        ctx.preventDefault();
+        
+        // Smart chain control
+        if (ctx.hasProvider('HigherPriorityComponent')) {
+          ctx.next(); // Let higher priority also handle
+        } else {
+          ctx.break(); // We're the final handler
+        }
+      },
+      enable: () => this.enableEscapeKey(),
+      disable: () => this.disableEscapeKey(),
+      isEnabled: () => this.isEscapeEnabled()
+    }]]);
+  }
+}
+
+// Register with LayoutContext
+layoutContext.registerChainProvider(new MyComponentProvider());
+```
+
+**Legacy Compatibility**:
+```typescript
+// Old system (still works via adapter)
+layoutContext.registerHotkey({
+  key: 'Escape',
+  handler: (event) => { /* handler */ },
+  component: 'MyComponent'
+});
+// → Automatically converted to chain provider with priority 500
+```
+
 ### Service Layer Pattern
 The `MockApiService` provides realistic development data with:
 - Simulated network delays (500ms)
@@ -247,6 +320,65 @@ This project maintains compatibility with servlet-based patterns:
 - Session management replaced with client-side state
 - Server-side rendering replaced with SPA routing
 - Original DOM structure and logic closely followed
+
+### Hotkey System Migration Guide
+
+> **🚀 MIGRATION PATH:** Gradual transition from legacy to chain-based hotkey system
+
+**Current State**: The application supports **dual hotkey systems** during the migration period:
+1. **Legacy System**: Old `registerHotkey()` calls work via backward compatibility adapter
+2. **Chain System**: New `registerChainProvider()` for advanced hotkey management
+
+**Migration Steps**:
+
+1. **Phase 1 - Immediate (Current)**: All existing hotkeys continue working
+   ```typescript
+   // Existing code works unchanged
+   layoutContext.registerHotkey({ key: 'Escape', handler: myHandler });
+   ```
+
+2. **Phase 2 - Gradual Migration**: Convert high-conflict components first
+   ```typescript
+   // Priority: Modal dialogs → Sidebar → Menus → Page components
+   // Start with components that have ESC key conflicts
+   ```
+
+3. **Phase 3 - New Components**: Use chain system for all new components
+   ```typescript
+   // All new components should implement ChainHotkeyProvider
+   class NewComponentProvider implements ChainHotkeyProvider { /* ... */ }
+   ```
+
+**Component Priority Guidelines**:
+- **Modal Dialogs**: 1000+ (highest priority, always break chain)
+- **Mobile/Overlay Components**: 800-900 (high priority, context-aware)
+- **Menu Systems**: 600-700 (medium priority, cooperative)
+- **Page Components**: 100-500 (lower priority, default handlers)
+- **Legacy Components**: 500 (medium priority via adapter)
+
+**Debugging Chain Execution**:
+```typescript
+// Get debug info for a specific key
+const debugInfo = layoutContext.getChainDebugInfo('Escape');
+console.log('ESC key chain:', debugInfo);
+
+// Chain execution produces detailed logs:
+// 🔗 ChainHotkeyManager - Executing chain for 'Escape' with 3 handlers
+//   🔗 1/3: Executing ModalDialog
+//   ✅ ModalDialog: break (prevented: true)
+//   🛑 Chain broken by ModalDialog
+```
+
+**Testing Chain Behavior**:
+```typescript
+// Integration tests verify cooperative ESC handling
+// See: src/hotkeys/tests/EscKeyConflictResolution.test.ts
+test('should close both sidebar and user menu cooperatively', async () => {
+  const result = await chainManager.executeChain('Escape', mockEvent);
+  expect(result.handlersExecuted).toBe(2); // Both handled
+  expect(result.finalAction).toBe('break'); // Chain completed
+});
+```
 
 ## Testing Guidelines
 

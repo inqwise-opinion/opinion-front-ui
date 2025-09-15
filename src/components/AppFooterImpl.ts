@@ -22,7 +22,7 @@ export class AppFooterImpl implements AppFooter {
   private layoutContext: LayoutContext;
   private layoutUnsubscribers: Array<() => void> = [];
 
-  constructor(config: FooterConfig = {}) {
+  constructor(config: FooterConfig = {}, layoutContext?: LayoutContext) {
     this.config = {
       showCopyright: true,
       copyrightText: "created by inqwise",
@@ -37,7 +37,8 @@ export class AppFooterImpl implements AppFooter {
       ...config,
     };
 
-    this.layoutContext = getLayoutContext();
+    // Use provided LayoutContext or fall back to global one
+    this.layoutContext = layoutContext || getLayoutContext();
   }
 
   /**

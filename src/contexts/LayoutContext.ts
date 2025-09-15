@@ -23,6 +23,11 @@ import type {
   ServiceReference,
   ServiceReferenceConfig,
 } from "../services/ServiceReference";
+import type {
+  ChainHotkeyManager,
+  ChainHotkeyProvider,
+  ChainExecutionResult,
+} from "../hotkeys/HotkeyChainSystem";
 
 export interface LayoutViewPort {
   width: number;
@@ -31,10 +36,13 @@ export interface LayoutViewPort {
 
 export type LayoutEventType =
   | "sidebar-compact-mode-change"
+  | "sidebar-compact-request"
   | "layout-ready"
   | "layout-mode-change"
-  | "mobile-menu-toggle"
-  | "mobile-menu-request";
+  | "mobile-menu-mode-change"
+  | "mobile-menu-request"
+  | "user-menu-mode-change"
+  | "user-menu-request";
 
 export type LayoutModeType = "mobile" | "tablet" | "desktop";
 
@@ -120,11 +128,29 @@ export interface LayoutContext extends ActivePageProvider, ServiceRegistry {
   registerSidebar(sidebar: Sidebar): void;
   getSidebar(): Sidebar | null;
 
-  // Hotkey Management
+  // Legacy Hotkey Management (maintained for backward compatibility)
   registerHotkey(hotkey: HotkeyHandler): () => void;
   unregisterHotkey(key: string, component?: string): void;
   unregisterAllHotkeys(component?: string): void;
   getRegisteredHotkeys(): HotkeyHandler[];
+
+  // Chain-Based Hotkey Management (New System)
+  getChainHotkeyManager(): ChainHotkeyManager;
+  registerChainProvider(provider: ChainHotkeyProvider): () => void;
+  unregisterChainProvider(providerId: string): void;
+  executeHotkeyChain(key: string, event: KeyboardEvent): Promise<ChainExecutionResult>;
+  setChainProviderEnabled(providerId: string, enabled: boolean): void;
+  getChainDebugInfo(key: string): {
+    providers: string[];
+    handlers: Array<{
+      providerId: string;
+      key: string;
+      enabled: boolean;
+      priority: number;
+      description?: string;
+    }>;
+    totalHandlers: number;
+  };
 
   // Active Hotkey Provider Management
   setActiveHotkeyProvider(provider: HotkeyProvider): void;

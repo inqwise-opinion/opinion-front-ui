@@ -13,6 +13,11 @@ import MainContentImpl from "./MainContentImpl";
 import type { MainContent } from "./MainContent";
 import type { HotkeyProvider } from "../contexts/LayoutContext";
 import type { ActivePage, PageInfo } from "../interfaces/ActivePage";
+import {
+  ChainHotkeyProvider,
+  ChainHotkeyHandler,
+  HotkeyExecutionContext,
+} from "../hotkeys/HotkeyChainSystem";
 
 export interface PageComponentConfig {
   pageTitle?: string;
@@ -22,7 +27,7 @@ export interface PageComponentConfig {
   pagePath?: string; // URL path for this page
 }
 
-export abstract class PageComponent implements HotkeyProvider, ActivePage {
+export abstract class PageComponent implements ChainHotkeyProvider, HotkeyProvider, ActivePage {
   protected initialized: boolean = false;
   protected destroyed: boolean = false;
   protected mainContent: MainContentImpl;
@@ -35,6 +40,7 @@ export abstract class PageComponent implements HotkeyProvider, ActivePage {
   protected pageTitle: string;
   protected pageId: string;
   protected pagePath: string;
+  protected chainProviderUnsubscriber: (() => void) | null = null;
 
   constructor(mainContent: MainContentImpl, config: PageComponentConfig = {}) {
     this.mainContent = mainContent;
@@ -91,7 +97,10 @@ export abstract class PageComponent implements HotkeyProvider, ActivePage {
       // Set up keyboard shortcuts
       this.setupKeyboardShortcuts();
       
-      // Register this page as active hotkey provider
+      // Register this page as chain hotkey provider (new system)
+      this.chainProviderUnsubscriber = this.layoutContext.registerChainProvider(this);
+      
+      // Also register as active hotkey provider for backward compatibility
       this.layoutContext.setActiveHotkeyProvider(this);
       
       // Register this page as the active page
@@ -122,6 +131,9 @@ export abstract class PageComponent implements HotkeyProvider, ActivePage {
 
       // Remove this page from active hotkeys
       this.layoutContext.removeActiveHotkeyProvider(this);
+      
+      // Cleanup chain provider (new system)
+      this.cleanupChainProvider();
       
       // Deactivate this page if it's currently active
       this.layoutContext.deactivatePage(this);
@@ -207,25 +219,16 @@ export abstract class PageComponent implements HotkeyProvider, ActivePage {
   }
 
   /**
-   * Set up common keyboard shortcuts
-   * NOTE: Keyboard shortcuts remain global (document level) as they should work
-   * regardless of focus. This will be moved to LayoutContext in future iteration.
+   * Set up common keyboard shortcuts via LayoutContext hotkey system
+   * Page-specific hotkeys are registered via getPageHotkeys() method
    */
   protected setupKeyboardShortcuts(): void {
-    this.addEventListener(document, "keydown", (event: KeyboardEvent) => {
-      this.handleKeydown(event);
-    });
+    // Page-specific hotkeys are automatically registered via HotkeyProvider interface
+    // when setActiveHotkeyProvider(this) is called in init()
+    console.log(`${this.constructor.name}: Page-specific hotkeys will be registered via HotkeyProvider interface`);
   }
 
-  /**
-   * Handle keyboard shortcuts - override in subclasses
-   */
-  protected handleKeydown(event: KeyboardEvent): void {
-    // Common keyboard shortcuts
-    if (event.key === "Escape") {
-      this.handleEscape(event);
-    }
-  }
+  // Note: handleKeydown() method removed - keyboard shortcuts now handled via LayoutContext hotkey system
 
   /**
    * Handle Escape key - override in subclasses
@@ -384,11 +387,19 @@ export abstract class PageComponent implements HotkeyProvider, ActivePage {
   // =================================================================================
   
   /**
-   * Default implementation - returns empty hotkeys
-   * Override in subclasses to provide page-specific hotkeys
+   * Default implementation - provides common page hotkeys
+   * Override in subclasses to provide additional page-specific hotkeys
    */
   getPageHotkeys(): Map<string, (event: KeyboardEvent) => void | boolean> | null {
-    return null; // Default: no page-specific hotkeys
+    const hotkeys = new Map<string, (event: KeyboardEvent) => void | boolean>();
+    
+    // Common ESC key handler for pages (lower priority than global)
+    hotkeys.set("Escape", (event: KeyboardEvent) => {
+      this.handleEscape(event);
+      return true; // Allow event to continue (don't prevent default)
+    });
+    
+    return hotkeys;
   }
   
   /**
@@ -396,6 +407,104 @@ export abstract class PageComponent implements HotkeyProvider, ActivePage {
    */
   getHotkeyComponentId(): string {
     return this.constructor.name;
+  }
+  
+  // =================================================================================
+  // ChainHotkeyProvider Implementation (New System)
+  // =================================================================================
+  
+  /**
+   * Get provider identifier for chain hotkey system
+   */
+  getHotkeyProviderId(): string {
+    return this.constructor.name;
+  }
+  
+  /**
+   * Get provider priority - Page components get lower priority (200)
+   */
+  getProviderPriority(): number {
+    return 200; // Lower priority than UI components, higher than fallback
+  }
+  
+  /**
+   * Get chain hotkeys - converts legacy getPageHotkeys() to chain format
+   */
+  getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
+    const legacyHotkeys = this.getPageHotkeys();
+    if (!legacyHotkeys || legacyHotkeys.size === 0) {
+      return null;
+    }
+    
+    const chainHotkeys = new Map<string, ChainHotkeyHandler>();
+    
+    for (const [key, legacyHandler] of legacyHotkeys) {
+      chainHotkeys.set(key, {
+        key,
+        providerId: this.getHotkeyProviderId(),
+        enabled: true,
+        handler: (ctx: HotkeyExecutionContext) => {
+          this.handleChainHotkey(key, ctx, legacyHandler);
+        },
+        description: `Page hotkey: ${key} for ${this.constructor.name}`,
+        priority: this.getProviderPriority(),
+        enable: () => { /* Page hotkeys are always enabled when page is active */ },
+        disable: () => { /* Could disable specific hotkeys if needed */ },
+        isEnabled: () => this.initialized && !this.destroyed
+      });
+    }
+    
+    return chainHotkeys;
+  }
+  
+  /**
+   * Default chain behavior - continue to lower priority handlers
+   */
+  getDefaultChainBehavior(): 'next' | 'break' {
+    return 'next'; // Pages are cooperative, allow fallback handlers
+  }
+  
+  /**
+   * Handle chain hotkey execution with legacy compatibility
+   */
+  private handleChainHotkey(
+    key: string, 
+    ctx: HotkeyExecutionContext, 
+    legacyHandler: (event: KeyboardEvent) => void | boolean
+  ): void {
+    console.log(`🔤 ${this.constructor.name} - Chain hotkey: ${key}`);
+    
+    try {
+      // Call the legacy handler
+      const result = legacyHandler(ctx.event);
+      
+      // Handle legacy return values
+      if (result === false) {
+        // Legacy convention: false = prevent default and stop
+        ctx.preventDefault();
+        ctx.break();
+      } else if (result === true || result === undefined) {
+        // Legacy convention: true/undefined = continue normally
+        // For pages, usually continue to allow lower priority handlers
+        ctx.next();
+      }
+      
+      console.log(`✅ ${this.constructor.name} - Handled ${key}: ${result === false ? 'break' : 'next'}`);
+    } catch (error) {
+      console.error(`❌ ${this.constructor.name} - Error handling ${key}:`, error);
+      ctx.next(); // Continue chain on error
+    }
+  }
+  
+  /**
+   * Cleanup chain provider
+   */
+  private cleanupChainProvider(): void {
+    if (this.chainProviderUnsubscriber) {
+      this.chainProviderUnsubscriber();
+      this.chainProviderUnsubscriber = null;
+      console.log(`${this.constructor.name} - Chain provider unregistered`);
+    }
   }
   
   // =================================================================================

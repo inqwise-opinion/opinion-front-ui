@@ -485,54 +485,137 @@ export class DashboardPageComponent extends PageComponent {
   }
   
   // =================================================================================
-  // HotkeyProvider Implementation (Override PageComponent defaults)
+  // ChainHotkeyProvider Implementation (Chain System - Enhanced)
   // =================================================================================
   
   /**
-   * Override to provide dashboard-specific hotkeys
+   * Override to provide dashboard-specific chain hotkeys
    */
-  getPageHotkeys(): Map<string, (event: KeyboardEvent) => void | boolean> {
-    const hotkeys = new Map();
+  getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
+    const hotkeys = new Map<string, ChainHotkeyHandler>();
     
-    // Dashboard-specific hotkeys
-    hotkeys.set('Ctrl+s', (event: KeyboardEvent) => {
-      console.log('Dashboard: Ctrl+S pressed - Toggle sidebar');
-      event.preventDefault();
-      this.toggleSidebar();
-      return false; // prevent default & stop propagation
+    // Dashboard-specific sidebar toggle hotkeys
+    hotkeys.set('Ctrl+s', {
+      key: 'Ctrl+s',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        console.log('🎯 Dashboard: Ctrl+S pressed - Toggle sidebar');
+        ctx.preventDefault();
+        this.toggleSidebar();
+        ctx.break(); // Exclusive handler for Ctrl+S
+      },
+      description: 'Toggle sidebar via Ctrl+S',
+      priority: this.getProviderPriority(),
+      enable: () => { /* Dashboard hotkeys are always enabled when page is active */ },
+      disable: () => { /* Could disable specific hotkeys if needed */ },
+      isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Meta+s', (event: KeyboardEvent) => {
-      // Mac Cmd+S
-      console.log('Dashboard: Cmd+S pressed - Toggle sidebar');
-      event.preventDefault();
-      this.toggleSidebar();
-      return false;
+    hotkeys.set('Meta+s', {
+      key: 'Meta+s',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        console.log('🎯 Dashboard: Cmd+S pressed - Toggle sidebar');
+        ctx.preventDefault();
+        this.toggleSidebar();
+        ctx.break(); // Exclusive handler for Meta+S
+      },
+      description: 'Toggle sidebar via Cmd+S (Mac)',
+      priority: this.getProviderPriority(),
+      enable: () => { /* Dashboard hotkeys are always enabled when page is active */ },
+      disable: () => { /* Could disable specific hotkeys if needed */ },
+      isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Ctrl+c', (event: KeyboardEvent) => {
-      console.log('Dashboard: Ctrl+C pressed - Toggle compact mode');
-      event.preventDefault();
-      this.toggleCompactMode();
-      return false;
+    // Dashboard-specific compact mode toggle hotkeys
+    hotkeys.set('Ctrl+c', {
+      key: 'Ctrl+c',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        console.log('🎯 Dashboard: Ctrl+C pressed - Toggle compact mode');
+        ctx.preventDefault();
+        this.toggleCompactMode();
+        ctx.break(); // Exclusive handler for Ctrl+C
+      },
+      description: 'Toggle compact mode via Ctrl+C',
+      priority: this.getProviderPriority(),
+      enable: () => { /* Dashboard hotkeys are always enabled when page is active */ },
+      disable: () => { /* Could disable specific hotkeys if needed */ },
+      isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Meta+c', (event: KeyboardEvent) => {
-      // Mac Cmd+C
-      console.log('Dashboard: Cmd+C pressed - Toggle compact mode');
-      event.preventDefault();
-      this.toggleCompactMode();
-      return false;
+    hotkeys.set('Meta+c', {
+      key: 'Meta+c',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        console.log('🎯 Dashboard: Cmd+C pressed - Toggle compact mode');
+        ctx.preventDefault();
+        this.toggleCompactMode();
+        ctx.break(); // Exclusive handler for Meta+C
+      },
+      description: 'Toggle compact mode via Cmd+C (Mac)',
+      priority: this.getProviderPriority(),
+      enable: () => { /* Dashboard hotkeys are always enabled when page is active */ },
+      disable: () => { /* Could disable specific hotkeys if needed */ },
+      isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Escape', (event: KeyboardEvent) => {
-      console.log('Dashboard: Escape pressed - Close mobile menus');
-      // Dashboard-specific escape behavior
-      this.handleDashboardEscape(event);
-      // Don't return false - let other Escape handlers also run
+    // Dashboard-specific ESC handler with smart cooperation
+    hotkeys.set('Escape', {
+      key: 'Escape',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        console.log('🎯 Dashboard: Escape pressed - Dashboard-specific handling');
+        
+        // Handle dashboard-specific escape behavior
+        const handled = this.handleDashboardEscapeChain(ctx);
+        
+        if (handled) {
+          // We handled something, but let other ESC handlers also run
+          // This allows AppHeader (user menu), Sidebar (mobile), etc. to also handle ESC
+          console.log('📡 Dashboard: ESC handled, continuing chain for cooperative behavior');
+          ctx.next();
+        } else {
+          // Nothing to handle on dashboard, pass to other handlers
+          ctx.next();
+        }
+      },
+      description: 'Dashboard-specific ESC key handling with cooperation',
+      priority: this.getProviderPriority(), // Medium priority (200) - after UI components
+      enable: () => { /* Dashboard ESC is always enabled when page is active */ },
+      disable: () => { /* Could disable if needed */ },
+      isEnabled: () => this.initialized && !this.destroyed
     });
     
     return hotkeys;
+  }
+  
+  /**
+   * Enhanced dashboard ESC handler with chain context
+   */
+  private handleDashboardEscapeChain(ctx: HotkeyExecutionContext): boolean {
+    let handled = false;
+    
+    // Close user menu if open
+    if (this.userMenuDropdown?.style.display === 'block') {
+      console.log('📱 Dashboard: Closing user menu on ESC');
+      this.closeUserMenu();
+      handled = true;
+    }
+    
+    // Close sidebar on mobile if open
+    if (this.isMobileView && !document.body.classList.contains('sidebar-closed')) {
+      console.log('📱 Dashboard: Closing mobile sidebar on ESC');
+      this.closeSidebarOverlay();
+      handled = true;
+    }
+    
+    return handled;
   }
   
   /**
@@ -542,20 +625,77 @@ export class DashboardPageComponent extends PageComponent {
     return 'DashboardPage';
   }
   
+  // =================================================================================
+  // Legacy HotkeyProvider Implementation (Backward Compatibility)
+  // =================================================================================
+  
   /**
-   * Handle dashboard-specific Escape key behavior
+   * Legacy hotkey support - maintains compatibility with old system
+   * This method is automatically called by PageComponent's chain integration
    */
-  private handleDashboardEscape(event: KeyboardEvent): void {
+  getPageHotkeys(): Map<string, (event: KeyboardEvent) => void | boolean> {
+    const hotkeys = new Map();
+    
+    // Dashboard-specific hotkeys (legacy format for backward compatibility)
+    hotkeys.set('Ctrl+s', (event: KeyboardEvent) => {
+      console.log('🔄 Dashboard (Legacy): Ctrl+S pressed - Toggle sidebar');
+      event.preventDefault();
+      this.toggleSidebar();
+      return false; // prevent default & stop propagation
+    });
+    
+    hotkeys.set('Meta+s', (event: KeyboardEvent) => {
+      console.log('🔄 Dashboard (Legacy): Cmd+S pressed - Toggle sidebar');
+      event.preventDefault();
+      this.toggleSidebar();
+      return false;
+    });
+    
+    hotkeys.set('Ctrl+c', (event: KeyboardEvent) => {
+      console.log('🔄 Dashboard (Legacy): Ctrl+C pressed - Toggle compact mode');
+      event.preventDefault();
+      this.toggleCompactMode();
+      return false;
+    });
+    
+    hotkeys.set('Meta+c', (event: KeyboardEvent) => {
+      console.log('🔄 Dashboard (Legacy): Cmd+C pressed - Toggle compact mode');
+      event.preventDefault();
+      this.toggleCompactMode();
+      return false;
+    });
+    
+    hotkeys.set('Escape', (event: KeyboardEvent) => {
+      console.log('🔄 Dashboard (Legacy): Escape pressed - Close mobile menus');
+      // Handle dashboard-specific escape behavior (legacy version)
+      this.handleDashboardEscapeLegacy(event);
+      // Don't return false - let other Escape handlers also run
+    });
+    
+    return hotkeys;
+  }
+  
+  /**
+   * Legacy ESC handler for backward compatibility
+   */
+  private handleDashboardEscapeLegacy(event: KeyboardEvent): void {
+    let handled = false;
+    
     // Close user menu if open
     if (this.userMenuDropdown?.style.display === 'block') {
+      console.log('📱 Dashboard (Legacy): Closing user menu on ESC');
       this.closeUserMenu();
+      handled = true;
     }
     
     // Close sidebar on mobile if open
     if (this.isMobileView && !document.body.classList.contains('sidebar-closed')) {
+      console.log('📱 Dashboard (Legacy): Closing mobile sidebar on ESC');
       this.closeSidebarOverlay();
+      handled = true;
     }
   }
+  
 }
 
 export default DashboardPageComponent;

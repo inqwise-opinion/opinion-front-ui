@@ -8,7 +8,7 @@
 import { BaseService } from '../services/BaseService';
 import { SERVICE_IDS, ServiceIdentityRegistry, type ServiceId } from './ServiceIdentity';
 import type { LayoutContext } from '../contexts/LayoutContext';
-import type { ServiceConfig } from '../interfaces/Service';
+import type { Service, ServiceConfig } from '../interfaces/Service';
 
 /**
  * Abstract base for all identifiable services
@@ -30,10 +30,9 @@ export abstract class IdentifiableService extends BaseService {
     this.serviceId = serviceId;
     const identity = ServiceIdentityRegistry.get(serviceId)!;
     
-    this.log('🆔', `${identity.category} created`, { 
+    this.log('🆔', `Service created`, { 
       serviceId,
-      description: identity.description,
-      namespace: identity.namespace
+      description: identity.SERVICE_DESCRIPTION || 'No description'
     });
   }
   
@@ -95,13 +94,13 @@ export class ServiceRegistrar {
   /**
    * Register service with identity validation
    */
-  static register<T>(context: LayoutContext, serviceId: ServiceId, service: T): void {
+  static register<T extends Service>(context: LayoutContext, serviceId: ServiceId, service: T): void {
     if (!ServiceIdentityRegistry.has(serviceId)) {
       throw new Error(`Cannot register service '${serviceId}' - not found in ServiceIdentityRegistry`);
     }
     
     const identity = ServiceIdentityRegistry.get(serviceId)!;
-    console.log(`📝 Registering ${identity.namespace}.${identity.category}: ${serviceId}`);
+    console.log(`📝 Registering service: ${serviceId}`);
     
     context.registerService(serviceId, service);
   }

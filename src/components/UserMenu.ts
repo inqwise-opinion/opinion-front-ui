@@ -4,6 +4,8 @@
  */
 
 import type { UserMenuItem } from "./Layout";
+import type { LayoutContext } from "../contexts/LayoutContext";
+import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
 
 export interface User {
   username: string;
@@ -22,9 +24,11 @@ export class UserMenu {
     userMenuEmail?: HTMLElement;
   } = {};
   private isOpen: boolean = false;
+  private layoutContext?: LayoutContext;
 
-  constructor(private parentContainer: HTMLElement) {
+  constructor(private parentContainer: HTMLElement, layoutContext?: LayoutContext) {
     this.container = parentContainer;
+    this.layoutContext = layoutContext;
   }
 
   /**
@@ -36,6 +40,7 @@ export class UserMenu {
     this.createUserMenu();
     this.cacheElements();
     this.setupEventListeners();
+    this.setupLayoutEventSubscriptions();
     this.initializeWithDefaultUser();
     console.log("UserMenu - Ready");
   }
@@ -329,6 +334,49 @@ export class UserMenu {
   }
 
   /**
+   * Setup layout event subscriptions
+   */
+  private setupLayoutEventSubscriptions(): void {
+    if (!this.layoutContext) {
+      console.log("UserMenu - No layout context available, skipping event subscriptions");
+      return;
+    }
+
+    // Subscribe to user-menu-request events (commands from external components)
+    this.layoutContext.subscribe("user-menu-request", (event) => {
+      const eventData = event.data;
+      const requestedAction = eventData.requestedAction;
+      const trigger = eventData.trigger;
+      
+      console.log(`UserMenu - Received request: ${requestedAction} (from ${trigger})`);
+      
+      switch (requestedAction) {
+        case "show":
+          if (!this.isOpen) {
+            this.open();
+          } else {
+            console.warn("UserMenu - Request to show but menu is already open");
+          }
+          break;
+        case "hide":
+          if (this.isOpen) {
+            this.close();
+          } else {
+            console.warn("UserMenu - Request to hide but menu is already closed");
+          }
+          break;
+        case "toggle":
+          this.toggle();
+          break;
+        default:
+          console.warn(`UserMenu - Unknown requested action: ${requestedAction}`);
+      }
+    });
+    
+    console.log("UserMenu - Layout event subscriptions setup complete");
+  }
+
+  /**
    * Setup event listeners
    */
   private setupEventListeners(): void {
@@ -374,7 +422,7 @@ export class UserMenu {
         e.preventDefault();
         e.stopPropagation();
         console.log("UserMenu - Close button clicked");
-        this.close();
+        this.handleCloseButtonClick();
       });
     }
 
@@ -386,7 +434,7 @@ export class UserMenu {
           !this.elements.trigger.contains(target) &&
           !this.elements.dropdown.contains(target)
         ) {
-          this.close();
+          this.handleClickOutside();
         }
       }
     });
@@ -396,15 +444,11 @@ export class UserMenu {
    * Toggle dropdown
    */
   toggle(): void {
-    if (this.isOpen) {
-      this.close();
-    } else {
-      this.open();
-    }
+    this.handleToggleClick();
   }
 
   /**
-   * Open dropdown
+   * Open dropdown (public API - no event emission)
    */
   open(): void {
     if (!this.elements.dropdown || !this.elements.trigger) {
@@ -412,7 +456,7 @@ export class UserMenu {
       return;
     }
 
-    console.log("UserMenu - Opening dropdown");
+    console.log("UserMenu - Opening dropdown (public API)");
     this.isOpen = true;
 
     // Check if mobile mode
@@ -445,14 +489,14 @@ export class UserMenu {
   }
 
   /**
-   * Close dropdown
+   * Close dropdown (public API - no event emission)
    */
   close(): void {
     if (!this.elements.dropdown || !this.elements.trigger) {
       return;
     }
 
-    console.log("UserMenu - Closing dropdown");
+    console.log("UserMenu - Closing dropdown (public API)");
     this.isOpen = false;
 
     // Hide desktop dropdown
@@ -493,6 +537,81 @@ export class UserMenu {
     if (arrow) {
       arrow.style.transform = "rotate(0deg)";
     }
+  }
+
+  /**
+   * Handle toggle click (internal - change state and emit event)
+   */
+  private handleToggleClick(): void {
+    console.log("UserMenu - Toggle click");
+    const wasOpen = this.isOpen;
+    const targetState = !wasOpen;
+    
+    // Actually change the state
+    if (targetState) {
+      this.open();
+    } else {
+      this.close();
+    }
+    
+    // Then emit the event
+    this.emitUserMenuModeChangeEvent(targetState, wasOpen, "click");
+  }
+
+  /**
+   * Handle close button click (internal - close and emit event if needed)
+   */
+  private handleCloseButtonClick(): void {
+    console.log("UserMenu - Close button click");
+    if (!this.isOpen) {
+      console.warn("UserMenu - Close button clicked but menu is already closed");
+      return;
+    }
+    const wasOpen = this.isOpen;
+    this.close();
+    this.emitUserMenuModeChangeEvent(false, wasOpen, "click");
+  }
+
+  /**
+   * Handle click outside (internal - close and emit event if needed)
+   */
+  private handleClickOutside(): void {
+    console.log("UserMenu - Click outside");
+    if (!this.isOpen) {
+      console.warn("UserMenu - Click outside detected but menu is already closed");
+      return;
+    }
+    const wasOpen = this.isOpen;
+    this.close();
+    this.emitUserMenuModeChangeEvent(false, wasOpen, "click");
+  }
+
+  /**
+   * Handle mobile close button click (internal - close and emit event if needed)
+   */
+  private handleMobileCloseButtonClick(): void {
+    console.log("UserMenu - Mobile close button click");
+    if (!this.isOpen) {
+      console.warn("UserMenu - Mobile close button clicked but menu is already closed");
+      return;
+    }
+    const wasOpen = this.isOpen;
+    this.close();
+    this.emitUserMenuModeChangeEvent(false, wasOpen, "click");
+  }
+
+  /**
+   * Handle backdrop click (internal - close and emit event if needed)
+   */
+  private handleBackdropClick(): void {
+    console.log("UserMenu - Backdrop click");
+    if (!this.isOpen) {
+      console.warn("UserMenu - Backdrop clicked but menu is already closed");
+      return;
+    }
+    const wasOpen = this.isOpen;
+    this.close();
+    this.emitUserMenuModeChangeEvent(false, wasOpen, "click");
   }
 
   /**
@@ -740,7 +859,7 @@ export class UserMenu {
         e.preventDefault();
         e.stopPropagation();
         console.log("📱 UserMenu - Mobile close button clicked");
-        this.close();
+        this.handleMobileCloseButtonClick();
       });
 
       // Add hover effect to close button
@@ -817,7 +936,7 @@ export class UserMenu {
 
     // Close user menu when backdrop is clicked
     backdrop.addEventListener("click", () => {
-      this.close();
+      this.handleBackdropClick();
     });
 
     console.log("📱 UserMenu - Mobile backdrop created with blur effects");
@@ -937,6 +1056,39 @@ export class UserMenu {
         (item as HTMLElement).style.background = "transparent";
       });
     });
+  }
+
+  /**
+   * Emit typed user menu mode change event to LayoutContext
+   */
+  private emitUserMenuModeChangeEvent(
+    isVisible: boolean,
+    previousVisibility: boolean,
+    trigger: "click" | "keyboard" | "programmatic",
+  ): void {
+    if (!this.layoutContext) {
+      // No layout context available, skip event emission
+      return;
+    }
+    
+    // Create typed event using the factory (includes state checking)
+    const event = LayoutEventFactory.createUserMenuModeChangeEvent(
+      isVisible,
+      previousVisibility,
+      trigger,
+    );
+
+    // If no actual state change, factory returns null
+    if (!event) {
+      return;
+    }
+
+    // Emit the event through the LayoutContext
+    this.layoutContext.emit("user-menu-mode-change", event.data);
+
+    console.log(
+      `📡 UserMenu - Emitted mode change event: ${previousVisibility} → ${isVisible} (via ${trigger})`,
+    );
   }
 
   /**

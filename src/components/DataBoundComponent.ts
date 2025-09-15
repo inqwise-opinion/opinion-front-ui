@@ -326,8 +326,7 @@ export abstract class DataBoundComponent extends PageComponent {
 
     console.log(`🧹 DataBoundComponent - All bindings cleaned up`);
     
-    // Call parent cleanup
-    super.onDestroy?.();
+    // Note: onDestroy is abstract in PageComponent, so no parent implementation to call
   }
 
   /**

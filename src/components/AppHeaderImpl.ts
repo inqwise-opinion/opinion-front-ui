@@ -17,6 +17,11 @@ import { getLayoutContext } from "../contexts/index";
 import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
 import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
 import { AppHeader, HeaderUser } from "./AppHeader";
+import {
+  ChainHotkeyProvider,
+  ChainHotkeyHandler,
+  HotkeyExecutionContext,
+} from "../hotkeys/HotkeyChainSystem";
 
 export interface HeaderConfig {
   brandTitle?: string; // Header brand/logo title (default: "Opinion")
@@ -26,7 +31,7 @@ export interface HeaderConfig {
   showUserMenu?: boolean; // Show user menu (default: true)
 }
 
-export class AppHeaderImpl implements AppHeader {
+export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider {
   private userMenuHandler?: (userMenu: UserMenu) => void;
   private container: HTMLElement | null = null;
   private userMenu: UserMenu | null = null;
@@ -35,6 +40,7 @@ export class AppHeaderImpl implements AppHeader {
   private layoutContext: LayoutContext;
   private layoutUnsubscribers: Array<() => void> = [];
   private config: Required<HeaderConfig>;
+  private chainProviderUnsubscriber: (() => void) | null = null;
 
   constructor(config: HeaderConfig = {}, layoutContext?: LayoutContext) {
     // Apply configuration with defaults
@@ -224,7 +230,7 @@ export class AppHeaderImpl implements AppHeader {
 
     const userMenuContainer = await this.waitForElement("#user_menu_container");
     if (userMenuContainer) {
-      this.userMenu = new UserMenu(userMenuContainer);
+      this.userMenu = new UserMenu(userMenuContainer, this.layoutContext);
       if (this.userMenuHandler) {
         this.userMenuHandler(this.userMenu);
       }
@@ -241,10 +247,8 @@ export class AppHeaderImpl implements AppHeader {
    * Setup event listeners for header interactions
    */
   private setupEventListeners(): void {
-    // Handle keyboard navigation
-    document.addEventListener("keydown", (e) => {
-      this.handleKeyboardNavigation(e);
-    });
+    // Register global hotkeys via LayoutContext instead of direct listeners
+    this.registerHotkeys();
 
     // Handle data-action based interactions
     document.addEventListener("click", (e) => {
@@ -293,15 +297,27 @@ export class AppHeaderImpl implements AppHeader {
   }
 
   /**
-   * Handle keyboard navigation
+   * Register chain hotkey provider with LayoutContext
    */
-  private handleKeyboardNavigation(event: KeyboardEvent): void {
-    if (event.key === "Escape") {
-      // Close user menu if open - delegate to UserMenu component
-      if (this.userMenu) {
-        this.userMenu.close();
-      }
-    }
+  private registerHotkeys(): void {
+    // Register this component as a chain provider for ESC key handling
+    this.chainProviderUnsubscriber = this.layoutContext.registerChainProvider(this);
+    console.log("AppHeaderImpl - Registered as chain hotkey provider for user menu ESC handling");
+  }
+
+  /**
+   * Handle ESC key via LayoutContext hotkey system
+   */
+  private handleEscapeKey(event: KeyboardEvent): void {
+    // Emit user menu request event instead of direct call
+    // This maintains separation between header and user menu components
+    const requestEvent = LayoutEventFactory.createUserMenuRequestEvent(
+      "hide", // Request to hide/close
+      "keyboard"
+    );
+    
+    this.layoutContext.emit("user-menu-request", requestEvent.data);
+    console.log("📡 AppHeaderImpl - ESC key: User menu close request emitted (via LayoutContext hotkey)");
   }
 
   /**
@@ -669,6 +685,13 @@ export class AppHeaderImpl implements AppHeader {
     });
     this.layoutUnsubscribers = [];
 
+    // Cleanup chain provider (new system)
+    this.cleanupChainProvider();
+    
+    // Unregister all legacy hotkeys for this component (backward compatibility)
+    this.layoutContext.unregisterAllHotkeys("AppHeaderImpl");
+    console.log("AppHeaderImpl - Hotkeys unregistered from LayoutContext");
+
     // Destroy user menu component
     if (this.userMenu) {
       this.userMenu.destroy();
@@ -688,6 +711,114 @@ export class AppHeaderImpl implements AppHeader {
 
     this.container = null;
     this.user = null;
+  }
+
+  // =================================================================================
+  // ChainHotkeyProvider Implementation
+  // =================================================================================
+
+  /**
+   * Get provider identifier for chain hotkey system
+   */
+  getHotkeyProviderId(): string {
+    return 'AppHeaderImpl';
+  }
+
+  /**
+   * Get provider priority - Menu systems get medium-high priority (600)
+   */
+  getProviderPriority(): number {
+    return 600; // Menu systems priority
+  }
+
+  /**
+   * Get chain hotkeys for user menu ESC handling
+   */
+  getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
+    // Only provide ESC handler if user menu is available and potentially open
+    if (!this.config.showUserMenu || !this.userMenu) {
+      return null;
+    }
+
+    const hotkeys = new Map<string, ChainHotkeyHandler>();
+    
+    hotkeys.set('Escape', {
+      key: 'Escape',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        this.handleEscapeKeyChain(ctx);
+      },
+      description: 'Close user menu via chain system',
+      priority: this.getProviderPriority(),
+      enable: () => { /* User menu ESC is always enabled when menu exists */ },
+      disable: () => { /* Could disable if needed */ },
+      isEnabled: () => this.config.showUserMenu && !!this.userMenu
+    });
+
+    return hotkeys;
+  }
+
+  /**
+   * Default chain behavior - continue to next handler (cooperative)
+   */
+  getDefaultChainBehavior(): 'next' | 'break' {
+    return 'next'; // Be cooperative with other components
+  }
+
+  /**
+   * Handle ESC key via chain system with smart cooperation
+   */
+  private handleEscapeKeyChain(ctx: HotkeyExecutionContext): void {
+    console.log('🎯 AppHeaderImpl - ESC key pressed via chain system');
+    
+    // Check if user menu is actually open/relevant
+    if (this.shouldHandleEscapeKey()) {
+      // Close user menu by emitting event
+      const requestEvent = LayoutEventFactory.createUserMenuRequestEvent(
+        "hide", // Request to hide/close
+        "keyboard"
+      );
+      
+      this.layoutContext.emit("user-menu-request", requestEvent.data);
+      ctx.preventDefault();
+      
+      console.log("📡 AppHeaderImpl - ESC handled: User menu close request emitted");
+      
+      // Smart chain control: 
+      // Check if higher priority components (like modals) are in the chain
+      if (ctx.hasProvider('ModalDialog') || ctx.hasProvider('MobileSidebar')) {
+        // Let higher priority components also handle if they need to
+        ctx.next();
+      } else {
+        // We're likely the primary handler, prevent default browser behavior
+        ctx.break();
+      }
+    } else {
+      // User menu not relevant, let others handle
+      ctx.next();
+    }
+  }
+
+  /**
+   * Check if AppHeaderImpl should handle the ESC key
+   * This could check if user menu is open, visible, etc.
+   */
+  private shouldHandleEscapeKey(): boolean {
+    // For now, always handle if user menu is configured and available
+    // In the future, this could check if the user menu is actually open
+    return this.config.showUserMenu && !!this.userMenu;
+  }
+
+  /**
+   * Cleanup chain provider on destroy
+   */
+  private cleanupChainProvider(): void {
+    if (this.chainProviderUnsubscriber) {
+      this.chainProviderUnsubscriber();
+      this.chainProviderUnsubscriber = null;
+      console.log("AppHeaderImpl - Chain provider unregistered");
+    }
   }
 }
 

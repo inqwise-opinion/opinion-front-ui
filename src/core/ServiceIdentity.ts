@@ -108,3 +108,54 @@ export function listServiceDependencies<T extends ServiceIdentity>(ServiceClass:
   }
   console.groupEnd();
 }
+
+// Legacy compatibility exports
+export type ServiceId = string;
+
+// Legacy SERVICE_IDS object for backward compatibility
+export const SERVICE_IDS = {
+  // Add service IDs as needed for backward compatibility
+} as const;
+
+// Legacy ServiceIdentityRegistry class for backward compatibility  
+export class ServiceIdentityRegistry {
+  private static services = new Map<string, ServiceIdentity>();
+  
+  static register<T extends ServiceIdentity>(ServiceClass: T): void {
+    this.services.set(ServiceClass.SERVICE_ID, ServiceClass);
+  }
+  
+  static get(serviceId: string): ServiceIdentity | undefined {
+    return this.services.get(serviceId);
+  }
+  
+  static has(serviceId: string): boolean {
+    return this.services.has(serviceId);
+  }
+  
+  static list(): ServiceIdentity[] {
+    return Array.from(this.services.values());
+  }
+  
+  static getAll(): Map<string, ServiceIdentity> {
+    return new Map(this.services);
+  }
+  
+  static validateDependencies(serviceId: string): string[] {
+    const service = this.services.get(serviceId);
+    return service?.SERVICE_DEPENDENCIES ? [...service.SERVICE_DEPENDENCIES] : [];
+  }
+  
+  static getDependencyGraph(serviceId: string): string[] {
+    const dependencies = this.validateDependencies(serviceId);
+    const graph: string[] = [];
+    
+    for (const dep of dependencies) {
+      graph.push(dep);
+      const subDeps = this.getDependencyGraph(dep);
+      graph.push(...subDeps);
+    }
+    
+    return [...new Set(graph)]; // Remove duplicates
+  }
+}
