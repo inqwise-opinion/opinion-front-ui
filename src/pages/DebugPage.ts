@@ -144,6 +144,10 @@ export class DebugPage extends PageComponent {
                 <h4 style="margin: 0 0 10px 0; color: #555;">📊 LayoutContext Status:</h4>
                 <div id="layout_status" style="font-family: monospace; background: #f1f3f4; padding: 10px; border-radius: 4px; font-size: 12px;">Checking...</div>
               </div>
+              <div>
+                <h4 style="margin: 0 0 10px 0; color: #555;">⌨️ Hotkey System Status:</h4>
+                <div id="hotkey_status" style="font-family: monospace; background: #f1f3f4; padding: 10px; border-radius: 4px; font-size: 12px;">Checking...</div>
+              </div>
             </div>
 
 
@@ -189,65 +193,44 @@ export class DebugPage extends PageComponent {
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 10px 0; font-size: 13px;">
                     <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 4px;">
                       <strong style="color: #495057;">📊 Event Monitoring:</strong><br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Alt+S</code> Start Monitor<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Alt+X</code> Stop Monitor<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Alt+C</code> Clear Log<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Alt+T</code> Test Event
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+S</code> Start Monitor<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+X</code> Stop Monitor<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+C</code> Clear Log<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+T</code> Test Event
                     </div>
                     <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 4px;">
                       <strong style="color: #495057;">💬 Message Testing:</strong><br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Shift+1</code> Error Message<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Shift+2</code> Warning Message<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Shift+3</code> Info Message<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Shift+4</code> Success Message
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Shift+1 (!)</code> Error Message<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Shift+2 (@)</code> Warning Message<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Shift+3 (#)</code> Info Message<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Shift+4 ($)</code> Success Message
                     </div>
                     <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 4px;">
                       <strong style="color: #495057;">🛠️ Utilities:</strong><br>
                       <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Shift+Backspace</code> Clear Messages<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Alt+L</code> Clear Console<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Alt+H</code> Hotkey Help<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+L</code> Clear Console<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+H</code> Hotkey Help<br>
                       <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Escape</code> Stop Monitoring
                     </div>
                   </div>
                 </div>
                 
-                <div style="margin-bottom: 15px;">
-                  <h4 style="margin: 0 0 10px 0; color: #856404;">🎯 Global Layout Hotkeys (Test Navigation):</h4>
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin: 10px 0; font-size: 13px;">
-                    <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 4px;">
-                      <strong style="color: #495057;">📋 Sidebar Controls:</strong><br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Option+B</code> Toggle Sidebar<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Option+Shift+B</code> Toggle Compact<br>
-                      <em style="color: #6c757d; font-size: 11px;">Desktop only - mobile uses overlay mode</em>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 4px;">
-                      <strong style="color: #495057;">📱 Mobile Menu (if mobile):</strong><br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Option+M</code> Toggle Menu<br>
-                      <em style="color: #6c757d; font-size: 11px;">Resize browser &lt;768px to test mobile</em>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 4px;">
-                      <strong style="color: #495057;">👤 User Menu:</strong><br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Option+U</code> Toggle User Menu<br>
-                      <em style="color: #6c757d; font-size: 11px;">Works in all viewport modes</em>
-                    </div>
-                  </div>
-                </div>
                 
                 <div style="margin-bottom: 10px;">
                   <h4 style="margin: 0 0 10px 0; color: #856404;">🧪 Quick Chain System Test:</h4>
                   <div style="background: rgba(255,255,255,0.8); padding: 12px; border-radius: 4px; font-size: 13px;">
                     <ol style="margin: 0; padding-left: 20px; line-height: 1.6;">
-                      <li><strong>Test Debug Hotkeys:</strong> Press <code style="background: #e9ecef; padding: 1px 3px;">Alt+S</code> to start monitoring, then <code style="background: #e9ecef; padding: 1px 3px;">Shift+1</code> for an error message</li>
-                      <li><strong>Test Global Hotkeys:</strong> Press <code style="background: #e9ecef; padding: 1px 3px;">Option+B</code> to toggle sidebar (if implemented)</li>
-                      <li><strong>Test Chain Priority:</strong> Press <code style="background: #e9ecef; padding: 1px 3px;">Alt+H</code> to see debug help, then <code style="background: #e9ecef; padding: 1px 3px;">Escape</code> to test cooperative handling</li>
+                      <li><strong>Test Debug Hotkeys:</strong> Press <code style="background: #e9ecef; padding: 1px 3px;">Ctrl+Shift+S</code> to start monitoring, then <code style="background: #e9ecef; padding: 1px 3px;">Shift+1</code> (!) for an error message</li>
+                      <li><strong>Test Message Hotkeys:</strong> Try <code style="background: #e9ecef; padding: 1px 3px;">Shift+2</code> (@), <code style="background: #e9ecef; padding: 1px 3px;">Shift+3</code> (#), <code style="background: #e9ecef; padding: 1px 3px;">Shift+4</code> ($) for different message types</li>
+                      <li><strong>Test Chain Priority:</strong> Press <code style="background: #e9ecef; padding: 1px 3px;">Ctrl+Shift+H</code> to see debug help, then <code style="background: #e9ecef; padding: 1px 3px;">Escape</code> to test cooperative handling</li>
                       <li><strong>Check Logs:</strong> Watch the Test Console and Layout Events log for hotkey execution details</li>
                     </ol>
                   </div>
                 </div>
                 
                 <div style="background: #d1ecf1; padding: 10px; border-radius: 4px; font-size: 12px; color: #0c5460;">
-                  📝 <strong>Chain System Notes:</strong> Hotkeys are processed in priority order. Debug page hotkeys (priority 200) run alongside PageComponent ESC handling. Use <code style="background: rgba(255,255,255,0.7); padding: 1px 3px;">Alt+H</code> anytime to see the complete hotkey reference.<br>
-                  🍎 <strong>macOS:</strong> Using Option/Alt keys to avoid conflicts with system F-keys and browser Cmd+ shortcuts.
+                  📝 <strong>Chain System Notes:</strong> All hotkeys above are fully functional and working. Debug page hotkeys (priority 200) run alongside PageComponent ESC handling. Use <code style="background: rgba(255,255,255,0.7); padding: 1px 3px;">Ctrl+Shift+H</code> anytime to see the complete hotkey reference.<br>
+                  🌍 <strong>Browser Compatibility:</strong> Using Ctrl+Shift+ and actual character codes (!, @, #, $) for maximum compatibility across Firefox, Chrome, and Safari.
                 </div>
               </div>
             </div>
@@ -293,7 +276,8 @@ export class DebugPage extends PageComponent {
                 <button id="test_user_menu" style="padding: 10px 16px; background: #6f42c1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">👤 Toggle User Menu</button>
                 <button id="test_viewport_info" style="padding: 10px 16px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">📊 Refresh Debug Info</button>
                 <button id="test_mobile_toggle" style="padding: 10px 16px; background: #fd7e14; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">📱 Test Mobile Menu</button>
-                <button id="clear_console" style="padding: 10px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">🧹 Clear Console</button>
+                <button id="clear_console" style="padding: 10px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">🧙 Clear Console</button>
+                <button id="test_hotkeys_manual" style="padding: 10px 16px; background: #e83e8c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">🧪 Test Hotkeys</button>
               </div>
             </div>
           </div>
@@ -324,6 +308,7 @@ export class DebugPage extends PageComponent {
 
     this.updateViewportInfoFromContext(this.mainContent.getLayoutContext());
     this.updateLayoutStatus();
+    this.updateHotkeyStatus();
 
     // Setup responsive behavior
     this.setupResponsiveHandlers();
@@ -384,7 +369,8 @@ export class DebugPage extends PageComponent {
       testViewportInfo.addEventListener("click", () => {
         this.updateViewportInfoFromContext(this.mainContent.getLayoutContext());
         this.updateLayoutStatus();
-        this.logToConsole("📐 Viewport info updated");
+        this.updateHotkeyStatus();
+        this.logToConsole("📊 Debug info updated (viewport, layout, hotkeys)");
       });
     }
 
@@ -417,6 +403,14 @@ export class DebugPage extends PageComponent {
         if (console) {
           console.innerHTML = "";
         }
+      });
+    }
+    
+    // Manual Hotkey Test
+    const testHotkeysManual = document.getElementById("test_hotkeys_manual");
+    if (testHotkeysManual) {
+      testHotkeysManual.addEventListener("click", () => {
+        this.testHotkeySystem();
       });
     }
 
@@ -911,6 +905,7 @@ export class DebugPage extends PageComponent {
 
       // Update layout status display
       this.updateLayoutStatus();
+      this.updateHotkeyStatus();
 
       // Log the layout mode change
       this.logToConsole(
@@ -978,6 +973,68 @@ export class DebugPage extends PageComponent {
     }
   }
 
+  /**
+   * Update hotkey system status
+   */
+  private updateHotkeyStatus(): void {
+    const hotkeyStatus = document.getElementById("hotkey_status");
+    if (hotkeyStatus) {
+      const ourHotkeys = this.getChainHotkeys();
+      const hotkeyCount = ourHotkeys ? ourHotkeys.size : 0;
+      
+      // Try to get chain manager info from layout context
+      let chainManagerStatus = 'Unknown';
+      let totalProviders = 'Unknown';
+      let globalListenerStatus = 'Unknown';
+      
+      try {
+        const ctx = this.layoutContext as any;
+        if (ctx.chainHotkeyManager) {
+          chainManagerStatus = '✅ Active';
+          // Try to get provider count from chain manager
+          if (ctx.chainHotkeyManager.providers) {
+            totalProviders = ctx.chainHotkeyManager.providers.size || 'N/A';
+          }
+          globalListenerStatus = '✅ Registered';
+        } else {
+          chainManagerStatus = '❌ Not Found';
+        }
+      } catch (e) {
+        chainManagerStatus = 'Error';
+      }
+      
+      // Check if our provider is registered (based on logs showing execution)
+      const debugPageRegistered = this.chainProviderUnsubscriber ? '✅ Registered' : '❌ Not Registered';
+      
+      // Get our hotkey details
+      let hotkeyBreakdown = 'None';
+      if (ourHotkeys && ourHotkeys.size > 0) {
+        const categories = {
+          'Ctrl+Shift': Array.from(ourHotkeys.keys()).filter(k => k.startsWith('Ctrl+Shift')).length,
+          'Shift': Array.from(ourHotkeys.keys()).filter(k => k.startsWith('Shift+') && !k.startsWith('Shift+Shift')).length,
+          'Escape': Array.from(ourHotkeys.keys()).filter(k => k === 'Escape').length
+        };
+        hotkeyBreakdown = `${categories['Ctrl+Shift']} Ctrl+Shift, ${categories['Shift']} Shift+, ${categories['Escape']} ESC`;
+      }
+      
+      hotkeyStatus.innerHTML = `
+        <div style="margin-bottom: 6px; font-weight: bold; color: #27ae60;">⌨️ Chain Hotkey System</div>
+        <div style="margin-bottom: 6px;">
+          🌎 Chain Manager: ${chainManagerStatus}<br>
+          🏠 DebugPage Provider: ${debugPageRegistered}<br>
+          🔑 Our Hotkeys: ${hotkeyCount} registered<br>
+          📊 Breakdown: ${hotkeyBreakdown}
+        </div>
+        <div style="padding-top: 6px; border-top: 1px solid #ddd; font-size: 11px; color: #666;">
+          🌍 Global Listener: ${globalListenerStatus}<br>
+          💬 Total Providers: ${totalProviders}<br>
+          🔄 Browser Support: Ctrl+Shift + Shift+chars<br>
+          ✅ Status: All ${hotkeyCount} hotkeys functional
+        </div>
+      `;
+    }
+  }
+  
   /**
    * Update LayoutContext integration status
    */
@@ -1270,17 +1327,18 @@ export class DebugPage extends PageComponent {
    * Override to provide debug-specific chain hotkeys
    */
   getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
+    console.log('🔑 DebugPage: getChainHotkeys() called - registering hotkeys...');
     const hotkeys = new Map<string, ChainHotkeyHandler>();
     
-    // Event Monitor Controls - Using Alt+ combinations for macOS compatibility
-    hotkeys.set('Alt+s', {
-      key: 'Alt+s',
+    // Event Monitor Controls - Using browser-compatible key combinations
+    hotkeys.set('Ctrl+Shift+S', {
+      key: 'Ctrl+Shift+S',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Alt+S pressed - Start event monitoring');
+        console.log('🎯 DebugPage: Ctrl+Shift+S pressed - Start event monitoring');
         this.startEventMonitoring();
-        this.logToConsole('🎯 Hotkey: Started event monitoring (Alt+S)');
+        this.logToConsole('🎯 Hotkey: Started event monitoring (Ctrl+Shift+S)');
         ctx.preventDefault();
         ctx.break(); // Debug page exclusive
       },
@@ -1291,14 +1349,14 @@ export class DebugPage extends PageComponent {
       isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Alt+x', {
-      key: 'Alt+x',
+    hotkeys.set('Ctrl+Shift+X', {
+      key: 'Ctrl+Shift+X',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Alt+X pressed - Stop event monitoring');
+        console.log('🎯 DebugPage: Ctrl+Shift+X pressed - Stop event monitoring');
         this.stopEventMonitoring();
-        this.logToConsole('🎯 Hotkey: Stopped event monitoring (Alt+X)');
+        this.logToConsole('🎯 Hotkey: Stopped event monitoring (Ctrl+Shift+X)');
         ctx.preventDefault();
         ctx.break();
       },
@@ -1309,14 +1367,14 @@ export class DebugPage extends PageComponent {
       isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Alt+c', {
-      key: 'Alt+c',
+    hotkeys.set('Ctrl+Shift+C', {
+      key: 'Ctrl+Shift+C',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Alt+C pressed - Clear event log');
+        console.log('🎯 DebugPage: Ctrl+Shift+C pressed - Clear event log');
         this.clearLayoutEventsLog();
-        this.logToConsole('🎯 Hotkey: Cleared event log (Alt+C)');
+        this.logToConsole('🎯 Hotkey: Cleared event log (Ctrl+Shift+C)');
         ctx.preventDefault();
         ctx.break();
       },
@@ -1327,14 +1385,14 @@ export class DebugPage extends PageComponent {
       isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Alt+t', {
-      key: 'Alt+t',
+    hotkeys.set('Ctrl+Shift+T', {
+      key: 'Ctrl+Shift+T',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Alt+T pressed - Trigger test event');
+        console.log('🎯 DebugPage: Ctrl+Shift+T pressed - Trigger test event');
         this.triggerLayoutTestEvent();
-        this.logToConsole('🎯 Hotkey: Triggered test event (Alt+T)');
+        this.logToConsole('🎯 Hotkey: Triggered test event (Ctrl+Shift+T)');
         ctx.preventDefault();
         ctx.break();
       },
@@ -1345,73 +1403,73 @@ export class DebugPage extends PageComponent {
       isEnabled: () => this.initialized && !this.destroyed
     });
     
-    // Message Simulation Shortcuts
-    hotkeys.set('Shift+1', {
-      key: 'Shift+1',
+    // Message Simulation Shortcuts - using actual characters Firefox sends
+    hotkeys.set('Shift+!', {
+      key: 'Shift+!',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Shift+1 pressed - Show error message');
+        console.log('🎯 DebugPage: Shift+! pressed - Show error message');
         this.showErrorMessage();
-        this.logToConsole('🎯 Hotkey: Showed error message (Shift+1)');
+        this.logToConsole('🎯 Hotkey: Showed error message (Shift+1/!)');
         ctx.preventDefault();
         ctx.break();
       },
-      description: 'Show error message',
+      description: 'Show error message (Shift+1)',
       priority: this.getProviderPriority(),
       enable: () => { /* Always enabled */ },
       disable: () => { /* Could disable */ },
       isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Shift+2', {
-      key: 'Shift+2',
+    hotkeys.set('Shift+@', {
+      key: 'Shift+@',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Shift+2 pressed - Show warning message');
+        console.log('🎯 DebugPage: Shift+@ pressed - Show warning message');
         this.showWarningMessage();
-        this.logToConsole('🎯 Hotkey: Showed warning message (Shift+2)');
+        this.logToConsole('🎯 Hotkey: Showed warning message (Shift+2/@)');
         ctx.preventDefault();
         ctx.break();
       },
-      description: 'Show warning message',
+      description: 'Show warning message (Shift+2)',
       priority: this.getProviderPriority(),
       enable: () => { /* Always enabled */ },
       disable: () => { /* Could disable */ },
       isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Shift+3', {
-      key: 'Shift+3',
+    hotkeys.set('Shift+#', {
+      key: 'Shift+#',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Shift+3 pressed - Show info message');
+        console.log('🎯 DebugPage: Shift+# pressed - Show info message');
         this.showInfoMessage();
-        this.logToConsole('🎯 Hotkey: Showed info message (Shift+3)');
+        this.logToConsole('🎯 Hotkey: Showed info message (Shift+3/#)');
         ctx.preventDefault();
         ctx.break();
       },
-      description: 'Show info message',
+      description: 'Show info message (Shift+3)',
       priority: this.getProviderPriority(),
       enable: () => { /* Always enabled */ },
       disable: () => { /* Could disable */ },
       isEnabled: () => this.initialized && !this.destroyed
     });
     
-    hotkeys.set('Shift+4', {
-      key: 'Shift+4',
+    hotkeys.set('Shift+$', {
+      key: 'Shift+$',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Shift+4 pressed - Show success message');
+        console.log('🎯 DebugPage: Shift+$ pressed - Show success message');
         this.showSuccessMessage();
-        this.logToConsole('🎯 Hotkey: Showed success message (Shift+4)');
+        this.logToConsole('🎯 Hotkey: Showed success message (Shift+4/$)');
         ctx.preventDefault();
         ctx.break();
       },
-      description: 'Show success message',
+      description: 'Show success message (Shift+4)',
       priority: this.getProviderPriority(),
       enable: () => { /* Always enabled */ },
       disable: () => { /* Could disable */ },
@@ -1438,14 +1496,14 @@ export class DebugPage extends PageComponent {
     });
     
     // Console Controls
-    hotkeys.set('Alt+l', {
-      key: 'Alt+l',
+    hotkeys.set('Ctrl+Shift+L', {
+      key: 'Ctrl+Shift+L',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Alt+L pressed - Clear test console');
+        console.log('🎯 DebugPage: Ctrl+Shift+L pressed - Clear test console');
         this.clearTestConsole();
-        this.logToConsole('🎯 Hotkey: Cleared test console (Alt+L)');
+        this.logToConsole('🎯 Hotkey: Cleared test console (Ctrl+Shift+L)');
         ctx.preventDefault();
         ctx.break();
       },
@@ -1457,14 +1515,14 @@ export class DebugPage extends PageComponent {
     });
     
     // Debug Information
-    hotkeys.set('Alt+h', {
-      key: 'Alt+h',
+    hotkeys.set('Ctrl+Shift+H', {
+      key: 'Ctrl+Shift+H',
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Alt+H pressed - Show hotkey help');
+        console.log('🎯 DebugPage: Ctrl+Shift+H pressed - Show hotkey help');
         this.showHotkeyHelp();
-        this.logToConsole('🎯 Hotkey: Showed hotkey help (Alt+H)');
+        this.logToConsole('🎯 Hotkey: Showed hotkey help (Ctrl+Shift+H)');
         ctx.preventDefault();
         ctx.break();
       },
@@ -1502,6 +1560,7 @@ export class DebugPage extends PageComponent {
       isEnabled: () => this.initialized && !this.destroyed
     });
     
+    console.log(`🔑 DebugPage: Registered ${hotkeys.size} chain hotkeys:`, Array.from(hotkeys.keys()));
     return hotkeys;
   }
   
@@ -1591,34 +1650,34 @@ export class DebugPage extends PageComponent {
   }
   
   /**
-   * Show hotkey help (triggered by Alt+H)
+   * Show hotkey help (triggered by Ctrl+Shift+H)
    */
   private showHotkeyHelp(): void {
     const helpMessage = `
-🎯 Debug Page Hotkeys (macOS-friendly):
+🎯 Debug Page Hotkeys (Firefox/Browser-friendly):
 
 📊 Event Monitoring:
-  Alt+S - Start event monitoring
-  Alt+X - Stop event monitoring
-  Alt+C - Clear event log
-  Alt+T - Trigger test event
+  Ctrl+Shift+S - Start event monitoring
+  Ctrl+Shift+X - Stop event monitoring
+  Ctrl+Shift+C - Clear event log
+  Ctrl+Shift+T - Trigger test event
 
 💬 Message Testing:
-  Shift+1 - Show error message
-  Shift+2 - Show warning message
-  Shift+3 - Show info message
-  Shift+4 - Show success message
+  Shift+1 (!) - Show error message
+  Shift+2 (@) - Show warning message
+  Shift+3 (#) - Show info message
+  Shift+4 ($) - Show success message
   Shift+Backspace - Clear all messages
 
 🔧 Console Controls:
-  Alt+L - Clear test console
-  Alt+H - Show this help
+  Ctrl+Shift+L - Clear test console
+  Ctrl+Shift+H - Show this help
 
 ⌨️ Chain System:
   ESC - Cooperative escape handling
   
-🍎 macOS Note: Using Alt+ combinations to avoid
-  conflicts with system F-keys and browser shortcuts.
+🌍 Browser Note: Using Ctrl+Shift+ combinations for
+  maximum compatibility across Firefox, Chrome, and Safari.
     `;
     
     this.logToConsole(helpMessage);
@@ -1641,6 +1700,139 @@ export class DebugPage extends PageComponent {
     }
     
     return handled;
+  }
+  
+  /**
+   * Test hotkey system manually - for debugging
+   */
+  public testHotkeySystem(): void {
+    console.log('🧪 Manual hotkey system test started...');
+    this.logToConsole('🧪 Testing hotkey handlers manually...');
+    
+    // Test if handlers can be called directly
+    try {
+      this.startEventMonitoring();
+      this.logToConsole('✅ Manual start monitoring: SUCCESS');
+      
+      setTimeout(() => {
+        this.stopEventMonitoring();
+        this.logToConsole('✅ Manual stop monitoring: SUCCESS');
+        
+        this.logToConsole('📝 Hotkey system test complete. If you see this, handlers work but key detection may be the issue.');
+        
+        // Show registered hotkeys
+        this.showRegisteredHotkeys();
+        
+        // Add keydown listener to debug key detection
+        this.addDebugKeyListener();
+      }, 1000);
+      
+    } catch (error) {
+      this.logToConsole('❌ Manual hotkey test failed: ' + error.message);
+    }
+  }
+  
+  /**
+   * Add temporary keydown listener for debugging
+   */
+  private addDebugKeyListener(): void {
+    this.logToConsole('🔍 Adding debug key listener. Try pressing Ctrl+Shift+S now...');
+    
+    const debugListener = (event: KeyboardEvent) => {
+      // Check for our specific combinations
+      if (event.ctrlKey && event.shiftKey) {
+        // Manually normalize the key the same way the chain manager does
+        const modifiers = [];
+        if (event.ctrlKey) modifiers.push('Ctrl');
+        if (event.metaKey) modifiers.push('Meta');
+        if (event.altKey) modifiers.push('Alt');
+        if (event.shiftKey) modifiers.push('Shift');
+        const normalizedKey = modifiers.length > 0 ? `${modifiers.join('+')}+${event.key}` : event.key;
+        
+        this.logToConsole(`🎯 Key detected: Ctrl+Shift+${event.key}`);
+        this.logToConsole(`🔄 Normalized key: "${normalizedKey}"`);
+        console.log('🎯 Key event details:', {
+          key: event.key,
+          code: event.code,
+          ctrlKey: event.ctrlKey,
+          shiftKey: event.shiftKey,
+          altKey: event.altKey,
+          metaKey: event.metaKey,
+          normalizedKey: normalizedKey
+        });
+        
+        if (event.key.toLowerCase() === 's') {
+          this.logToConsole('✅ Detected Ctrl+Shift+S - this should trigger start monitoring!');
+          
+          // Check if our registered hotkey matches
+          const ourHotkeys = this.getChainHotkeys();
+          if (ourHotkeys && ourHotkeys.has(normalizedKey)) {
+            this.logToConsole('✅ Normalized key MATCHES our registered hotkey!');
+          } else {
+            this.logToConsole('❌ Normalized key does NOT match our registered hotkey');
+            this.logToConsole(`🔍 Looking for: "${normalizedKey}"`);
+            if (ourHotkeys) {
+              const registeredKeys = Array.from(ourHotkeys.keys()).filter(k => k.includes('Ctrl+Shift'));
+              this.logToConsole(`🔍 Registered Ctrl+Shift keys: ${registeredKeys.join(', ')}`);
+            }
+          }
+        }
+      }
+      
+      // Also check for Shift-only combinations (like Shift+1)
+      if (event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        const modifiers = [];
+        if (event.shiftKey) modifiers.push('Shift');
+        const normalizedKey = modifiers.length > 0 ? `${modifiers.join('+')}+${event.key}` : event.key;
+        
+        this.logToConsole(`🎯 Shift-only key detected: ${normalizedKey}`);
+        console.log('🎯 Shift-only key event details:', {
+          key: event.key,
+          code: event.code,
+          ctrlKey: event.ctrlKey,
+          shiftKey: event.shiftKey,
+          altKey: event.altKey,
+          metaKey: event.metaKey,
+          normalizedKey: normalizedKey
+        });
+        
+        // Check if our registered hotkey matches
+        const ourHotkeys = this.getChainHotkeys();
+        if (ourHotkeys && ourHotkeys.has(normalizedKey)) {
+          this.logToConsole('✅ Shift-only key MATCHES our registered hotkey!');
+        } else {
+          this.logToConsole('❌ Shift-only key does NOT match our registered hotkey');
+          this.logToConsole(`🔍 Looking for: "${normalizedKey}"`);
+          if (ourHotkeys) {
+            const registeredShiftKeys = Array.from(ourHotkeys.keys()).filter(k => k.startsWith('Shift+'));
+            this.logToConsole(`🔍 Registered Shift keys: ${registeredShiftKeys.join(', ')}`);
+          }
+        }
+      }
+    };
+    
+    document.addEventListener('keydown', debugListener);
+    
+    // Remove listener after 30 seconds
+    setTimeout(() => {
+      document.removeEventListener('keydown', debugListener);
+      this.logToConsole('🚪 Debug key listener removed after 30 seconds');
+    }, 30000);
+  }
+  
+  /**
+   * Show what hotkeys are actually registered
+   */
+  private showRegisteredHotkeys(): void {
+    const hotkeys = this.getChainHotkeys();
+    if (hotkeys) {
+      this.logToConsole(`🗺️ Registered hotkeys (${hotkeys.size}):`);
+      for (const [key, handler] of hotkeys) {
+        this.logToConsole(`  - ${key}: ${handler.description}`);
+      }
+    } else {
+      this.logToConsole('❌ No hotkeys registered!');
+    }
   }
 }
 

@@ -11,7 +11,6 @@
 
 import MainContentImpl from "./MainContentImpl";
 import type { MainContent } from "./MainContent";
-import type { HotkeyProvider } from "../contexts/LayoutContext";
 import type { ActivePage, PageInfo } from "../interfaces/ActivePage";
 import {
   ChainHotkeyProvider,
@@ -27,7 +26,7 @@ export interface PageComponentConfig {
   pagePath?: string; // URL path for this page
 }
 
-export abstract class PageComponent implements ChainHotkeyProvider, HotkeyProvider, ActivePage {
+export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
   protected initialized: boolean = false;
   protected destroyed: boolean = false;
   protected mainContent: MainContentImpl;
@@ -97,11 +96,10 @@ export abstract class PageComponent implements ChainHotkeyProvider, HotkeyProvid
       // Set up keyboard shortcuts
       this.setupKeyboardShortcuts();
       
-      // Register this page as chain hotkey provider (new system)
+      // Register this page as chain hotkey provider
+      console.log(`🔑 ${this.constructor.name} - Registering as chain hotkey provider...`);
       this.chainProviderUnsubscriber = this.layoutContext.registerChainProvider(this);
-      
-      // Also register as active hotkey provider for backward compatibility
-      this.layoutContext.setActiveHotkeyProvider(this);
+      console.log(`✅ ${this.constructor.name} - Chain provider registered successfully`);
       
       // Register this page as the active page
       this.layoutContext.setActivePage(this);
@@ -129,10 +127,7 @@ export abstract class PageComponent implements ChainHotkeyProvider, HotkeyProvid
     try {
       console.log(`${this.constructor.name}: Destroying...`);
 
-      // Remove this page from active hotkeys
-      this.layoutContext.removeActiveHotkeyProvider(this);
-      
-      // Cleanup chain provider (new system)
+      // Cleanup chain provider
       this.cleanupChainProvider();
       
       // Deactivate this page if it's currently active
@@ -382,35 +377,9 @@ export abstract class PageComponent implements ChainHotkeyProvider, HotkeyProvid
     return this.mainContent.getLayoutContext();
   }
   
-  // =================================================================================
-  // HotkeyProvider Implementation
-  // =================================================================================
-  
-  /**
-   * Default implementation - provides common page hotkeys
-   * Override in subclasses to provide additional page-specific hotkeys
-   */
-  getPageHotkeys(): Map<string, (event: KeyboardEvent) => void | boolean> | null {
-    const hotkeys = new Map<string, (event: KeyboardEvent) => void | boolean>();
-    
-    // Common ESC key handler for pages (lower priority than global)
-    hotkeys.set("Escape", (event: KeyboardEvent) => {
-      this.handleEscape(event);
-      return true; // Allow event to continue (don't prevent default)
-    });
-    
-    return hotkeys;
-  }
-  
-  /**
-   * Component identifier for hotkey management
-   */
-  getHotkeyComponentId(): string {
-    return this.constructor.name;
-  }
   
   // =================================================================================
-  // ChainHotkeyProvider Implementation (New System)
+  // ChainHotkeyProvider Implementation
   // =================================================================================
   
   /**
@@ -428,33 +397,30 @@ export abstract class PageComponent implements ChainHotkeyProvider, HotkeyProvid
   }
   
   /**
-   * Get chain hotkeys - converts legacy getPageHotkeys() to chain format
+   * Get chain hotkeys - override in subclasses to provide hotkeys
+   * Base implementation provides common ESC key handling
    */
   getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
-    const legacyHotkeys = this.getPageHotkeys();
-    if (!legacyHotkeys || legacyHotkeys.size === 0) {
-      return null;
-    }
+    const hotkeys = new Map<string, ChainHotkeyHandler>();
     
-    const chainHotkeys = new Map<string, ChainHotkeyHandler>();
+    // Common ESC key handler for pages (cooperative)
+    hotkeys.set('Escape', {
+      key: 'Escape',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        console.log(`🔤 ${this.constructor.name} - ESC key pressed via chain system`);
+        this.handleEscape(ctx.event);
+        ctx.next(); // Allow other handlers to also process ESC
+      },
+      description: `ESC key handling for ${this.constructor.name}`,
+      priority: this.getProviderPriority(),
+      enable: () => { /* Always enabled */ },
+      disable: () => { /* Could disable if needed */ },
+      isEnabled: () => this.initialized && !this.destroyed
+    });
     
-    for (const [key, legacyHandler] of legacyHotkeys) {
-      chainHotkeys.set(key, {
-        key,
-        providerId: this.getHotkeyProviderId(),
-        enabled: true,
-        handler: (ctx: HotkeyExecutionContext) => {
-          this.handleChainHotkey(key, ctx, legacyHandler);
-        },
-        description: `Page hotkey: ${key} for ${this.constructor.name}`,
-        priority: this.getProviderPriority(),
-        enable: () => { /* Page hotkeys are always enabled when page is active */ },
-        disable: () => { /* Could disable specific hotkeys if needed */ },
-        isEnabled: () => this.initialized && !this.destroyed
-      });
-    }
-    
-    return chainHotkeys;
+    return hotkeys;
   }
   
   /**
@@ -462,38 +428,6 @@ export abstract class PageComponent implements ChainHotkeyProvider, HotkeyProvid
    */
   getDefaultChainBehavior(): 'next' | 'break' {
     return 'next'; // Pages are cooperative, allow fallback handlers
-  }
-  
-  /**
-   * Handle chain hotkey execution with legacy compatibility
-   */
-  private handleChainHotkey(
-    key: string, 
-    ctx: HotkeyExecutionContext, 
-    legacyHandler: (event: KeyboardEvent) => void | boolean
-  ): void {
-    console.log(`🔤 ${this.constructor.name} - Chain hotkey: ${key}`);
-    
-    try {
-      // Call the legacy handler
-      const result = legacyHandler(ctx.event);
-      
-      // Handle legacy return values
-      if (result === false) {
-        // Legacy convention: false = prevent default and stop
-        ctx.preventDefault();
-        ctx.break();
-      } else if (result === true || result === undefined) {
-        // Legacy convention: true/undefined = continue normally
-        // For pages, usually continue to allow lower priority handlers
-        ctx.next();
-      }
-      
-      console.log(`✅ ${this.constructor.name} - Handled ${key}: ${result === false ? 'break' : 'next'}`);
-    } catch (error) {
-      console.error(`❌ ${this.constructor.name} - Error handling ${key}:`, error);
-      ctx.next(); // Continue chain on error
-    }
   }
   
   /**
