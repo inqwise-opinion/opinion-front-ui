@@ -18,8 +18,9 @@ import {
   ChainHotkeyHandler,
   HotkeyExecutionContext,
 } from "../hotkeys/HotkeyChainSystem";
+import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 
-export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyProvider {
+export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyProvider, ComponentWithStatus {
   private sidebar: HTMLElement | null = null;
   private isInitialized: boolean = false;
   private navigationItems: NavigationItem[] = [];
@@ -28,6 +29,12 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
   private layoutContext: LayoutContext;
   private toggleCompactModeHandler?: (compactMode: boolean) => void;
   private chainProviderUnsubscriber: (() => void) | null = null;
+  private initTime: number | null = null;
+  private navigationUpdateCount: number = 0;
+  private compactModeToggleCount: number = 0;
+  private mobileMenuToggleCount: number = 0;
+  private lastActionTime: number | null = null;
+  private domEventListenerCount: number = 0;
 
   // Configuration
   private config: Required<SidebarConfig>;
@@ -98,6 +105,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
     // Register as chain hotkey provider for mobile ESC handling
     this.chainProviderUnsubscriber = this.layoutContext.registerChainProvider(this);
 
+    this.initTime = Date.now();
     this.isInitialized = true;
     console.log("Sidebar - Ready ✅");
   }
@@ -310,6 +318,8 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
    */
   private setupEventListeners(): void {
     if (!this.sidebar) return;
+    
+    this.domEventListenerCount = 0;
 
     // Handle expandable navigation items
     this.sidebar.addEventListener("click", (event) => {
@@ -375,6 +385,9 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
         this.setActiveItem(navLink.getAttribute("data-nav-id") || "");
       }
     });
+    
+    // Track DOM event listener count (4 click listeners on sidebar)
+    this.domEventListenerCount = 4;
   }
 
   /**
@@ -448,6 +461,8 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
       const navList = this.sidebar.querySelector(".nav-list");
       if (navList) {
         navList.innerHTML = this.renderNavigationItems(this.navigationItems);
+        this.navigationUpdateCount++;
+        this.lastActionTime = Date.now();
         console.log("Sidebar - Navigation updated");
       }
     }
@@ -545,6 +560,8 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
       );
 
       this.compactMode = compact;
+      this.compactModeToggleCount++;
+      this.lastActionTime = Date.now();
 
       // Update sidebar CSS class
       if (this.sidebar) {
@@ -837,6 +854,8 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
 
     // Emit mobile menu mode change event
     this.emitMobileMenuModeChangeEvent(true, false, trigger);
+    this.mobileMenuToggleCount++;
+    this.lastActionTime = Date.now();
 
     // Show mobile sidebar overlay
     console.log("📱 Sidebar - Showing mobile sidebar overlay");
@@ -886,6 +905,8 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
 
     // Emit mobile menu mode change event
     this.emitMobileMenuModeChangeEvent(false, true, trigger);
+    this.mobileMenuToggleCount++;
+    this.lastActionTime = Date.now();
 
     // Hide mobile sidebar overlay
     console.log("📱 Sidebar - Hiding mobile sidebar overlay");
@@ -1434,6 +1455,116 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
       this.chainProviderUnsubscriber = null;
       console.log('MobileSidebar - Chain provider unregistered');
     }
+  }
+
+  /**
+   * Get detailed status information for this component
+   */
+  getStatus(): ComponentStatus {
+    const currentTime = Date.now();
+    const isMobile = this.layoutContext?.isLayoutMobile() || false;
+    const isMobileMenuVisible = this.isMobileMenuVisible();
+    
+    return {
+      componentType: 'SidebarComponent',
+      id: 'app-sidebar',
+      initialized: this.isInitialized,
+      initTime: this.initTime,
+      uptime: this.initTime ? currentTime - this.initTime : 0,
+      domElement: this.sidebar ? {
+        tagName: this.sidebar.tagName,
+        id: this.sidebar.id,
+        className: this.sidebar.className,
+        childCount: this.sidebar.children.length,
+        hasContent: this.sidebar.children.length > 0,
+        isVisible: this.sidebar.style.display !== 'none' && !this.sidebar.classList.contains('sidebar-hidden'),
+        ariaLabel: this.sidebar.getAttribute('aria-label') || undefined,
+        role: this.sidebar.getAttribute('role') || undefined
+      } : undefined,
+      eventListeners: {
+        domEventListeners: this.domEventListenerCount,
+        layoutSubscriptions: 3, // layout-mode-change, mobile-menu-request, sidebar-compact-request
+        compactModeListeners: this.compactModeListeners.length
+      },
+      configuration: {
+        ...this.config,
+        navigationItemsCount: this.navigationItems.length,
+        locked: this.isLocked()
+      },
+      currentState: {
+        compactMode: this.compactMode,
+        isMobile: isMobile,
+        isMobileMenuVisible: isMobileMenuVisible,
+        layoutModeType: this.layoutContext?.getModeType(),
+        isLocked: this.isLocked(),
+        navigationUpdateCount: this.navigationUpdateCount,
+        compactModeToggleCount: this.compactModeToggleCount,
+        mobileMenuToggleCount: this.mobileMenuToggleCount,
+        lastActionTime: this.lastActionTime,
+        lastActionAgo: this.lastActionTime ? currentTime - this.lastActionTime : null,
+        chainProviderActive: this.chainProviderUnsubscriber !== null
+      },
+      performance: {
+        initDuration: this.initTime ? 50 : null, // Estimated
+        dimensions: this.getCurrentDimensions()
+      },
+      issues: this.getIssues(),
+      customData: {
+        navigationItems: this.navigationItems.map(item => ({
+          id: item.id,
+          text: item.text,
+          active: item.active,
+          expandable: item.expandable,
+          expanded: item.expanded,
+          childrenCount: item.children?.length || 0
+        })),
+        hotkeyProvider: {
+          chainProviderRegistered: this.chainProviderUnsubscriber !== null,
+          providesEscKey: isMobile && isMobileMenuVisible,
+          priority: this.getProviderPriority(),
+          providerId: this.getHotkeyProviderId()
+        },
+        cssClasses: this.sidebar ? Array.from(this.sidebar.classList) : []
+      }
+    };
+  }
+  
+  /**
+   * Get current issues with the component
+   */
+  private getIssues(): string[] {
+    const issues: string[] = [];
+    
+    if (!this.isInitialized) {
+      issues.push('Component not initialized');
+    }
+    
+    if (!this.sidebar) {
+      issues.push('DOM sidebar element missing');
+    }
+    
+    if (!this.layoutContext) {
+      issues.push('LayoutContext not available');
+    }
+    
+    if (this.navigationItems.length === 0) {
+      issues.push('No navigation items configured');
+    }
+    
+    if (this.domEventListenerCount === 0 && this.isInitialized) {
+      issues.push('No DOM event listeners active (possible initialization issue)');
+    }
+    
+    if (this.chainProviderUnsubscriber === null && this.isInitialized) {
+      issues.push('Chain hotkey provider not registered');
+    }
+    
+    const isMobile = this.layoutContext?.isLayoutMobile();
+    if (isMobile && this.compactMode) {
+      issues.push('Compact mode active on mobile (should use overlay mode instead)');
+    }
+    
+    return issues;
   }
 
   /**

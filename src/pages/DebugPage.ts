@@ -83,6 +83,7 @@ export class DebugPage extends PageComponent {
     // Now that chain provider is registered, update status displays
     this.updateViewportInfoFromContext(this.mainContent.getLayoutContext());
     this.updateLayoutStatus();
+    this.updateComponentStatusDetails();
     this.updateHotkeyStatus();
     
     console.log("✅ DEBUGPAGE - onPostInit() complete");
@@ -171,6 +172,17 @@ export class DebugPage extends PageComponent {
             </div>
 
             <div style="margin: 30px 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #333; margin: 0;">🏗️ Component Status Details</h3>
+                <div style="display: flex; gap: 8px;">
+                  <button id="toggle_all_components" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 11px; transition: all 0.2s ease;" onmouseover="this.style.background='#545b62'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#6c757d'; this.style.transform='scale(1)'">🔽 Expand All</button>
+                  <button id="refresh_component_status" style="padding: 8px 16px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#138496'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#17a2b8'; this.style.transform='scale(1)'">🔄 Refresh</button>
+                </div>
+              </div>
+              <div id="component_status_details" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; font-family: monospace; font-size: 12px;">Loading component status...</div>
+            </div>
+
+            <div style="margin: 30px 0;">
               <h3 style="color: #333; margin-bottom: 15px;">📡 Layout Events Monitor</h3>
               <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                 <div style="margin-bottom: 15px;">
@@ -210,7 +222,9 @@ export class DebugPage extends PageComponent {
                       <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+S</code> Start Monitor<br>
                       <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+X</code> Stop Monitor<br>
                       <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+C</code> Clear Log<br>
-                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+T</code> Test Event
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+T</code> Test Event<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+R</code> Refresh Status<br>
+                      <code style="background: #f8f9fa; padding: 2px 4px; border-radius: 2px;">Ctrl+Shift+E</code> Expand/Collapse
                     </div>
                     <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 4px;">
                       <strong style="color: #495057;">💬 Message Testing:</strong><br>
@@ -915,6 +929,7 @@ export class DebugPage extends PageComponent {
 
       // Update layout status display
       this.updateLayoutStatus();
+      this.updateComponentStatusDetails();
       this.updateHotkeyStatus();
 
       // Log the layout mode change
@@ -1061,8 +1076,9 @@ export class DebugPage extends PageComponent {
       let subscriberCount = 'N/A';
       let eventBusEventCount = 'N/A';
       try {
-        if (typeof this.layoutContext.getEventBusDebugInfo === 'function') {
-          const debugInfo = this.layoutContext.getEventBusDebugInfo();
+        const ctx = this.layoutContext as any;
+        if (ctx.getEventBusDebugInfo && typeof ctx.getEventBusDebugInfo === 'function') {
+          const debugInfo = ctx.getEventBusDebugInfo();
           subscriberCount = debugInfo.totalConsumers.toString();
           eventBusEventCount = debugInfo.eventCount.toString();
         }
@@ -1138,7 +1154,281 @@ export class DebugPage extends PageComponent {
       `;
     }
   }
-
+  
+  /**
+   * Update detailed component status information
+   */
+  private updateComponentStatusDetails(): void {
+    const statusContainer = document.getElementById("component_status_details");
+    if (!statusContainer || !this.layoutContext) {
+      return;
+    }
+    
+    const components = this.layoutContext.getRegisteredComponents();
+    let statusHtml = `<div style="margin-bottom: 15px; font-weight: bold; color: #495057;">🔍 Detailed Component Diagnostics</div>`;
+    
+    // Helper function to format status info
+    const formatComponentStatus = (componentName: string, component: any) => {
+      if (!component || typeof component.getStatus !== 'function') {
+        return `<div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #ffc107;">
+          <strong style="color: #856404;">${componentName}:</strong> ❌ No status method available
+        </div>`;
+      }
+      
+      try {
+        const status = component.getStatus();
+        const uptime = status.uptime ? `${Math.floor(status.uptime / 1000)}s` : 'N/A';
+        const lastAction = status.currentState?.lastActionAgo ? 
+          `${Math.floor(status.currentState.lastActionAgo / 1000)}s ago` : 'Never';
+        const issues = status.issues && status.issues.length > 0;
+        
+        const bgColor = issues ? '#f8d7da' : '#d1edff';
+        const borderColor = issues ? '#dc3545' : '#0dcaf0';
+        const statusColor = issues ? '#721c24' : '#055160';
+        const componentId = status.id || componentName.toLowerCase().replace(/\s+/g, '-');
+        
+        // Quick status summary for collapsed view
+        const quickStatus = [];
+        if (status.initialized) quickStatus.push('✅ Init');
+        if (status.domElement) quickStatus.push('🏠 DOM');
+        if (status.eventListeners?.layoutSubscriptions > 0) quickStatus.push(`📡 ${status.eventListeners.layoutSubscriptions}`);
+        if (status.issues && status.issues.length > 0) quickStatus.push(`⚠️ ${status.issues.length}`);
+        const quickStatusText = quickStatus.length > 0 ? ` | ${quickStatus.join(' ')}` : '';
+        
+        let html = `<div style="background: ${bgColor}; padding: 12px; border-radius: 4px; margin-bottom: 15px; border-left: 3px solid ${borderColor};">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer;" onclick="debugPageToggleComponent('${componentId}')">
+            <div style="color: ${statusColor}; font-weight: bold;">${componentName} (${status.componentType})<span style="font-weight: normal; font-size: 11px; opacity: 0.8;">${quickStatusText}</span></div>
+            <div style="color: ${statusColor}; font-size: 14px; user-select: none;" id="toggle-${componentId}">▶</div>
+          </div>
+          <div id="details-${componentId}" style="display: none;">`;
+        
+        // Basic status info
+        html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 8px;">`;
+        html += `<div>📊 <strong>Status:</strong> ${status.initialized ? '✅ Initialized' : '❌ Not Initialized'}</div>`;
+        html += `<div>⏱️ <strong>Uptime:</strong> ${uptime}</div>`;
+        html += `<div>🔄 <strong>Last Action:</strong> ${lastAction}</div>`;
+        html += `<div>🏠 <strong>DOM ID:</strong> ${status.domElement?.id || 'N/A'}</div>`;
+        html += `</div>`;
+        
+        // Event listeners and subscriptions
+        if (status.eventListeners) {
+          html += `<div style="margin: 8px 0;"><strong>Event Listeners:</strong> `;
+          const listeners = [];
+          if (status.eventListeners.domEvents) listeners.push(`DOM: ${status.eventListeners.domEvents}`);
+          if (status.eventListeners.layoutSubscriptions) listeners.push(`Layout: ${status.eventListeners.layoutSubscriptions}`);
+          if (status.eventListeners.eventBusSubscriptions) listeners.push(`EventBus: ${status.eventListeners.eventBusSubscriptions}`);
+          if (status.eventListeners.compactModeListeners) listeners.push(`Compact: ${status.eventListeners.compactModeListeners}`);
+          if (status.eventListeners.closeButtonListeners) listeners.push(`Close Buttons: ${status.eventListeners.closeButtonListeners}`);
+          html += listeners.join(', ') || 'None';
+          html += `</div>`;
+        }
+        
+        // Current state highlights
+        if (status.currentState) {
+          const state = status.currentState;
+          html += `<div style="margin: 8px 0;"><strong>Current State:</strong> `;
+          const stateInfo = [];
+          
+          // Component-specific state info
+          if (componentName.includes('Sidebar')) {
+            stateInfo.push(`Mode: ${state.compactMode ? 'Compact' : 'Expanded'}`);
+            stateInfo.push(`Mobile: ${state.isMobile ? 'Yes' : 'No'}`);
+            stateInfo.push(`Nav Items: ${status.configuration?.navigationItemsCount || 0}`);
+          } else if (componentName.includes('Header')) {
+            stateInfo.push(`User Menu: ${state.userMenuInitialized ? 'Ready' : 'Not Ready'}`);
+            stateInfo.push(`Updates: ${state.updateCount || 0}`);
+          } else if (componentName.includes('MainContent')) {
+            stateInfo.push(`Content Updates: ${state.contentUpdateCount || 0}`);
+            stateInfo.push(`Loading: ${state.isLoading ? 'Yes' : 'No'}`);
+          } else if (componentName.includes('Footer')) {
+            stateInfo.push(`Nav Clicks: ${state.navigationClickCount || 0}`);
+            stateInfo.push(`Layout Updates: ${state.layoutUpdateCount || 0}`);
+          } else if (componentName.includes('Messages')) {
+            stateInfo.push(`Active: ${state.activeMessagesCount || 0}`);
+            stateInfo.push(`Timers: ${state.activeAutoHideTimers || 0}`);
+            if (state.messagesByType) {
+              const types = Object.entries(state.messagesByType).filter(([_, count]) => (count as number) > 0);
+              if (types.length > 0) {
+                stateInfo.push(`Types: ${types.map(([type, count]) => `${type}:${count}`).join(', ')}`);
+              }
+            }
+          }
+          
+          html += stateInfo.join(', ') || 'Default';
+          html += `</div>`;
+        }
+        
+        // Issues
+        if (status.issues && status.issues.length > 0) {
+          html += `<div style="margin: 8px 0; color: #721c24;"><strong>⚠️ Issues:</strong><ul style="margin: 4px 0 0 20px; padding: 0;">`;
+          status.issues.forEach(issue => {
+            html += `<li>${issue}</li>`;
+          });
+          html += `</ul></div>`;
+        } else {
+          html += `<div style="margin: 8px 0; color: ${statusColor};"><strong>✅ Status:</strong> No issues detected</div>`;
+        }
+        
+        // Performance info
+        if (status.performance) {
+          const perf = status.performance;
+          html += `<div style="margin: 8px 0; font-size: 11px; color: #666;"><strong>Performance:</strong> `;
+          const perfInfo = [];
+          if (perf.initDuration) perfInfo.push(`Init: ${perf.initDuration}ms`);
+          if (perf.dimensions) perfInfo.push(`Dimensions: ${perf.dimensions.width}px`);
+          if (perf.averageMessageLifetime) perfInfo.push(`Avg Message Life: ${Math.floor(perf.averageMessageLifetime / 1000)}s`);
+          html += perfInfo.join(', ') || 'N/A';
+          html += `</div>`;
+        }
+        
+        html += `</div></div>`; // Close details div and main component div
+        return html;
+      } catch (error) {
+        return `<div style="background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #dc3545;">
+          <strong style="color: #721c24;">${componentName}:</strong> ❌ Error getting status: ${error.message}
+        </div>`;
+      }
+    };
+    
+    // Add status for each component
+    statusHtml += formatComponentStatus('Header Component', components.header);
+    statusHtml += formatComponentStatus('Sidebar Component', components.sidebar);
+    statusHtml += formatComponentStatus('Main Content', components.mainContent);
+    statusHtml += formatComponentStatus('Footer Component', components.footer);
+    statusHtml += formatComponentStatus('Messages Component', components.messages);
+    
+    // Summary
+    const totalComponents = [components.header, components.sidebar, components.mainContent, components.footer, components.messages]
+      .filter(c => c).length;
+    const componentsWithStatus = [components.header, components.sidebar, components.mainContent, components.footer, components.messages]
+      .filter(c => c && typeof (c as any).getStatus === 'function').length;
+    
+    statusHtml += `<div style="background: #e2e3e5; padding: 10px; border-radius: 4px; margin-top: 15px; border-left: 3px solid #6c757d;">
+      <strong style="color: #495057;">📋 Summary:</strong> ${componentsWithStatus}/${totalComponents} components provide detailed status information
+    </div>`;
+    
+    statusContainer.innerHTML = statusHtml;
+    
+    // Add the toggle function to the global scope
+    (window as any).debugPageToggleComponent = this.toggleComponentDetails.bind(this);
+    
+    // Update toggle all button state
+    setTimeout(() => this.updateToggleAllButtonState(), 10);
+  }
+  
+  /**
+   * Refresh component status display
+   */
+  private refreshComponentStatus(): void {
+    console.log('🔄 DebugPage - Refreshing component status...');
+    
+    // Show loading state
+    const statusContainer = document.getElementById("component_status_details");
+    const refreshBtn = document.getElementById("refresh_component_status") as HTMLButtonElement;
+    
+    if (refreshBtn) {
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = '⏳ Refreshing...';
+      refreshBtn.style.opacity = '0.7';
+    }
+    
+    if (statusContainer) {
+      statusContainer.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">🔄 Refreshing component status...</div>';
+    }
+    
+    // Use setTimeout to allow UI to update
+    setTimeout(() => {
+      this.updateComponentStatusDetails();
+      
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = '🔄 Refresh';
+        refreshBtn.style.opacity = '1';
+      }
+      
+      this.logToConsole('🔄 Component status refreshed');
+    }, 100);
+  }
+  
+  /**
+   * Toggle component details visibility
+   */
+  private toggleComponentDetails(componentId: string): void {
+    const detailsEl = document.getElementById(`details-${componentId}`);
+    const toggleEl = document.getElementById(`toggle-${componentId}`);
+    
+    if (detailsEl && toggleEl) {
+      const isVisible = detailsEl.style.display !== 'none';
+      detailsEl.style.display = isVisible ? 'none' : 'block';
+      toggleEl.textContent = isVisible ? '▶' : '▼';
+      
+      console.log(`🔽 Component ${componentId} ${isVisible ? 'collapsed' : 'expanded'}`);
+      
+      // Update toggle all button state
+      this.updateToggleAllButtonState();
+    }
+  }
+  
+  /**
+   * Toggle all components expanded/collapsed
+   */
+  private toggleAllComponents(): void {
+    const componentBoxes = [
+      'app-header', 'app-sidebar', 'main-content', 'app-footer', 'app-error-messages'
+    ];
+    
+    // Check if any components are collapsed to determine action
+    const anyCollapsed = componentBoxes.some(id => {
+      const detailsEl = document.getElementById(`details-${id}`);
+      return detailsEl && detailsEl.style.display === 'none';
+    });
+    
+    const expand = anyCollapsed;
+    
+    componentBoxes.forEach(componentId => {
+      const detailsEl = document.getElementById(`details-${componentId}`);
+      const toggleEl = document.getElementById(`toggle-${componentId}`);
+      
+      if (detailsEl && toggleEl) {
+        detailsEl.style.display = expand ? 'block' : 'none';
+        toggleEl.textContent = expand ? '▼' : '▶';
+      }
+    });
+    
+    this.updateToggleAllButtonState();
+    this.logToConsole(`🔽 ${expand ? 'Expanded' : 'Collapsed'} all component details`);
+  }
+  
+  /**
+   * Update the toggle all button text based on current state
+   */
+  private updateToggleAllButtonState(): void {
+    const toggleAllBtn = document.getElementById('toggle_all_components');
+    if (!toggleAllBtn) return;
+    
+    const componentBoxes = [
+      'app-header', 'app-sidebar', 'main-content', 'app-footer', 'app-error-messages'
+    ];
+    
+    const anyCollapsed = componentBoxes.some(id => {
+      const detailsEl = document.getElementById(`details-${id}`);
+      return detailsEl && detailsEl.style.display === 'none';
+    });
+    
+    const allCollapsed = componentBoxes.every(id => {
+      const detailsEl = document.getElementById(`details-${id}`);
+      return detailsEl && detailsEl.style.display === 'none';
+    });
+    
+    if (allCollapsed) {
+      toggleAllBtn.innerHTML = '🔽 Expand All';
+    } else if (anyCollapsed) {
+      toggleAllBtn.innerHTML = '🔽 Expand All';
+    } else {
+      toggleAllBtn.innerHTML = '🔽 Collapse All';
+    }
+  }
+  
   /**
    * Log message to test console
    */
@@ -1163,6 +1453,8 @@ export class DebugPage extends PageComponent {
     const stopBtn = document.getElementById("stop_event_monitor");
     const clearBtn = document.getElementById("clear_event_log");
     const triggerBtn = document.getElementById("trigger_layout_test");
+    const refreshStatusBtn = document.getElementById("refresh_component_status");
+    const toggleAllBtn = document.getElementById("toggle_all_components");
 
     if (startBtn) {
       startBtn.addEventListener("click", () => this.startEventMonitoring());
@@ -1175,6 +1467,12 @@ export class DebugPage extends PageComponent {
     }
     if (triggerBtn) {
       triggerBtn.addEventListener("click", () => this.triggerLayoutTestEvent());
+    }
+    if (refreshStatusBtn) {
+      refreshStatusBtn.addEventListener("click", () => this.refreshComponentStatus());
+    }
+    if (toggleAllBtn) {
+      toggleAllBtn.addEventListener("click", () => this.toggleAllComponents());
     }
 
     // Auto-start monitoring on page load for convenience
@@ -1403,6 +1701,42 @@ export class DebugPage extends PageComponent {
         ctx.break();
       },
       description: 'Trigger layout test event',
+      priority: this.getProviderPriority(),
+      enable: () => { /* Always enabled */ },
+      disable: () => { /* Could disable */ },
+      isEnabled: () => this.initialized && !this.destroyed
+    });
+    
+    hotkeys.set('Ctrl+Shift+R', {
+      key: 'Ctrl+Shift+R',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        console.log('🎯 DebugPage: Ctrl+Shift+R pressed - Refresh component status');
+        this.refreshComponentStatus();
+        this.logToConsole('🎯 Hotkey: Refreshed component status (Ctrl+Shift+R)');
+        ctx.preventDefault();
+        ctx.break();
+      },
+      description: 'Refresh component status',
+      priority: this.getProviderPriority(),
+      enable: () => { /* Always enabled */ },
+      disable: () => { /* Could disable */ },
+      isEnabled: () => this.initialized && !this.destroyed
+    });
+    
+    hotkeys.set('Ctrl+Shift+E', {
+      key: 'Ctrl+Shift+E',
+      providerId: this.getHotkeyProviderId(),
+      enabled: true,
+      handler: (ctx: HotkeyExecutionContext) => {
+        console.log('🎯 DebugPage: Ctrl+Shift+E pressed - Toggle all components');
+        this.toggleAllComponents();
+        this.logToConsole('🎯 Hotkey: Toggled all component details (Ctrl+Shift+E)');
+        ctx.preventDefault();
+        ctx.break();
+      },
+      description: 'Toggle all component details',
       priority: this.getProviderPriority(),
       enable: () => { /* Always enabled */ },
       disable: () => { /* Could disable */ },

@@ -17,6 +17,7 @@ import { getLayoutContext } from "../contexts/index";
 import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
 import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
 import { AppHeader, HeaderUser } from "./AppHeader";
+import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 import {
   ChainHotkeyProvider,
   ChainHotkeyHandler,
@@ -31,7 +32,7 @@ export interface HeaderConfig {
   showUserMenu?: boolean; // Show user menu (default: true)
 }
 
-export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider {
+export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentWithStatus {
   private userMenuHandler?: (userMenu: UserMenu) => void;
   private container: HTMLElement | null = null;
   private userMenu: UserMenu | null = null;
@@ -41,6 +42,10 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider {
   private layoutUnsubscribers: Array<() => void> = [];
   private config: Required<HeaderConfig>;
   private chainProviderUnsubscriber: (() => void) | null = null;
+  private isInitialized: boolean = false;
+  private initTime: number | null = null;
+  private domEventListeners: number = 0;
+  private updateCount: number = 0;
 
   constructor(config: HeaderConfig = {}, layoutContext?: LayoutContext) {
     // Apply configuration with defaults
@@ -89,9 +94,19 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider {
 
       // Setup event listeners
       this.setupEventListeners();
+      
+      // Setup layout subscriptions
+      this.subscribeToLayoutContext();
 
       this.layoutContext.registerHeader(this);
+      
+      // Register as chain hotkey provider for ESC key handling (if user menu enabled)
+      if (this.config.showUserMenu) {
+        this.chainProviderUnsubscriber = this.layoutContext.registerChainProvider(this);
+      }
 
+      this.isInitialized = true;
+      this.initTime = Date.now();
       console.log("AppHeaderImpl - Ready");
     } catch (error) {
       console.error("AppHeaderImpl - Initialization failed:", error);
@@ -348,6 +363,7 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider {
         this.layoutContext.emit("mobile-menu-request", requestEvent.data);
         console.log("📡 AppHeaderImpl - Mobile menu request event emitted");
       });
+      this.domEventListeners++;
     }
   }
 
@@ -430,6 +446,7 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider {
    */
   updateUser(user: HeaderUser): void {
     this.user = user;
+    this.updateCount++;
 
     console.log(`AppHeaderImpl - updateUser called: ${user.username}`);
 
@@ -638,6 +655,40 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider {
   }
 
   /**
+   * Subscribe to layout context events
+   */
+  private subscribeToLayoutContext(): void {
+    console.log("AppHeaderImpl - Subscribing to layout context events...");
+    
+    // Subscribe to layout mode changes to update header layout
+    const layoutModeChangeUnsubscribe = this.layoutContext.subscribe(
+      "layout-mode-change",
+      (event: LayoutEvent) => {
+        console.log("AppHeaderImpl - Received layout mode change", event.data);
+        this.updateHeaderLayout(this.layoutContext);
+      }
+    );
+    this.layoutUnsubscribers.push(layoutModeChangeUnsubscribe);
+    
+    // Subscribe to sidebar compact mode changes to update header position
+    const compactModeChangeUnsubscribe = this.layoutContext.subscribe(
+      "sidebar-compact-mode-change", 
+      (event: LayoutEvent) => {
+        console.log("AppHeaderImpl - Received sidebar compact mode change", event.data);
+        this.updateHeaderLayout(this.layoutContext);
+      }
+    );
+    this.layoutUnsubscribers.push(compactModeChangeUnsubscribe);
+    
+    // Set initial layout based on current layout mode
+    this.updateHeaderLayout(this.layoutContext);
+    
+    console.log(
+      "AppHeaderImpl - Successfully subscribed to layout context events ✅",
+    );
+  }
+
+  /**
    * Get current header position information
    */
   public getHeaderPosition(): {
@@ -808,6 +859,91 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider {
     // For now, always handle if user menu is configured and available
     // In the future, this could check if the user menu is actually open
     return this.config.showUserMenu && !!this.userMenu;
+  }
+
+  /**
+   * Get current component status for debugging
+   */
+  getStatus(): ComponentStatus {
+    const containerDimensions = this.container ? {
+      width: this.container.offsetWidth,
+      height: this.container.offsetHeight,
+      offsetTop: this.container.offsetTop,
+      offsetLeft: this.container.offsetLeft,
+    } : undefined;
+
+    const issues: string[] = [];
+    const warnings: string[] = [];
+
+    // Check for potential issues
+    if (!this.container) {
+      issues.push('DOM container element not found');
+    }
+    if (this.config.showUserMenu && !this.userMenu) {
+      warnings.push('User menu enabled but not initialized');
+    }
+    if (this.layoutUnsubscribers.length === 0) {
+      warnings.push('No layout event subscriptions active');
+    }
+
+    const currentTime = Date.now();
+    const uptime = this.initTime ? currentTime - this.initTime : 0;
+    
+    return {
+      componentType: 'AppHeaderImpl',
+      id: 'app-header',
+      initialized: this.isInitialized,
+      initTime: this.initTime,
+      uptime: uptime,
+      domElement: this.container ? {
+        tagName: this.container.tagName,
+        id: this.container.id,
+        className: this.container.className,
+        childCount: this.container.children.length,
+        hasContent: this.container.children.length > 0,
+        isVisible: this.container.style.display !== 'none',
+        ariaLabel: this.container.getAttribute('aria-label') || undefined,
+        role: this.container.getAttribute('role') || undefined,
+        dimensions: containerDimensions,
+      } : undefined,
+      eventListeners: {
+        domEvents: this.domEventListeners,
+        layoutSubscriptions: this.layoutUnsubscribers.length,
+        eventBusSubscriptions: this.chainProviderUnsubscriber ? 1 : 0,
+      },
+      configuration: {
+        brandTitle: this.config.brandTitle,
+        brandHref: this.config.brandHref,
+        showMobileToggle: this.config.showMobileToggle,
+        showBreadcrumbs: this.config.showBreadcrumbs,
+        showUserMenu: this.config.showUserMenu,
+      },
+      currentState: {
+        userMenuInitialized: !!this.userMenu,
+        userSet: !!this.user,
+        updateCount: this.updateCount,
+        containerVisible: this.container ? this.container.style.display !== 'none' : false,
+      },
+      performance: {
+        updateCount: this.updateCount,
+        lastUpdate: this.user ? Date.now() : undefined,
+      },
+      issues: issues.length > 0 || warnings.length > 0 ? issues.concat(warnings) : undefined,
+      customData: {
+        chainHotkeyProvider: {
+          registered: !!this.chainProviderUnsubscriber,
+          providerId: this.getHotkeyProviderId(),
+          priority: this.getProviderPriority(),
+          hotkeyCount: this.getChainHotkeys()?.size || 0,
+        },
+        userMenuConfig: {
+          enabled: this.config.showUserMenu,
+          instance: !!this.userMenu,
+          userSet: !!this.user,
+          userName: this.user?.username,
+        },
+      },
+    };
   }
 
   /**

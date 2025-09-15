@@ -13,13 +13,17 @@ import {
 } from "../contexts/index.js";
 import type { Dimensions } from "./Sidebar.js";
 import type { MainContent, MainContentConfig } from "./MainContent.js";
+import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 
-export class MainContentImpl implements MainContent {
+export class MainContentImpl implements MainContent, ComponentWithStatus {
   private container: HTMLElement | null = null;
   private config: MainContentConfig;
   private isInitialized: boolean = false;
   private layoutContext: LayoutContext;
   private layoutUnsubscribers: Array<() => void> = [];
+  private initTime: number | null = null;
+  private contentUpdateCount: number = 0;
+  private lastContentUpdate: number | null = null;
 
   constructor(config: MainContentConfig = {}, layoutContext?: LayoutContext) {
     this.config = {
@@ -55,6 +59,7 @@ export class MainContentImpl implements MainContent {
 
     this.layoutContext.registerMainContent(this);
 
+    this.initTime = Date.now();
     this.isInitialized = true;
     console.log("MainContent - Ready ✅");
   }
@@ -167,6 +172,8 @@ export class MainContentImpl implements MainContent {
       this.container.appendChild(content);
     }
 
+    this.contentUpdateCount++;
+    this.lastContentUpdate = Date.now();
     console.log("MainContent - Content updated");
   }
 
@@ -189,6 +196,8 @@ export class MainContentImpl implements MainContent {
       this.container.appendChild(content);
     }
 
+    this.contentUpdateCount++;
+    this.lastContentUpdate = Date.now();
     console.log("MainContent - Content appended");
   }
 
@@ -202,6 +211,8 @@ export class MainContentImpl implements MainContent {
     }
 
     this.container.innerHTML = "";
+    this.contentUpdateCount++;
+    this.lastContentUpdate = Date.now();
     console.log("MainContent - Content cleared");
   }
 
@@ -468,6 +479,91 @@ export class MainContentImpl implements MainContent {
         cls.startsWith("content-"),
       ),
     });
+  }
+
+  /**
+   * Get detailed status information for this component
+   */
+  getStatus(): ComponentStatus {
+    const currentTime = Date.now();
+    const activeContentElement = this.container?.querySelector(':not(.loading-indicator):not(.error-message)');
+    const hasContent = activeContentElement && (activeContentElement.children.length > 0 || activeContentElement.textContent?.trim());
+    
+    return {
+      componentType: 'MainContent',
+      id: 'main-content',
+      initialized: this.isInitialized,
+      initTime: this.initTime,
+      uptime: this.initTime ? currentTime - this.initTime : 0,
+      domElement: this.container ? {
+        tagName: this.container.tagName,
+        id: this.container.id,
+        className: this.container.className,
+        childCount: this.container.children.length,
+        hasContent: !!hasContent,
+        isVisible: this.container.style.display !== 'none',
+        ariaLabel: this.container.getAttribute('aria-label') || undefined,
+        role: this.container.getAttribute('role') || undefined
+      } : undefined,
+      eventListeners: {
+        layoutSubscriptions: this.layoutUnsubscribers.length
+      },
+      configuration: {
+        ...this.config
+      },
+      currentState: {
+        contentUpdateCount: this.contentUpdateCount,
+        lastContentUpdate: this.lastContentUpdate,
+        lastContentUpdateAgo: this.lastContentUpdate ? currentTime - this.lastContentUpdate : null,
+        isLoading: this.container?.classList.contains('loading') || false,
+        hasError: this.container?.classList.contains('error') || false,
+        layoutModeType: this.layoutContext?.getModeType(),
+        isLayoutMobile: this.layoutContext?.isLayoutMobile(),
+        sidebarCompactMode: this.layoutContext?.getSidebar()?.isCompactMode()
+      },
+      performance: {
+        initDuration: this.initTime ? (this.initTime - (this.initTime - 50)) : null // Rough estimate
+      },
+      issues: this.getIssues(),
+      customData: {
+        layoutUnsubscribers: this.layoutUnsubscribers.length,
+        cssClasses: this.container ? Array.from(this.container.classList) : [],
+        contentElements: this.container ? {
+          total: this.container.children.length,
+          loadingIndicator: !!this.container.querySelector('.loading-indicator'),
+          errorMessage: !!this.container.querySelector('.error-message')
+        } : undefined
+      }
+    };
+  }
+  
+  /**
+   * Get current issues with the component
+   */
+  private getIssues(): string[] {
+    const issues: string[] = [];
+    
+    if (!this.isInitialized) {
+      issues.push('Component not initialized');
+    }
+    
+    if (!this.container) {
+      issues.push('DOM container element missing');
+    }
+    
+    if (this.container?.classList.contains('error')) {
+      issues.push('Component is in error state');
+    }
+    
+    if (!this.layoutContext) {
+      issues.push('LayoutContext not available');
+    }
+    
+    if (this.layoutUnsubscribers.length === 0 && this.isInitialized) {
+      issues.push('No layout subscriptions active (possible memory leak or initialization issue)');
+    }
+    
+    return issues;
   }
 
   /**

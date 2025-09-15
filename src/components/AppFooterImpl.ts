@@ -10,8 +10,9 @@ import { getLayoutContext } from "../contexts/index";
 import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
 import { AppFooter, FooterConfig } from "./AppFooter";
 import type { Dimensions } from "./Sidebar";
+import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 
-export class AppFooterImpl implements AppFooter {
+export class AppFooterImpl implements AppFooter, ComponentWithStatus {
   private container: HTMLElement | null = null;
   private config: FooterConfig;
   private elements: {
@@ -21,6 +22,12 @@ export class AppFooterImpl implements AppFooter {
   } = {};
   private layoutContext: LayoutContext;
   private layoutUnsubscribers: Array<() => void> = [];
+  private isInitialized: boolean = false;
+  private initTime: number | null = null;
+  private navigationClickCount: number = 0;
+  private layoutUpdateCount: number = 0;
+  private lastActionTime: number | null = null;
+  private domEventListenerCount: number = 0;
 
   constructor(config: FooterConfig = {}, layoutContext?: LayoutContext) {
     this.config = {
@@ -58,7 +65,12 @@ export class AppFooterImpl implements AppFooter {
 
     // Register footer with layout context
     this.layoutContext.registerFooter(this);
+    
+    // Subscribe to layout context events
+    this.subscribeToLayoutContext();
 
+    this.initTime = Date.now();
+    this.isInitialized = true;
     console.log("AppFooter - Ready");
   }
 
@@ -221,6 +233,8 @@ export class AppFooterImpl implements AppFooter {
    * Setup event listeners
    */
   private setupEventListeners(): void {
+    this.domEventListenerCount = 0;
+    
     // Handle navigation link clicks
     if (this.elements.navigationPanel) {
       this.elements.navigationPanel.addEventListener("click", (e) => {
@@ -229,6 +243,7 @@ export class AppFooterImpl implements AppFooter {
           this.handleNavigationClick(target, e);
         }
       });
+      this.domEventListenerCount++;
     }
   }
 
@@ -237,6 +252,9 @@ export class AppFooterImpl implements AppFooter {
    */
   private handleNavigationClick(link: HTMLAnchorElement, event: Event): void {
     const href = link.getAttribute("href");
+    
+    this.navigationClickCount++;
+    this.lastActionTime = Date.now();
 
     // Special handling for certain links
     if (href === "/create-bug-report") {
@@ -294,6 +312,9 @@ export class AppFooterImpl implements AppFooter {
    */
   private updateFooterLayout(): void {
     if (!this.container) return;
+    
+    this.layoutUpdateCount++;
+    this.lastActionTime = Date.now();
 
     // Get layout state from LayoutContext
     const modeType = this.layoutContext.getModeType();
@@ -357,6 +378,114 @@ export class AppFooterImpl implements AppFooter {
    */
   getCopyrightElement(): HTMLElement | null {
     return this.elements.copyrightText || null;
+  }
+
+  /**
+   * Get detailed status information for this component
+   */
+  getStatus(): ComponentStatus {
+    const currentTime = Date.now();
+    const hasNavigationLinks = this.config.navigationLinks && this.config.navigationLinks.length > 0;
+    
+    return {
+      componentType: 'AppFooterImpl',
+      id: 'app-footer',
+      initialized: this.isInitialized,
+      initTime: this.initTime,
+      uptime: this.initTime ? currentTime - this.initTime : 0,
+      domElement: this.container ? {
+        tagName: this.container.tagName,
+        id: this.container.id,
+        className: this.container.className,
+        childCount: this.container.children.length,
+        hasContent: this.container.children.length > 0,
+        isVisible: this.container.style.display !== 'none',
+        ariaLabel: this.container.getAttribute('aria-label') || undefined,
+        role: this.container.getAttribute('role') || undefined
+      } : undefined,
+      eventListeners: {
+        domEventListeners: this.domEventListenerCount,
+        layoutSubscriptions: this.layoutUnsubscribers.length
+      },
+      configuration: {
+        ...this.config,
+        hasNavigationLinks: hasNavigationLinks,
+        navigationLinksCount: this.config.navigationLinks?.length || 0
+      },
+      currentState: {
+        navigationClickCount: this.navigationClickCount,
+        layoutUpdateCount: this.layoutUpdateCount,
+        lastActionTime: this.lastActionTime,
+        lastActionAgo: this.lastActionTime ? currentTime - this.lastActionTime : null,
+        layoutModeType: this.layoutContext?.getModeType(),
+        isLayoutMobile: this.layoutContext?.isLayoutMobile(),
+        sidebarCompactMode: this.layoutContext?.getSidebar()?.isCompactMode(),
+        elementsCache: {
+          navigationPanel: !!this.elements.navigationPanel,
+          copyrightSection: !!this.elements.copyrightSection,
+          copyrightText: !!this.elements.copyrightText
+        }
+      },
+      performance: {
+        initDuration: this.initTime ? 50 : null // Estimated
+      },
+      issues: this.getIssues(),
+      customData: {
+        navigationLinks: this.config.navigationLinks?.map(link => ({
+          href: link.href,
+          title: link.title,
+          text: link.text
+        })) || [],
+        cssClasses: this.container ? Array.from(this.container.classList) : [],
+        elementsFound: {
+          container: !!this.container,
+          navigationPanel: !!this.elements.navigationPanel,
+          copyrightSection: !!this.elements.copyrightSection,
+          copyrightText: !!this.elements.copyrightText
+        }
+      }
+    };
+  }
+  
+  /**
+   * Get current issues with the component
+   */
+  private getIssues(): string[] {
+    const issues: string[] = [];
+    
+    if (!this.isInitialized) {
+      issues.push('Component not initialized');
+    }
+    
+    if (!this.container) {
+      issues.push('DOM container element missing');
+    }
+    
+    if (!this.layoutContext) {
+      issues.push('LayoutContext not available');
+    }
+    
+    if (this.config.showNavigation && (!this.config.navigationLinks || this.config.navigationLinks.length === 0)) {
+      issues.push('Navigation enabled but no navigation links configured');
+    }
+    
+    if (this.config.showCopyright && !this.config.copyrightText) {
+      issues.push('Copyright enabled but no copyright text configured');
+    }
+    
+    if (!this.elements.copyrightText && this.config.showCopyright) {
+      issues.push('Copyright text element not found in DOM');
+    }
+    
+    if (!this.elements.navigationPanel && this.config.showNavigation) {
+      issues.push('Navigation panel element not found in DOM');
+    }
+    
+    if (this.layoutUnsubscribers.length === 0 && this.isInitialized) {
+      issues.push('No layout subscriptions active (possible memory leak or initialization issue)');
+    }
+    
+    return issues;
   }
 
   /**

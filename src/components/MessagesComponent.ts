@@ -16,12 +16,20 @@ import type {
   MessageOptions,
   MessageType,
 } from "../interfaces/Messages";
+import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 
-export class MessagesComponent implements Messages {
+export class MessagesComponent implements Messages, ComponentWithStatus {
   private container: HTMLElement | null = null;
   private messages: Map<string, Message> = new Map();
   private autoHideTimers: Map<string, NodeJS.Timeout> = new Map();
   private layoutContext: LayoutContext;
+  private isInitialized: boolean = false;
+  private initTime: number | null = null;
+  private messageAddCount: number = 0;
+  private messageRemoveCount: number = 0;
+  private autoHideTriggeredCount: number = 0;
+  private lastActionTime: number | null = null;
+  private closeButtonClickCount: number = 0;
 
   constructor(layoutContext: LayoutContext) {
     this.layoutContext = layoutContext;
@@ -39,8 +47,11 @@ export class MessagesComponent implements Messages {
     }
 
     this.layoutContext.registerMessages(this);
+    
+    this.initTime = Date.now();
+    this.isInitialized = true;
 
-    console.log("ErrorMessages - Ready ✅");
+    console.log("ErrorMessages - Ready \u2705");
   }
 
   /**
@@ -68,11 +79,18 @@ export class MessagesComponent implements Messages {
     this.messages.set(message.id, messageWithDefaults);
     const messageElement = this.createMessageElement(messageWithDefaults);
     this.container.appendChild(messageElement);
+    
+    // Track message addition
+    this.messageAddCount++;
+    this.lastActionTime = Date.now();
 
     // Auto-hide timer if needed
     if (messageWithDefaults.autoHide && messageWithDefaults.autoHideDelay) {
       const timer = setTimeout(
-        () => this.removeMessage(message.id),
+        () => {
+          this.autoHideTriggeredCount++;
+          this.removeMessage(message.id);
+        },
         messageWithDefaults.autoHideDelay,
       );
       this.autoHideTimers.set(message.id, timer);
@@ -96,6 +114,10 @@ export class MessagesComponent implements Messages {
 
     // Remove from messages map
     this.messages.delete(id);
+    
+    // Track message removal
+    this.messageRemoveCount++;
+    this.lastActionTime = Date.now();
 
     // Add fade-out animation before removing from DOM
     const messageElement = this.container.querySelector(
@@ -195,6 +217,7 @@ export class MessagesComponent implements Messages {
       const closeButton = messageEl.querySelector(".error-close");
       if (closeButton) {
         closeButton.addEventListener("click", () => {
+          this.closeButtonClickCount++;
           this.removeMessage(message.id);
         });
       }
@@ -283,6 +306,129 @@ export class MessagesComponent implements Messages {
    */
   public isReady(): boolean {
     return this.container !== null;
+  }
+
+  /**
+   * Get detailed status information for this component
+   */
+  getStatus(): ComponentStatus {
+    const currentTime = Date.now();
+    const activeMessages = Array.from(this.messages.values());
+    const messagesByType = {
+      error: activeMessages.filter(m => m.type === 'error').length,
+      warning: activeMessages.filter(m => m.type === 'warning').length,
+      info: activeMessages.filter(m => m.type === 'info').length,
+      success: activeMessages.filter(m => m.type === 'success').length
+    };
+    
+    return {
+      componentType: 'MessagesComponent',
+      id: 'app-error-messages',
+      initialized: this.isInitialized,
+      initTime: this.initTime,
+      uptime: this.initTime ? currentTime - this.initTime : 0,
+      domElement: this.container ? {
+        tagName: this.container.tagName,
+        id: this.container.id,
+        className: this.container.className,
+        childCount: this.container.children.length,
+        hasContent: this.container.children.length > 0,
+        isVisible: this.container.style.display !== 'none',
+        ariaLabel: this.container.getAttribute('aria-label') || undefined,
+        role: this.container.getAttribute('role') || undefined
+      } : undefined,
+      eventListeners: {
+        closeButtonListeners: this.container ? this.container.querySelectorAll('.error-close').length : 0
+      },
+      configuration: {
+        // MessagesComponent doesn't have a persistent config, all determined at runtime
+        supportsAutoHide: true,
+        supportsDismissible: true,
+        supportsPersistent: true,
+        supportsTypes: ['error', 'warning', 'info', 'success']
+      },
+      currentState: {
+        activeMessagesCount: this.messages.size,
+        messagesByType: messagesByType,
+        activeAutoHideTimers: this.autoHideTimers.size,
+        messageAddCount: this.messageAddCount,
+        messageRemoveCount: this.messageRemoveCount,
+        autoHideTriggeredCount: this.autoHideTriggeredCount,
+        closeButtonClickCount: this.closeButtonClickCount,
+        lastActionTime: this.lastActionTime,
+        lastActionAgo: this.lastActionTime ? currentTime - this.lastActionTime : null,
+        isReady: this.isReady()
+      },
+      performance: {
+        initDuration: this.initTime ? 20 : null, // Estimated - Messages init is very fast
+        averageMessageLifetime: this.messageRemoveCount > 0 ? 
+          (this.initTime ? (currentTime - this.initTime) / this.messageRemoveCount : null) : null
+      },
+      issues: this.getIssues(),
+      customData: {
+        activeMessages: activeMessages.map(msg => ({
+          id: msg.id,
+          type: msg.type,
+          title: msg.title,
+          hasDescription: !!msg.description,
+          dismissible: msg.dismissible,
+          autoHide: msg.autoHide,
+          autoHideDelay: msg.autoHideDelay,
+          persistent: msg.persistent
+        })),
+        timerInfo: {
+          activeTimers: this.autoHideTimers.size,
+          timerIds: Array.from(this.autoHideTimers.keys())
+        },
+        domElements: {
+          container: !!this.container,
+          messageElements: this.container ? this.container.children.length : 0,
+          closeButtons: this.container ? this.container.querySelectorAll('.error-close').length : 0
+        }
+      }
+    };
+  }
+  
+  /**
+   * Get current issues with the component
+   */
+  private getIssues(): string[] {
+    const issues: string[] = [];
+    
+    if (!this.isInitialized) {
+      issues.push('Component not initialized');
+    }
+    
+    if (!this.container) {
+      issues.push('DOM container element missing');
+    }
+    
+    if (!this.layoutContext) {
+      issues.push('LayoutContext not available');
+    }
+    
+    // Check for potential memory leaks
+    if (this.autoHideTimers.size > 10) {
+      issues.push(`High number of active auto-hide timers (${this.autoHideTimers.size}) - possible memory leak`);
+    }
+    
+    if (this.messages.size > 20) {
+      issues.push(`High number of active messages (${this.messages.size}) - consider clearing old messages`);
+    }
+    
+    // Check for timer/message mismatch
+    const messagesWithAutoHide = Array.from(this.messages.values()).filter(m => m.autoHide);
+    if (messagesWithAutoHide.length !== this.autoHideTimers.size) {
+      issues.push('Mismatch between auto-hide messages and active timers');
+    }
+    
+    // Check for persistent errors
+    const persistentErrors = Array.from(this.messages.values()).filter(m => m.type === 'error' && m.persistent);
+    if (persistentErrors.length > 5) {
+      issues.push(`High number of persistent error messages (${persistentErrors.length})`);
+    }
+    
+    return issues;
   }
 
   /**
