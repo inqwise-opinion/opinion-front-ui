@@ -39,18 +39,13 @@ export class DebugPage extends PageComponent {
 
   constructor(mainContent: MainContentImpl) {
     super(mainContent);
-    console.log("🛠️ DEBUGPAGE - Constructor");
   }
 
   /**
    * Initialize the debug page
    */
   async onInit(): Promise<void> {
-    console.log("🏗️ DEBUGPAGE - onInit() START");
-
     try {
-      console.log("🏗️ DEBUGPAGE - Starting initialization process...");
-
       // Wait for DOM to be ready
       if (document.readyState === "loading") {
         await new Promise((resolve) => {
@@ -70,31 +65,23 @@ export class DebugPage extends PageComponent {
       console.error("❌ DEBUGPAGE - Initialization failed:", error);
       throw error;
     }
-
-    console.log("🏗️ DEBUGPAGE - onInit() END");
   }
 
   /**
    * Post-initialization hook - called after chain provider registration
    */
   protected async onPostInit(): Promise<void> {
-    console.log("🔄 DEBUGPAGE - onPostInit() - Updating status displays after chain registration");
-    
     // Now that chain provider is registered, update status displays
     this.updateViewportInfoFromContext(this.mainContent.getLayoutContext());
     this.updateLayoutStatus();
     this.updateComponentStatusDetails();
     this.updateHotkeyStatus();
-    
-    console.log("✅ DEBUGPAGE - onPostInit() complete");
   }
 
   /**
    * Cleanup method for PageComponent
    */
   protected onDestroy(): void {
-    console.log("🏩 DEBUGPAGE - onDestroy()");
-    
     // Clean up subscriptions
     if (this.responsiveModeUnsubscribe) {
       this.responsiveModeUnsubscribe();
@@ -111,34 +98,20 @@ export class DebugPage extends PageComponent {
    * Load HTML template into semantic main element
    */
   private async loadTemplate(): Promise<void> {
-    console.log("DebugPage - Loading template...");
-
     // Load content into the semantic main element
     this.createFallbackTemplate();
-
-    console.log("DebugPage - Template loaded (using fallback)");
   }
 
   /**
    * Create fallback template if HTML file fails to load
    */
   private createFallbackTemplate(): void {
-    console.log("DebugPage - Creating fallback template...");
-
     const mainContent = this.mainContent;
     // Use MainContent component if available, otherwise fallback to #app
     const targetElement =
       mainContent?.getElement() || document.getElementById("app");
 
     if (targetElement) {
-      const elementType = mainContent ? "semantic <main>" : "#app";
-      console.log(
-        `DebugPage - Found ${elementType} element, replacing content...`,
-      );
-      console.log(
-        `DebugPage - Current ${elementType} content length:`,
-        targetElement.innerHTML.length,
-      );
 
       const content = `
         <div class="debug-page-content" style="max-width: 1200px; margin: 0 auto;">
@@ -315,10 +288,8 @@ export class DebugPage extends PageComponent {
       // Set content using appropriate method
       if (mainContent) {
         mainContent.setContent(content);
-        console.log("DebugPage - Content set in semantic <main> element");
       } else {
         targetElement.innerHTML = content;
-        console.log("DebugPage - Content set in fallback #app element");
       }
     } else {
       console.error("DebugPage - No target element found for content");
@@ -464,107 +435,38 @@ export class DebugPage extends PageComponent {
    * Setup basic message type controls
    */
   private setupBasicMessageControls(): void {
-    console.log("🎯 DEBUGPAGE - Setting up basic message controls...");
-    
-    // Add comprehensive debugging for layoutContext
-    console.log("🎯 DEBUGPAGE - this.mainContent:", !!this.mainContent);
-    console.log("🎯 DEBUGPAGE - mainContent.getLayoutContext():", !!this.mainContent?.getLayoutContext());
-    console.log("🎯 DEBUGPAGE - LayoutContext available:", !!this.layoutContext);
-    
-    if (this.layoutContext) {
-      console.log("🎯 DEBUGPAGE - LayoutContext type:", this.layoutContext.constructor.name);
-      console.log("🎯 DEBUGPAGE - LayoutContext getMessages method:", typeof this.layoutContext.getMessages);
-      
-      const messages = this.layoutContext.getMessages();
-      console.log("🎯 DEBUGPAGE - Messages instance:", !!messages);
-      console.log("🎯 DEBUGPAGE - Messages type:", messages ? messages.constructor.name : 'null');
-      
-      if (messages) {
-        console.log("🎯 DEBUGPAGE - Messages showError method:", typeof messages.showError);
-        console.log("🎯 DEBUGPAGE - Messages showWarning method:", typeof messages.showWarning);
-        console.log("🎯 DEBUGPAGE - Messages showInfo method:", typeof messages.showInfo);
-        console.log("🎯 DEBUGPAGE - Messages showSuccess method:", typeof messages.showSuccess);
-      }
-      
-      // Also check registered components
-      const components = this.layoutContext.getRegisteredComponents();
-      console.log("🎯 DEBUGPAGE - Registered components:", {
-        header: !!components.header,
-        footer: !!components.footer,
-        mainContent: !!components.mainContent,
-        messages: !!components.messages,
-        sidebar: !!components.sidebar
-      });
-    }
 
     // Error message
     const msgError = document.getElementById("msg_error");
-    console.log(
-      "🎯 DEBUGPAGE - Error button element:",
-      msgError ? "FOUND" : "NOT FOUND",
-    );
     if (msgError) {
       msgError.addEventListener("click", () => {
-        console.log("🎯 DEBUGPAGE - Error button clicked!");
-        this.logToConsole("🎯 ERROR BUTTON - Button clicked, starting debugging...");
-        
         try {
-          // Detailed debugging at click time
-          console.log("🎯 DEBUGPAGE - Click-time debugging:");
-          console.log("  - this.mainContent:", !!this.mainContent);
-          console.log("  - this.layoutContext:", !!this.layoutContext);
-          
-          if (this.mainContent) {
-            const contextViaMain = this.mainContent.getLayoutContext();
-            console.log("  - mainContent.getLayoutContext():", !!contextViaMain);
-            if (contextViaMain) {
-              const messagesViaMain = contextViaMain.getMessages();
-              console.log("  - messages via mainContent path:", !!messagesViaMain);
-            }
-          }
-          
           if (!this.layoutContext) {
-            this.logToConsole("❌ LayoutContext not available at click time");
-            console.error("LayoutContext not available at click time");
+            this.logToConsole("❌ LayoutContext not available");
             return;
           }
           
           const messages = this.layoutContext.getMessages();
-          console.log("🎯 DEBUGPAGE - Messages retrieved at click time:", !!messages);
-          this.logToConsole(`🎯 Messages available: ${!!messages}`);
-          
           if (messages) {
-            console.log("🎯 DEBUGPAGE - About to call messages.showError()");
             messages.showError(
               "Connection Failed",
               "Unable to connect to the server. Please check your internet connection.",
             );
-            this.logToConsole("❌ Error message displayed via Messages API");
-            console.log("❌ Error message sent successfully");
+            this.logToConsole("❌ Error message displayed");
           } else {
-            this.logToConsole("❌ No messages component available at click time");
-            console.error("Messages component not available at click time");
-            
             // Try alternative access method
-            try {
-              const alternativeMessages = this.mainContent?.getLayoutContext()?.getMessages();
-              if (alternativeMessages) {
-                console.log("🎯 DEBUGPAGE - Alternative messages access worked!");
-                alternativeMessages.showError(
-                  "Connection Failed",
-                  "Unable to connect to the server. Please check your internet connection.",
-                );
-                this.logToConsole("❌ Error message displayed via alternative Messages API access");
-              } else {
-                this.logToConsole("❌ Alternative messages access also failed");
-              }
-            } catch (altError) {
-              console.error("🎯 DEBUGPAGE - Alternative access error:", altError);
-              this.logToConsole("❌ Alternative access error: " + altError.message);
+            const alternativeMessages = this.mainContent?.getLayoutContext()?.getMessages();
+            if (alternativeMessages) {
+              alternativeMessages.showError(
+                "Connection Failed",
+                "Unable to connect to the server. Please check your internet connection.",
+              );
+              this.logToConsole("❌ Error message displayed via alternative access");
+            } else {
+              this.logToConsole("❌ No messages component available");
             }
           }
         } catch (error) {
-          console.error("🎯 DEBUGPAGE - Error in error button handler:", error);
           this.logToConsole("❌ Error in message handling: " + error.message);
         }
       });
@@ -572,13 +474,8 @@ export class DebugPage extends PageComponent {
 
     // Warning message
     const msgWarning = document.getElementById("msg_warning");
-    console.log(
-      "🎯 DEBUGPAGE - Warning button element:",
-      msgWarning ? "FOUND" : "NOT FOUND",
-    );
     if (msgWarning) {
       msgWarning.addEventListener("click", () => {
-        console.log("🎯 DEBUGPAGE - Warning button clicked!");
         try {
           if (!this.layoutContext) {
             this.logToConsole("❌ LayoutContext not available");
@@ -591,12 +488,11 @@ export class DebugPage extends PageComponent {
               "Session Expiring",
               "Your session will expire in 5 minutes. Save your work to avoid losing data.",
             );
-            this.logToConsole("⚠️ Warning message displayed via Messages API");
+            this.logToConsole("⚠️ Warning message displayed");
           } else {
             this.logToConsole("❌ No messages component available");
           }
         } catch (error) {
-          console.error("🎯 DEBUGPAGE - Error in warning button handler:", error);
           this.logToConsole("❌ Error in message handling: " + error.message);
         }
       });
@@ -604,13 +500,8 @@ export class DebugPage extends PageComponent {
 
     // Info message
     const msgInfo = document.getElementById("msg_info");
-    console.log(
-      "🎯 DEBUGPAGE - Info button element:",
-      msgInfo ? "FOUND" : "NOT FOUND",
-    );
     if (msgInfo) {
       msgInfo.addEventListener("click", () => {
-        console.log("🎯 DEBUGPAGE - Info button clicked!");
         try {
           if (!this.layoutContext) {
             this.logToConsole("❌ LayoutContext not available");
@@ -623,12 +514,11 @@ export class DebugPage extends PageComponent {
               "New Feature Available",
               "Check out the new dashboard features in the sidebar navigation.",
             );
-            this.logToConsole("ℹ️ Info message displayed via Messages API");
+            this.logToConsole("ℹ️ Info message displayed");
           } else {
             this.logToConsole("❌ No messages component available");
           }
         } catch (error) {
-          console.error("🎯 DEBUGPAGE - Error in info button handler:", error);
           this.logToConsole("❌ Error in message handling: " + error.message);
         }
       });
@@ -636,13 +526,8 @@ export class DebugPage extends PageComponent {
 
     // Success message
     const msgSuccess = document.getElementById("msg_success");
-    console.log(
-      "🎯 DEBUGPAGE - Success button element:",
-      msgSuccess ? "FOUND" : "NOT FOUND",
-    );
     if (msgSuccess) {
       msgSuccess.addEventListener("click", () => {
-        console.log("🎯 DEBUGPAGE - Success button clicked!");
         try {
           if (!this.layoutContext) {
             this.logToConsole("❌ LayoutContext not available");
@@ -655,12 +540,11 @@ export class DebugPage extends PageComponent {
               "Data Saved",
               "Your changes have been saved successfully to the server.",
             );
-            this.logToConsole("✅ Success message displayed via Messages API");
+            this.logToConsole("✅ Success message displayed");
           } else {
             this.logToConsole("❌ No messages component available");
           }
         } catch (error) {
-          console.error("🎯 DEBUGPAGE - Error in success button handler:", error);
           this.logToConsole("❌ Error in message handling: " + error.message);
         }
       });
@@ -693,7 +577,6 @@ export class DebugPage extends PageComponent {
             this.logToConsole("❌ Unable to access Messages component");
           }
         } catch (error) {
-          console.error("🎯 DEBUGPAGE - Error in action message handler:", error);
           this.logToConsole("❌ Error in message handling: " + error.message);
         }
       });
@@ -720,7 +603,6 @@ export class DebugPage extends PageComponent {
             this.logToConsole("❌ Unable to access Messages component");
           }
         } catch (error) {
-          console.error("🎯 DEBUGPAGE - Error in persistent message handler:", error);
           this.logToConsole("❌ Error in message handling: " + error.message);
         }
       });
@@ -1320,8 +1202,6 @@ export class DebugPage extends PageComponent {
    * Refresh component status display
    */
   private refreshComponentStatus(): void {
-    console.log('🔄 DebugPage - Refreshing component status...');
-    
     // Show loading state
     const statusContainer = document.getElementById("component_status_details");
     const refreshBtn = document.getElementById("refresh_component_status") as HTMLButtonElement;
@@ -1361,8 +1241,6 @@ export class DebugPage extends PageComponent {
       const isVisible = detailsEl.style.display !== 'none';
       detailsEl.style.display = isVisible ? 'none' : 'block';
       toggleEl.textContent = isVisible ? '▶' : '▼';
-      
-      console.log(`🔽 Component ${componentId} ${isVisible ? 'collapsed' : 'expanded'}`);
       
       // Update toggle all button state
       this.updateToggleAllButtonState();
@@ -1512,6 +1390,9 @@ export class DebugPage extends PageComponent {
     this.updateEventStatsDisplay();
     this.logLayoutEvent("✅ Layout event monitoring started");
     
+    // Update the layout status display to show monitoring is now active
+    this.updateLayoutStatus();
+    
     // Show mobile layout constraint info if currently in mobile mode
     const layoutContext = this.mainContent.getLayoutContext();
     if (layoutContext.isLayoutMobile()) {
@@ -1528,6 +1409,9 @@ export class DebugPage extends PageComponent {
     this.layoutEventUnsubscribers = [];
     this.eventMonitoringActive = false;
     this.logLayoutEvent("⏹️ Layout event monitoring stopped");
+    
+    // Update the layout status display to show monitoring is now stopped
+    this.updateLayoutStatus();
   }
 
   private handleLayoutEvent(event: LayoutEvent): void {
@@ -1631,7 +1515,6 @@ export class DebugPage extends PageComponent {
    * Override to provide debug-specific chain hotkeys
    */
   getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
-    console.log('🔑 DebugPage: getChainHotkeys() called - registering hotkeys...');
     const hotkeys = new Map<string, ChainHotkeyHandler>();
     
     // Event Monitor Controls - Using browser-compatible key combinations
@@ -1640,7 +1523,6 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Ctrl+Shift+S pressed - Start event monitoring');
         this.startEventMonitoring();
         this.logToConsole('🎯 Hotkey: Started event monitoring (Ctrl+Shift+S)');
         ctx.preventDefault();
@@ -1658,7 +1540,6 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Ctrl+Shift+X pressed - Stop event monitoring');
         this.stopEventMonitoring();
         this.logToConsole('🎯 Hotkey: Stopped event monitoring (Ctrl+Shift+X)');
         ctx.preventDefault();
@@ -1676,7 +1557,6 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Ctrl+Shift+C pressed - Clear event log');
         this.clearLayoutEventsLog();
         this.logToConsole('🎯 Hotkey: Cleared event log (Ctrl+Shift+C)');
         ctx.preventDefault();
@@ -1694,7 +1574,6 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Ctrl+Shift+T pressed - Trigger test event');
         this.triggerLayoutTestEvent();
         this.logToConsole('🎯 Hotkey: Triggered test event (Ctrl+Shift+T)');
         ctx.preventDefault();
@@ -1712,7 +1591,6 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Ctrl+Shift+R pressed - Refresh component status');
         this.refreshComponentStatus();
         this.logToConsole('🎯 Hotkey: Refreshed component status (Ctrl+Shift+R)');
         ctx.preventDefault();
@@ -1730,7 +1608,6 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Ctrl+Shift+E pressed - Toggle all components');
         this.toggleAllComponents();
         this.logToConsole('🎯 Hotkey: Toggled all component details (Ctrl+Shift+E)');
         ctx.preventDefault();
