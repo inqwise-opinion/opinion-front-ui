@@ -67,6 +67,67 @@ npm run lint:fix
 
 ## Architecture
 
+### High-Level System Architecture
+
+> **📚 Complete Architecture Documentation:** See [`ARCHITECTURE.md`](ARCHITECTURE.md) for comprehensive system design and [`docs/`](docs/) directory for detailed subsystem documentation.
+
+The **Opinion Frontend** is a modern TypeScript SPA built with a **micro-kernel architecture** that emphasizes modularity, scalability, and maintainability. The system is organized around several key architectural principles:
+
+**🎯 Core Design Principles:**
+- **Micro-Kernel Pattern**: Central LayoutContext coordinates all subsystems
+- **Service-Oriented Architecture**: Business logic encapsulated in services
+- **Component-Based UI**: Modular, reusable UI components with lifecycle management
+- **Event-Driven Communication**: Loose coupling via EventBus messaging
+- **Hierarchical Scoping**: Safe, scoped operations prevent cross-system conflicts
+
+**🏗️ System Layers:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Presentation Layer                       │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌───────────────┐  │
+│  │   Page Layer    │ │  Component UI   │ │ Layout System │  │
+│  │ (PageComponent) │ │ (Interactive)   │ │  (Global)     │  │
+│  └─────────────────┘ └─────────────────┘ └───────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                 Application Kernel Layer                   │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │              LayoutContext (Micro-Kernel)               │ │
+│  │ • Component Registry  • Service Registry • EventBus    │ │
+│  │ • Lifecycle Manager  • Resource Coordinator            │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Service Layer                           │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌───────────────┐  │
+│  │   Data Services │ │ Business Logic  │ │   Utilities   │  │
+│  │  (MockApiSvc)   │ │   (Future)      │ │ (Validation)  │  │
+│  └─────────────────┘ └─────────────────┘ └───────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                   Infrastructure Layer                     │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌───────────────┐  │
+│  │     Routing     │ │   Asset Mgmt    │ │  Build Tools  │  │
+│  │ (OpinionApp)    │ │ (Vite/SCSS)     │ │ (TypeScript)  │  │
+│  └─────────────────┘ └─────────────────┘ └───────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**🔗 Key Subsystems:**
+- **[Layout System](docs/layout-architecture.md)**: CSS Grid + Flexbox responsive layout with global components
+- **[Service Architecture](docs/service-architecture-progress.md)**: Service registration and dependency injection
+- **[Event System](docs/event-system.md)**: EventBus-based inter-component communication
+- **[Hotkey System](docs/hotkey-chain-architecture.md)**: Priority-based chain execution for keyboard shortcuts
+- **[Breadcrumbs System](docs/breadcrumbs-architecture.md)**: Hierarchical navigation with scoped page management
+- **[Component Hierarchy](docs/component-hierarchy.md)**: UI component organization and lifecycle
+
+**🌐 Cross-System Integration:**
+- **PageContext**: Page-level coordination and scoped resource management
+- **LayoutContext**: Application-wide coordination and service discovery
+- **EventBus**: Loose coupling between components and services
+- **Component Registry**: Dynamic component registration and lifecycle management
+
 ### Application Structure
 
 This is a **single-page application (SPA)** with a custom routing system built around a central `OpinionApp` class. The application uses a **micro-kernel design** with modular components and **service-oriented architecture**.
@@ -95,6 +156,8 @@ The codebase follows a **component-based architecture** where:
 - **Chain-Based Hotkey System**: Priority-based cooperative hotkey handling with chain execution control
 
 ### Service Architecture
+
+> **📋 Service Documentation:** See [`docs/service-architecture-progress.md`](docs/service-architecture-progress.md) for implementation progress and [`docs/service-interfaces.md`](docs/service-interfaces.md) for interface specifications.
 
 The application implements a **service-oriented architecture** with the following patterns:
 
@@ -156,7 +219,7 @@ Custom client-side routing implemented in `OpinionApp`:
 
 ### Global Layout Architecture
 
-> **📋 Detailed Documentation:** See [`docs/layout-architecture.md`](docs/layout-architecture.md) for comprehensive layout system documentation.
+> **📋 Layout Documentation:** See [`docs/layout-architecture.md`](docs/layout-architecture.md) for comprehensive layout system documentation and [`docs/layout-mode-system.md`](docs/layout-mode-system.md) for responsive behavior details.
 
 The application uses a **CSS Grid + Flexbox hybrid layout system**:
 
@@ -221,9 +284,9 @@ The application uses a **CSS Grid + Flexbox hybrid layout system**:
 
 ### Chain-Based Hotkey Architecture
 
-> **🔥 NEW SYSTEM:** Advanced priority-based hotkey management with cooperative chain execution
+> **🔥 Hotkey Documentation:** See [`docs/hotkey-chain-architecture.md`](docs/hotkey-chain-architecture.md) for complete system design, [`docs/hotkey-system-components.md`](docs/hotkey-system-components.md) for component details, and [`docs/hotkey-system-migration.md`](docs/hotkey-system-migration.md) for migration guide. Also see [`src/hotkeys/README.md`](src/hotkeys/README.md) for implementation details.
 
-The application uses a sophisticated **Chain-Based Hotkey System** that resolves hotkey conflicts through priority-based execution with cooperative chain control. This replaces the old simple hotkey registration to solve complex scenarios like ESC key conflicts between mobile menu, user menu, and modal dialogs.
+The application uses a sophisticated **Chain-Based Hotkey System** that resolves hotkey conflicts through priority-based execution with cooperative chain control.
 
 **Key Features:**
 - **Priority-Based Execution**: Higher priority providers execute first (Modal: 1000, Sidebar: 800, UserMenu: 600)
@@ -382,7 +445,7 @@ test('should close both sidebar and user menu cooperatively', async () => {
 
 ### Hierarchical Breadcrumbs Architecture
 
-> **🍞 NEW SYSTEM:** Page-scoped breadcrumb management with hierarchical scoping and fallback behavior
+> **🍞 Breadcrumbs Documentation:** See [`docs/breadcrumbs-architecture.md`](docs/breadcrumbs-architecture.md) for complete design decisions, architecture patterns, and implementation details.
 
 The application implements a **Hierarchical Breadcrumbs System** that provides safe, scoped breadcrumb management where each page can only modify breadcrumbs at or below its level in the hierarchy.
 
@@ -484,6 +547,8 @@ The DebugPage includes comprehensive breadcrumb testing with both approaches:
 
 ## Testing Guidelines
 
+> **🧪 Testing Documentation:** See [`docs/error-message-tests.md`](docs/error-message-tests.md) for error handling tests and various test files in [`tests/`](tests/) directory for component-specific test patterns.
+
 ### Component Testing Approach
 The test suite focuses on:
 - **Component Lifecycle**: Init/destroy behavior verification
@@ -521,3 +586,64 @@ When working on this codebase, refer to these related projects for context:
 - **Admin App Reference**: `../opinion opensource/opinion-app-admin`
 
 These contain the original servlet-based implementation patterns being migrated to TypeScript.
+
+## 📚 Documentation Index
+
+### Core Architecture Documentation
+- **[`ARCHITECTURE.md`](ARCHITECTURE.md)**: Comprehensive system architecture overview
+- **[`README.md`](README.md)**: Project setup and basic information
+- **[`STATUS_REPORT.md`](STATUS_REPORT.md)**: Current project status and progress
+
+### System Design Documentation (`docs/`)
+
+**🏗️ Layout & UI Systems:**
+- **[`layout-architecture.md`](docs/layout-architecture.md)**: Complete layout system design and CSS Grid implementation
+- **[`layout-mode-system.md`](docs/layout-mode-system.md)**: Responsive behavior and viewport management
+- **[`layout-context-access-patterns.md`](docs/layout-context-access-patterns.md)**: LayoutContext usage patterns
+- **[`layout-improvements-proposal.md`](docs/layout-improvements-proposal.md)**: Proposed enhancements
+- **[`component-hierarchy.md`](docs/component-hierarchy.md)**: UI component organization
+
+**🍞 Navigation & Breadcrumbs:**
+- **[`breadcrumbs-architecture.md`](docs/breadcrumbs-architecture.md)**: Hierarchical breadcrumbs system design
+- **[`layout-navigation.md`](docs/layout-navigation.md)**: Navigation patterns and routing
+
+**⌨️ Hotkey & Input Systems:**
+- **[`hotkey-chain-architecture.md`](docs/hotkey-chain-architecture.md)**: Priority-based hotkey system design
+- **[`hotkey-system-components.md`](docs/hotkey-system-components.md)**: Hotkey component implementation details
+- **[`hotkey-system-migration.md`](docs/hotkey-system-migration.md)**: Migration from legacy to chain-based system
+- **[`src/hotkeys/README.md`](src/hotkeys/README.md)**: Hotkey implementation code documentation
+
+**📡 Event & Communication Systems:**
+- **[`event-system.md`](docs/event-system.md)**: EventBus architecture and patterns
+- **[`eventbus-integration.md`](docs/eventbus-integration.md)**: EventBus integration guidelines
+- **[`active-page-eventbus-system.md`](docs/active-page-eventbus-system.md)**: Page-level event coordination
+- **[`src/docs/event-system-cleanup-summary.md`](src/docs/event-system-cleanup-summary.md)**: Event system refactoring summary
+- **[`src/docs/sidebar-events-explained.md`](src/docs/sidebar-events-explained.md)**: Sidebar event patterns
+
+**🏢 Service Architecture:**
+- **[`service-architecture-progress.md`](docs/service-architecture-progress.md)**: Service implementation progress tracking
+- **[`service-interfaces.md`](docs/service-interfaces.md)**: Service interface specifications
+- **[`unified-handler-system.md`](docs/unified-handler-system.md)**: Handler pattern implementation
+
+**🛠️ Implementation & Development:**
+- **[`implementation-summary.md`](docs/implementation-summary.md)**: Overall implementation summary
+- **[`initialization-flow.md`](docs/initialization-flow.md)**: Application startup sequence
+- **[`phase3-task3.3-mission.md`](docs/phase3-task3.3-mission.md)**: Current development mission
+- **[`phase3-task3.3-subtasks.md`](docs/phase3-task3.3-subtasks.md)**: Development subtask breakdown
+- **[`timer-alternatives.md`](docs/timer-alternatives.md)**: Timer implementation alternatives
+
+**🔍 Testing & Quality:**
+- **[`error-message-tests.md`](docs/error-message-tests.md)**: Error handling test patterns
+- **[`error-messages.md`](docs/error-messages.md)**: Error message system documentation
+- **[`browser-warning-fixes.md`](docs/browser-warning-fixes.md)**: Browser compatibility fixes
+
+**📈 Visual Documentation:**
+- **[`docs/diagrams/README.md`](docs/diagrams/README.md)**: Architecture diagrams and visual documentation
+
+### Quick Reference Links
+- **Core Files**: [`src/app.ts`](src/app.ts) • [`src/contexts/LayoutContextImpl.ts`](src/contexts/LayoutContextImpl.ts) • [`src/components/Layout.ts`](src/components/Layout.ts)
+- **Testing**: [`tests/`](tests/) directory for component tests
+- **Styles**: [`src/assets/styles/`](src/assets/styles/) for SCSS stylesheets
+- **Services**: [`src/services/`](src/services/) for business logic services
+
+> **📋 Note**: This documentation index is maintained to provide quick access to all architectural and implementation documentation. When adding new documentation, update this index accordingly.
