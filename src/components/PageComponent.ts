@@ -12,6 +12,7 @@
 import MainContentImpl from "./MainContentImpl";
 import type { MainContent } from "./MainContent";
 import type { ActivePage, PageInfo } from "../interfaces/ActivePage";
+import type { PageContext } from "../interfaces/PageContext";
 import {
   ChainHotkeyProvider,
   ChainHotkeyHandler,
@@ -40,6 +41,9 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
   protected pageId: string;
   protected pagePath: string;
   protected chainProviderUnsubscriber: (() => void) | null = null;
+  
+  // PageContext integration (Promise-based to handle async initialization)
+  protected pageContextPromise: Promise<PageContext> | null = null;
 
   constructor(mainContent: MainContentImpl, config: PageComponentConfig = {}) {
     this.mainContent = mainContent;
@@ -103,6 +107,11 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
       
       // Register this page as the active page
       this.layoutContext.setActivePage(this);
+      
+      // Initialize PageContext (Promise-based for async handling)
+      this.pageContextPromise = this.layoutContext.getPageContext(this, {
+        enableDebugLogging: false, // Set to true for debugging if needed
+      });
 
       this.initialized = true;
       console.log(`${this.constructor.name}: Initialized successfully`);
@@ -132,6 +141,12 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
       
       // Deactivate this page if it's currently active
       this.layoutContext.deactivatePage(this);
+      
+      // Cleanup PageContext
+      if (this.pageContextPromise) {
+        this.layoutContext.clearPageContext(this);
+        this.pageContextPromise = null;
+      }
       
       // Cleanup page-specific functionality
       this.onDestroy();
@@ -375,6 +390,25 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
    */
   protected get layoutContext() {
     return this.mainContent.getLayoutContext();
+  }
+  
+  /**
+   * Get PageContext (Promise-based for async initialization)
+   * @returns Promise resolving to PageContext instance
+   */
+  protected async getPageContext(): Promise<PageContext> {
+    if (!this.pageContextPromise) {
+      throw new Error(`${this.constructor.name}: PageContext not initialized. Call this after init().`);
+    }
+    return this.pageContextPromise;
+  }
+  
+  /**
+   * Check if PageContext is available (for conditional usage)
+   * @returns True if PageContext is initialized
+   */
+  protected hasPageContext(): boolean {
+    return this.pageContextPromise !== null;
   }
   
   

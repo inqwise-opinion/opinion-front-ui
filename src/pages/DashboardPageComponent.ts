@@ -13,6 +13,7 @@
 import { PageComponent, PageComponentConfig } from '../components/PageComponent';
 import MainContentImpl from '../components/MainContentImpl';
 import Layout from '../components/Layout';
+import type { BreadcrumbItem } from '../interfaces/BreadcrumbItem';
 
 export interface DashboardPageConfig extends PageComponentConfig {
   layout?: Layout;
@@ -68,11 +69,37 @@ export class DashboardPageComponent extends PageComponent {
     
     console.log('DashboardPageComponent: Initialized');
   }
+  
+  /**
+   * Set up dashboard breadcrumbs using PageContext
+   */
+  private async setupBreadcrumbs(): Promise<void> {
+    try {
+      const pageContext = await this.getPageContext();
+      const breadcrumbsManager = pageContext.breadcrumbs();
+      
+      if (breadcrumbsManager && breadcrumbsManager.isAvailable()) {
+        const items: BreadcrumbItem[] = [
+          { id: 'home', text: 'Home', href: '/' },
+          { id: 'dashboard', text: 'Dashboard', caption: 'Main dashboard view' }
+        ];
+        breadcrumbsManager.set(items);
+        console.log('🍞 DashboardPageComponent - Breadcrumbs initialized via PageContext');
+      } else {
+        console.warn('🍞 DashboardPageComponent - BreadcrumbsManager not available');
+      }
+    } catch (error) {
+      console.error('🍞 DashboardPageComponent - Error setting breadcrumbs:', error);
+    }
+  }
 
   /**
    * Post-initialization hook
    */
   protected async onPostInit(): Promise<void> {
+    // Set up breadcrumbs
+    await this.setupBreadcrumbs();
+    
     // Load initial data
     await this.loadUserData();
     await this.loadSurveyData();

@@ -38,6 +38,8 @@ import {
 } from "../hotkeys/HotkeyChainSystem";
 import { ChainHotkeyManagerImpl } from "../hotkeys/ChainHotkeyManagerImpl";
 import { LegacyHotkeyAdapter } from "../hotkeys/LegacyHotkeyAdapter";
+import type { PageContext, PageContextConfig } from "../interfaces/PageContext";
+import { PageContextImpl } from "./PageContextImpl";
 
 export class LayoutContextImpl implements LayoutContext {
   // Note: Removed dedicated listeners map - now using EventBus for all events
@@ -77,6 +79,9 @@ export class LayoutContextImpl implements LayoutContext {
   // EventBus Management
   private eventBus!: EventBus; // Initialized in setupEventBus() called from constructor
   private eventBusConsumers: Map<string, Consumer[]> = new Map(); // Track consumers by component
+
+  // PageContext Management
+  private pageContexts: Map<string, PageContext> = new Map();
 
   public constructor() {
     this.viewport = this.calculateViewPort();
@@ -1528,6 +1533,74 @@ export class LayoutContextImpl implements LayoutContext {
     console.log("LayoutContext - Service destruction complete");
   }
 
+  // =================================================================================
+  // PageContext Management Implementation
+  // =================================================================================
+
+  /**
+   * Create a PageContext for the given page (Promise-based for async initialization)
+   */
+  public async getPageContext(
+    page: ActivePage,
+    config: PageContextConfig = {}
+  ): Promise<PageContext> {
+    const pageId = page.getPageId();
+    
+    // Check if we already have a context for this page
+    const existingContext = this.pageContexts.get(pageId);
+    if (existingContext) {
+      console.log(`🔧 PageContext - Returning existing context for page: ${pageId}`);
+      return existingContext;
+    }
+
+    // Create new PageContext
+    const pageContext = new PageContextImpl(page, this, config);
+    this.pageContexts.set(pageId, pageContext);
+    
+    console.log(`🔧 PageContext - Created new context for page: ${pageId}`);
+
+    // Wait for the context to be ready
+    return new Promise((resolve) => {
+      const checkReady = () => {
+        if (pageContext.isReady()) {
+          resolve(pageContext);
+        } else {
+          setTimeout(checkReady, 10);
+        }
+      };
+      checkReady();
+    });
+  }
+
+  /**
+   * Get an existing PageContext for a page if it exists
+   */
+  public getExistingPageContext(page: ActivePage): PageContext | null {
+    return this.pageContexts.get(page.getPageId()) || null;
+  }
+
+  /**
+   * Clear PageContext for a specific page
+   */
+  public clearPageContext(page: ActivePage): void {
+    const pageId = page.getPageId();
+    if (this.pageContexts.has(pageId)) {
+      this.pageContexts.delete(pageId);
+      console.log(`🔧 PageContext - Cleared context for page: ${pageId}`);
+    }
+  }
+
+  /**
+   * Get all active PageContexts (for debugging)
+   */
+  public getActivePageContexts(): Map<string, PageContext> {
+    return new Map(this.pageContexts);
+  }
+
+  // =================================================================================
+  // Cleanup and Destruction
+  // =================================================================================
+
   /**
    * Enhanced destroy method - cleanup all resources: services, hotkeys, active pages, layout state
    */
@@ -1629,6 +1702,11 @@ export class LayoutContextImpl implements LayoutContext {
     this.registeredHotkeys.clear();
     
     console.log("LayoutContext - Hotkey system cleanup complete");
+
+    // Cleanup PageContexts
+    console.log("LayoutContext - Cleaning up PageContexts...");
+    this.pageContexts.clear();
+    console.log("LayoutContext - PageContext cleanup complete");
 
     // Reset ready state
     this.isLayoutReady = false;

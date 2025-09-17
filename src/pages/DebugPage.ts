@@ -7,6 +7,8 @@
 import { Sidebar } from "../components/Sidebar";
 import SidebarComponent from "../components/SidebarComponent";
 import type { AppHeader } from "../components/AppHeader";
+import type { BreadcrumbsComponent } from "../components/BreadcrumbsComponent";
+import type { BreadcrumbItem } from "../interfaces/BreadcrumbItem";
 import MainContentImpl from "../components/MainContentImpl";
 import Layout from "../components/Layout";
 import { getLayoutContext } from "../contexts/index";
@@ -76,6 +78,9 @@ export class DebugPage extends PageComponent {
     this.updateLayoutStatus();
     this.updateComponentStatusDetails();
     this.updateHotkeyStatus();
+    
+    // Set initial breadcrumb for debug page
+    this.setInitialBreadcrumb();
   }
 
   /**
@@ -233,6 +238,68 @@ export class DebugPage extends PageComponent {
                   📝 <strong>Chain System Notes:</strong> All hotkeys above are fully functional and working. Debug page hotkeys (priority 200) run alongside PageComponent ESC handling. Use <code style="background: rgba(255,255,255,0.7); padding: 1px 3px;">Ctrl+Shift+H</code> anytime to see the complete hotkey reference.<br>
                   🌍 <strong>Browser Compatibility:</strong> Using Ctrl+Shift+ and actual character codes (!, @, #, $) for maximum compatibility across Firefox, Chrome, and Safari.
                 </div>
+              </div>
+            </div>
+
+            <div style="margin: 30px 0;">
+              <h3 style="color: #333; margin-bottom: 15px;">🍞 Breadcrumbs Test Console</h3>
+              
+              <!-- PageContext Breadcrumbs Tests (Hierarchical/Scoped) -->
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #17a2b8;">
+                <div style="margin-bottom: 15px;">
+                  <h4 style="margin: 0 0 10px 0; color: #555;">📋 PageContext Tests (Hierarchical/Scoped):</h4>
+                  <div style="background: #d1ecf1; padding: 10px; border-radius: 4px; font-size: 12px; color: #0c5460; margin-bottom: 15px;">
+                    <strong>🎯 Scope:</strong> These tests work through PageContext with hierarchical scoping. DebugPage can only modify breadcrumbs at or below its scope position.
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <button id="breadcrumb_single" style="padding: 8px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">📄 Single Page</button>
+                    <button id="breadcrumb_multi" style="padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">📚 Multi-level</button>
+                    <button id="breadcrumb_links" style="padding: 8px 12px; background: #fd7e14; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🔗 With Links</button>
+                    <button id="breadcrumb_actions" style="padding: 8px 12px; background: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">⚡ With Actions</button>
+                    <button id="breadcrumb_clear" style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🗑️ Clear</button>
+                  </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <h4 style="margin: 0 0 10px 0; color: #555;">Dynamic PageContext Tests:</h4>
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <button id="breadcrumb_add" style="padding: 8px 12px; background: #198754; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">➕ Add Item</button>
+                    <button id="breadcrumb_remove" style="padding: 8px 12px; background: #e83e8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">➖ Remove Item</button>
+                    <button id="breadcrumb_update" style="padding: 8px 12px; background: #20c997; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🔄 Update Item</button>
+                    <button id="breadcrumb_status" style="padding: 8px 12px; background: #495057; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">📊 Show Status</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- HeaderComponent Direct Tests (Global/Unrestricted) -->
+              <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <div style="margin-bottom: 15px;">
+                  <h4 style="margin: 0 0 10px 0; color: #856404;">🏗️ HeaderComponent Tests (Direct/Global):</h4>
+                  <div style="background: #ffeaa7; padding: 10px; border-radius: 4px; font-size: 12px; color: #856404; margin-bottom: 15px;">
+                    <strong>⚠️ Unrestricted:</strong> These tests bypass PageContext and work directly with BreadcrumbsComponent. No hierarchical scoping - full control over entire breadcrumb trail.
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <button id="header_breadcrumb_basic" style="padding: 8px 12px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🏠 Basic Trail</button>
+                    <button id="header_breadcrumb_complex" style="padding: 8px 12px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🌐 Complex Trail</button>
+                    <button id="header_breadcrumb_interactive" style="padding: 8px 12px; background: #d35400; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">⚡ Interactive</button>
+                    <button id="header_breadcrumb_component_status" style="padding: 8px 12px; background: #a0522d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🔍 Component Status</button>
+                  </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <h4 style="margin: 0 0 10px 0; color: #856404;">Direct Component Operations:</h4>
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <button id="header_breadcrumb_direct_add" style="padding: 8px 12px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">➕ Direct Add</button>
+                    <button id="header_breadcrumb_direct_remove" style="padding: 8px 12px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">➖ Direct Remove</button>
+                    <button id="header_breadcrumb_direct_update" style="padding: 8px 12px; background: #8e44ad; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🔄 Direct Update</button>
+                    <button id="header_breadcrumb_direct_clear" style="padding: 8px 12px; background: #c0392b; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">🗑️ Direct Clear</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div style="background: #fff; padding: 15px; border-radius: 4px; border: 1px solid #dee2e6; font-size: 13px;">
+                <strong>📝 Current Breadcrumbs:</strong> Look at the header above to see the breadcrumbs in action. They will update dynamically as you test different scenarios.<br>
+                <strong>🔄 Comparison:</strong> Use PageContext tests to see hierarchical scoping vs HeaderComponent tests for direct unrestricted access.
               </div>
             </div>
 
@@ -426,6 +493,9 @@ export class DebugPage extends PageComponent {
 
     // Setup Message Simulation Controls
     this.setupMessageSimulationControls();
+    
+    // Setup Breadcrumb Test Controls
+    this.setupBreadcrumbTestControls();
     
     // Setup Layout Events Monitoring
     this.setupLayoutEventsMonitoring();
@@ -2063,6 +2133,602 @@ export class DebugPage extends PageComponent {
       }
     } else {
       this.logToConsole('❌ No hotkeys registered!');
+    }
+  }
+  
+  /**
+   * Setup breadcrumb test controls
+   */
+  private setupBreadcrumbTestControls(): void {
+    // PageContext breadcrumb tests (hierarchical/scoped)
+    this.setupBasicBreadcrumbTests();
+    this.setupDynamicBreadcrumbTests();
+    
+    // HeaderComponent breadcrumb tests (direct/global)
+    this.setupHeaderComponentBreadcrumbTests();
+  }
+  
+  /**
+   * Setup basic breadcrumb test buttons
+   */
+  private setupBasicBreadcrumbTests(): void {
+    // Single page breadcrumb
+    const breadcrumbSingle = document.getElementById('breadcrumb_single');
+    if (breadcrumbSingle) {
+      breadcrumbSingle.addEventListener('click', () => {
+        this.testSinglePageBreadcrumb();
+      });
+    }
+    
+    // Multi-level breadcrumb
+    const breadcrumbMulti = document.getElementById('breadcrumb_multi');
+    if (breadcrumbMulti) {
+      breadcrumbMulti.addEventListener('click', () => {
+        this.testMultiLevelBreadcrumb();
+      });
+    }
+    
+    // Breadcrumb with links
+    const breadcrumbLinks = document.getElementById('breadcrumb_links');
+    if (breadcrumbLinks) {
+      breadcrumbLinks.addEventListener('click', () => {
+        this.testBreadcrumbsWithLinks();
+      });
+    }
+    
+    // Breadcrumb with actions
+    const breadcrumbActions = document.getElementById('breadcrumb_actions');
+    if (breadcrumbActions) {
+      breadcrumbActions.addEventListener('click', () => {
+        this.testBreadcrumbsWithActions();
+      });
+    }
+    
+    // Clear breadcrumbs
+    const breadcrumbClear = document.getElementById('breadcrumb_clear');
+    if (breadcrumbClear) {
+      breadcrumbClear.addEventListener('click', () => {
+        this.clearBreadcrumbs();
+      });
+    }
+  }
+  
+  /**
+   * Setup dynamic breadcrumb test buttons
+   */
+  private setupDynamicBreadcrumbTests(): void {
+    // Add breadcrumb item
+    const breadcrumbAdd = document.getElementById('breadcrumb_add');
+    if (breadcrumbAdd) {
+      breadcrumbAdd.addEventListener('click', () => {
+        this.addBreadcrumbItem();
+      });
+    }
+    
+    // Remove breadcrumb item
+    const breadcrumbRemove = document.getElementById('breadcrumb_remove');
+    if (breadcrumbRemove) {
+      breadcrumbRemove.addEventListener('click', () => {
+        this.removeBreadcrumbItem();
+      });
+    }
+    
+    // Update breadcrumb item
+    const breadcrumbUpdate = document.getElementById('breadcrumb_update');
+    if (breadcrumbUpdate) {
+      breadcrumbUpdate.addEventListener('click', () => {
+        this.updateBreadcrumbItem();
+      });
+    }
+    
+    // Show breadcrumb status
+    const breadcrumbStatus = document.getElementById('breadcrumb_status');
+    if (breadcrumbStatus) {
+      breadcrumbStatus.addEventListener('click', () => {
+        this.showBreadcrumbStatus();
+      });
+    }
+  }
+  
+  /**
+   * Setup HeaderComponent breadcrumb test buttons (direct access)
+   */
+  private setupHeaderComponentBreadcrumbTests(): void {
+    // Basic HeaderComponent tests
+    const headerBasic = document.getElementById('header_breadcrumb_basic');
+    if (headerBasic) {
+      headerBasic.addEventListener('click', () => {
+        this.testHeaderBreadcrumbBasic();
+      });
+    }
+    
+    const headerComplex = document.getElementById('header_breadcrumb_complex');
+    if (headerComplex) {
+      headerComplex.addEventListener('click', () => {
+        this.testHeaderBreadcrumbComplex();
+      });
+    }
+    
+    const headerInteractive = document.getElementById('header_breadcrumb_interactive');
+    if (headerInteractive) {
+      headerInteractive.addEventListener('click', () => {
+        this.testHeaderBreadcrumbInteractive();
+      });
+    }
+    
+    const headerComponentStatus = document.getElementById('header_breadcrumb_component_status');
+    if (headerComponentStatus) {
+      headerComponentStatus.addEventListener('click', () => {
+        this.showHeaderBreadcrumbComponentStatus();
+      });
+    }
+    
+    // Direct component operations
+    const headerDirectAdd = document.getElementById('header_breadcrumb_direct_add');
+    if (headerDirectAdd) {
+      headerDirectAdd.addEventListener('click', () => {
+        this.testHeaderBreadcrumbDirectAdd();
+      });
+    }
+    
+    const headerDirectRemove = document.getElementById('header_breadcrumb_direct_remove');
+    if (headerDirectRemove) {
+      headerDirectRemove.addEventListener('click', () => {
+        this.testHeaderBreadcrumbDirectRemove();
+      });
+    }
+    
+    const headerDirectUpdate = document.getElementById('header_breadcrumb_direct_update');
+    if (headerDirectUpdate) {
+      headerDirectUpdate.addEventListener('click', () => {
+        this.testHeaderBreadcrumbDirectUpdate();
+      });
+    }
+    
+    const headerDirectClear = document.getElementById('header_breadcrumb_direct_clear');
+    if (headerDirectClear) {
+      headerDirectClear.addEventListener('click', () => {
+        this.testHeaderBreadcrumbDirectClear();
+      });
+    }
+  }
+  
+  /**
+   * Get breadcrumbs manager from PageContext
+   */
+  private async getBreadcrumbsManager(): Promise<import('../interfaces/BreadcrumbsManager').BreadcrumbsManager | null> {
+    try {
+      if (!this.hasPageContext()) {
+        console.warn('🍞 DebugPage - PageContext not available');
+        return null;
+      }
+      const pageContext = await this.getPageContext();
+      return pageContext.breadcrumbs();
+    } catch (error) {
+      console.error('🍞 DebugPage - Error getting PageContext:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * Test single page breadcrumb (with proper hierarchical scoping)
+   */
+  private async testSinglePageBreadcrumb(): Promise<void> {
+    const breadcrumbsManager = await this.getBreadcrumbsManager();
+    if (breadcrumbsManager) {
+      const items: BreadcrumbItem[] = [
+        { id: 'DebugPage', text: 'Debug Page' }  // ← Use actual page ID for proper scoping
+      ];
+      breadcrumbsManager.set(items);
+      this.logToConsole('🍞 PageContext - Single page breadcrumb set');
+    } else {
+      this.logToConsole('❌ PageContext - Breadcrumbs manager not available');
+    }
+  }
+  
+  /**
+   * Test multi-level breadcrumb using PageContext (with proper hierarchical scoping)
+   */
+  private async testMultiLevelBreadcrumb(): Promise<void> {
+    const breadcrumbsManager = await this.getBreadcrumbsManager();
+    if (breadcrumbsManager) {
+      const items: BreadcrumbItem[] = [
+        { id: 'DebugPage', text: 'Debug Page' },      // ← Include page ID for proper scoping
+        { id: 'dashboard', text: 'Dashboard' },
+        { id: 'reports', text: 'Reports' },
+        { id: 'analytics', text: 'Analytics' }
+      ];
+      breadcrumbsManager.set(items);
+      this.logToConsole('🍞 PageContext - Multi-level breadcrumb set');
+    } else {
+      this.logToConsole('❌ PageContext - Breadcrumbs manager not available');
+    }
+  }
+  
+  /**
+   * Test breadcrumbs with links using PageContext (with proper hierarchical scoping)
+   */
+  private async testBreadcrumbsWithLinks(): Promise<void> {
+    const breadcrumbsManager = await this.getBreadcrumbsManager();
+    if (breadcrumbsManager) {
+      const items: BreadcrumbItem[] = [
+        { id: 'DebugPage', text: 'Debug Page' },  // ← Page scope starts here
+        { id: 'home', text: 'Home', href: '/', caption: 'Go to homepage' },
+        { id: 'dashboard', text: 'Dashboard', href: '/dashboard', caption: 'View dashboard' }
+      ];
+      breadcrumbsManager.set(items);
+      this.logToConsole('🍞 PageContext - Breadcrumbs with links set');
+    } else {
+      this.logToConsole('❌ PageContext - Breadcrumbs manager not available');
+    }
+  }
+  
+  /**
+   * Test breadcrumbs with actions using PageContext (with proper hierarchical scoping)
+   */
+  private async testBreadcrumbsWithActions(): Promise<void> {
+    const breadcrumbsManager = await this.getBreadcrumbsManager();
+    if (breadcrumbsManager) {
+      const items: BreadcrumbItem[] = [
+        { id: 'DebugPage', text: 'Debug Page' },  // ← Page scope starts here
+        {
+          id: 'dashboard',
+          text: 'Dashboard',
+          clickHandler: (item) => {
+            this.logToConsole(`🍞 Breadcrumb action clicked: ${item.text}`);
+          },
+          caption: 'Click to test action'
+        },
+        {
+          id: 'settings',
+          text: 'Settings',
+          clickHandler: (item) => {
+            this.logToConsole(`🍞 Settings breadcrumb clicked: ${item.text}`);
+            alert(`Breadcrumb action executed: ${item.text}`);
+          },
+          caption: 'Click to show alert'
+        }
+      ];
+      breadcrumbsManager.set(items);
+      this.logToConsole('🍞 PageContext - Breadcrumbs with actions set');
+    } else {
+      this.logToConsole('❌ PageContext - Breadcrumbs manager not available');
+    }
+  }
+  
+  /**
+   * Clear all breadcrumbs using PageContext
+   */
+  private async clearBreadcrumbs(): Promise<void> {
+    const breadcrumbsManager = await this.getBreadcrumbsManager();
+    if (breadcrumbsManager) {
+      breadcrumbsManager.clear();
+      this.logToConsole('🍞 PageContext - All breadcrumbs cleared');
+    } else {
+      this.logToConsole('❌ PageContext - Breadcrumbs manager not available');
+    }
+  }
+  
+  /**
+   * Add a dynamic breadcrumb item using PageContext
+   */
+  private async addBreadcrumbItem(): Promise<void> {
+    const breadcrumbsManager = await this.getBreadcrumbsManager();
+    if (breadcrumbsManager) {
+      const timestamp = Date.now();
+      const newItem: BreadcrumbItem = {
+        id: `dynamic-${timestamp}`,
+        text: `Item ${timestamp % 1000}`,
+        caption: 'Dynamically added',
+        clickHandler: (item) => {
+          this.logToConsole(`🍞 Dynamic item clicked: ${item.text}`);
+        }
+      };
+      breadcrumbsManager.add(newItem);
+      this.logToConsole(`🍞 PageContext - Added dynamic breadcrumb: ${newItem.text}`);
+    } else {
+      this.logToConsole('❌ PageContext - Breadcrumbs manager not available');
+    }
+  }
+  
+  /**
+   * Remove a breadcrumb item using PageContext
+   */
+  private async removeBreadcrumbItem(): Promise<void> {
+    const breadcrumbsManager = await this.getBreadcrumbsManager();
+    if (breadcrumbsManager) {
+      const currentItems = breadcrumbsManager.get();
+      if (currentItems.length > 0) {
+        const itemToRemove = currentItems[currentItems.length - 1];
+        breadcrumbsManager.remove(itemToRemove.id);
+        this.logToConsole(`🍞 PageContext - Removed breadcrumb: ${itemToRemove.text}`);
+      } else {
+        this.logToConsole('🍞 PageContext - No breadcrumbs to remove');
+      }
+    } else {
+      this.logToConsole('❌ PageContext - Breadcrumbs manager not available');
+    }
+  }
+  
+  /**
+   * Update a breadcrumb item using PageContext
+   */
+  private async updateBreadcrumbItem(): Promise<void> {
+    const breadcrumbsManager = await this.getBreadcrumbsManager();
+    if (breadcrumbsManager) {
+      const currentItems = breadcrumbsManager.get();
+      if (currentItems.length > 0) {
+        const itemToUpdate = currentItems[0];
+        const timestamp = Date.now();
+        breadcrumbsManager.update(itemToUpdate.id, {
+          text: `Updated ${timestamp % 1000}`,
+          caption: 'Recently updated'
+        });
+        this.logToConsole(`🍞 PageContext - Updated breadcrumb: ${itemToUpdate.id}`);
+      } else {
+        this.logToConsole('🍞 PageContext - No breadcrumbs to update');
+      }
+    } else {
+      this.logToConsole('❌ PageContext - Breadcrumbs manager not available');
+    }
+  }
+  
+  /**
+   * Show breadcrumb status via PageContext
+   */
+  private async showBreadcrumbStatus(): Promise<void> {
+    const breadcrumbsManager = await this.getBreadcrumbsManager();
+    if (breadcrumbsManager) {
+      const currentItems = breadcrumbsManager.get();
+      this.logToConsole('🍞 PageContext - Breadcrumb Status:');
+      this.logToConsole(`  Available: ${breadcrumbsManager.isAvailable()}`);
+      this.logToConsole(`  Count: ${currentItems.length}`);
+      if (currentItems.length > 0) {
+        this.logToConsole('  Current breadcrumbs:');
+        currentItems.forEach((item: BreadcrumbItem) => {
+          this.logToConsole(`    - ${item.id}: ${item.text}`);
+        });
+      }
+    } else {
+      this.logToConsole('❌ PageContext - Breadcrumbs manager not available');
+    }
+  }
+  
+  /**
+   * Set initial breadcrumb for debug page using PageContext (with proper hierarchical scoping)
+   */
+  private async setInitialBreadcrumb(): Promise<void> {
+    try {
+      const pageContext = await this.getPageContext();
+      const breadcrumbsManager = pageContext.breadcrumbs();
+      
+      if (breadcrumbsManager && breadcrumbsManager.isAvailable()) {
+        const items: BreadcrumbItem[] = [
+          { id: 'DebugPage', text: 'Debug & Testing', caption: 'Development tools' }  // ← Use proper page ID
+        ];
+        breadcrumbsManager.set(items);
+        console.log('🍞 DebugPage - Initial breadcrumbs set via PageContext');
+      } else {
+        console.warn('🍞 DebugPage - BreadcrumbsManager not available for initial setup');
+      }
+    } catch (error) {
+      console.error('🍞 DebugPage - Error setting initial breadcrumbs:', error);
+    }
+  }
+  
+  // =============================================================================
+  // HeaderComponent Breadcrumb Tests (Direct/Global Access)
+  // =============================================================================
+  
+  /**
+   * Get BreadcrumbsComponent directly from HeaderComponent
+   */
+  private getBreadcrumbsComponent(): import('../components/BreadcrumbsComponent').BreadcrumbsComponent | null {
+    try {
+      const layoutContext = this.mainContent.getLayoutContext();
+      const header = layoutContext.getHeader();
+      return header?.getBreadcrumbsComponent() || null;
+    } catch (error) {
+      console.error('🍞 DebugPage - Error getting BreadcrumbsComponent:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * Test basic breadcrumb trail via HeaderComponent
+   */
+  private testHeaderBreadcrumbBasic(): void {
+    const breadcrumbsComponent = this.getBreadcrumbsComponent();
+    if (breadcrumbsComponent) {
+      const items: BreadcrumbItem[] = [
+        { id: 'home', text: 'Home', href: '/' },
+        { id: 'admin', text: 'Administration' },
+        { id: 'debug', text: 'Debug Tools' }
+      ];
+      breadcrumbsComponent.setBreadcrumbs(items);
+      this.logToConsole('🏗️ HeaderComponent - Basic trail set');
+    } else {
+      this.logToConsole('❌ HeaderComponent - BreadcrumbsComponent not available');
+    }
+  }
+  
+  /**
+   * Test complex breadcrumb trail via HeaderComponent
+   */
+  private testHeaderBreadcrumbComplex(): void {
+    const breadcrumbsComponent = this.getBreadcrumbsComponent();
+    if (breadcrumbsComponent) {
+      const items: BreadcrumbItem[] = [
+        { id: 'root', text: 'System', href: '/system', caption: 'System root' },
+        { id: 'workspace', text: 'Workspace', href: '/workspace', caption: 'User workspace' },
+        { id: 'projects', text: 'Projects', href: '/projects', caption: 'All projects' },
+        { id: 'current-project', text: 'Opinion Frontend', caption: 'Current project' },
+        { id: 'tools', text: 'Development Tools', caption: 'Development utilities' },
+        { id: 'debug-console', text: 'Debug Console', caption: 'Debug and testing interface' }
+      ];
+      breadcrumbsComponent.setBreadcrumbs(items);
+      this.logToConsole('🌐 HeaderComponent - Complex trail set');
+    } else {
+      this.logToConsole('❌ HeaderComponent - BreadcrumbsComponent not available');
+    }
+  }
+  
+  /**
+   * Test interactive breadcrumbs with actions via HeaderComponent
+   */
+  private testHeaderBreadcrumbInteractive(): void {
+    const breadcrumbsComponent = this.getBreadcrumbsComponent();
+    if (breadcrumbsComponent) {
+      const items: BreadcrumbItem[] = [
+        {
+          id: 'dashboard',
+          text: 'Dashboard',
+          clickHandler: (item) => {
+            this.logToConsole(`🏗️ HeaderComponent - Dashboard clicked: ${item.text}`);
+            alert(`HeaderComponent Direct Access: ${item.text} clicked!`);
+          },
+          caption: 'Click to test dashboard action'
+        },
+        {
+          id: 'analytics',
+          text: 'Analytics',
+          clickHandler: (item) => {
+            this.logToConsole(`📊 HeaderComponent - Analytics clicked: ${item.text}`);
+            const confirmed = confirm('HeaderComponent Test: Open Analytics in new tab?');
+            if (confirmed) {
+              this.logToConsole('📊 Analytics - User confirmed action');
+            }
+          },
+          caption: 'Click to test analytics action'
+        },
+        {
+          id: 'reports',
+          text: 'Reports',
+          href: '/reports',
+          caption: 'Link to reports page'
+        },
+        {
+          id: 'current',
+          text: 'Debug Interface',
+          caption: 'Current page (display only)'
+        }
+      ];
+      breadcrumbsComponent.setBreadcrumbs(items);
+      this.logToConsole('⚡ HeaderComponent - Interactive breadcrumbs set');
+    } else {
+      this.logToConsole('❌ HeaderComponent - BreadcrumbsComponent not available');
+    }
+  }
+  
+  /**
+   * Show HeaderComponent BreadcrumbsComponent status
+   */
+  private showHeaderBreadcrumbComponentStatus(): void {
+    const breadcrumbsComponent = this.getBreadcrumbsComponent();
+    if (breadcrumbsComponent) {
+      const status = breadcrumbsComponent.getStatus();
+      this.logToConsole('🔍 HeaderComponent - BreadcrumbsComponent Status:');
+      this.logToConsole(`  Component Type: ${status.componentType}`);
+      this.logToConsole(`  ID: ${status.id}`);
+      this.logToConsole(`  Initialized: ${status.initialized}`);
+      this.logToConsole(`  Init Time: ${status.initTime ? new Date(status.initTime).toLocaleTimeString() : 'N/A'}`);
+      this.logToConsole(`  Uptime: ${status.uptime ? Math.round(status.uptime / 1000) + 's' : 'N/A'}`);
+      
+      if (status.domElement) {
+        this.logToConsole(`  DOM Element: ${status.domElement.tagName}#${status.domElement.id || 'no-id'}.${status.domElement.className || 'no-class'}`);
+        this.logToConsole(`  Child Elements: ${status.domElement.childCount}`);
+        this.logToConsole(`  Has Content: ${status.domElement.hasContent}`);
+      }
+      
+      this.logToConsole(`  Event Listeners: ${status.eventListeners.count} (${status.eventListeners.types.join(', ')})`);
+      this.logToConsole(`  Has LayoutContext: ${status.configuration.hasLayoutContext}`);
+      this.logToConsole(`  Current Breadcrumbs: ${status.currentState.breadcrumbsCount}`);
+      
+      if (status.currentState.breadcrumbs.length > 0) {
+        this.logToConsole('  Breadcrumb Details:');
+        status.currentState.breadcrumbs.forEach((breadcrumb: any) => {
+          this.logToConsole(`    - ${breadcrumb.id}: "${breadcrumb.text}" (href: ${breadcrumb.hasHref}, action: ${breadcrumb.hasClickHandler})`);
+        });
+      }
+    } else {
+      this.logToConsole('❌ HeaderComponent - BreadcrumbsComponent not available for status');
+    }
+  }
+  
+  /**
+   * Add breadcrumb directly via HeaderComponent
+   */
+  private testHeaderBreadcrumbDirectAdd(): void {
+    const breadcrumbsComponent = this.getBreadcrumbsComponent();
+    if (breadcrumbsComponent) {
+      const timestamp = Date.now();
+      const newItem: BreadcrumbItem = {
+        id: `header-direct-${timestamp}`,
+        text: `Direct Item ${timestamp % 1000}`,
+        caption: 'Added via HeaderComponent direct access',
+        clickHandler: (item) => {
+          this.logToConsole(`🏗️ HeaderComponent Direct - Item clicked: ${item.text}`);
+        }
+      };
+      breadcrumbsComponent.addBreadcrumb(newItem);
+      this.logToConsole(`🏗️ HeaderComponent (Direct) - Added breadcrumb: ${newItem.text}`);
+    } else {
+      this.logToConsole('❌ HeaderComponent - BreadcrumbsComponent not available for direct add');
+    }
+  }
+  
+  /**
+   * Remove last breadcrumb directly via HeaderComponent
+   */
+  private testHeaderBreadcrumbDirectRemove(): void {
+    const breadcrumbsComponent = this.getBreadcrumbsComponent();
+    if (breadcrumbsComponent) {
+      const currentItems = breadcrumbsComponent.getBreadcrumbs();
+      if (currentItems.length > 0) {
+        const lastItem = currentItems[currentItems.length - 1];
+        breadcrumbsComponent.removeBreadcrumb(lastItem.id);
+        this.logToConsole(`🏗️ HeaderComponent (Direct) - Removed breadcrumb: ${lastItem.text}`);
+      } else {
+        this.logToConsole('🏗️ HeaderComponent (Direct) - No breadcrumbs to remove');
+      }
+    } else {
+      this.logToConsole('❌ HeaderComponent - BreadcrumbsComponent not available for direct remove');
+    }
+  }
+  
+  /**
+   * Update first breadcrumb directly via HeaderComponent
+   */
+  private testHeaderBreadcrumbDirectUpdate(): void {
+    const breadcrumbsComponent = this.getBreadcrumbsComponent();
+    if (breadcrumbsComponent) {
+      const currentItems = breadcrumbsComponent.getBreadcrumbs();
+      if (currentItems.length > 0) {
+        const firstItem = currentItems[0];
+        const timestamp = Date.now();
+        breadcrumbsComponent.updateBreadcrumb(firstItem.id, {
+          text: `Updated ${timestamp % 1000}`,
+          caption: 'Updated via HeaderComponent direct access'
+        });
+        this.logToConsole(`🏗️ HeaderComponent (Direct) - Updated breadcrumb: ${firstItem.id}`);
+      } else {
+        this.logToConsole('🏗️ HeaderComponent (Direct) - No breadcrumbs to update');
+      }
+    } else {
+      this.logToConsole('❌ HeaderComponent - BreadcrumbsComponent not available for direct update');
+    }
+  }
+  
+  /**
+   * Clear all breadcrumbs directly via HeaderComponent
+   */
+  private testHeaderBreadcrumbDirectClear(): void {
+    const breadcrumbsComponent = this.getBreadcrumbsComponent();
+    if (breadcrumbsComponent) {
+      breadcrumbsComponent.clearBreadcrumbs();
+      this.logToConsole('🏗️ HeaderComponent (Direct) - All breadcrumbs cleared');
+    } else {
+      this.logToConsole('❌ HeaderComponent - BreadcrumbsComponent not available for direct clear');
     }
   }
 }

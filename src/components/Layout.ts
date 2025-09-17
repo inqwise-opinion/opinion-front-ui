@@ -228,7 +228,7 @@ export class Layout {
       console.log("✅ LAYOUT - Layout initialization completed successfully!");
     } catch (error) {
       console.error("❌ LAYOUT - Layout initialization failed:", error);
-      console.error("❌ LAYOUT - Error stack:", error.stack);
+      console.error("❌ LAYOUT - Error stack:", (error as Error).stack);
       throw error;
     }
 

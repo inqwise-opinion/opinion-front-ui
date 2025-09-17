@@ -17,6 +17,8 @@ import {
 import { AppHeaderBinderService } from "./services/AppHeaderBinderService";
 import { UserService } from "./services/UserService";
 import { registerService } from "./core/ServiceIdentity";
+import type { LifecycleHandler, ContextHandler } from "./components/Layout";
+import type { LayoutContext } from "./contexts/LayoutContext";
 
 export class OpinionApp {
   private initialized: boolean = false;
@@ -61,7 +63,7 @@ export class OpinionApp {
       console.log("✅ APP.TS - Opinion Front UI - Ready");
     } catch (error) {
       console.error("❌ APP.TS - init() failed:", error);
-      console.error("❌ APP.TS - Error stack:", error.stack);
+      console.error("❌ APP.TS - Error stack:", (error as Error).stack);
       throw error;
     }
   }
@@ -106,86 +108,44 @@ export class OpinionApp {
   private async initializeGlobalLayout(): Promise<void> {
     try {
       // 0. Initialize Layout component first (manages CSS classes and coordination)
-      console.log("🏗️ APP.TS - Initializing Layout coordinator...");
+      console.log("🏢 APP.TS - Initializing Layout coordinator...");
       this.layout = new Layout();
 
-        await this.layout
-        .onContextReady((ctx) => {
-          console.log('🏗️ APP.TS - Layout context ready callback 1 - setting up sidebar navigation');
-          ctx.getSidebar()?.updateNavigation([
-            {
-              id: "dashboard",
-              text: "Dashboard",
-              icon: "dashboard",
-              href: "/dashboard",
-              caption: "View analytics, reports and key metrics",
-              active: false,
-            },
-            {
-              id: "surveys",
-              text: "Surveys",
-              icon: "poll",
-              href: "/surveys",
-              caption: "Create and manage survey questionnaires",
-              active: false,
-            },
-            {
-              id: "debug",
-              text: "Debug",
-              icon: "bug_report",
-              href: "/",
-              caption: "Development tools and troubleshooting",
-              active: false,
-            },
-          ]);
-
-          ctx.getSidebar()?.setActivePage("debug");
-
-          ctx.getHeader()?.setUserMenuHandler((user) => {
-            user.updateMenuItems([
-              {
-                id: "account",
-                text: "Account Settings",
-                icon: "settings",
-                href: "/account",
-                type: "link",
-              },
-              {
-                id: "feedback",
-                text: "Send Feedback",
-                icon: "feedback",
-                action: "feedback",
-                type: "action",
-              },
-              {
-                id: "divider1",
-                text: "",
-                icon: "",
-                type: "divider",
-              },
-              {
-                id: "logout",
-                text: "Sign Out",
-                icon: "logout",
-                action: "logout",
-                type: "action",
-                className: "user-menu-signout",
-                style: "color: #dc3545;",
-              },
-            ]);
-          });
-
-          // Note: User data will be set by AppHeaderBinderService after authentication
-          // No hardcoded user data here
-          console.log('🏗️ APP.TS - Layout context ready callback 1 - configuration complete');
-        })
+      // Register formal handlers using the new handler system
+      await this.layout
+        .setContextHandler(
+          {
+            id: 'app-layout-configuration',
+            priority: 800, // High priority for layout setup
+            onContextReady: (context) => {
+              this.configureLayout(context);
+            }
+          },
+          {
+            enableLogging: true,
+            continueOnError: false, // Layout configuration is critical
+            timeout: 5000,
+          }
+        )
+        .setContextHandler(
+          {
+            id: 'app-service-registration',
+            priority: 700, // Lower priority, runs after layout config
+            onContextReady: async (context) => {
+              await this.registerServices(context);
+            }
+          },
+          {
+            enableLogging: true,
+            continueOnError: false, // Service registration is critical
+            timeout: 15000, // More time for service initialization
+          }
+        )
         .init();
       console.log("✅ APP.TS - Layout coordinator initialized");
 
-      // Register authentication services after layout is ready
-      console.log("🔐 APP.TS - Registering authentication services...");
-      await this.initializeAuthenticationServices();
-      console.log("✅ APP.TS - Authentication services registered");
+      // Note: Authentication services are now registered via formal handler pattern
+      // See app-service-registration handler above
 
       // Semantic structure is now complete:
       // <nav class="app-sidebar"> (created by AppHeader)
@@ -199,22 +159,13 @@ export class OpinionApp {
   }
 
   /**
-   * Initialize and register authentication services
+   * Register services using the formal handler pattern
+   * This method creates a LifecycleHandler for service registration
    */
-  private async initializeAuthenticationServices(): Promise<void> {
-    if (!this.layout) {
-      throw new Error(
-        "Layout must be initialized before authentication services",
-      );
-    }
+  private registerServices(context: LayoutContext): Promise<void> {
+    console.log('🔐 APP.TS - Service registration handler - Starting service registration...');
 
-    // Get the layout context for service registration
-    this.layout.onContextReady(async (ctx) => {
-      console.log('🔐 APP.TS - Layout context ready callback 2 - starting authentication services initialization');
-      console.log(
-        '🔐 APP.TS - Initializing authentication services with layout context...',
-      );
-
+    return new Promise(async (resolve, reject) => {
       try {
         // Create MockSessionAuthProvider instance
         const mockAuthProvider = new MockSessionAuthProvider(this.apiService, {
@@ -224,31 +175,31 @@ export class OpinionApp {
         });
 
         // Register MockSessionAuthProvider using type-safe registration
-        registerService(ctx, MockSessionAuthProvider, mockAuthProvider);
+        registerService(context, MockSessionAuthProvider, mockAuthProvider);
 
         // Register AuthService using type-safe registration and configuration
-        const authService = new AuthService(ctx, {
+        const authService = new AuthService(context, {
           authProviderServiceId: MockSessionAuthProvider.SERVICE_ID, // Type-safe reference!
           autoValidate: false,
         });
-        registerService(ctx, AuthService, authService);
+        registerService(context, AuthService, authService);
 
         // Register UserService using type-safe registration and configuration
-        const userService = new UserService(ctx, {
+        const userService = new UserService(context, {
           authServiceId: AuthService.SERVICE_ID,                        // Type-safe reference!
           sessionAuthProviderServiceId: MockSessionAuthProvider.SERVICE_ID, // Type-safe reference!
         });
-        registerService(ctx, UserService, userService);
+        registerService(context, UserService, userService);
 
         // Register AppHeaderBinderService with type-safe service references
-        const authServiceRef = AuthService.getRegisteredReference(ctx);
+        const authServiceRef = AuthService.getRegisteredReference(context);
         const appHeaderBinderService = new AppHeaderBinderService(
           authServiceRef,
-          ctx,
+          context,
           { updateOnInit: true },
         );
         // Use self-identifying service ID for registration
-        registerService(ctx, AppHeaderBinderService, appHeaderBinderService);
+        registerService(context, AppHeaderBinderService, appHeaderBinderService);
         console.log(
           `✅ APP.TS - AppHeaderBinderService registered as '${AppHeaderBinderService.SERVICE_ID}'`,
         );
@@ -278,14 +229,93 @@ export class OpinionApp {
             "⚠️ APP.TS - App will continue in non-authenticated state",
           );
         }
+
+        resolve();
       } catch (error) {
         console.error(
-          "❌ APP.TS - Failed to initialize authentication services:",
+          "❌ APP.TS - Service registration failed:",
           error,
         );
-        throw error;
+        reject(error);
       }
     });
+  }
+
+  /**
+   * Configure layout components using the formal handler pattern
+   * This method handles sidebar navigation and user menu setup
+   */
+  private configureLayout(context: LayoutContext): void {
+    console.log('🏢 APP.TS - Layout configuration handler - Setting up layout components...');
+
+    // Setup sidebar navigation
+    context.getSidebar()?.updateNavigation([
+      {
+        id: "dashboard",
+        text: "Dashboard",
+        icon: "dashboard",
+        href: "/dashboard",
+        caption: "View analytics, reports and key metrics",
+        active: false,
+      },
+      {
+        id: "surveys",
+        text: "Surveys",
+        icon: "poll",
+        href: "/surveys",
+        caption: "Create and manage survey questionnaires",
+        active: false,
+      },
+      {
+        id: "debug",
+        text: "Debug",
+        icon: "bug_report",
+        href: "/",
+        caption: "Development tools and troubleshooting",
+        active: false,
+      },
+    ]);
+
+    context.getSidebar()?.setActivePage("debug");
+
+    // Setup user menu handler
+    context.getHeader()?.setUserMenuHandler((user) => {
+      user.updateMenuItems([
+        {
+          id: "account",
+          text: "Account Settings",
+          icon: "settings",
+          href: "/account",
+          type: "link",
+        },
+        {
+          id: "feedback",
+          text: "Send Feedback",
+          icon: "feedback",
+          action: "feedback",
+          type: "action",
+        },
+        {
+          id: "divider1",
+          text: "",
+          icon: "",
+          type: "divider",
+        },
+        {
+          id: "logout",
+          text: "Sign Out",
+          icon: "logout",
+          action: "logout",
+          type: "action",
+          className: "user-menu-signout",
+          style: "color: #dc3545;",
+        },
+      ]);
+    });
+
+    // Note: User data will be set by AppHeaderBinderService after authentication
+    // No hardcoded user data here
+    console.log('✅ APP.TS - Layout configuration handler - Configuration complete');
   }
 
   /**
@@ -314,7 +344,7 @@ export class OpinionApp {
       `🎯 APP.TS - Showing ${type} message from ${source || "unknown"}`,
     );
 
-    // Use the layout's error message system via onContextReady pattern
+    // Use the layout's error message system via onContextReady pattern (legacy for test messages)
     this.layout.onContextReady((ctx) => {
       switch (type) {
         case "error":
@@ -372,6 +402,7 @@ export class OpinionApp {
       return;
     }
 
+    // Legacy onContextReady for test message handling
     this.layout.onContextReady((ctx) => {
       ctx.getMessages()?.clearAll();
     });
@@ -402,7 +433,7 @@ export class OpinionApp {
       // Pages will now render their content inside the semantic <main> element
       if (path === "/") {
         console.log("🎯 APP.TS - Creating DebugPage for root path...");
-        this.currentPage = new DebugPage(this.layout?.getMainContent());
+        this.currentPage = new DebugPage(this.layout!.getMainContent()!);
         console.log("🎯 APP.TS - Initializing DebugPage...");
         await this.currentPage.init();
         console.log("✅ APP.TS - DebugPage initialized successfully");
@@ -421,7 +452,7 @@ export class OpinionApp {
       else {
         console.warn(`⚠️ APP.TS - Unknown route: ${path}`);
         console.log("🎯 APP.TS - Fallback: Creating DebugPage...");
-        this.currentPage = new DebugPage(this.layout.getMainContent());
+        this.currentPage = new DebugPage(this.layout!.getMainContent()!);
         console.log("🎯 APP.TS - Initializing fallback DebugPage...");
         await this.currentPage.init();
         console.log("✅ APP.TS - Fallback DebugPage initialized successfully");
@@ -431,7 +462,7 @@ export class OpinionApp {
         `❌ APP.TS - Failed to load page for route ${path}:`,
         error,
       );
-      console.error(`❌ APP.TS - Route error stack:`, error.stack);
+      console.error(`❌ APP.TS - Route error stack:`, (error as Error).stack);
       // Show error page or fallback
       throw error;
     }

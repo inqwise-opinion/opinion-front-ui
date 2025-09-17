@@ -28,6 +28,7 @@ import type {
   ChainHotkeyProvider,
   ChainExecutionResult,
 } from "../hotkeys/HotkeyChainSystem";
+import type { PageContext, PageContextConfig } from "../interfaces/PageContext";
 
 export interface LayoutViewPort {
   width: number;
@@ -204,4 +205,29 @@ export interface LayoutContext extends ActivePageProvider, ServiceRegistry {
    * Get the current layout mode type
    */
   getModeType(): LayoutModeType;
+
+  // =================================================================================
+  // PageContext Management
+  // =================================================================================
+
+  /**
+   * Create a PageContext for the given page (Promise-based for async initialization)
+   * @param page The page to create context for
+   * @param config Optional configuration for the PageContext
+   * @returns Promise resolving to the PageContext instance
+   */
+  getPageContext(page: ActivePage, config?: PageContextConfig): Promise<PageContext>;
+
+  /**
+   * Get an existing PageContext for a page if it exists
+   * @param page The page to get context for
+   * @returns PageContext instance or null if not found
+   */
+  getExistingPageContext(page: ActivePage): PageContext | null;
+
+  /**
+   * Clear PageContext for a specific page
+   * @param page The page to clear context for
+   */
+  clearPageContext(page: ActivePage): void;
 }

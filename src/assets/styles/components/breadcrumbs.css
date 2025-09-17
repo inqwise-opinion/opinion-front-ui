@@ -1,0 +1,166 @@
+/**
+ * Breadcrumbs Component Styles
+ * Consistent styling for dynamic breadcrumb navigation
+ */
+
+.breadcrumbs-nav {
+  display: flex;
+  align-items: center;
+  min-height: 1.5rem;
+}
+
+.breadcrumbs-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  gap: 0;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.breadcrumb-link,
+.breadcrumb-button,
+.breadcrumb-span {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #6c757d;
+  transition: color 0.2s ease;
+  background: none;
+  border: none;
+  padding: 0.25rem 0.375rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.breadcrumb-link:hover,
+.breadcrumb-button:hover {
+  color: #0056b3;
+  background-color: rgba(0, 123, 255, 0.08);
+  transform: translateY(-0.5px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumb-span {
+  cursor: default;
+}
+
+.breadcrumb-current .breadcrumb-link,
+.breadcrumb-current .breadcrumb-button,
+.breadcrumb-current .breadcrumb-span {
+  color: #212529;
+  font-weight: 600;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Optional: Show captions as tooltips on hover - uncomment if desired */
+/*
+.breadcrumb-link:hover .breadcrumb-caption,
+.breadcrumb-button:hover .breadcrumb-caption {
+  display: inline;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  font-size: 12px;
+  margin-bottom: 0.25rem;
+}
+*/
+
+.breadcrumb-text {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.breadcrumb-caption {
+  font-size: 11px;
+  color: #6c757d;
+  margin-left: 0.5rem;
+  font-style: italic;
+  display: none; /* Hidden by default for cleaner look */
+}
+
+.breadcrumb-separator {
+  display: flex;
+  align-items: center;
+  color: #adb5bd;
+  margin: 0 0.0625rem;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.breadcrumb-separator svg {
+  width: 5px;
+  height: 8px;
+}
+
+.breadcrumb-empty .breadcrumb-text {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+  .breadcrumbs-list {
+    gap: 0;
+  }
+  
+  .breadcrumb-link,
+  .breadcrumb-button,
+  .breadcrumb-span {
+    padding: 0.125rem 0.25rem;
+    font-size: 13px;
+  }
+  
+  .breadcrumb-separator {
+    margin: 0 0.03125rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .breadcrumb-link,
+  .breadcrumb-button {
+    border: 1px solid transparent;
+  }
+  
+  .breadcrumb-link:hover,
+  .breadcrumb-button:hover {
+    border-color: #007bff;
+  }
+}
+
+/* Focus styles for accessibility */
+.breadcrumb-link:focus,
+.breadcrumb-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Clickable breadcrumb items styling */
+.breadcrumb-clickable .breadcrumb-link,
+.breadcrumb-clickable .breadcrumb-button {
+  cursor: pointer;
+}
+
+.breadcrumb-clickable:not(.breadcrumb-current) .breadcrumb-link:hover,
+.breadcrumb-clickable:not(.breadcrumb-current) .breadcrumb-button:hover {
+  color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+}

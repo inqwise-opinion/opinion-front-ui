@@ -380,6 +380,108 @@ test('should close both sidebar and user menu cooperatively', async () => {
 });
 ```
 
+### Hierarchical Breadcrumbs Architecture
+
+> **🍞 NEW SYSTEM:** Page-scoped breadcrumb management with hierarchical scoping and fallback behavior
+
+The application implements a **Hierarchical Breadcrumbs System** that provides safe, scoped breadcrumb management where each page can only modify breadcrumbs at or below its level in the hierarchy.
+
+**Key Features:**
+- **Page-Scoped Operations**: Each page can only modify breadcrumbs at or below its hierarchy level
+- **Parent Protection**: Breadcrumbs above the current page's scope remain untouched
+- **Case-Insensitive Search**: Finds page scope using exact match first, then case-insensitive fallback
+- **Append-Only Fallback**: When page ID not found, scope limited to append-only after existing items
+- **Silent Scope Enforcement**: Operations on out-of-scope items are silently ignored
+- **Async Safety**: All operations handle component unavailability gracefully
+
+**Architecture Components:**
+- **HierarchicalBreadcrumbsManagerImpl**: Page-scoped breadcrumb manager with hierarchical enforcement
+- **BreadcrumbsManagerImpl**: Original flat breadcrumb manager (legacy compatibility)
+- **BreadcrumbsComponent**: UI component that renders breadcrumbs and handles interactions
+- **PageContext Integration**: Automatic hierarchical manager instantiation for pages
+
+**Scoping Behavior Example:**
+```typescript
+// Global breadcrumb state: Home > Dashboard > Reports > Chart
+// Current page: ReportsPage (scope starts at "Reports")
+
+const breadcrumbsManager = await pageContext.breadcrumbs();
+
+// ✅ This works - modifies only the scoped portion
+breadcrumbsManager.set([
+  { id: 'ReportsPage', text: 'Reports' },     // Scope starts here
+  { id: 'analytics', text: 'Analytics' },
+  { id: 'dashboard', text: 'Dashboard View' }
+]);
+// Result: Home > Dashboard > Reports > Analytics > Dashboard View
+
+// ✅ This works - adds to scoped portion
+breadcrumbsManager.add({ id: 'details', text: 'Details' });
+// Result: Home > Dashboard > Reports > Analytics > Dashboard View > Details
+
+// ❌ This is ignored - trying to modify parent scope
+breadcrumbsManager.remove('home'); // Silently ignored
+// Result: Home > Dashboard > Reports > Analytics > Dashboard View > Details (unchanged)
+```
+
+**Fallback Behavior:**
+```typescript
+// When page ID not found in current breadcrumbs
+// Current state: Home > Settings > User Profile
+// DebugPage tries to set breadcrumbs but "DebugPage" not found
+
+breadcrumbsManager.set([
+  { id: 'DebugPage', text: 'Debug' },
+  { id: 'tools', text: 'Tools' }
+]);
+// Result: Home > Settings > User Profile > Debug > Tools (appended)
+// Warning logged: "Page ID 'DebugPage' not found, scope limited to append-only"
+```
+
+**PageContext Integration:**
+```typescript
+// Pages automatically get hierarchical breadcrumb management
+class MyPage extends PageComponent {
+  async someMethod() {
+    const pageContext = await this.getPageContext();
+    const breadcrumbs = pageContext.breadcrumbs(); // HierarchicalBreadcrumbsManagerImpl
+    
+    // Safe scoped operations
+    breadcrumbs.set([{ id: 'MyPage', text: 'My Page' }]);
+    breadcrumbs.add({ id: 'section', text: 'Section' });
+    breadcrumbs.clear(); // Clears only scoped items
+  }
+}
+```
+
+**Direct Component Access (Unrestricted):**
+```typescript
+// For cases requiring full breadcrumb control (use carefully)
+const layoutContext = this.mainContent.getLayoutContext();
+const header = layoutContext.getHeader();
+const breadcrumbsComponent = header.getBreadcrumbsComponent();
+
+// ⚠️ Unrestricted access - can modify entire breadcrumb trail
+breadcrumbsComponent.setBreadcrumbs([
+  { id: 'root', text: 'Root' },
+  { id: 'section', text: 'Section' },
+  { id: 'page', text: 'Page' }
+]); // Replaces entire trail
+```
+
+**Debug and Testing:**
+The DebugPage includes comprehensive breadcrumb testing with both approaches:
+- **📋 PageContext Tests**: Hierarchical/scoped breadcrumb management
+- **🏗️ HeaderComponent Tests**: Direct/unrestricted component access
+- **Component Status**: Detailed BreadcrumbsComponent state inspection
+- **Scoping Visualization**: Compare behavior between scoped and direct access
+
+**Migration Guide:**
+1. **New Pages**: Use PageContext breadcrumbs (automatic hierarchical scoping)
+2. **Legacy Pages**: Existing code continues working, gradually migrate to PageContext
+3. **Router Integration**: Router should establish parent hierarchy, pages manage their scope
+4. **Direct Access**: Reserve for special cases requiring full breadcrumb control
+
 ## Testing Guidelines
 
 ### Component Testing Approach

@@ -8,7 +8,9 @@ import "../assets/styles/components/header.css";
 
 // Import required components
 import { UserMenu } from "./UserMenu";
+import { BreadcrumbsComponent } from "./BreadcrumbsComponent";
 import type { UserMenuItem } from "./Layout";
+import type { BreadcrumbItem } from "../interfaces/BreadcrumbItem";
 
 // Type-only import for the interface
 import { Dimensions } from "./Sidebar";
@@ -36,6 +38,7 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
   private userMenuHandler?: (userMenu: UserMenu) => void;
   private container: HTMLElement | null = null;
   private userMenu: UserMenu | null = null;
+  private breadcrumbsComponent: BreadcrumbsComponent | null = null;
   private user: HeaderUser | null = null;
   private resizeTimeout: NodeJS.Timeout | null = null;
   private layoutContext: LayoutContext;
@@ -89,6 +92,9 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
 
       console.log(`AppHeaderImpl - Current viewport: ${window.innerWidth}px`);
 
+      // Initialize breadcrumbs component
+      await this.initBreadcrumbs();
+      
       // Initialize user menu component (desktop only)
       await this.initUserMenu();
 
@@ -184,26 +190,10 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
 
     const breadcrumbsHtml = this.config.showBreadcrumbs
       ? `
-        <nav class="header-breadcrumbs" aria-label="Breadcrumb">
-          <ol class="breadcrumb-list">
-            <!-- Current Page (Menu Item) -->
-            <li class="breadcrumb-item breadcrumb-current" aria-current="page">
-              <span class="breadcrumb-text" id="current_page_title">Dashboard</span>
-            </li>
-
-            <!-- Separator (for future sub-pages) -->
-            <li class="breadcrumb-separator" aria-hidden="true" id="breadcrumb_separator" style="display: none;">
-              <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L4.5 5L1 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </li>
-
-            <!-- Sub-page (dynamically added when needed) -->
-            <li class="breadcrumb-item breadcrumb-subpage" id="breadcrumb_subpage" style="display: none;">
-              <span class="breadcrumb-text" id="subpage_title"></span>
-            </li>
-          </ol>
-        </nav>
+        <!-- Breadcrumbs container - managed by BreadcrumbsComponent -->
+        <div class="header-breadcrumbs" id="breadcrumbs_container">
+          <!-- BreadcrumbsComponent will render content here -->
+        </div>
     `
       : "";
 
@@ -230,6 +220,30 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
         ${userMenuHtml}
       </div>
     `;
+  }
+
+  /**
+   * Initialize breadcrumbs component
+   */
+  private async initBreadcrumbs(): Promise<void> {
+    if (!this.config.showBreadcrumbs) {
+      console.log(
+        "AppHeaderImpl - Breadcrumbs disabled in config, skipping initialization",
+      );
+      return;
+    }
+
+    const breadcrumbsContainer = await this.waitForElement("#breadcrumbs_container");
+    if (breadcrumbsContainer) {
+      this.breadcrumbsComponent = new BreadcrumbsComponent(
+        breadcrumbsContainer,
+        this.layoutContext
+      );
+      await this.breadcrumbsComponent.init();
+      console.log("AppHeaderImpl - BreadcrumbsComponent initialized");
+    } else {
+      console.warn("AppHeaderImpl - Breadcrumbs container not found");
+    }
   }
 
   /**
@@ -512,42 +526,50 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
   }
 
   /**
-   * Update breadcrumbs with main page and optional sub-page
+   * Update breadcrumbs with main page and optional sub-page (Legacy method)
+   * @deprecated Use setBreadcrumbItems() instead for dynamic breadcrumb support
    * @param mainPage - The main menu item (e.g., "Dashboard", "Surveys")
    * @param subPage - Optional sub-page (e.g., "Settings", "Create Survey")
    */
   updateBreadcrumbs(mainPage: string, subPage?: string): void {
-    const mainPageElement = document.getElementById("current_page_title");
-    const separator = document.getElementById("breadcrumb_separator");
-    const subPageContainer = document.getElementById("breadcrumb_subpage");
-    const subPageElement = document.getElementById("subpage_title");
-
-    if (mainPageElement) {
-      mainPageElement.textContent = mainPage;
+    console.log(`AppHeaderImpl - Legacy breadcrumb update: ${mainPage}${subPage ? ` > ${subPage}` : ''}`);
+    
+    // Convert to new breadcrumb format
+    const breadcrumbs: BreadcrumbItem[] = [
+      { id: 'main', text: mainPage }
+    ];
+    
+    if (subPage) {
+      breadcrumbs.push({ id: 'sub', text: subPage });
     }
+    
+    this.setBreadcrumbItems(breadcrumbs);
+  }
 
-    if (subPage && separator && subPageContainer && subPageElement) {
-      // Show separator and sub-page
-      separator.style.display = "flex";
-      subPageContainer.style.display = "flex";
-      subPageElement.textContent = subPage;
-
-      // Update document title
-      document.title = `${subPage} - ${mainPage} - Opinion`;
-
-      console.log(
-        `AppHeaderImpl - Breadcrumbs updated: ${mainPage} > ${subPage}`,
-      );
+  /**
+   * Set breadcrumb items using new BreadcrumbsComponent
+   */
+  setBreadcrumbItems(items: BreadcrumbItem[]): void {
+    if (this.breadcrumbsComponent) {
+      this.breadcrumbsComponent.setBreadcrumbs(items);
+      
+      // Update document title based on breadcrumbs
+      if (items.length > 0) {
+        const titleParts = items.map(item => item.text).reverse();
+        document.title = `${titleParts.join(' - ')} - Opinion`;
+      } else {
+        document.title = 'Opinion';
+      }
     } else {
-      // Hide separator and sub-page
-      if (separator) separator.style.display = "none";
-      if (subPageContainer) subPageContainer.style.display = "none";
-
-      // Update document title
-      document.title = `${mainPage} - Opinion`;
-
-      console.log(`AppHeaderImpl - Breadcrumbs updated: ${mainPage}`);
+      console.warn("AppHeaderImpl - BreadcrumbsComponent not initialized");
     }
+  }
+
+  /**
+   * Get breadcrumbs component for direct access
+   */
+  getBreadcrumbsComponent(): BreadcrumbsComponent | null {
+    return this.breadcrumbsComponent;
   }
 
   /**

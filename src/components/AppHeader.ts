@@ -4,6 +4,7 @@
  */
 
 import UserMenu from "./UserMenu";
+import type { BreadcrumbsComponent } from "./BreadcrumbsComponent";
 import { ComponentReference, ComponentReferenceConfig } from "./ComponentReference";
 import type { LayoutContext } from "../contexts/LayoutContext";
 
@@ -74,6 +75,11 @@ export interface AppHeader {
    * Set user menu handler
    */
   setUserMenuHandler(handler: (userMenu: UserMenu) => void): void;
+  
+  /**
+   * Get breadcrumbs component for direct access
+   */
+  getBreadcrumbsComponent(): BreadcrumbsComponent | null;
 }
 
 /**
