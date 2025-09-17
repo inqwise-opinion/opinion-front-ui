@@ -279,44 +279,6 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
     }
   }
 
-  /**
-   * Show loading state - delegates to MainContent
-   */
-  protected showLoading(message: string = "Loading..."): void {
-    if (this.mainContent.isReady()) {
-      this.mainContent.setLoading(true);
-    }
-    console.log(`${this.constructor.name}: ${message}`);
-  }
-
-  /**
-   * Hide loading state - delegates to MainContent
-   */
-  protected hideLoading(): void {
-    if (this.mainContent.isReady()) {
-      this.mainContent.setLoading(false);
-    }
-    console.log(`${this.constructor.name}: Loading complete`);
-  }
-
-  /**
-   * Show error message - delegates to MainContent
-   */
-  protected showError(message: string, error?: Error): void {
-    if (this.mainContent.isReady()) {
-      this.mainContent.setError(message);
-    }
-    console.error(`${this.constructor.name}: ${message}`, error);
-  }
-
-  /**
-   * Clear error state - delegates to MainContent
-   */
-  protected clearError(): void {
-    if (this.mainContent.isReady()) {
-      this.mainContent.setError(null);
-    }
-  }
 
   /**
    * Get element with error handling

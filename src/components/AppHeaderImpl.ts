@@ -320,9 +320,9 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
       );
     }
 
-    // Update header position based on current sidebar state
-    console.log(`🔄 AppHeaderImpl - Updating position due to resize...`);
-    this.updatePosition();
+    // Update header layout based on current layout context state
+    console.log(`🔄 AppHeaderImpl - Updating layout due to resize...`);
+    this.updateHeaderLayout(this.layoutContext);
   }
 
   /**
@@ -512,39 +512,7 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
     }
   }
 
-  /**
-   * Update page title in header breadcrumb
-   */
-  updatePageTitle(title: string): void {
-    const pageTitleElement = document.getElementById("current_page_title");
-    if (pageTitleElement) {
-      pageTitleElement.textContent = title;
-      console.log("AppHeaderImpl - Page title updated:", title);
-    } else {
-      console.warn("AppHeaderImpl - Page title element not found");
-    }
-  }
 
-  /**
-   * Update breadcrumbs with main page and optional sub-page (Legacy method)
-   * @deprecated Use setBreadcrumbItems() instead for dynamic breadcrumb support
-   * @param mainPage - The main menu item (e.g., "Dashboard", "Surveys")
-   * @param subPage - Optional sub-page (e.g., "Settings", "Create Survey")
-   */
-  updateBreadcrumbs(mainPage: string, subPage?: string): void {
-    console.log(`AppHeaderImpl - Legacy breadcrumb update: ${mainPage}${subPage ? ` > ${subPage}` : ''}`);
-    
-    // Convert to new breadcrumb format
-    const breadcrumbs: BreadcrumbItem[] = [
-      { id: 'main', text: mainPage }
-    ];
-    
-    if (subPage) {
-      breadcrumbs.push({ id: 'sub', text: subPage });
-    }
-    
-    this.setBreadcrumbItems(breadcrumbs);
-  }
 
   /**
    * Set breadcrumb items using new BreadcrumbsComponent
@@ -710,34 +678,6 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
     );
   }
 
-  /**
-   * Get current header position information
-   */
-  public getHeaderPosition(): {
-    left: number;
-    width: number;
-    right: number;
-  } | null {
-    if (!this.container) return null;
-
-    const rect = this.container.getBoundingClientRect();
-    return {
-      left: rect.left,
-      width: rect.width,
-      right: rect.right,
-    };
-  }
-
-  /**
-   * Force update header position (useful after window resize)
-   * Uses current layout context state instead of deprecated sidebar querying
-   */
-  public updatePosition(): void {
-    console.log("🔄 AppHeaderImpl - Force updating position (manual trigger)");
-
-    // Update header layout using current layout mode from layout context
-    this.updateHeaderLayout(this.layoutContext);
-  }
 
   /**
    * Cleanup when component is destroyed

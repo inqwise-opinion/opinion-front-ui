@@ -632,6 +632,11 @@ These contain the original servlet-based implementation patterns being migrated 
 - **[`phase3-task3.3-subtasks.md`](docs/phase3-task3.3-subtasks.md)**: Development subtask breakdown
 - **[`timer-alternatives.md`](docs/timer-alternatives.md)**: Timer implementation alternatives
 
+**🚀 Future Development Plans:**
+- **Central Loading State System**: Implement comprehensive loading state management in MainContent component for consistent loading UX across all pages
+- **Modal Error Dialog System**: Create centralized modal error handling system (complementing existing non-modal Messages system) for critical errors requiring user attention
+- **Enhanced MainContent Features**: Expand MainContent capabilities with loading overlays, skeleton screens, and contextual error states
+
 **🔍 Testing & Quality:**
 - **[`error-message-tests.md`](docs/error-message-tests.md)**: Error handling test patterns
 - **[`error-messages.md`](docs/error-messages.md)**: Error message system documentation

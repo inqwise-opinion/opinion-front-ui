@@ -177,29 +177,6 @@ export class MainContentImpl implements MainContent, ComponentWithStatus {
     console.log("MainContent - Content updated");
   }
 
-  /**
-   * Append content to the main area
-   */
-  appendContent(content: string | HTMLElement): void {
-    if (!this.container) {
-      console.warn("MainContent - Cannot append content: not initialized");
-      return;
-    }
-
-    if (typeof content === "string") {
-      const temp = document.createElement("div");
-      temp.innerHTML = content;
-      while (temp.firstChild) {
-        this.container.appendChild(temp.firstChild);
-      }
-    } else {
-      this.container.appendChild(content);
-    }
-
-    this.contentUpdateCount++;
-    this.lastContentUpdate = Date.now();
-    console.log("MainContent - Content appended");
-  }
 
   /**
    * Clear all content from main area
@@ -216,72 +193,7 @@ export class MainContentImpl implements MainContent, ComponentWithStatus {
     console.log("MainContent - Content cleared");
   }
 
-  /**
-   * Add CSS class to main element
-   */
-  addClass(className: string): void {
-    if (!this.container) {
-      console.warn("MainContent - Cannot add class: not initialized");
-      return;
-    }
 
-    this.container.classList.add(className);
-  }
-
-  /**
-   * Remove CSS class from main element
-   */
-  removeClass(className: string): void {
-    if (!this.container) {
-      console.warn("MainContent - Cannot remove class: not initialized");
-      return;
-    }
-
-    this.container.classList.remove(className);
-  }
-
-  /**
-   * Toggle CSS class on main element
-   */
-  toggleClass(className: string): void {
-    if (!this.container) {
-      console.warn("MainContent - Cannot toggle class: not initialized");
-      return;
-    }
-
-    this.container.classList.toggle(className);
-  }
-
-  /**
-   * Update main content configuration
-   */
-  updateConfig(config: Partial<MainContentConfig>): void {
-    this.config = { ...this.config, ...config };
-
-    if (!this.container) return;
-
-    // Update className if changed
-    if (config.className) {
-      this.container.className = config.className;
-    }
-
-    // Update id if changed
-    if (config.id) {
-      this.container.id = config.id;
-    }
-
-    // Update role if changed
-    if (config.role) {
-      this.container.setAttribute("role", config.role);
-    }
-
-    // Update aria-label if changed
-    if (config.ariaLabel) {
-      this.container.setAttribute("aria-label", config.ariaLabel);
-    }
-
-    console.log("MainContent - Configuration updated");
-  }
 
   /**
    * Get the main content element
@@ -290,12 +202,6 @@ export class MainContentImpl implements MainContent, ComponentWithStatus {
     return this.container;
   }
 
-  /**
-   * Get current configuration
-   */
-  getConfig(): MainContentConfig {
-    return { ...this.config };
-  }
 
   /**
    * Check if main content is initialized
