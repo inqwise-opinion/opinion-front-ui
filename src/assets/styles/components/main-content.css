@@ -137,6 +137,52 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+/* Empty state treatment - background and spinner while content loads */
+.app-main:empty {
+  position: relative;
+  min-height: 40vh;
+}
+
+/* Background layer - subtle gradient with radial accents */
+.app-main:empty::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(1000px 400px at 10% -10%, rgba(59,130,246,0.06), transparent 60%),
+    radial-gradient(1000px 400px at 90% 110%, rgba(59,130,246,0.06), transparent 60%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+/* Centered spinner with motion/reduced-motion support */
+.app-main:empty::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 4px solid #e9ecef;
+  border-top-color: #007bff;
+  animation: appMainSpin 1s linear infinite;
+}
+
+/* Respect reduced motion settings */
+@media (prefers-reduced-motion: reduce) {
+  .app-main:empty::after {
+    animation: none;
+    border-top-color: #94a3b8;
+  }
+}
+
+/* Spinner animation */
+@keyframes appMainSpin {
+  to { transform: rotate(360deg); }
+}
+
 /* Loading states */
 .main-content.loading {
   position: relative;
