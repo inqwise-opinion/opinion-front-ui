@@ -91,13 +91,13 @@ html, body {
 }
 
 .app-main {
-  /* Main content container - no scrolling, shows full vertical content */
+  /* Main content container - flex-based sizing with full content display */
   background-color: #f8fafc !important; /* Force light background */
   color: #1e293b !important; /* Force dark text */
   position: relative;
   padding: 16px;
-  flex: 0 0 auto; /* Don't grow or shrink, use natural content size */
-  min-height: auto; /* Allow content to determine natural height */
+  flex: 1 0 auto; /* Grow to take available space, don't shrink */
+  min-height: 0; /* Allow flex sizing to control height */
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
