@@ -148,7 +148,7 @@ export class OpinionService {
         opinions: {
           getList: {
             accountId: params.accountId,
-            folderId: null,
+            folderId: undefined,
             top: params.top || 100,
             opinionTypeId: 1,
             orderByRecent: params.orderByRecent || false

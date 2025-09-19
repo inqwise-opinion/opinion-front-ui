@@ -550,8 +550,9 @@ export class DebugPage extends PageComponent {
               this.logToConsole("❌ No messages component available");
             }
           }
-        } catch (error) {
-          this.logToConsole("❌ Error in message handling: " + error.message);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message handling: " + errorMessage);
         }
       });
     }
@@ -576,8 +577,9 @@ export class DebugPage extends PageComponent {
           } else {
             this.logToConsole("❌ No messages component available");
           }
-        } catch (error) {
-          this.logToConsole("❌ Error in message handling: " + error.message);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message handling: " + errorMessage);
         }
       });
     }
@@ -602,8 +604,9 @@ export class DebugPage extends PageComponent {
           } else {
             this.logToConsole("❌ No messages component available");
           }
-        } catch (error) {
-          this.logToConsole("❌ Error in message handling: " + error.message);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message handling: " + errorMessage);
         }
       });
     }
@@ -628,8 +631,9 @@ export class DebugPage extends PageComponent {
           } else {
             this.logToConsole("❌ No messages component available");
           }
-        } catch (error) {
-          this.logToConsole("❌ Error in message handling: " + error.message);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message handling: " + errorMessage);
         }
       });
     }
@@ -660,8 +664,9 @@ export class DebugPage extends PageComponent {
           } else {
             this.logToConsole("❌ Unable to access Messages component");
           }
-        } catch (error) {
-          this.logToConsole("❌ Error in message handling: " + error.message);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message handling: " + errorMessage);
         }
       });
     }
@@ -686,8 +691,9 @@ export class DebugPage extends PageComponent {
           } else {
             this.logToConsole("❌ Unable to access Messages component");
           }
-        } catch (error) {
-          this.logToConsole("❌ Error in message handling: " + error.message);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message handling: " + errorMessage);
         }
       });
     }
@@ -712,9 +718,10 @@ export class DebugPage extends PageComponent {
           } else {
             this.logToConsole("❌ Unable to access Messages component");
           }
-        } catch (error) {
+        } catch (error: unknown) {
           console.error("🎯 DEBUGPAGE - Error in auto-hide message handler:", error);
-          this.logToConsole("❌ Error in message handling: " + error.message);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message handling: " + errorMessage);
         }
       });
     }
@@ -726,9 +733,10 @@ export class DebugPage extends PageComponent {
         try {
           this.showMessageSequence();
           this.logToConsole("🎬 Message sequence started");
-        } catch (error) {
+        } catch (error: unknown) {
           console.error("🎯 DEBUGPAGE - Error in sequence handler:", error);
-          this.logToConsole("❌ Error in message sequence: " + error.message);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message sequence: " + errorMessage);
         }
       });
     }
@@ -757,9 +765,10 @@ export class DebugPage extends PageComponent {
           } else {
             this.logToConsole("❌ clearAll method not available");
           }
-        } catch (error) {
+        } catch (error: unknown) {
           console.error("🎯 DEBUGPAGE - Error in clear all handler:", error);
-          this.logToConsole("❌ Error in message clearing: " + error.message);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message clearing: " + errorMessage);
         }
       });
     }
@@ -781,9 +790,10 @@ export class DebugPage extends PageComponent {
           } else {
             this.logToConsole("❌ clearByType method not available");
           }
-        } catch (error) {
+        } catch (error: unknown) {
           console.error("🎯 DEBUGPAGE - Error in clear errors handler:", error);
-          this.logToConsole("❌ Error in message clearing: " + error.message);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message clearing: " + errorMessage);
         }
       });
     }
@@ -807,9 +817,10 @@ export class DebugPage extends PageComponent {
           } else {
             this.logToConsole("❌ clearAll method not available");
           }
-        } catch (error) {
+        } catch (error: unknown) {
           console.error("🎯 DEBUGPAGE - Error in clear persistent handler:", error);
-          this.logToConsole("❌ Error in message clearing: " + error.message);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logToConsole("❌ Error in message clearing: " + errorMessage);
         }
       });
     }
@@ -1227,7 +1238,8 @@ export class DebugPage extends PageComponent {
         // Issues
         if (status.issues && status.issues.length > 0) {
           html += `<div style="margin: 8px 0; color: #721c24;"><strong>⚠️ Issues:</strong><ul style="margin: 4px 0 0 20px; padding: 0;">`;
-          status.issues.forEach(issue => {
+          const issues = Array.isArray(status.issues) ? status.issues : [];
+          issues.forEach((issue: string) => {
             html += `<li>${issue}</li>`;
           });
           html += `</ul></div>`;
@@ -1251,7 +1263,7 @@ export class DebugPage extends PageComponent {
         return html;
       } catch (error) {
         return `<div style="background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #dc3545;">
-          <strong style="color: #721c24;">${componentName}:</strong> ❌ Error getting status: ${error.message}
+          <strong style="color: #721c24;">${componentName}:</strong> ❌ Error getting status: ${error instanceof Error ? error.message : 'Unknown error'}
         </div>`;
       }
     };
@@ -2029,7 +2041,8 @@ export class DebugPage extends PageComponent {
       }, 1000);
       
     } catch (error) {
-      this.logToConsole('❌ Manual hotkey test failed: ' + error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logToConsole('❌ Manual hotkey test failed: ' + errorMessage);
     }
   }
   
@@ -2640,13 +2653,19 @@ export class DebugPage extends PageComponent {
         this.logToConsole(`  Has Content: ${status.domElement.hasContent}`);
       }
       
-      this.logToConsole(`  Event Listeners: ${status.eventListeners.count} (${status.eventListeners.types.join(', ')})`);
-      this.logToConsole(`  Has LayoutContext: ${status.configuration.hasLayoutContext}`);
-      this.logToConsole(`  Current Breadcrumbs: ${status.currentState.breadcrumbsCount}`);
+      if (status.eventListeners) {
+        this.logToConsole(`  Event Listeners: ${status.eventListeners.count || 0} (${status.eventListeners.types?.join(', ') || 'none'})`);
+      }
+      if (status.configuration) {
+        this.logToConsole(`  Has LayoutContext: ${status.configuration.hasLayoutContext}`);
+      }
+      if (status.currentState) {
+        this.logToConsole(`  Current Breadcrumbs: ${status.currentState.breadcrumbsCount || 0}`);
+      }
       
-      if (status.currentState.breadcrumbs.length > 0) {
+      if (status.currentState?.breadcrumbs?.length > 0) {
         this.logToConsole('  Breadcrumb Details:');
-        status.currentState.breadcrumbs.forEach((breadcrumb: any) => {
+        status.currentState?.breadcrumbs?.forEach((breadcrumb: { id: string; text: string; hasHref: boolean; hasClickHandler: boolean }) => {
           this.logToConsole(`    - ${breadcrumb.id}: "${breadcrumb.text}" (href: ${breadcrumb.hasHref}, action: ${breadcrumb.hasClickHandler})`);
         });
       }

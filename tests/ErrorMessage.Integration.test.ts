@@ -4,33 +4,27 @@
  */
 
 import { LayoutContextImpl } from '../src/contexts/LayoutContextImpl';
-import Layout from '../src/components/Layout';
+import type { Messages } from '../src/components/Messages';
+import MainContentImpl from '../src/components/MainContentImpl';
 
-// Mock Layout component
-jest.mock('../src/components/Layout', () => {
-  return {
-    __esModule: true,
-    default: jest.fn().mockImplementation(() => ({
-      showError: jest.fn(),
-      showWarning: jest.fn(),
-      showInfo: jest.fn(),
-      showSuccess: jest.fn(),
-      clearMessages: jest.fn(),
-      clearMessagesByType: jest.fn(),
-      getErrorMessages: jest.fn().mockReturnValue({
-        hasMessages: jest.fn().mockReturnValue(false),
-        addMessage: jest.fn(),
-        removeMessage: jest.fn()
-      }),
-      init: jest.fn().mockResolvedValue(undefined),
-      destroy: jest.fn(),
-    }))
-  };
-});
+// Mock Messages component
+const mockMessages: jest.Mocked<Messages> = {
+  showError: jest.fn(),
+  showWarning: jest.fn(),
+  showInfo: jest.fn(),
+  showSuccess: jest.fn(),
+  clearMessages: jest.fn(),
+  clearMessagesByType: jest.fn(),
+  hasMessages: jest.fn().mockReturnValue(false),
+  addMessage: jest.fn(),
+  removeMessage: jest.fn(),
+  init: jest.fn().mockResolvedValue(undefined),
+  destroy: jest.fn(),
+};
 
 describe('Error Message Integration', () => {
   let layoutContext: LayoutContextImpl;
-  let mockLayout: any;
+  let mockMessages: jest.Mocked<Messages>;
 
   beforeEach(() => {
     // Set up DOM environment
@@ -71,9 +65,10 @@ describe('Error Message Integration', () => {
     // Create layout context
     layoutContext = new LayoutContextImpl();
 
-    // Create mock layout
-    const LayoutConstructor = Layout as jest.MockedClass<typeof Layout>;
-    mockLayout = new LayoutConstructor();
+    // Initialize the layout context
+    const mainContent = new MainContentImpl();
+    layoutContext = new LayoutContextImpl(mainContent);
+    layoutContext.setMessages(mockMessages);
   });
 
   afterEach(() => {
@@ -85,51 +80,47 @@ describe('Error Message Integration', () => {
   });
 
   describe('LayoutContext Error Message Methods', () => {
-    beforeEach(() => {
-      layoutContext.registerLayout(mockLayout);
-    });
 
     test('should delegate showError to Layout component', () => {
       layoutContext.showError('Test Error', 'Error description');
 
-      expect(mockLayout.showError).toHaveBeenCalledWith('Test Error', 'Error description', undefined);
+      expect(mockMessages.showError).toHaveBeenCalledWith('Test Error', 'Error description', undefined);
     });
 
     test('should delegate showWarning to Layout component', () => {
       layoutContext.showWarning('Test Warning', 'Warning description');
 
-      expect(mockLayout.showWarning).toHaveBeenCalledWith('Test Warning', 'Warning description', undefined);
+      expect(mockMessages.showWarning).toHaveBeenCalledWith('Test Warning', 'Warning description', undefined);
     });
 
     test('should delegate showInfo to Layout component', () => {
       layoutContext.showInfo('Test Info', 'Info description');
 
-      expect(mockLayout.showInfo).toHaveBeenCalledWith('Test Info', 'Info description', undefined);
+      expect(mockMessages.showInfo).toHaveBeenCalledWith('Test Info', 'Info description', undefined);
     });
 
     test('should delegate showSuccess to Layout component', () => {
       layoutContext.showSuccess('Test Success', 'Success description');
 
-      expect(mockLayout.showSuccess).toHaveBeenCalledWith('Test Success', 'Success description', undefined);
+      expect(mockMessages.showSuccess).toHaveBeenCalledWith('Test Success', 'Success description', undefined);
     });
 
     test('should delegate clearMessages to Layout component', () => {
       layoutContext.clearMessages(false);
 
-      expect(mockLayout.clearMessages).toHaveBeenCalledWith(false);
+      expect(mockMessages.clearMessages).toHaveBeenCalledWith(false);
     });
 
     test('should delegate clearMessagesByType to Layout component', () => {
       layoutContext.clearMessagesByType('error');
 
-      expect(mockLayout.clearMessagesByType).toHaveBeenCalledWith('error');
+      expect(mockMessages.clearMessagesByType).toHaveBeenCalledWith('error');
     });
 
     test('should delegate hasMessages to ErrorMessages component via Layout', () => {
       const result = layoutContext.hasMessages('error');
 
-      expect(mockLayout.getErrorMessages).toHaveBeenCalled();
-      expect(mockLayout.getErrorMessages().hasMessages).toHaveBeenCalledWith('error');
+      expect(mockMessages.hasMessages).toHaveBeenCalledWith('error');
       expect(result).toBe(false); // Based on mock return value
     });
   });
@@ -143,15 +134,14 @@ describe('Error Message Integration', () => {
       expect(consoleSpy).toHaveBeenCalledWith('LayoutContext - Layout component not available or does not support error messages');
     });
 
-    test('should handle Layout without error methods gracefully', () => {
-      const incompleteLayout = {};
-      layoutContext.registerLayout(incompleteLayout);
+    test('should handle missing Messages component gracefully', () => {
+      layoutContext.setMessages(null);
       
       const consoleSpy = jest.spyOn(console, 'warn');
 
       layoutContext.showError('Test Error');
 
-      expect(consoleSpy).toHaveBeenCalledWith('LayoutContext - Layout component not available or does not support error messages');
+      expect(consoleSpy).toHaveBeenCalledWith('LayoutContext - Messages component not available');
     });
   });
 
@@ -183,9 +173,6 @@ describe('Error Message Integration', () => {
   });
 
   describe('Message Flow Integration', () => {
-    beforeEach(() => {
-      layoutContext.registerLayout(mockLayout);
-    });
 
     test('should handle complete message workflow', () => {
       // Show different message types
@@ -195,23 +182,23 @@ describe('Error Message Integration', () => {
       layoutContext.showSuccess('Data Saved', 'Successfully saved');
 
       // Verify all calls were made
-      expect(mockLayout.showError).toHaveBeenCalledWith('Connection Failed', 'Network error', undefined);
-      expect(mockLayout.showWarning).toHaveBeenCalledWith('Session Expiring', 'Save your work', undefined);
-      expect(mockLayout.showInfo).toHaveBeenCalledWith('Feature Available', 'New dashboard', undefined);
-      expect(mockLayout.showSuccess).toHaveBeenCalledWith('Data Saved', 'Successfully saved', undefined);
+      expect(mockMessages.showError).toHaveBeenCalledWith('Connection Failed', 'Network error', undefined);
+      expect(mockMessages.showWarning).toHaveBeenCalledWith('Session Expiring', 'Save your work', undefined);
+      expect(mockMessages.showInfo).toHaveBeenCalledWith('Feature Available', 'New dashboard', undefined);
+      expect(mockMessages.showSuccess).toHaveBeenCalledWith('Data Saved', 'Successfully saved', undefined);
 
       // Clear operations
       layoutContext.clearMessagesByType('error');
       layoutContext.clearMessages(false);
       layoutContext.clearMessages(true);
 
-      expect(mockLayout.clearMessagesByType).toHaveBeenCalledWith('error');
-      expect(mockLayout.clearMessages).toHaveBeenCalledWith(false);
-      expect(mockLayout.clearMessages).toHaveBeenCalledWith(true);
+      expect(mockMessages.clearMessagesByType).toHaveBeenCalledWith('error');
+      expect(mockMessages.clearMessages).toHaveBeenCalledWith(false);
+      expect(mockMessages.clearMessages).toHaveBeenCalledWith(true);
     });
 
     test('should handle message checking workflow', () => {
-      mockLayout.getErrorMessages().hasMessages
+      mockMessages.hasMessages
         .mockReturnValueOnce(true)   // has any messages
         .mockReturnValueOnce(false)  // no error messages
         .mockReturnValueOnce(true);  // has warning messages
@@ -224,47 +211,30 @@ describe('Error Message Integration', () => {
       expect(hasErrors).toBe(false);
       expect(hasWarnings).toBe(true);
 
-      expect(mockLayout.getErrorMessages).toHaveBeenCalledTimes(4); // Each call gets the component
-      expect(mockLayout.getErrorMessages().hasMessages).toHaveBeenCalledWith(undefined);
-      expect(mockLayout.getErrorMessages().hasMessages).toHaveBeenCalledWith('error');
-      expect(mockLayout.getErrorMessages().hasMessages).toHaveBeenCalledWith('warning');
+      expect(mockMessages.hasMessages).toHaveBeenCalledWith(undefined);
+      expect(mockMessages.hasMessages).toHaveBeenCalledWith('error');
+      expect(mockMessages.hasMessages).toHaveBeenCalledWith('warning');
     });
   });
 
   describe('Component Lifecycle', () => {
-    test('should handle layout registration and unregistration', () => {
-      // Initially no layout registered
+    test('should handle Messages component registration and removal', () => {
+      // Initially no messages component
+      layoutContext.setMessages(null);
       layoutContext.showError('Test Error');
-      expect(mockLayout.showError).not.toHaveBeenCalled();
+      expect(mockMessages.showError).not.toHaveBeenCalled();
 
-      // Register layout
-      layoutContext.registerLayout(mockLayout);
+      // Register messages
+      layoutContext.setMessages(mockMessages);
       layoutContext.showError('Test Error 2');
-      expect(mockLayout.showError).toHaveBeenCalledWith('Test Error 2', undefined, undefined);
+      expect(mockMessages.showError).toHaveBeenCalledWith('Test Error 2', undefined, undefined);
 
-      // Unregister all components
-      layoutContext.unregisterAllComponents();
+      // Remove messages component
+      layoutContext.setMessages(null);
       layoutContext.showError('Test Error 3');
       
-      // Should not call the old layout (new warning should be logged)
-      expect(mockLayout.showError).toHaveBeenCalledTimes(1); // Only the second call
-    });
-
-    test('should handle multiple layout registrations', () => {
-      const LayoutConstructor = Layout as jest.MockedClass<typeof Layout>;
-      const secondLayout = new LayoutConstructor();
-
-      // Register first layout
-      layoutContext.registerLayout(mockLayout);
-      layoutContext.showError('Error 1');
-      expect(mockLayout.showError).toHaveBeenCalledWith('Error 1', undefined, undefined);
-
-      // Replace with second layout
-      layoutContext.registerLayout(secondLayout);
-      layoutContext.showError('Error 2');
-      
-      expect(mockLayout.showError).toHaveBeenCalledTimes(1); // Only first error
-      expect(secondLayout.showError).toHaveBeenCalledWith('Error 2', undefined, undefined);
+      // Should not call the old messages component
+      expect(mockMessages.showError).toHaveBeenCalledTimes(1);
     });
   });
 });

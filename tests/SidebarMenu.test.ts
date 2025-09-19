@@ -3,10 +3,10 @@
  * Tests navigation structure, menu items, expandable functionality, event handling, and accessibility
  */
 
-import { Sidebar, NavigationItem } from '../src/components/Sidebar';
+import { Sidebar, NavigationItem, SidebarComponent } from '../src/components/Sidebar';
 
 describe('Sidebar Menu', () => {
-  let sidebar: Sidebar;
+let sidebar: SidebarComponent;
   let mockContainer: HTMLElement;
 
   beforeEach(() => {
@@ -48,7 +48,7 @@ describe('Sidebar Menu', () => {
 
   describe('Menu Structure and Creation', () => {
     test('should create navigation section with proper structure', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarNavigation = document.querySelector('.sidebar-navigation');
@@ -62,7 +62,7 @@ describe('Sidebar Menu', () => {
     });
 
     test('should create default navigation items', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const navItems = document.querySelectorAll('.nav-item');
@@ -73,7 +73,7 @@ describe('Sidebar Menu', () => {
     });
 
     test('should set proper ARIA labels and roles', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const navSection = document.querySelector('.nav-section');
@@ -86,7 +86,7 @@ describe('Sidebar Menu', () => {
     });
 
     test('should create navigation items with correct default data', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const dashboardLink = document.querySelector('[data-nav-id="dashboard"]');
@@ -102,7 +102,7 @@ describe('Sidebar Menu', () => {
 
   describe('Navigation Item Rendering', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -184,7 +184,7 @@ describe('Sidebar Menu', () => {
         }
       ];
       
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       sidebar.updateNavigation(expandableItems);
     });
@@ -291,7 +291,7 @@ describe('Sidebar Menu', () => {
 
   describe('Active State Management', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -370,7 +370,7 @@ describe('Sidebar Menu', () => {
 
   describe('Navigation Updates', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -469,7 +469,7 @@ describe('Sidebar Menu', () => {
 
   describe('Event Handling', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -534,7 +534,7 @@ describe('Sidebar Menu', () => {
 
   describe('Compact Mode Integration', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -583,7 +583,7 @@ describe('Sidebar Menu', () => {
 
   describe('Accessibility Features', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -661,7 +661,7 @@ describe('Sidebar Menu', () => {
 
   describe('Error Handling and Edge Cases', () => {
     test('should handle initialization when sidebar already exists', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const firstSidebar = document.querySelector('#app_sidebar');
@@ -684,7 +684,7 @@ describe('Sidebar Menu', () => {
         }
       ];
       
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       expect(() => {
@@ -707,7 +707,7 @@ describe('Sidebar Menu', () => {
         }
       ];
       
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       expect(() => {
@@ -716,7 +716,7 @@ describe('Sidebar Menu', () => {
     });
 
     test('should handle clicks on non-expandable elements', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const navIcon = document.querySelector('.nav-icon') as HTMLElement;
@@ -727,7 +727,7 @@ describe('Sidebar Menu', () => {
     });
 
     test('should handle destroy and recreation', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       expect(document.querySelector('.sidebar-navigation')).toBeTruthy();
@@ -737,7 +737,7 @@ describe('Sidebar Menu', () => {
       expect(document.querySelector('.sidebar-navigation')).toBeNull();
       
       // Recreate
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       expect(document.querySelector('.sidebar-navigation')).toBeTruthy();
@@ -747,7 +747,7 @@ describe('Sidebar Menu', () => {
 
   describe('Performance and Optimization', () => {
     test('should efficiently handle multiple navigation updates', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const initialItems = document.querySelectorAll('.nav-item').length;
@@ -770,7 +770,7 @@ describe('Sidebar Menu', () => {
     });
 
     test('should maintain event delegation efficiency', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       // Update with many items
@@ -815,7 +815,7 @@ describe('Sidebar Menu', () => {
         }
       ];
       
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       sidebar.updateNavigation(expandableItems);
       

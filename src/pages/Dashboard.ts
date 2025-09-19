@@ -32,7 +32,7 @@ export class Dashboard {
   private loader: any;
   private apiService: MockApiService;
   private layout: Layout;
-  private pageComponent: DashboardPageComponent;
+  private pageComponent!: DashboardPageComponent; // Initialized in init()
 
   constructor(apiService: MockApiService) {
     this.apiService = apiService;
@@ -129,8 +129,8 @@ export class Dashboard {
     try {
       const auth = await this.apiService.validateUser();
       return auth;
-    } catch (error) {
-      if (error.message?.includes('NotSignedIn')) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('NotSignedIn')) {
         this.redirectToLogin();
       }
       throw error;
@@ -301,7 +301,7 @@ export class Dashboard {
   /**
    * Create table row for survey
    */
-  private createSurveyTableRow(survey: Opinion, index: number): HTMLTableRowElement {
+  private createSurveyTableRow(survey: Survey, index: number): HTMLTableRowElement {
     const row = document.createElement('tr');
     row.className = index % 2 === 0 ? 'even' : 'odd';
 

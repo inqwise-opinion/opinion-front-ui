@@ -36,6 +36,10 @@ class MockEventBus implements EventBus {
       handlers.forEach(handler => handler(data));
     }
   }
+
+  publish(event: string, data: any): void {
+    this.emit(event, data);
+  }
   
   off(event: string, handler: Function): void {
     const handlers = this.listeners.get(event);
@@ -137,18 +141,44 @@ class TestService extends BaseService {
     return this.getService<T>(name);
   }
   
-  public testEmitEvent(event: string, data: any): void {
-    this.emitEvent(event, data);
+  // Event handling moved to protected _emitEvent/_onEvent methods
+  protected _emitEvent(event: string, data: any): void {
+    const eventBus = this.getEventBus();
+    if (eventBus && typeof eventBus.emit === 'function') {
+      eventBus.emit(event, data);
+    } else {
+      console.warn(`[Service:${this.getServiceId()}] EventBus.emit method not available`);
+    }
   }
-  
-  public testOnEvent(event: string, handler: (data: any) => void): () => void {
-    return this.onEvent(event, handler);
+
+  protected _onEvent(event: string, handler: (data: any) => void): () => void {
+    const eventBus = this.getEventBus();
+    if (eventBus && typeof eventBus.on === 'function') {
+      return eventBus.on(event, handler);
+    } else {
+      console.warn(`[Service:${this.getServiceId()}] EventBus.on method not available`);
+      return () => {};
+    }
+  }
+
+  // Public methods for test purposes
+  public emitTestEvent(event: string, data: any): void {
+    this._emitEvent(event, data);
+  }
+
+  public onTestEvent(event: string, handler: (data: any) => void): () => void {
+    return this._onEvent(event, handler);
   }
 }
+
+import { setupTestEnvironment, createMockEventBus, MockBaseService } from '../test-utils';
 
 describe('BaseService', () => {
   let mockContext: MockLayoutContext;
   let testService: TestService;
+  let mockEventBus: ReturnType<typeof createMockEventBus>;
+
+  setupTestEnvironment();
   
   beforeEach(() => {
     mockContext = new MockLayoutContext();
@@ -253,7 +283,7 @@ describe('BaseService', () => {
       expect(eventBus).toBe(mockContext.getEventBus());
     });
     
-    it('should emit events', () => {
+    it('should emit events through protected methods', () => {
       const eventData = { test: 'data' };
       let receivedData: any = null;
       
@@ -261,13 +291,13 @@ describe('BaseService', () => {
         receivedData = data;
       });
       
-      testService.testEmitEvent('test:event', eventData);
+      testService.emitTestEvent('test:event', eventData);
       expect(receivedData).toEqual(eventData);
     });
     
-    it('should subscribe to events', () => {
+    it('should subscribe to events through protected methods', () => {
       let receivedData: any = null;
-      const unsubscribe = testService.testOnEvent('test:event', (data) => {
+      const unsubscribe = testService.onTestEvent('test:event', (data) => {
         receivedData = data;
       });
       
@@ -283,25 +313,26 @@ describe('BaseService', () => {
       expect(receivedData).toBeNull();
     });
     
-    it('should emit lifecycle events', async () => {
+    it('should emit service events on lifecycle changes', async () => {
       const events: any[] = [];
       
       testService.testGetEventBus().on('service:initialized', (data) => {
-        events.push({ type: 'initialized', data });
+        events.push({ type: 'init', ...data });
       });
       
       testService.testGetEventBus().on('service:destroyed', (data) => {
-        events.push({ type: 'destroyed', data });
+        events.push({ type: 'destroy', ...data });
       });
       
       await testService.init();
       await testService.destroy();
       
       expect(events).toHaveLength(2);
-      expect(events[0].type).toBe('initialized');
-      expect(events[0].data.service).toBe('testService');
-      expect(events[1].type).toBe('destroyed');
-      expect(events[1].data.service).toBe('testService');
+      expect(events[0].type).toBe('init');
+      expect(events[0].service).toBe('testService');
+      
+      expect(events[1].type).toBe('destroy');
+      expect(events[1].service).toBe('testService');
     });
   });
   
@@ -333,6 +364,8 @@ describe('BaseService', () => {
       expect(errorEvent).toBeTruthy();
       expect(errorEvent.service).toBe('testService');
       expect(errorEvent.operation).toBe('init');
+      expect(errorEvent.error).toBeDefined();
+      expect(errorEvent.error.message).toContain('Test init failure');
     });
   });
   

@@ -184,7 +184,7 @@ export class MockApiService {
     // Apply ordering
     if (params.orderByRecent) {
       surveys = surveys.sort((a, b) => 
-        new Date(b.updated).getTime() - new Date(a.updated).getTime()
+        (b.updated?.getTime() ?? 0) - (a.updated?.getTime() ?? 0)
       );
     }
     

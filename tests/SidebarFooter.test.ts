@@ -3,10 +3,10 @@
  * Tests footer structure, styling, responsive behavior, and compact mode
  */
 
-import { Sidebar } from '../src/components/Sidebar';
+import { SidebarComponent } from '../src/components/Sidebar';
 
 describe('Sidebar Footer', () => {
-  let sidebar: Sidebar;
+let sidebar: SidebarComponent;
   let mockContainer: HTMLElement;
 
   beforeEach(() => {
@@ -41,7 +41,7 @@ describe('Sidebar Footer', () => {
 
   describe('Footer Structure and Creation', () => {
     test('should create sidebar footer element on initialization', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarFooter = document.querySelector('.sidebar-footer');
@@ -50,7 +50,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should create sidebar footer with correct class structure', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarFooter = document.querySelector('.sidebar-footer');
@@ -58,7 +58,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should include copyright text element in footer', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const copyrightText = document.querySelector('.sidebar-footer .copyright-text');
@@ -67,7 +67,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should display default copyright text', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const copyrightText = document.querySelector('.sidebar-footer .copyright-text');
@@ -75,7 +75,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should be positioned as last element in sidebar wrapper', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarWrapper = document.querySelector('.sidebar-wrapper');
@@ -88,7 +88,7 @@ describe('Sidebar Footer', () => {
 
   describe('Footer Styling and Layout', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -120,7 +120,7 @@ describe('Sidebar Footer', () => {
 
   describe('Compact Mode Behavior', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -178,7 +178,7 @@ describe('Sidebar Footer', () => {
 
   describe('Responsive Behavior', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -231,7 +231,7 @@ describe('Sidebar Footer', () => {
 
   describe('Footer Content Management', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -280,7 +280,7 @@ describe('Sidebar Footer', () => {
 
   describe('Integration with Sidebar Component', () => {
     test('should be part of sidebar wrapper structure', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarWrapper = document.querySelector('.sidebar-wrapper');
@@ -290,7 +290,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should be positioned after sidebar navigation', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarNavigation = document.querySelector('.sidebar-navigation');
@@ -336,7 +336,7 @@ describe('Sidebar Footer', () => {
 
   describe('Accessibility and Semantics', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -382,7 +382,7 @@ describe('Sidebar Footer', () => {
 
   describe('Border and Visual Styling', () => {
     beforeEach(() => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
     });
 
@@ -420,7 +420,7 @@ describe('Sidebar Footer', () => {
 
   describe('Error Handling and Edge Cases', () => {
     test('should handle missing copyright text gracefully', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const copyrightText = document.querySelector('.sidebar-footer .copyright-text') as HTMLElement;
@@ -436,7 +436,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should handle dynamic content addition', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarFooter = document.querySelector('.sidebar-footer') as HTMLElement;
@@ -453,7 +453,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should maintain structure when sidebar is recreated', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const originalFooter = document.querySelector('.sidebar-footer');
@@ -461,7 +461,7 @@ describe('Sidebar Footer', () => {
       
       // Destroy and recreate
       sidebar.destroy();
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const newFooter = document.querySelector('.sidebar-footer');
@@ -473,7 +473,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should handle empty footer content gracefully', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarFooter = document.querySelector('.sidebar-footer') as HTMLElement;
@@ -491,7 +491,7 @@ describe('Sidebar Footer', () => {
 
   describe('Performance and Optimization', () => {
     test('should not create multiple footer instances', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const footers = document.querySelectorAll('.sidebar-footer');
@@ -505,7 +505,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should efficiently handle compact mode toggles', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarElement = document.querySelector('#app_sidebar') as HTMLElement;
@@ -521,7 +521,7 @@ describe('Sidebar Footer', () => {
     });
 
     test('should maintain memory efficiency', () => {
-      sidebar = new Sidebar();
+      sidebar = new SidebarComponent();
       sidebar.init();
       
       const sidebarFooter = document.querySelector('.sidebar-footer');

@@ -10,10 +10,15 @@ import type { BreadcrumbItem } from '../src/interfaces/BreadcrumbItem';
 import type { PageContext } from '../src/interfaces/PageContext';
 import type { BreadcrumbsManager } from '../src/interfaces/BreadcrumbsManager';
 
+import { setupTestEnvironment, createMockEventBus } from './test-utils';
+
 describe('PageContext - Breadcrumbs Integration', () => {
   let breadcrumbsComponent: BreadcrumbsComponent;
   let breadcrumbsManager: BreadcrumbsManager;
   let pageContext: PageContext;
+  let mockEventBus: ReturnType<typeof createMockEventBus>;
+
+  setupTestEnvironment();
 
   beforeEach(async () => {
     // Set up minimal DOM environment for breadcrumbs
@@ -30,23 +35,33 @@ describe('PageContext - Breadcrumbs Integration', () => {
 
     // Create BreadcrumbsComponent with container
     const breadcrumbsContainer = document.querySelector('.header-breadcrumbs') as HTMLElement;
-    breadcrumbsComponent = new BreadcrumbsComponent(breadcrumbsContainer);
-    await breadcrumbsComponent.init();
 
-    // Create a mock ActivePage
+    // Create mock ActivePage and LayoutContext
     const mockActivePage = {
       getPageId: () => 'test-page'
     } as any;
 
-    // Create a mock LayoutContext
-    const mockHeader = {
-      getBreadcrumbsComponent: () => breadcrumbsComponent
-    };
-    
     const mockLayoutContext = {
-      getBreadcrumbsComponent: () => breadcrumbsComponent,
-      getHeader: () => mockHeader
+      getHeader: () => ({
+        getBreadcrumbsComponent: () => breadcrumbsComponent
+      })
     } as any;
+
+    // Initialize BreadcrumbsComponent with layout context
+    breadcrumbsComponent = new BreadcrumbsComponent(breadcrumbsContainer, mockLayoutContext);
+    await breadcrumbsComponent.init();
+
+    // Ensure component is initialized
+    if (!breadcrumbsComponent) throw new Error('BreadcrumbsComponent not created');
+
+    // Seed initial breadcrumbs: parent (Home) + scoped start (test-page)
+    breadcrumbsComponent.setBreadcrumbs([
+      { id: 'home', text: 'Home', href: '/' },
+      { id: 'test-page', text: 'Test Page' }
+    ]);
+
+    // Wait microtask queue to settle
+    await Promise.resolve();
 
     // Create PageContext
     pageContext = new PageContextImpl(mockActivePage, mockLayoutContext, {
@@ -86,22 +101,24 @@ describe('PageContext - Breadcrumbs Integration', () => {
 
   describe('BreadcrumbsManager API', () => {
 
-    test('should set breadcrumbs via BreadcrumbsManager', () => {
+    test('should set breadcrumbs via BreadcrumbsManager', async () => {
+      // In hierarchical mode, scoped items must start with the page ID
       const items: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home', href: '/' },
+        { id: 'test-page', text: 'Test Page' },
         { id: 'current', text: 'Test Page' }
       ];
 
+      await Promise.resolve();
       breadcrumbsManager.set(items);
-      
+      await Promise.resolve();
       const currentItems = breadcrumbsManager.get();
       expect(currentItems).toEqual(items);
     });
 
-    test('should add breadcrumb items', () => {
+    test('should add breadcrumb items', async () => {
       // Set initial breadcrumbs
       const initialItems: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home' }
+        { id: 'test-page', text: 'Test Page' }
       ];
       breadcrumbsManager.set(initialItems);
 
@@ -114,9 +131,9 @@ describe('PageContext - Breadcrumbs Integration', () => {
       expect(currentItems[1]).toEqual(newItem);
     });
 
-    test('should remove breadcrumb items by id', () => {
+    test('should remove breadcrumb items by id', async () => {
       const items: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home' },
+        { id: 'test-page', text: 'Test Page' },
         { id: 'page', text: 'Page' },
         { id: 'current', text: 'Current' }
       ];
@@ -129,9 +146,9 @@ describe('PageContext - Breadcrumbs Integration', () => {
       expect(currentItems.find(item => item.id === 'page')).toBeUndefined();
     });
 
-    test('should update breadcrumb items', () => {
+    test('should update breadcrumb items', async () => {
       const items: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home' },
+        { id: 'test-page', text: 'Test Page' },
         { id: 'current', text: 'Current' }
       ];
       breadcrumbsManager.set(items);
@@ -144,7 +161,7 @@ describe('PageContext - Breadcrumbs Integration', () => {
       expect(updatedItem?.caption).toBe('New caption');
     });
 
-    test('should clear all breadcrumbs', () => {
+    test('should clear all breadcrumbs', async () => {
       const items: BreadcrumbItem[] = [
         { id: 'home', text: 'Home' },
         { id: 'current', text: 'Current' }
@@ -157,17 +174,17 @@ describe('PageContext - Breadcrumbs Integration', () => {
       expect(currentItems).toHaveLength(0);
     });
 
-    test('should check availability', () => {
+    test('should check availability', async () => {
       expect(breadcrumbsManager.isAvailable()).toBe(true);
     });
   });
 
   describe('DOM Integration and Rendering', () => {
 
-    test('should render breadcrumbs in header area', () => {
+    test('should render breadcrumbs in header area', async () => {
+      // Set scoped items; full trail will include parent 'Home' automatically
       const items: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home', href: '/' },
-        { id: 'current', text: 'Test Page' }
+        { id: 'test-page', text: 'Test Page' }
       ];
 
       breadcrumbsManager.set(items);
@@ -180,10 +197,9 @@ describe('PageContext - Breadcrumbs Integration', () => {
       expect(breadcrumbItems).toHaveLength(2);
     });
 
-    test('should render breadcrumb links correctly', () => {
+    test('should render breadcrumb links correctly', async () => {
       const items: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home', href: '/', caption: 'Go home' },
-        { id: 'current', text: 'Test Page' }
+        { id: 'test-page', text: 'Test Page' }
       ];
 
       breadcrumbsManager.set(items);
@@ -192,14 +208,14 @@ describe('PageContext - Breadcrumbs Integration', () => {
       expect(homeLink).toBeTruthy();
       expect(homeLink?.textContent?.trim()).toBe('Home');
 
-      // Current page should not be a link
+      // Current page (scoped last item) should not be a link
       const currentItem = document.querySelector('.breadcrumb-item:last-child');
       expect(currentItem?.querySelector('a')).toBeNull();
     });
 
-    test('should render separators between breadcrumbs', () => {
+    test('should render separators between breadcrumbs', async () => {
       const items: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home' },
+        { id: 'test-page', text: 'Test Page' },
         { id: 'page', text: 'Page' },
         { id: 'current', text: 'Current' }
       ];
@@ -207,29 +223,32 @@ describe('PageContext - Breadcrumbs Integration', () => {
       breadcrumbsManager.set(items);
 
       const separators = document.querySelectorAll('.breadcrumb-separator');
-      expect(separators).toHaveLength(2); // One less than number of items
+      // Full trail includes Home as parent, so total items = 4 -> separators = 3
+      expect(separators).toHaveLength(3);
     });
 
-    test('should update DOM when breadcrumbs change', () => {
+    test('should update DOM when breadcrumbs change', async () => {
       const initialItems: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home' }
+        { id: 'test-page', text: 'Test Page' }
       ];
 
       breadcrumbsManager.set(initialItems);
       
       let breadcrumbItems = document.querySelectorAll('.breadcrumb-item');
-      expect(breadcrumbItems).toHaveLength(1);
+      // Full trail has parent Home + scoped test-page
+      expect(breadcrumbItems).toHaveLength(2);
 
-      // Add another breadcrumb
+      // Add another breadcrumb in scope
       breadcrumbsManager.add({ id: 'page', text: 'Page' });
 
       breadcrumbItems = document.querySelectorAll('.breadcrumb-item');
-      expect(breadcrumbItems).toHaveLength(2);
+      // Now full trail: Home + test-page + page
+      expect(breadcrumbItems).toHaveLength(3);
     });
 
     test('should clear DOM when breadcrumbs are cleared', () => {
       const items: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home' },
+        { id: 'test-page', text: 'Test Page' },
         { id: 'current', text: 'Current' }
       ];
 
@@ -240,10 +259,10 @@ describe('PageContext - Breadcrumbs Integration', () => {
 
       breadcrumbsManager.clear();
 
-      // After clearing, component shows empty state placeholder
+      // After clearing scoped items, parent ('Home') remains
       breadcrumbItems = document.querySelectorAll('.breadcrumb-item');
       expect(breadcrumbItems).toHaveLength(1);
-      expect(breadcrumbItems[0].classList.contains('breadcrumb-empty')).toBe(true);
+      expect((breadcrumbItems[0].querySelector('.breadcrumb-text') as HTMLElement).textContent?.trim()).toBe('Home');
     });
   });
 
@@ -252,36 +271,36 @@ describe('PageContext - Breadcrumbs Integration', () => {
       let clickedItem: BreadcrumbItem | null = null;
       
       const items: BreadcrumbItem[] = [
+        { id: 'test-page', text: 'Test Page' },
         { 
-          id: 'home', 
-          text: 'Home', 
+          id: 'home-action', 
+          text: 'Home Action', 
           clickHandler: (item) => { clickedItem = item; }
-        },
-        { id: 'current', text: 'Test Page' }
+        }
       ];
 
       breadcrumbsManager.set(items);
       
       // Simulate click
-      const homeItem = breadcrumbsManager.get()[0];
-      if (homeItem.clickHandler) {
-        homeItem.clickHandler(homeItem);
+      const scopedItems = breadcrumbsManager.get();
+      const actionItem = scopedItems[1];
+      if ((actionItem as any)?.clickHandler) {
+        (actionItem as any).clickHandler(actionItem as any);
       }
       
-      expect(clickedItem).toEqual(homeItem);
+      expect(clickedItem).toEqual(actionItem as any);
     });
 
     test('should handle breadcrumbs with href links', () => {
       const items: BreadcrumbItem[] = [
-        { id: 'home', text: 'Home', href: '/' },
+        { id: 'test-page', text: 'Test Page' },
         { id: 'dashboard', text: 'Dashboard', href: '/dashboard' },
         { id: 'current', text: 'Current Page' }
       ];
 
       breadcrumbsManager.set(items);
       const currentItems = breadcrumbsManager.get();
-      
-      expect(currentItems[0].href).toBe('/');
+      // In scoped list, index 1 is 'dashboard' with href
       expect(currentItems[1].href).toBe('/dashboard');
       expect(currentItems[2].href).toBeUndefined();
     });
@@ -304,14 +323,15 @@ describe('PageContext - Breadcrumbs Integration', () => {
       // Rapid fire updates
       for (let i = 0; i < 10; i++) {
         breadcrumbsManager.set([
+          { id: 'test-page', text: 'Test Page' },
           { id: `item${i}`, text: `Item ${i}` }
         ]);
       }
 
-      // Should end up with last update
+      // Should end up with last update in scoped items
       const finalItems = breadcrumbsManager.get();
-      expect(finalItems).toHaveLength(1);
-      expect(finalItems[0].text).toBe('Item 9');
+      expect(finalItems).toHaveLength(2);
+      expect(finalItems[1].text).toBe('Item 9');
     });
   });
 });

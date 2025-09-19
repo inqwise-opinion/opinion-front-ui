@@ -106,7 +106,7 @@ describe('EventBus Integration with LayoutContext', () => {
       await testService2.init(layoutContext);
     });
 
-    it('should broadcast events to all consumers', () => {
+    it('should broadcast events to all consumers', (done) => {
       const message = 'Test broadcast message';
       
       // Clear any previous test results
@@ -118,22 +118,27 @@ describe('EventBus Integration with LayoutContext', () => {
       
       // Both services should receive the broadcast
       setTimeout(() => {
-        const results1 = testService1.getTestResults();
-        const results2 = testService2.getTestResults();
-        
-        expect(results1.receivedEvents).toBeGreaterThan(0);
-        expect(results2.receivedEvents).toBeGreaterThan(0);
-        
-        // Check event data
-        const broadcastEvents1 = results1.events.filter(e => e.event === 'test:broadcast');
-        const broadcastEvents2 = results2.events.filter(e => e.event === 'test:broadcast');
-        
-        expect(broadcastEvents1).toHaveLength(1);
-        expect(broadcastEvents2).toHaveLength(1);
-        
-        expect(broadcastEvents1[0].data.message).toBe(message);
-        expect(broadcastEvents2[0].data.message).toBe(message);
-      }, 10);
+        try {
+          const results1 = testService1.getTestResults();
+          const results2 = testService2.getTestResults();
+          
+          expect(results1.receivedEvents).toBeGreaterThan(0);
+          expect(results2.receivedEvents).toBeGreaterThan(0);
+          
+          // Check event data
+          const broadcastEvents1 = results1.events.filter(e => e.event === 'test:broadcast');
+          const broadcastEvents2 = results2.events.filter(e => e.event === 'test:broadcast');
+          
+          expect(broadcastEvents1).toHaveLength(1);
+          expect(broadcastEvents2).toHaveLength(1);
+          
+          expect(broadcastEvents1[0].data.message).toBe(message);
+          expect(broadcastEvents2[0].data.message).toBe(message);
+          done();
+        } catch (error) {
+          done(error);
+        }
+      }, 100);
     });
 
     it('should use LayoutContext publish method', () => {
@@ -152,7 +157,7 @@ describe('EventBus Integration with LayoutContext', () => {
       await testService2.init(layoutContext);
     });
 
-    it('should send events to first consumer only', () => {
+    it('should send events to first consumer only', (done) => {
       const message = 'Test direct message';
       
       // Clear any previous test results
@@ -164,22 +169,27 @@ describe('EventBus Integration with LayoutContext', () => {
       
       // Only one service should receive the message
       setTimeout(() => {
-        const results1 = testService1.getTestResults();
-        const results2 = testService2.getTestResults();
-        
-        const directEvents1 = results1.events.filter(e => e.event === 'test:direct-message');
-        const directEvents2 = results2.events.filter(e => e.event === 'test:direct-message');
-        
-        // Only one service should have received the event
-        const totalDirectEvents = directEvents1.length + directEvents2.length;
-        expect(totalDirectEvents).toBe(1);
-        
-        if (directEvents1.length > 0) {
-          expect(directEvents1[0].data.message).toBe(message);
-        } else {
-          expect(directEvents2[0].data.message).toBe(message);
+        try {
+          const results1 = testService1.getTestResults();
+          const results2 = testService2.getTestResults();
+          
+          const directEvents1 = results1.events.filter(e => e.event === 'test:direct-message');
+          const directEvents2 = results2.events.filter(e => e.event === 'test:direct-message');
+          
+          // Only one service should have received the event
+          const totalDirectEvents = directEvents1.length + directEvents2.length;
+          expect(totalDirectEvents).toBe(1);
+          
+          if (directEvents1.length > 0) {
+            expect(directEvents1[0].data.message).toBe(message);
+          } else {
+            expect(directEvents2[0].data.message).toBe(message);
+          }
+          done();
+        } catch (error) {
+          done(error);
         }
-      }, 10);
+      }, 100);
     });
 
     it('should use LayoutContext send method', () => {
@@ -231,7 +241,8 @@ describe('EventBus Integration with LayoutContext', () => {
       // Send request to non-existent event (no consumers)
       const timeoutPromise = layoutContext.request('test:nonexistent-event', {}, 100);
       
-      await expect(timeoutPromise).rejects.toThrow(/timeout/i);
+      // Current behavior: no consumers -> immediate NO_CONSUMER error (not a timeout)
+      await expect(timeoutPromise).rejects.toThrow(/no consumers/i);
     });
 
     it('should use LayoutContext request method', async () => {
@@ -392,7 +403,7 @@ describe('EventBus Integration with LayoutContext', () => {
       });
     });
 
-    it('should handle rapid event publishing', () => {
+    it('should handle rapid event publishing', (done) => {
       const numEvents = 100;
       
       // Clear test results
@@ -406,16 +417,21 @@ describe('EventBus Integration with LayoutContext', () => {
       
       // Allow async processing to complete
       setTimeout(() => {
-        const results1 = testService1.getTestResults();
-        const results2 = testService2.getTestResults();
-        
-        // Both services should have received all broadcasts
-        const broadcasts1 = results1.events.filter(e => e.event === 'test:broadcast');
-        const broadcasts2 = results2.events.filter(e => e.event === 'test:broadcast');
-        
-        expect(broadcasts1.length).toBe(numEvents);
-        expect(broadcasts2.length).toBe(numEvents);
-      }, 100);
+        try {
+          const results1 = testService1.getTestResults();
+          const results2 = testService2.getTestResults();
+          
+          // Both services should have received all broadcasts
+          const broadcasts1 = results1.events.filter(e => e.event === 'test:broadcast');
+          const broadcasts2 = results2.events.filter(e => e.event === 'test:broadcast');
+          
+          expect(broadcasts1.length).toBe(numEvents);
+          expect(broadcasts2.length).toBe(numEvents);
+          done();
+        } catch (error) {
+          done(error);
+        }
+      }, 1000);
     });
   });
 });

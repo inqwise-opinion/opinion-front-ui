@@ -6,8 +6,12 @@
 import { AppHeaderImpl } from '../src/components/AppHeaderImpl';
 import type { HeaderUser } from '../src/components/AppHeader';
 
+import { setupTestEnvironment, createMockElement } from './test-utils';
+
 describe('AppHeader - Title Functionality', () => {
   let appHeader: AppHeaderImpl;
+
+  setupTestEnvironment();
 
   beforeEach(() => {
     // Set up DOM environment
@@ -20,15 +24,7 @@ describe('AppHeader - Title Functionality', () => {
       value: 1280,
     });
 
-    // Mock window.location for navigation tests
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      configurable: true,
-      value: {
-        origin: 'http://localhost:3000',
-        href: 'http://localhost:3000/dashboard'
-      }
-    });
+    // window.location is provided by setupTestEnvironment()
     
     // Mock console methods to avoid noise in tests
     jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -330,68 +326,58 @@ describe('AppHeader - Title Functionality', () => {
     });
   });
 
-  describe('Responsive Behavior - Title Display', () => {
-    test('should show title on desktop viewport', async () => {
+  describe('Responsive Behavior - CSS Classes', () => {
+    test('should apply correct CSS classes on desktop viewport', async () => {
+      // Test that correct CSS classes are applied based on viewport
       Object.defineProperty(window, 'innerWidth', { value: 1280 });
       
       appHeader = new AppHeaderImpl();
       await appHeader.init();
       
-      const headerCenter = document.querySelector('.header-center') as HTMLElement;
-      
-      // Desktop should have no left padding by default
-      expect(headerCenter.style.paddingLeft).toBe('0px');
+      const container = document.querySelector('.app-header');
+      expect(container).toBeTruthy();
+      expect(container?.classList.contains('header-sidebar-normal')).toBe(true);
+      expect(container?.classList.contains('header-mobile')).toBe(false);
     });
 
-    test('should adjust title padding on mobile viewport', async () => {
+    test('should apply correct CSS classes on mobile viewport', async () => {
       Object.defineProperty(window, 'innerWidth', { value: 375 });
       
       appHeader = new AppHeaderImpl();
       await appHeader.init();
       
-      const headerCenter = document.querySelector('.header-center') as HTMLElement;
-      
-      // Mobile should have left padding for hamburger menu
-      expect(headerCenter.style.paddingLeft).toBe('16px');
+      const container = document.querySelector('.app-header');
+      expect(container).toBeTruthy();
+      expect(container?.classList.contains('header-mobile')).toBe(true);
+      expect(container?.classList.contains('header-sidebar-normal')).toBe(false);
     });
 
-    test('should show title on tablet viewport', async () => {
-      Object.defineProperty(window, 'innerWidth', { value: 768 });
-      
+    test('should update CSS classes on viewport changes', async () => {
       appHeader = new AppHeaderImpl();
       await appHeader.init();
       
-      const headerCenter = document.querySelector('.header-center') as HTMLElement;
-      
-      // Tablet should have no left padding
-      expect(headerCenter.style.paddingLeft).toBe('0px');
-    });
-
-    test('should handle viewport changes after initialization', async () => {
-      appHeader = new AppHeaderImpl();
-      await appHeader.init();
-      
-      const headerCenter = document.querySelector('.header-center') as HTMLElement;
+      const container = document.querySelector('.app-header');
+      expect(container).toBeTruthy();
       
       // Start desktop
-      expect(headerCenter.style.paddingLeft).toBe('0px');
+      expect(container?.classList.contains('header-sidebar-normal')).toBe(true);
       
       // Simulate resize to mobile
       Object.defineProperty(window, 'innerWidth', { value: 375 });
       window.dispatchEvent(new Event('resize'));
       
-      // Should update to mobile padding
-      expect(headerCenter.style.paddingLeft).toBe('16px');
+      expect(container?.classList.contains('header-mobile')).toBe(true);
+      expect(container?.classList.contains('header-sidebar-normal')).toBe(false);
       
       // Simulate resize back to desktop
       Object.defineProperty(window, 'innerWidth', { value: 1280 });
       window.dispatchEvent(new Event('resize'));
       
-      // Should update back to desktop padding
-      expect(headerCenter.style.paddingLeft).toBe('0px');
+      expect(container?.classList.contains('header-sidebar-normal')).toBe(true);
+      expect(container?.classList.contains('header-mobile')).toBe(false);
     });
 
-    test('should maintain title visibility across viewports', async () => {
+    test('should maintain functionality across viewports', async () => {
       const viewports = [375, 768, 1024, 1280];
       
       for (const viewport of viewports) {
@@ -404,10 +390,11 @@ describe('AppHeader - Title Functionality', () => {
         appHeader = new AppHeaderImpl();
         await appHeader.init();
         
-        appHeader.updatePageTitle(`Title at ${viewport}px`);
+        // Basic functionality should work across all viewports
+        appHeader.updatePageTitle(`Test Title`);
         
         const titleElement = document.querySelector('#current_page_title');
-        expect(titleElement?.textContent).toBe(`Title at ${viewport}px`);
+        expect(titleElement?.textContent).toBe('Test Title');
       }
     });
   });

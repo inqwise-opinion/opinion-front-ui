@@ -5,12 +5,8 @@
  */
 
 // EventBus exports
-export { 
-  Consumer, 
-  EventBus, 
-  EventBusError, 
-  EventBusOptions 
-} from './EventBus';
+export type { Consumer, EventBus, EventBusOptions } from './EventBus';
+export { EventBusError } from './EventBus';
 
 export { EventBusImpl } from './EventBusImpl';
 

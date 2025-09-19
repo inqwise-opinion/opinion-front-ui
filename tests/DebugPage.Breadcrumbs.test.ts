@@ -105,9 +105,10 @@ describe('DebugPage - Breadcrumbs Integration', () => {
     (layoutContext as any).breadcrumbsComponent = breadcrumbsComponent;
     (layoutContext as any).header = mockHeader;
 
-    // Create debug page with layout context
-    debugPage = new DebugPage(mockLayout.getMainContent());
-    (debugPage as any).layoutContext = layoutContext;
+    // Create debug page with injected layout context
+    const mainContent = mockLayout.getMainContent();
+    (mainContent as any)._layoutContext = layoutContext; // Inject through MainContent
+    debugPage = new DebugPage(mainContent);
 
     // Initialize debug page
     await debugPage.init();

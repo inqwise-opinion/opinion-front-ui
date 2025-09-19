@@ -14,6 +14,7 @@ import { PageComponent, PageComponentConfig } from '../components/PageComponent'
 import MainContentImpl from '../components/MainContentImpl';
 import Layout from '../components/Layout';
 import type { BreadcrumbItem } from '../interfaces/BreadcrumbItem';
+import type { ChainHotkeyHandler, HotkeyExecutionContext } from '../hotkeys';
 
 export interface DashboardPageConfig extends PageComponentConfig {
   layout?: Layout;
@@ -140,15 +141,6 @@ export class DashboardPageComponent extends PageComponent {
     
     // Close user menu when clicking outside
     this.addEventListener(document, 'click', (e) => this.handleDocumentClick(e));
-  }
-
-  /**
-   * Handle keyboard shortcuts - now managed by HotkeyProvider
-   * Only keeping base class behavior
-   */
-  protected handleKeydown(event: KeyboardEvent): void {
-    super.handleKeydown(event);
-    // Dashboard-specific shortcuts now handled via getPageHotkeys()
   }
 
   /**
