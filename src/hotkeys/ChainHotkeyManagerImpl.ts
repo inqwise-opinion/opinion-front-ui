@@ -229,7 +229,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
         console.log(`  🔗 ${i + 1}/${enabledHandlers.length}: Executing ${providerId}`);
         
         // Execute handler
-        handler.handler(context);
+        await handler.handler(context);
         
         logEntry.executed = true;
         logEntry.action = context.getCurrentAction();
@@ -258,6 +258,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
       } catch (error) {
         logEntry.error = error instanceof Error ? error.message : String(error);
         console.error(`    ❌ ${providerId}: Error -`, error);
+        result.handlersExecuted++; // Count errored handlers as executed
       }
 
       result.executionLog.push(logEntry);

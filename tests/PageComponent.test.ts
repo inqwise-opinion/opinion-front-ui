@@ -104,16 +104,9 @@ describe('Page Components', () => {
       value: 768,
     });
 
-    // Mock location
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      configurable: true,
-      value: {
-        origin: 'http://localhost:3000',
-        href: 'http://localhost:3000/dashboard',
-        pathname: '/dashboard'
-      }
-    });
+    // Set up window.location using jsdom
+    delete (window as any).location;
+    window.location = new URL('http://localhost:3000/dashboard') as any;
 
     // Mock document ready state
     Object.defineProperty(document, 'readyState', {

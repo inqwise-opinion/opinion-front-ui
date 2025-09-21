@@ -45,12 +45,13 @@ export class OpinionApp {
 
   public async init(): Promise<void> {
     console.log("🎯 APP.TS - init()");
-    try {
-      if (this.initialized) {
-        console.warn("🎯 APP.TS - Application already initialized");
-        return;
-      }
+    
+    if (this.initialized) {
+      console.warn("🎯 APP.TS - Application already initialized");
+      return;
+    }
 
+    try {
       this.setupEventListeners();
 
       console.log("🎯 APP.TS - Initializing global layout...");

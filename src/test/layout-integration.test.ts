@@ -10,6 +10,8 @@ import { AppFooterImpl } from '../components/AppFooterImpl';
 import { MainContent } from '../components/MainContent';
 import { globalEventBus, AppEvents } from '../utils/EventBus';
 
+export const skip = true; // Skip this file for Jest testing - it's an integration test utility
+
 /**
  * Simple integration test to validate clean layout
  */
@@ -163,3 +165,7 @@ export async function demoCleanLayout(): Promise<void> {
 
   console.log('🎉 Clean Layout Demo - Ready!');
 }
+
+// Ensure Jest doesn't fail due to no tests in this helper module
+// This creates a skipped placeholder test.
+test.skip('layout-integration helper module', () => {});

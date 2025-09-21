@@ -19,7 +19,10 @@ import { getLayoutContext } from "../contexts/index";
 import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
 import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
 import { AppHeader, HeaderUser } from "./AppHeader";
-import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
+import {
+  ComponentStatus,
+  ComponentWithStatus,
+} from "../interfaces/ComponentStatus";
 import {
   ChainHotkeyProvider,
   ChainHotkeyHandler,
@@ -34,13 +37,14 @@ export interface HeaderConfig {
   showUserMenu?: boolean; // Show user menu (default: true)
 }
 
-export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentWithStatus {
+export class AppHeaderImpl
+  implements AppHeader, ChainHotkeyProvider, ComponentWithStatus
+{
   private userMenuHandler?: (userMenu: UserMenu) => void;
   private container: HTMLElement | null = null;
   private userMenu: UserMenu | null = null;
   private breadcrumbsComponent: BreadcrumbsComponent | null = null;
   private user: HeaderUser | null = null;
-  private resizeTimeout: NodeJS.Timeout | null = null;
   private layoutContext: LayoutContext;
   private layoutUnsubscribers: Array<() => void> = [];
   private config: Required<HeaderConfig>;
@@ -94,21 +98,22 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
 
       // Initialize breadcrumbs component
       await this.initBreadcrumbs();
-      
+
       // Initialize user menu component (desktop only)
       await this.initUserMenu();
 
       // Setup event listeners
       this.setupEventListeners();
-      
+
       // Setup layout subscriptions
       this.subscribeToLayoutContext();
 
       this.layoutContext.registerHeader(this);
-      
+
       // Register as chain hotkey provider for ESC key handling (if user menu enabled)
       if (this.config.showUserMenu) {
-        this.chainProviderUnsubscriber = this.layoutContext.registerChainProvider(this);
+        this.chainProviderUnsubscriber =
+          this.layoutContext.registerChainProvider(this);
       }
 
       this.isInitialized = true;
@@ -121,36 +126,35 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
   }
 
   /**
-   * Use existing header element and populate content
+   * Creates or uses existing header element and populate content
    */
   private async createHeader(): Promise<void> {
     // Find existing header element
     this.container = document.getElementById("app-header");
 
     if (!this.container) {
-      // Wait a bit and try again in case DOM is still loading
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          this.container = document.getElementById("app-header");
-          if (!this.container) {
-            console.error(
-              "AppHeaderImpl: #app-header element not found in DOM. Available elements:",
-              Array.from(document.querySelectorAll("[id]")).map((el) => el.id),
-            );
-            reject(
-              new Error(
-                "AppHeaderImpl: Could not find existing #app-header element",
-              ),
-            );
-            return;
-          }
-          this.finalizeHeaderCreation();
-          resolve();
-        }, 100);
-      });
-    }
+      // Create the element if it doesn't exist
+      this.container = document.createElement("header");
+      this.container.id = "app-header";
+      this.container.className = "app-header";
 
-    console.log("AppHeaderImpl - Using existing element");
+      // Create header container
+      const headerContainer = document.createElement("div");
+      headerContainer.className = "header-container";
+      this.container.appendChild(headerContainer);
+
+      // Add to DOM - prefer app-layout container if present
+      const appLayout = document.querySelector(".app-layout");
+      if (appLayout) {
+        appLayout.insertBefore(this.container, appLayout.firstChild);
+      } else {
+        document.body.insertBefore(this.container, document.body.firstChild);
+      }
+
+      console.log("AppHeaderImpl - Created new header element");
+    } else {
+      console.log("AppHeaderImpl - Using existing element");
+    }
 
     this.finalizeHeaderCreation();
   }
@@ -171,9 +175,13 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
   private populateContent(): void {
     if (!this.container) return;
 
-    // Find header container
-    const headerContainer = this.container.querySelector(".header-container");
-    if (!headerContainer) return;
+    // Find or create header container
+    let headerContainer = this.container.querySelector(".header-container");
+    if (!headerContainer) {
+      headerContainer = document.createElement("div");
+      headerContainer.className = "header-container";
+      this.container.appendChild(headerContainer);
+    }
 
     // Populate header content using configuration
     const mobileToggleHtml = this.config.showMobileToggle
@@ -233,11 +241,13 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
       return;
     }
 
-    const breadcrumbsContainer = await this.waitForElement("#breadcrumbs_container");
+    const breadcrumbsContainer = await this.waitForElement(
+      "#breadcrumbs_container",
+    );
     if (breadcrumbsContainer) {
       this.breadcrumbsComponent = new BreadcrumbsComponent(
         breadcrumbsContainer,
-        this.layoutContext
+        this.layoutContext,
       );
       await this.breadcrumbsComponent.init();
       console.log("AppHeaderImpl - BreadcrumbsComponent initialized");
@@ -292,46 +302,19 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
     // Mobile menu toggle handler (disabled - managed by LayoutContext + Sidebar)
     this.setupMobileMenuHandler();
 
-    // Header positioning is now fully CSS-based - no dynamic resize handling needed
   }
 
-  /**
-   * Handle window resize events to update header styling and position
-   */
-  private handleResize(): void {
-    const currentWidth = window.innerWidth;
-    const headerCenter = this.container?.querySelector(
-      ".header-center",
-    ) as HTMLElement;
-
-    console.log(
-      `🪟 AppHeaderImpl - handleResize triggered for ${currentWidth}px viewport`,
-    );
-
-    if (headerCenter) {
-      // Apply mobile styles only on phone screens, desktop/tablet get no padding
-      if (currentWidth <= 767) {
-        headerCenter.style.cssText = "padding-left: 16px;"; // Mobile padding for header-left space
-      } else {
-        headerCenter.style.cssText = "padding-left: 0;"; // No padding on tablet/desktop
-      }
-      console.log(
-        `📐 AppHeaderImpl - Updated header-center styling for ${currentWidth}px viewport`,
-      );
-    }
-
-    // Update header layout based on current layout context state
-    console.log(`🔄 AppHeaderImpl - Updating layout due to resize...`);
-    this.updateHeaderLayout(this.layoutContext);
-  }
 
   /**
    * Register chain hotkey provider with LayoutContext
    */
   private registerHotkeys(): void {
     // Register this component as a chain provider for ESC key handling
-    this.chainProviderUnsubscriber = this.layoutContext.registerChainProvider(this);
-    console.log("AppHeaderImpl - Registered as chain hotkey provider for user menu ESC handling");
+    this.chainProviderUnsubscriber =
+      this.layoutContext.registerChainProvider(this);
+    console.log(
+      "AppHeaderImpl - Registered as chain hotkey provider for user menu ESC handling",
+    );
   }
 
   /**
@@ -342,11 +325,13 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
     // This maintains separation between header and user menu components
     const requestEvent = LayoutEventFactory.createUserMenuRequestEvent(
       "hide", // Request to hide/close
-      "keyboard"
+      "keyboard",
     );
-    
+
     this.layoutContext.emit("user-menu-request", requestEvent.data);
-    console.log("📡 AppHeaderImpl - ESC key: User menu close request emitted (via LayoutContext hotkey)");
+    console.log(
+      "📡 AppHeaderImpl - ESC key: User menu close request emitted (via LayoutContext hotkey)",
+    );
   }
 
   /**
@@ -371,9 +356,9 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
         // This decouples header from sidebar and allows sidebar to handle the request when ready
         const requestEvent = LayoutEventFactory.createMobileMenuRequestEvent(
           "show",
-          "menu-button"
+          "menu-button",
         );
-        
+
         this.layoutContext.emit("mobile-menu-request", requestEvent.data);
         console.log("📡 AppHeaderImpl - Mobile menu request event emitted");
       });
@@ -512,21 +497,19 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
     }
   }
 
-
-
   /**
    * Set breadcrumb items using new BreadcrumbsComponent
    */
   setBreadcrumbItems(items: BreadcrumbItem[]): void {
     if (this.breadcrumbsComponent) {
       this.breadcrumbsComponent.setBreadcrumbs(items);
-      
+
       // Update document title based on breadcrumbs
       if (items.length > 0) {
-        const titleParts = items.map(item => item.text).reverse();
-        document.title = `${titleParts.join(' - ')} - Opinion`;
+        const titleParts = items.map((item) => item.text).reverse();
+        document.title = `${titleParts.join(" - ")} - Opinion`;
       } else {
-        document.title = 'Opinion';
+        document.title = "Opinion";
       }
     } else {
       console.warn("AppHeaderImpl - BreadcrumbsComponent not initialized");
@@ -649,35 +632,37 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
    */
   private subscribeToLayoutContext(): void {
     console.log("AppHeaderImpl - Subscribing to layout context events...");
-    
+
     // Subscribe to layout mode changes to update header layout
     const layoutModeChangeUnsubscribe = this.layoutContext.subscribe(
       "layout-mode-change",
       (event: LayoutEvent) => {
         console.log("AppHeaderImpl - Received layout mode change", event.data);
         this.updateHeaderLayout(this.layoutContext);
-      }
+      },
     );
     this.layoutUnsubscribers.push(layoutModeChangeUnsubscribe);
-    
+
     // Subscribe to sidebar compact mode changes to update header position
     const compactModeChangeUnsubscribe = this.layoutContext.subscribe(
-      "sidebar-compact-mode-change", 
+      "sidebar-compact-mode-change",
       (event: LayoutEvent) => {
-        console.log("AppHeaderImpl - Received sidebar compact mode change", event.data);
+        console.log(
+          "AppHeaderImpl - Received sidebar compact mode change",
+          event.data,
+        );
         this.updateHeaderLayout(this.layoutContext);
-      }
+      },
     );
     this.layoutUnsubscribers.push(compactModeChangeUnsubscribe);
-    
+
     // Set initial layout based on current layout mode
     this.updateHeaderLayout(this.layoutContext);
-    
+
     console.log(
       "AppHeaderImpl - Successfully subscribed to layout context events ✅",
     );
   }
-
 
   /**
    * Cleanup when component is destroyed
@@ -700,7 +685,7 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
 
     // Cleanup chain provider (new system)
     this.cleanupChainProvider();
-    
+
     // Unregister all legacy hotkeys for this component (backward compatibility)
     this.layoutContext.unregisterAllHotkeys("AppHeaderImpl");
     console.log("AppHeaderImpl - Hotkeys unregistered from LayoutContext");
@@ -711,11 +696,6 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
       this.userMenu = null;
     }
 
-    // Clean up resize timeout
-    if (this.resizeTimeout) {
-      clearTimeout(this.resizeTimeout);
-      this.resizeTimeout = null;
-    }
 
     // Remove event listeners and cleanup resources
     if (this.container) {
@@ -726,6 +706,20 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
     this.user = null;
   }
 
+  /**
+   * Legacy/test adapter: expose sidebar reference via layout context
+   */
+  public getSidebar(): any {
+    return this.layoutContext.getSidebar();
+  }
+
+  /**
+   * Legacy/test adapter: trigger layout update
+   */
+  public updatePosition(): void {
+    this.updateHeaderLayout(this.layoutContext);
+  }
+
   // =================================================================================
   // ChainHotkeyProvider Implementation
   // =================================================================================
@@ -734,7 +728,7 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
    * Get provider identifier for chain hotkey system
    */
   getHotkeyProviderId(): string {
-    return 'AppHeaderImpl';
+    return "AppHeaderImpl";
   }
 
   /**
@@ -754,19 +748,23 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
     }
 
     const hotkeys = new Map<string, ChainHotkeyHandler>();
-    
-    hotkeys.set('Escape', {
-      key: 'Escape',
+
+    hotkeys.set("Escape", {
+      key: "Escape",
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
         this.handleEscapeKeyChain(ctx);
       },
-      description: 'Close user menu via chain system',
+      description: "Close user menu via chain system",
       priority: this.getProviderPriority(),
-      enable: () => { /* User menu ESC is always enabled when menu exists */ },
-      disable: () => { /* Could disable if needed */ },
-      isEnabled: () => this.config.showUserMenu && !!this.userMenu
+      enable: () => {
+        /* User menu ESC is always enabled when menu exists */
+      },
+      disable: () => {
+        /* Could disable if needed */
+      },
+      isEnabled: () => this.config.showUserMenu && !!this.userMenu,
     });
 
     return hotkeys;
@@ -775,32 +773,34 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
   /**
    * Default chain behavior - continue to next handler (cooperative)
    */
-  getDefaultChainBehavior(): 'next' | 'break' {
-    return 'next'; // Be cooperative with other components
+  getDefaultChainBehavior(): "next" | "break" {
+    return "next"; // Be cooperative with other components
   }
 
   /**
    * Handle ESC key via chain system with smart cooperation
    */
   private handleEscapeKeyChain(ctx: HotkeyExecutionContext): void {
-    console.log('🎯 AppHeaderImpl - ESC key pressed via chain system');
-    
+    console.log("🎯 AppHeaderImpl - ESC key pressed via chain system");
+
     // Check if user menu is actually open/relevant
     if (this.shouldHandleEscapeKey()) {
       // Close user menu by emitting event
       const requestEvent = LayoutEventFactory.createUserMenuRequestEvent(
         "hide", // Request to hide/close
-        "keyboard"
+        "keyboard",
       );
-      
+
       this.layoutContext.emit("user-menu-request", requestEvent.data);
       ctx.preventDefault();
-      
-      console.log("📡 AppHeaderImpl - ESC handled: User menu close request emitted");
-      
-      // Smart chain control: 
+
+      console.log(
+        "📡 AppHeaderImpl - ESC handled: User menu close request emitted",
+      );
+
+      // Smart chain control:
       // Check if higher priority components (like modals) are in the chain
-      if (ctx.hasProvider('ModalDialog') || ctx.hasProvider('MobileSidebar')) {
+      if (ctx.hasProvider("ModalDialog") || ctx.hasProvider("MobileSidebar")) {
         // Let higher priority components also handle if they need to
         ctx.next();
       } else {
@@ -827,47 +827,51 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
    * Get current component status for debugging
    */
   getStatus(): ComponentStatus {
-    const containerDimensions = this.container ? {
-      width: this.container.offsetWidth,
-      height: this.container.offsetHeight,
-      offsetTop: this.container.offsetTop,
-      offsetLeft: this.container.offsetLeft,
-    } : undefined;
+    const containerDimensions = this.container
+      ? {
+          width: this.container.offsetWidth,
+          height: this.container.offsetHeight,
+          offsetTop: this.container.offsetTop,
+          offsetLeft: this.container.offsetLeft,
+        }
+      : undefined;
 
     const issues: string[] = [];
     const warnings: string[] = [];
 
     // Check for potential issues
     if (!this.container) {
-      issues.push('DOM container element not found');
+      issues.push("DOM container element not found");
     }
     if (this.config.showUserMenu && !this.userMenu) {
-      warnings.push('User menu enabled but not initialized');
+      warnings.push("User menu enabled but not initialized");
     }
     if (this.layoutUnsubscribers.length === 0) {
-      warnings.push('No layout event subscriptions active');
+      warnings.push("No layout event subscriptions active");
     }
 
     const currentTime = Date.now();
     const uptime = this.initTime ? currentTime - this.initTime : 0;
-    
+
     return {
-      componentType: 'AppHeaderImpl',
-      id: 'app-header',
+      componentType: "AppHeaderImpl",
+      id: "app-header",
       initialized: this.isInitialized,
       initTime: this.initTime,
       uptime: uptime,
-      domElement: this.container ? {
-        tagName: this.container.tagName,
-        id: this.container.id,
-        className: this.container.className,
-        childCount: this.container.children.length,
-        hasContent: this.container.children.length > 0,
-        isVisible: this.container.style.display !== 'none',
-        ariaLabel: this.container.getAttribute('aria-label') || undefined,
-        role: this.container.getAttribute('role') || undefined,
-        dimensions: containerDimensions,
-      } : undefined,
+      domElement: this.container
+        ? {
+            tagName: this.container.tagName,
+            id: this.container.id,
+            className: this.container.className,
+            childCount: this.container.children.length,
+            hasContent: this.container.children.length > 0,
+            isVisible: this.container.style.display !== "none",
+            ariaLabel: this.container.getAttribute("aria-label") || undefined,
+            role: this.container.getAttribute("role") || undefined,
+            dimensions: containerDimensions,
+          }
+        : undefined,
       eventListeners: {
         domEvents: this.domEventListeners,
         layoutSubscriptions: this.layoutUnsubscribers.length,
@@ -884,13 +888,18 @@ export class AppHeaderImpl implements AppHeader, ChainHotkeyProvider, ComponentW
         userMenuInitialized: !!this.userMenu,
         userSet: !!this.user,
         updateCount: this.updateCount,
-        containerVisible: this.container ? this.container.style.display !== 'none' : false,
+        containerVisible: this.container
+          ? this.container.style.display !== "none"
+          : false,
       },
       performance: {
         updateCount: this.updateCount,
         lastUpdate: this.user ? Date.now() : undefined,
       },
-      issues: issues.length > 0 || warnings.length > 0 ? issues.concat(warnings) : undefined,
+      issues:
+        issues.length > 0 || warnings.length > 0
+          ? issues.concat(warnings)
+          : undefined,
       customData: {
         chainHotkeyProvider: {
           registered: !!this.chainProviderUnsubscriber,

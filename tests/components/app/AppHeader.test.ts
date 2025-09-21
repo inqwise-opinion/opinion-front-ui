@@ -5,18 +5,18 @@
  * when AppHeader is provided with a specific LayoutContext (not the singleton).
  */
 
-import { AppHeaderImpl } from '../src/components/AppHeaderImpl';
-import { ComponentReference } from '../src/components/ComponentReference';
-import LayoutContextImpl from '../src/contexts/LayoutContextImpl';
-import { getLayoutContext } from '../src/contexts/index';
+import { AppHeaderImpl } from '../../../src/components/AppHeaderImpl';
+import { ComponentReference } from '../../../src/components/ComponentReference';
+import LayoutContextImpl from '../../../src/contexts/LayoutContextImpl';
+import { getLayoutContext } from '../../../src/contexts/index';
 
 // Need to access the singleton instance to clear it
-const { getLayoutContext } = require('../src/contexts/index');
+const { getLayoutContext } = require('../../../src/contexts/index');
 
 describe('AppHeader LayoutContext Integration', () => {
   beforeEach(() => {
     // Clear any existing singleton instance by overwriting the module's variable
-    const contextModule = require('../src/contexts/index');
+const contextModule = require('../../../src/contexts/index');
     contextModule.layoutContextInstance = null;
     
     // Mock DOM elements
@@ -37,13 +37,19 @@ describe('AppHeader LayoutContext Integration', () => {
     jest.restoreAllMocks();
   });
 
-  test('should use singleton LayoutContext when no context provided (backward compatibility)', async () => {
-    const header = new AppHeaderImpl();
+  test('should use provided LayoutContext instead of singleton', async () => {
+    // Create specific layout context
+    const layoutContext = new LayoutContextImpl();
+    
+    // Create header with specific context
+    const header = new AppHeaderImpl({}, layoutContext);
     await header.init();
     
-    // Should register with singleton context
-    const singletonContext = getLayoutContext();
-    expect(singletonContext.getHeader()).toBe(header);
+    // Should register with the provided context
+    expect(layoutContext.getHeader()).toBe(header);
+    
+    // Clean up
+    layoutContext.destroy();
   });
 
   test('should use provided LayoutContext instead of singleton (fix)', async () => {

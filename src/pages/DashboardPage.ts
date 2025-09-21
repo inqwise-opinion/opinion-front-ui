@@ -146,19 +146,6 @@ export class DashboardPage {
     window.location.href = path;
   }
 
-  /**
-   * Handle window resize events
-   */
-  private handleResize(): void {
-    const width = window.innerWidth;
-    
-    // Adjust layout based on screen size
-    if (width < 768) {
-      document.body.classList.add('mobile-layout');
-    } else {
-      document.body.classList.remove('mobile-layout');
-    }
-  }
 
   /**
    * Cleanup when page is destroyed

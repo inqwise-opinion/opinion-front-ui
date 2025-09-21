@@ -11,7 +11,21 @@ let sidebar: SidebarComponent;
 
   beforeEach(() => {
     // Set up DOM environment
-    document.body.innerHTML = '';
+    document.body.innerHTML = `
+      <div id="app_sidebar" class="app-sidebar">
+        <nav class="sidebar-navigation" role="navigation">
+          <div class="nav-section" aria-label="Main navigation">
+            <ul class="nav-list" role="menubar"></ul>
+          </div>
+        </nav>
+        <div class="sidebar-footer">
+          <button id="sidebar_mobile_close" class="sidebar-mobile-close" aria-label="Close Menu">
+            <span class="close-icon">×</span>
+          </button>
+          <div class="copyright-text">© 2024 Opinion</div>
+        </div>
+      </div>
+    `;
     
     // Create mock viewport environment
     Object.defineProperty(window, 'innerWidth', {

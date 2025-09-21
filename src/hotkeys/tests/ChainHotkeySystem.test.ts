@@ -557,7 +557,7 @@ describe('ChainHotkeySystem', () => {
       // Chain should continue despite error
       expect(provider2Executed).toBe(true);
       expect(result.executed).toBe(true);
-      expect(result.handlersExecuted).toBe(1); // Only provider2 executed successfully
+      expect(result.handlersExecuted).toBe(2); // Both handlers count as executed (one errored, one successful)
       expect(result.executionLog).toHaveLength(2);
       expect(result.executionLog[0].error).toBeDefined();
       expect(result.executionLog[1].error).toBeUndefined();

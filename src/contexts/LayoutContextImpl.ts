@@ -4,6 +4,7 @@
  */
 
 import type { Dimensions, Sidebar } from "../components/Sidebar";
+
 import type { AppHeader } from "../components/AppHeader";
 import type { AppFooter } from "../components/AppFooter";
 import type { MainContent } from "../components/MainContent";
@@ -49,6 +50,7 @@ export class LayoutContextImpl implements LayoutContext {
   private resizeTimeout: NodeJS.Timeout | null = null;
   private sidebarInstance: Sidebar | null = null;
   private isLayoutReady: boolean = false;
+
 
   // Component registry
   private headerInstance: AppHeader | null = null;

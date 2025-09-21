@@ -3,21 +3,28 @@
  * Tests component initialization, configuration, DOM manipulation, and responsiveness
  */
 
-import { AppFooterImpl, FooterConfig, FooterLink } from '../src/components/AppFooterImpl';
+import { AppFooterImpl, FooterConfig, FooterLink } from '../../../src/components/AppFooterImpl';
 
 // Mock the layout context
-jest.mock('../src/contexts/index', () => ({
+jest.mock('../../../src/contexts/index', () => ({
   getLayoutContext: jest.fn(() => ({
     subscribe: jest.fn(() => () => {}), // Return unsubscribe function
-    getLayoutMode: jest.fn(() => ({
-      type: 'desktop',
-      isCompact: false,
-      isMobile: false,
-      isTablet: false,
-      isDesktop: true
-    }))
+    getModeType: jest.fn(() => 'desktop'),
+    isLayoutMobile: jest.fn(() => false),
+    isLayoutTablet: jest.fn(() => false),
+    isLayoutDesktop: jest.fn(() => true),
+    emit: jest.fn(),
+    // Layout component registration
+    registerFooter: jest.fn(),
+    getMessagesComponent: jest.fn(),
+    getMainContent: jest.fn(),
+    getFooter: jest.fn(),
+    getSidebar: jest.fn(),
+    registerChainProvider: jest.fn(),
+    // Additional required methods
+    destroy: jest.fn()
   }))
-}));
+}))
 
 describe('AppFooter', () => {
   let appFooter: AppFooterImpl;

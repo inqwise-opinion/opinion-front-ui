@@ -10,9 +10,9 @@ import {
   getLayoutContext,
   type LayoutContext,
   type LayoutEvent,
-} from "../contexts/index.js";
-import type { Dimensions } from "./Sidebar.js";
-import type { MainContent, MainContentConfig } from "./MainContent.js";
+} from "../contexts";
+import type { Dimensions } from "./Sidebar";
+import type { MainContent, MainContentConfig } from "./MainContent";
 import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 
 export class MainContentImpl implements MainContent, ComponentWithStatus {

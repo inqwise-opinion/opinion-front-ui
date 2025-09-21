@@ -4,7 +4,88 @@
 
 The Opinion Front UI uses a sophisticated event-driven architecture that enables loose coupling between components while maintaining consistent state management. The system combines centralized state management through LayoutContext with DOM event handling and custom event dispatching.
 
-## 1. Event System Architecture
+## 1. Event Handling Policy
+
+### Event Scope Rules
+
+1. **DOM Event Scope**
+   - Components MUST ONLY handle events from elements within their own DOM scope
+   - Example: Button click handlers should only be attached to buttons within the component's container
+
+2. **Global Event Prohibition**
+   - Components MUST NOT directly subscribe to:
+     - Window events (resize, scroll, etc.)
+     - Document-level events
+     - Custom events outside their DOM scope
+   - All global state changes must come through LayoutContext events
+
+3. **Exception Process**
+   - Any need for global event handling MUST be discussed and documented
+   - Common exceptions that require discussion:
+     - Keyboard shortcuts/hotkeys
+     - Viewport changes
+     - Browser history/navigation
+     - Storage events
+
+4. **Approved Global Handlers**
+   - LayoutContext: Centralized handler for viewport/responsive changes
+   - HotkeyManager: Global keyboard shortcut management
+   - These services emit proper layout events that components can consume
+
+### Event Emission Rules
+
+1. **Component Events**
+   - Components MUST use CustomEvent for component-specific events
+   - Event detail MUST include the source component ID
+   - Events MUST bubble only within the component's container
+   ```typescript
+   // ✅ CORRECT: Scoped custom event
+   this.container.dispatchEvent(new CustomEvent('item-selected', {
+     bubbles: true,
+     composed: false,
+     detail: {
+       componentId: this.id,
+       selectedItem: item
+     }
+   }));
+   ```
+
+2. **Global State Changes**
+   - Components MUST NOT emit global custom events
+   - State changes affecting multiple components MUST go through LayoutContext:
+   ```typescript
+   // ❌ INCORRECT: Global custom event
+   document.dispatchEvent(new CustomEvent('theme-changed'));
+   
+   // ✅ CORRECT: Use LayoutContext
+   layoutContext.emit('theme-mode-change', { mode: 'dark' });
+   ```
+
+3. **Event Naming**
+   - Component events: `${componentId}-${action}` (e.g., 'sidebar-item-selected')
+   - LayoutContext events: `${scope}-${type}-${action}` (e.g., 'layout-mode-change')
+
+### Component Event Guidelines
+
+```typescript
+// ❌ INCORRECT: Direct window event subscription
+class BadComponent {
+  constructor() {
+    window.addEventListener('resize', () => this.handleResize());
+  }
+}
+
+// ✅ CORRECT: React to LayoutContext events
+class GoodComponent {
+  constructor(layoutContext: LayoutContext) {
+    layoutContext.subscribe('layout-mode-change', 
+      (event) => this.updateLayout(event.data)
+    );
+  }
+}
+```
+
+## 2. Event System Architecture
 
 ```mermaid
 graph TB

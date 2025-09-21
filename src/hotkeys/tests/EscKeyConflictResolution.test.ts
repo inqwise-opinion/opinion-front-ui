@@ -419,22 +419,23 @@ describe('ESC Key Conflict Resolution', () => {
       });
     });
     test('should execute handlers in correct priority order', async () => {
-      // Get the chain debug info and verify order
-      const debugInfo = hotkeyManager.getChainDebugInfo('Escape');
-      const providerOrder = debugInfo.handlers.map(h => h.providerId);
-      expect(providerOrder).toEqual(['MobileSidebar', 'UserMenu']);
+      // Get the chain debug info and verify initial order
+      const initialDebugInfo = hotkeyManager.getChainDebugInfo('Escape');
+      const initialOrder = initialDebugInfo.handlers.map(h => h.providerId);
+      expect(initialOrder).toEqual(['MobileSidebar', 'UserMenu']);
+      
       // Setup: Both components active
       mobileProvider.setMobile(true);
       mobileProvider.setMobileMenuVisible(true);
       userMenuProvider.setUserMenuOpen(true);
 
       const event = createEscEvent();
-      await manager.executeChain('Escape', event);
+      await hotkeyManager.executeChain('Escape', event);
 
-      // Verify priority order via debug info
-      const debugInfo = manager.getChainDebugInfo('Escape');
-      const providerOrder = debugInfo.handlers.map(h => h.providerId);
-      expect(providerOrder).toEqual(['MobileSidebar', 'UserMenu']);
+      // Verify priority order maintained after chain execution
+      const finalDebugInfo = hotkeyManager.getChainDebugInfo('Escape');
+      const finalOrder = finalDebugInfo.handlers.map(h => h.providerId);
+      expect(finalOrder).toEqual(['MobileSidebar', 'UserMenu']);
     });
   });
 
@@ -467,49 +468,55 @@ describe('ESC Key Conflict Resolution', () => {
 
   describe('Performance and Error Resilience', () => {
     test('should handle errors in one handler without affecting others', async () => {
-      // Setup: Ensure mobile sidebar handler exists
-      mobileProvider.setMobile(true);
-      mobileProvider.setMobileMenuVisible(true);
-      
-      // Make mobile sidebar handler throw error by temporarily registering an erroring provider
+      // Define error-throwing provider
       const erroringProvider: ChainHotkeyProvider = {
         getHotkeyProviderId: () => 'MobileSidebar',
         getProviderPriority: () => 800,
-        getDefaultChainBehavior: () => 'next' as HotkeyChainAction,
-        getChainHotkeys: () => new Map([
+        getDefaultChainBehavior: () => 'next',
+        getChainHotkeys: () => new Map<string, ChainHotkeyHandler>([
           ['Escape', {
             key: 'Escape',
             providerId: 'MobileSidebar',
             enabled: true,
-            handler: (ctx) => { throw new Error('Mobile sidebar error'); },
-            isEnabled: () => true
-          } as any]
+            description: 'Error test handler',
+            isEnabled: () => true,
+            handler: (ctx: HotkeyExecutionContext) => { throw new Error('Mobile sidebar error'); },
+            priority: 800,
+            enable: () => {},
+            disable: () => {}
+          }]
         ])
-      } as any;
-
-      // Recreate manager with erroring provider and user menu
-      manager.destroy();
-      manager = new ChainHotkeyManagerImpl();
-      manager.registerProvider(erroringProvider);
-      manager.registerProvider(userMenuProvider);
-
-      // Activate user menu
-      userMenuProvider.setUserMenuOpen(true);
-
+      };
+      
+      // Setup manager and register provider
+      const testManager = new ChainHotkeyManagerImpl();
+      testManager.registerProvider(erroringProvider);
+      
+      // Add another provider that should still work
+      testManager.registerProvider({
+        getHotkeyProviderId: () => 'UserMenu',
+        getProviderPriority: () => 600,
+        getDefaultChainBehavior: () => 'next',
+        getChainHotkeys: () => new Map<string, ChainHotkeyHandler>([
+          ['Escape', {
+            key: 'Escape',
+            providerId: 'UserMenu',
+            enabled: true,
+            handler: () => {},
+            isEnabled: () => true
+          }]
+        ])
+      });
+      
+      // Verify error is handled and chain continues
       const event = createEscEvent();
-      const result = await manager.executeChain('Escape', event as any);
-      // If implementation does not count errored handler as executed, relax assertion
-      if (!result.executed || result.handlersExecuted < 2) {
-        // Verify at least the second handler ran
-        expect(userMenuProvider.wasUserMenuClosed()).toBe(true);
-      } else {
-        expect(result.handlersExecuted).toBe(2);
-      }
-
-      // User menu should still execute despite mobile sidebar error
+      const result = await testManager.executeChain('Escape', event);
+      
       expect(result.executed).toBe(true);
       expect(result.handlersExecuted).toBe(2);
-      expect(userMenuProvider.wasUserMenuClosed()).toBe(true);
+      
+      // Cleanup
+      testManager.destroy();
     });
   });
 });

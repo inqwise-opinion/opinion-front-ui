@@ -43,7 +43,8 @@ export type LayoutEventType =
   | "mobile-menu-mode-change"
   | "mobile-menu-request"
   | "user-menu-mode-change"
-  | "user-menu-request";
+  | "user-menu-request"
+;
 
 export type LayoutModeType = "mobile" | "tablet" | "desktop";
 

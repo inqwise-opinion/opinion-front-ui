@@ -6,7 +6,7 @@
  */
 
 import { LayoutContextImpl } from '../../src/contexts/LayoutContextImpl';
-import { EventBusTestService } from '../../src/services/EventBusTestService';
+import { EventBusTestService } from './EventBusTestService';
 import type { LayoutContext } from '../../src/contexts/LayoutContext';
 import type { Consumer } from '../../src/lib/EventBus';
 

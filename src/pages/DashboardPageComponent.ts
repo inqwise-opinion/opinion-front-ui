@@ -26,7 +26,6 @@ export class DashboardPageComponent extends PageComponent {
   private layout: Layout | null = null;
   private compactMode: boolean = false;
   private isMobileView: boolean = false;
-  private resizeTimeout: NodeJS.Timeout | null = null;
 
   // UI Elements
   private sidebar: HTMLElement | null = null;
@@ -105,8 +104,9 @@ export class DashboardPageComponent extends PageComponent {
     await this.loadUserData();
     await this.loadSurveyData();
     
-    // Trigger initial responsive check
-    this.handleResize();
+    // Initial responsive state setup
+    this.updateResponsiveState();
+    this.updateCopyrightPosition();
   }
 
   /**
@@ -136,8 +136,6 @@ export class DashboardPageComponent extends PageComponent {
       this.addEventListener(this.overlay, 'click', () => this.closeSidebarOverlay());
     }
     
-    // Responsive behavior is now handled by LayoutContext centrally
-    // this.addEventListener(window, 'resize', () => this.debounceResize());
     
     // Close user menu when clicking outside
     this.addEventListener(document, 'click', (e) => this.handleDocumentClick(e));
@@ -304,26 +302,6 @@ export class DashboardPageComponent extends PageComponent {
     this.updateResponsiveState();
   }
 
-  /**
-   * Handle window resize with debouncing
-   */
-  private debounceResize(): void {
-    if (this.resizeTimeout) {
-      clearTimeout(this.resizeTimeout);
-    }
-    
-    this.resizeTimeout = setTimeout(() => {
-      this.handleResize();
-    }, 100);
-  }
-
-  /**
-   * Handle window resize
-   */
-  private handleResize(): void {
-    this.updateResponsiveState();
-    this.updateCopyrightPosition();
-  }
 
   /**
    * Update responsive state
@@ -446,22 +424,9 @@ export class DashboardPageComponent extends PageComponent {
   }
 
   /**
-   * Clear timers
-   */
-  protected clearTimers(): void {
-    if (this.resizeTimeout) {
-      clearTimeout(this.resizeTimeout);
-      this.resizeTimeout = null;
-    }
-  }
-
-  /**
    * Cleanup dashboard-specific functionality
    */
   protected onDestroy(): void {
-    // Clear timers
-    this.clearTimers();
-    
     // Reset DOM states
     document.body.classList.remove('sidebar-open', 'sidebar-closed');
     this.overlay?.classList.remove('active');
