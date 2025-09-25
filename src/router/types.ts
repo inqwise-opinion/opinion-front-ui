@@ -5,6 +5,7 @@ export interface RouteContext extends Context {
   params: Record<string, string>;
   pathname: string;
   accountId?: string;
+  services?: Map<string, any>; // Map of service ID to service instance
 }
 
 export interface RouteResult {

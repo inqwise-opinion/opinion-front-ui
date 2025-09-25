@@ -2,6 +2,8 @@ import UniversalRouter from 'universal-router';
 import { LayoutContext } from '../contexts/LayoutContext';
 import { Service } from '../interfaces/Service';
 import { RouteContext, RouteDefinition, RouterEventMap } from './types';
+import { ALL_ROUTES } from './routes';
+import { authMiddleware } from './middleware/auth';
 
 export class RouterService implements Service {
   public static readonly SERVICE_ID = 'router';
@@ -9,13 +11,19 @@ export class RouterService implements Service {
   private currentPath: string = '/';
 
   constructor(private layoutContext: LayoutContext) {
-    this.router = new UniversalRouter([], {
+    this.router = new UniversalRouter(ALL_ROUTES, {
       baseUrl: '/',
-      resolveRoute: (context, params) => {
-        return (context as RouteContext).route.action({
+      resolveRoute: async (context, params) => {
+        const ctx = {
           ...context,
           params: params || {},
-        } as RouteContext);
+          services: new Map([['layout', this.layoutContext]])
+        } as RouteContext;
+
+        // Apply authentication middleware
+        return authMiddleware(ctx, async () => {
+          return (context as RouteContext).route.action(ctx);
+        });
       },
     });
   }
