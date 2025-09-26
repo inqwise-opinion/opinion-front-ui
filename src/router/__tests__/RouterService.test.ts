@@ -1,7 +1,23 @@
 import { RouterService } from '../RouterService';
 import { LayoutContext } from '../../contexts/LayoutContext';
-import { RouteDefinition } from '../types';
+import { RouteDefinition, RouteResult, RouteContext } from '../types';
 import { PageComponent } from '../../components/PageComponent';
+
+class TestPage extends PageComponent {
+  protected render(): void {}
+  public destroy(): void {}
+}
+
+const createHandler = (result: Partial<RouteResult>) => {
+  return async (context: RouteContext): Promise<RouteResult> => {
+    return { component: TestPage, ...result };
+  };
+}
+  value: {
+    pushState: jest.fn(),
+  },
+  writable: true
+});
 
 class TestPage extends PageComponent {
   protected render(): void {}
@@ -12,15 +28,18 @@ describe('RouterService', () => {
   let layoutContext: LayoutContext;
   let publishSpy: jest.SpyInstance;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    const mockEventBus = {
+      publish: jest.fn(),
+    };
+    
     layoutContext = {
-      eventBus: {
-        publish: jest.fn(),
-      },
+      getEventBus: () => mockEventBus,
     } as unknown as LayoutContext;
 
-    publishSpy = jest.spyOn(layoutContext.eventBus, 'publish');
+    publishSpy = jest.spyOn(layoutContext.getEventBus(), 'publish');
     routerService = new RouterService(layoutContext);
+    await routerService.init();
   });
 
   afterEach(() => {
@@ -35,7 +54,12 @@ describe('RouterService', () => {
     const routes: RouteDefinition[] = [
       {
         path: '/test',
-        action: () => ({ component: TestPage }),
+        children: [],
+        action: createHandler({})
+      }
+    ];
+    ];
+}),
       },
     ];
 
@@ -50,8 +74,10 @@ describe('RouterService', () => {
     const routes: RouteDefinition[] = [
       {
         path: '/test',
-        action: () => ({ component: TestPage }),
-      },
+        children: [],
+        action: async () => ({ component: TestPage })
+      }
+    ];
     ];
 
     routerService.registerRoutes(routes);
@@ -71,10 +97,12 @@ describe('RouterService', () => {
     const routes: RouteDefinition[] = [
       {
         path: '/test',
-        action: () => {
+        children: [],
+        action: async (context: RouteContext) => {
           throw new Error('Navigation failed');
-        },
-      },
+        }
+      }
+    ];
     ];
 
     routerService.registerRoutes(routes);

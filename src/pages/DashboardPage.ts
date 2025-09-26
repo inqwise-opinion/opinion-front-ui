@@ -11,11 +11,11 @@ import '../assets/styles/dashboard.scss';
 export class DashboardPage {
   private dashboard: Dashboard;
   private apiService: MockApiService;
-  private mainContent: MainContentImpl | null = null;
+  private mainContent: MainContentImpl;
 
-  constructor(apiService: MockApiService, mainContent: MainContentImpl | null = null) {
-    this.apiService = apiService;
+  constructor(mainContent: MainContentImpl) {
     this.mainContent = mainContent;
+    this.apiService = new MockApiService();
     this.dashboard = new Dashboard(this.apiService);
   }
 
@@ -78,16 +78,9 @@ export class DashboardPage {
       const doc = parser.parseFromString(templateHtml, 'text/html');
       const bodyContent = doc.body.innerHTML;
 
-      // Use MainContent component if available, otherwise fallback to #app
-      if (this.mainContent) {
-        this.mainContent.setContent(bodyContent);
-        console.log('Dashboard template loaded into semantic <main> element');
-      } else {
-        const appEl = document.getElementById('app');
-        if (!appEl) throw new Error('No #app element found for dashboard content');
-        appEl.innerHTML = bodyContent;
-        console.log('Dashboard template loaded into fallback #app element');
-      }
+      // Always use MainContent component as it's required
+      this.mainContent.setContent(bodyContent);
+      console.log('Dashboard template loaded into semantic <main> element');
       
       console.log('Dashboard template loaded');
     } catch (error) {

@@ -12,17 +12,22 @@ class TestEntityRouter extends EntityRouter {
     this.basePath = '/test';
     this.routes = [
       {
-        path: this.buildPath('/'),
+        path: '/test',
         action: () => ({ component: TestPage }),
       },
       {
-        path: this.buildPath('/:id'),
+        path: '/test/:id',
         action: (context) => ({
           component: TestPage,
           params: context.params,
         }),
       },
     ];
+  }
+
+  // Add async keyword for proper async/await support
+  async mountRoutes() {
+    await super.mountRoutes();
   }
 }
 
@@ -58,13 +63,14 @@ describe('EntityRouter', () => {
     );
   });
 
-  it('should build paths correctly', () => {
-    // Access protected method via any
+  it('should build paths correctly', async () => {
+    // Must initialize first
+    await entityRouter.init();
     const router = entityRouter as any;
     
-    expect(router.buildPath('/test')).toBe('/test/test');
-    expect(router.buildPath('test')).toBe('/test/test');
-    expect(router.buildPath('/test/')).toBe('/test/test');
+    expect(router.buildPath('/')).toBe('/test');
+    expect(router.buildPath('/other')).toBe('/test/other');
+    expect(router.buildPath('other/')).toBe('/test/other');
   });
 
   it('should throw error if router service is not available', async () => {

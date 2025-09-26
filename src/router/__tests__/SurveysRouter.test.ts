@@ -1,10 +1,25 @@
 import { SurveysRouter } from '../SurveysRouter';
 import { LayoutContext } from '../../contexts/LayoutContext';
+import { PageComponent } from '../../components/PageComponent';
 
-jest.mock('../pages/surveys/SurveyListPage', () => ({ default: {} }));
-jest.mock('../pages/surveys/SurveyDetailPage', () => ({ default: {} }));
-jest.mock('../pages/surveys/collectors/CollectorListPage', () => ({ default: {} }));
-jest.mock('../pages/surveys/collectors/CollectorDetailPage', () => ({ default: {} }));
+// Create mock component class first
+class MockPageComponent extends PageComponent {
+  protected render(): void {}
+  public destroy(): void {}
+}
+
+// Mock the component modules
+const mockComponents = {
+  SurveyListPage: class extends MockPageComponent {},
+  SurveyDetailPage: class extends MockPageComponent {},
+  CollectorListPage: class extends MockPageComponent {},
+  CollectorDetailPage: class extends MockPageComponent {}
+};
+
+jest.mock('../../pages/surveys/SurveyListPage', () => ({ default: mockComponents.SurveyListPage }));
+jest.mock('../../pages/surveys/SurveyDetailPage', () => ({ default: mockComponents.SurveyDetailPage }));
+jest.mock('../../pages/surveys/collectors/CollectorListPage', () => ({ default: mockComponents.CollectorListPage }));
+jest.mock('../../pages/surveys/collectors/CollectorDetailPage', () => ({ default: mockComponents.CollectorDetailPage }));
 
 describe('SurveysRouter', () => {
   let surveysRouter: SurveysRouter;

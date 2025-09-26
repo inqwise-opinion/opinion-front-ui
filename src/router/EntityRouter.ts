@@ -5,15 +5,26 @@ import { RouteDefinition } from './types';
 export abstract class EntityRouter implements Service {
   protected basePath: string = '/';
   protected routes: RouteDefinition[] = [];
+  protected serviceId: string;
+
+  getServiceId(): string {
+    return this.serviceId;
+  }
 
   constructor(
     protected layoutContext: LayoutContext,
     protected entityName: string
-  ) {}
+  ) {
+    this.serviceId = `${entityName}.router`;
+    this.basePath = '/';
+  }
 
+  protected _isInitialized = false;
+  
   async init(): Promise<void> {
     this.registerRoutes();
     await this.mount();
+    this._isInitialized = true;
   }
 
   async destroy(): Promise<void> {
@@ -33,7 +44,7 @@ export abstract class EntityRouter implements Service {
     }
     
     // Register this router's routes
-    routerService.registerRoutes(this.routes);
+    (routerService as any).registerRoutes(this.routes);
   }
 
   protected async unmount() {
@@ -42,6 +53,20 @@ export abstract class EntityRouter implements Service {
   }
 
   protected buildPath(path: string): string {
-    return `${this.basePath}${path}`.replace(/\/+/g, '/');
+    // Normalize the base path to always start with /
+    let basePath = this.basePath.startsWith('/') ? this.basePath : `/${this.basePath}`;
+    basePath = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+
+    // Handle special case for root path
+    if (path === '/' || path === '') {
+      return basePath;
+    }
+
+    // Clean up the input path
+    let inputPath = path;
+    inputPath = inputPath.startsWith('/') ? inputPath.substring(1) : inputPath;
+    inputPath = inputPath.endsWith('/') ? inputPath.slice(0, -1) : inputPath;
+
+    return `${basePath}/${inputPath}`.replace(/\/+/g, '/');
   }
 }

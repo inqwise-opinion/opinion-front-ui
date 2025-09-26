@@ -1,61 +1,82 @@
 import { RouteDefinition } from './types';
-import { PageComponent } from '../components/PageComponent';
+import DashboardPage from '../pages/DashboardPage';
+import DebugPage from '../pages/DebugPage';
+import AccountRootPage from '../pages/account/AccountRootPage';
+import AccountSettingsPage from '../pages/account/AccountSettingsPage';
 
 // Public routes (no authentication required)
 export const PUBLIC_ROUTES: RouteDefinition[] = [
   {
     path: '/login',
-    action: () => ({
-      component: import('../pages/auth/LoginPage').then(m => m.default)
-    })
-  },
-  {
-    path: '/assets/*',
-    action: () => {
-      // Handle static assets - this might need different handling
-      throw new Error('Static assets should be handled by the web server');
+    action: async (_context: any) => {
+      // TODO: implement real login route
+      return { component: DebugPage };
     }
   }
 ];
 
-// Root level entity routers (available after authentication)
-export const ENTITY_ROUTES: RouteDefinition[] = [
+// Feature routes (available after authentication)
+export const FEATURE_ROUTES: RouteDefinition[] = [
   {
     path: '/dashboard',
-    action: () => ({
-      component: import('../pages/DashboardPage').then(m => m.default)
-    })
+    action: async (_context: any) => {
+      return { component: DashboardPage };
+    }
   },
   {
-    path: '/',
-    action: () => ({
-      component: import('../pages/DebugPage').then(m => m.default)
-    })
+    path: '/surveys',
+    action: async (_context: any) => {
+      // TODO: Implement SurveysPage
+      return { component: DebugPage };
+    }
+  },
+  {
+    path: '/surveys/create',
+    action: async (_context: any) => {
+      // TODO: Implement CreateSurveyPage
+      return { component: DebugPage };
+    }
   }
 ];
 
-// Account-specific routes
+// Account routes with explicit paths instead of nesting
 export const ACCOUNT_ROUTES: RouteDefinition[] = [
   {
+    path: '/account/:accountId/settings',
+    action: async (context: any) => {
+      return { component: AccountSettingsPage, params: context.params };
+    }
+  },
+  {
     path: '/account/:accountId',
-    action: (context) => ({
-      component: import('../pages/account/AccountRootPage').then(m => m.default),
-      params: context.params
-    }),
-    children: [
-      {
-        path: '/settings',
-        action: () => ({
-          component: import('../pages/account/AccountSettingsPage').then(m => m.default)
-        })
-      }
-    ]
+    action: async (context: any) => {
+      return { component: AccountRootPage, params: context.params };
+    }
   }
 ];
 
-// Combine all routes
 export const ALL_ROUTES: RouteDefinition[] = [
+  // Authentication routes first
   ...PUBLIC_ROUTES,
-  ...ENTITY_ROUTES,
-  ...ACCOUNT_ROUTES
+  
+  // Feature routes (most specific paths first)
+  {
+    path: '/surveys/create',
+    action: async (_context: any) => {
+      // TODO: Implement CreateSurveyPage
+      return { component: DebugPage };
+    }
+  },
+  ...FEATURE_ROUTES,
+  
+  // Account routes with their nested structure
+  ...ACCOUNT_ROUTES,
+  
+  // Root route last (catch-all)
+  {
+    path: '/',
+    action: async (_context: any) => {
+      return { component: DebugPage };
+    }
+  }
 ];

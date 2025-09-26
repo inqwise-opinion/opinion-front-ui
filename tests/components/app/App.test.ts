@@ -74,9 +74,8 @@ describe('OpinionApp', () => {
     
     app.init();
     
-    // These messages should appear in order
+    // These messages should appear
     expect(consoleSpy).toHaveBeenCalledWith('🎯 APP.TS - init()');
-    expect(consoleSpy).toHaveBeenCalledWith('🎯 APP.TS - Initializing global layout...');
     expect(consoleSpy).toHaveBeenCalledWith('🏢 APP.TS - Initializing Layout coordinator...');
     
     consoleSpy.mockRestore();

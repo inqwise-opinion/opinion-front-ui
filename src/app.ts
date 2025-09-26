@@ -4,26 +4,22 @@
  */
 
 import { MockApiService } from "./services/MockApiService";
-import DashboardPage from "./pages/DashboardPage";
-import DebugPage from "./pages/DebugPage";
 import { AppHeaderImpl } from "./components/AppHeaderImpl";
 import AppFooterImpl from "./components/AppFooterImpl";
 import { MainContentImpl } from "./components/MainContentImpl";
 import Layout from "./components/Layout";
-import {
-  AuthService,
-  MockSessionAuthProvider,
-} from "./auth";
+import { AuthService, MockSessionAuthProvider } from "./auth";
 import { AppHeaderBinderService } from "./services/AppHeaderBinderService";
 import { UserService } from "./services/UserService";
 import { registerService } from "./core/ServiceIdentity";
-import type { LifecycleHandler, ContextHandler } from "./components/Layout";
+import type { ContextHandler } from "./components/Layout";
 import type { LayoutContext } from "./contexts/LayoutContext";
+import { RouterService } from "./router/RouterService";
 
 export class OpinionApp {
   private initialized: boolean = false;
-  private currentPage: any = null;
   private apiService: MockApiService;
+  private routerService: RouterService | null = null;
 
   // Global layout components
   private appHeader: AppHeaderImpl | null = null;
@@ -44,28 +40,73 @@ export class OpinionApp {
   }
 
   public async init(): Promise<void> {
-    console.log("🎯 APP.TS - init()");
-    
-    if (this.initialized) {
-      console.warn("🎯 APP.TS - Application already initialized");
-      return;
-    }
-
     try {
+      if (this.initialized) {
+        console.warn("🎯 APP.TS - Application already initialized");
+        return;
+      }
+
+      console.log("🎯 APP.TS - init()");
       this.setupEventListeners();
-
-      console.log("🎯 APP.TS - Initializing global layout...");
+      
+      console.log("🏢 APP.TS - Initializing Layout coordinator...");
       await this.initializeGlobalLayout();
-
-      console.log("🎯 APP.TS - Initializing routing...");
-      await this.initializeRouting();
 
       this.initialized = true;
       console.log("✅ APP.TS - Opinion Front UI - Ready");
     } catch (error) {
-      console.error("❌ APP.TS - init() failed:", error);
-      console.error("❌ APP.TS - Error stack:", (error as Error).stack);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const errorStack =
+        error instanceof Error ? error.stack : "No stack trace";
+      const isCritical =
+        !this.layout ||
+        errorMessage.includes("critical") ||
+        errorMessage.includes("layout");
+
+      // 1. Log the error with details
+      console.error(
+        `❌ APP.TS - ${isCritical ? "Critical" : "Non-critical"} initialization error:`,
+        {
+          message: errorMessage,
+          stack: errorStack,
+          isCritical,
+        },
+      );
+
+      // 2. Show error UI based on app state
+      if (this.layout) {
+        // Layout available - show in message system
+        this.layout.onContextReady((ctx) => {
+          ctx
+            .getMessages()
+            ?.showError(
+              isCritical ? "Critical Error" : "Initialization Warning",
+              isCritical
+                ? "Application failed to initialize. Please refresh the page."
+                : "Some features may be unavailable. You can continue with limited functionality.",
+            );
+        });
+      } else {
+        // No layout - show full page error
+        document.body.innerHTML = `
+          <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+            <h2>${isCritical ? "Critical Error" : "Application Error"}</h2>
+            <p>${
+              isCritical
+                ? "The application cannot start due to a critical error. Please refresh the page or contact support if the issue persists."
+                : "Failed to load some application features. You may continue with limited functionality or refresh the page to try again."
+            }</p>
+            <button onclick="window.location.reload()" style="padding: 10px 20px; margin-top: 20px;">Reload Page</button>
+            <details style="margin-top: 20px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+              <summary>Technical Details</summary>
+              <pre style="background: #f5f5f5; padding: 10px; overflow: auto;">${errorStack}</pre>
+            </details>
+          </div>
+        `;
+      }
+
+      // Don't rethrow - we've handled the error completely
     }
   }
 
@@ -73,11 +114,6 @@ export class OpinionApp {
     // Setup global event listeners
     document.addEventListener("DOMContentLoaded", () => {
       console.log("DOM Content Loaded");
-    });
-
-    // Handle browser navigation
-    window.addEventListener("popstate", () => {
-      this.handleRouteChange();
     });
 
     // Handle postMessage events for testing (e.g., from test-positioning.html iframe)
@@ -107,139 +143,101 @@ export class OpinionApp {
    * Note: Sidebar is self-contained and initialized by AppHeader
    */
   private async initializeGlobalLayout(): Promise<void> {
-    try {
-      // 0. Initialize Layout component first (manages CSS classes and coordination)
-      console.log("🏢 APP.TS - Initializing Layout coordinator...");
-      this.layout = new Layout();
+    // Initialize Layout component first (manages CSS classes and coordination)
+    console.log("🎯 APP.TS - Initializing Layout coordinator...");
+    this.layout = new Layout();
 
-      // Register formal handlers using the new handler system
-      await this.layout
-        .setContextHandler(
-          {
-            id: 'app-layout-configuration',
-            priority: 800, // High priority for layout setup
-            onContextReady: (context) => {
-              this.configureLayout(context);
-            }
+    // Register formal handlers using the new handler system
+    await this.layout
+      .setContextHandler(
+        {
+          id: "app-layout-configuration",
+          priority: 800, // High priority for layout setup
+          onContextReady: (context) => {
+            this.configureLayout(context);
           },
-          {
-            enableLogging: true,
-            continueOnError: false, // Layout configuration is critical
-            timeout: 5000,
-          }
-        )
-        .setContextHandler(
-          {
-            id: 'app-service-registration',
-            priority: 700, // Lower priority, runs after layout config
-            onContextReady: async (context) => {
-              await this.registerServices(context);
-            }
+        },
+        {
+          enableLogging: true,
+          continueOnError: false, // Layout configuration is critical
+          timeout: 5000,
+        },
+      )
+      .setContextHandler(
+        {
+          id: "app-service-registration",
+          priority: 700, // Lower priority, runs after layout config
+          onContextReady: async (context) => {
+            await this.registerServices(context);
+            await this.validateInitialAuthentication(context);
           },
-          {
-            enableLogging: true,
-            continueOnError: false, // Service registration is critical
-            timeout: 15000, // More time for service initialization
-          }
-        )
-        .init();
-      console.log("✅ APP.TS - Layout coordinator initialized");
-
-      // Note: Authentication services are now registered via formal handler pattern
-      // See app-service-registration handler above
-
-      // Semantic structure is now complete:
-      // <nav class="app-sidebar"> (created by AppHeader)
-      // <header class="app-header">
-      // <main class="main-content">
-      // <footer class="app-footer">
-    } catch (error) {
-      console.error("❌ APP.TS - Failed to initialize global layout:", error);
-      throw error;
-    }
+        },
+        {
+          enableLogging: true,
+          continueOnError: false, // Service registration is critical
+          timeout: 15000, // More time for service initialization
+        },
+      )
+      .init();
+    console.log("✅ APP.TS - Layout coordinator initialized");
   }
 
   /**
    * Register services using the formal handler pattern
    * This method creates a LifecycleHandler for service registration
    */
-  private registerServices(context: LayoutContext): Promise<void> {
-    console.log('🔐 APP.TS - Service registration handler - Starting service registration...');
-
-    return new Promise(async (resolve, reject) => {
-      try {
-        // Create MockSessionAuthProvider instance
-        const mockAuthProvider = new MockSessionAuthProvider(this.apiService, {
-          authDelay: 300, // Shorter delay for development
-          enableAccountSwitching: true,
-          mockAccountCount: 3,
-        });
-
-        // Register MockSessionAuthProvider using type-safe registration
-        registerService(context, MockSessionAuthProvider, mockAuthProvider);
-
-        // Register AuthService using type-safe registration and configuration
-        const authService = new AuthService(context, {
-          authProviderServiceId: MockSessionAuthProvider.SERVICE_ID, // Type-safe reference!
-          autoValidate: false,
-        });
-        registerService(context, AuthService, authService);
-
-        // Register UserService using type-safe registration and configuration
-        const userService = new UserService(context, {
-          authServiceId: AuthService.SERVICE_ID,                        // Type-safe reference!
-          sessionAuthProviderServiceId: MockSessionAuthProvider.SERVICE_ID, // Type-safe reference!
-        });
-        registerService(context, UserService, userService);
-
-        // Register AppHeaderBinderService with type-safe service references
-        const authServiceRef = AuthService.getRegisteredReference(context);
-        const appHeaderBinderService = new AppHeaderBinderService(
-          authServiceRef,
-          context,
-          { updateOnInit: true },
-        );
-        // Use self-identifying service ID for registration
-        registerService(context, AppHeaderBinderService, appHeaderBinderService);
-        console.log(
-          `✅ APP.TS - AppHeaderBinderService registered as '${AppHeaderBinderService.SERVICE_ID}'`,
-        );
-
-        // Initialize services in dependency order (dependencies first)
-        await mockAuthProvider.init();
-        await authService.init();        // AuthService depends on mockAuthProvider
-        await userService.init();        // UserService depends on authService and mockAuthProvider
-        await appHeaderBinderService.init(); // AppHeaderBinderService depends on authService
-        console.log("✅ APP.TS - All authentication services initialized");
-
-        // Perform initial authentication validation
-        console.log(
-          "🔍 APP.TS - Performing initial authentication validation...",
-        );
-        try {
-          const authenticatedUser =
-            await authService.validateAuthentication("app-startup");
-          console.log("✅ APP.TS - User is authenticated:", {
-            username: authenticatedUser.username,
-            userId: authenticatedUser.id,
-            accountId: authenticatedUser.accountId,
-          });
-        } catch (error) {
-          console.error("❌ APP.TS - Authentication validation failed:", error);
-          console.log(
-            "⚠️ APP.TS - App will continue in non-authenticated state",
-          );
-        }
-
-        resolve();
-      } catch (error) {
-        console.error(
-          "❌ APP.TS - Service registration failed:",
-          error,
-        );
-        reject(error);
-      }
+  private async registerServices(context: LayoutContext): Promise<void> {
+    console.log(
+      "🔐 APP.TS - Service registration handler - Starting service registration...",
+    );
+    // Create MockSessionAuthProvider instance
+    const mockAuthProvider = new MockSessionAuthProvider(this.apiService, {
+      authDelay: 300, // Shorter delay for development
+      enableAccountSwitching: true,
+      mockAccountCount: 3,
     });
+
+    // Register MockSessionAuthProvider using type-safe registration
+    registerService(context, MockSessionAuthProvider, mockAuthProvider);
+
+    // Register AuthService using type-safe registration and configuration
+    const authService = new AuthService(context, {
+      authProviderServiceId: MockSessionAuthProvider.SERVICE_ID, // Type-safe reference!
+      autoValidate: false,
+    });
+    registerService(context, AuthService, authService);
+    // Register UserService using type-safe registration and configuration
+    const userService = new UserService(context, {
+      authServiceId: AuthService.SERVICE_ID, // Type-safe reference!
+      sessionAuthProviderServiceId: MockSessionAuthProvider.SERVICE_ID, // Type-safe reference!
+    });
+    registerService(context, UserService, userService);
+
+    // Register AppHeaderBinderService with type-safe service references
+    const authServiceRef = AuthService.getRegisteredReference(context);
+    const appHeaderBinderService = new AppHeaderBinderService(
+      authServiceRef,
+      context,
+      { updateOnInit: true },
+    );
+    // Use self-identifying service ID for registration
+    registerService(context, AppHeaderBinderService, appHeaderBinderService);
+    console.log(
+      `✅ APP.TS - AppHeaderBinderService registered as '${AppHeaderBinderService.SERVICE_ID}'`,
+    );
+
+    // Initialize services in dependency order (dependencies first)
+    await mockAuthProvider.init();
+    await authService.init(); // AuthService depends on mockAuthProvider
+    await userService.init(); // UserService depends on authService and mockAuthProvider
+    await appHeaderBinderService.init(); // AppHeaderBinderService depends on authService
+    console.log("✅ APP.TS - All authentication services initialized");
+
+    // Instantiate and initialize RouterService as part of service registration
+    console.log("🎯 APP.TS - Instantiating RouterService...");
+    this.routerService = new RouterService(context);
+    await this.routerService.init();
+    console.log("✅ APP.TS - RouterService initialized");
   }
 
   /**
@@ -247,7 +245,9 @@ export class OpinionApp {
    * This method handles sidebar navigation and user menu setup
    */
   private configureLayout(context: LayoutContext): void {
-    console.log('🏢 APP.TS - Layout configuration handler - Setting up layout components...');
+    console.log(
+      "🏢 APP.TS - Layout configuration handler - Setting up layout components...",
+    );
 
     // Setup sidebar navigation
     context.getSidebar()?.updateNavigation([
@@ -316,15 +316,9 @@ export class OpinionApp {
 
     // Note: User data will be set by AppHeaderBinderService after authentication
     // No hardcoded user data here
-    console.log('✅ APP.TS - Layout configuration handler - Configuration complete');
-  }
-
-  /**
-   * Initialize routing and load appropriate page
-   */
-  private async initializeRouting(): Promise<void> {
-    const currentPath = window.location.pathname;
-    await this.handleRoute(currentPath);
+    console.log(
+      "✅ APP.TS - Layout configuration handler - Configuration complete",
+    );
   }
 
   /**
@@ -408,89 +402,23 @@ export class OpinionApp {
       ctx.getMessages()?.clearAll();
     });
   }
-
   /**
-   * Handle route changes
+   * Perform initial authentication validation (runs after registerServices)
    */
-  private async handleRouteChange(): Promise<void> {
-    const currentPath = window.location.pathname;
-    await this.handleRoute(currentPath);
-  }
-
-  /**
-   * Handle specific route and load appropriate page
-   */
-  private async handleRoute(path: string): Promise<void> {
-    console.log(`🎯 APP.TS - handleRoute('${path}') START`);
-    try {
-      // Clean up current page if exists
-      if (this.currentPage && typeof this.currentPage.destroy === "function") {
-        console.log("🎯 APP.TS - Destroying current page...");
-        this.currentPage.destroy();
-        console.log("✅ APP.TS - Current page destroyed");
-      }
-
-      // Route to appropriate page based on path
-      // Pages will now render their content inside the semantic <main> element
-      if (path === "/") {
-        console.log("🎯 APP.TS - Creating DebugPage for root path...");
-        this.currentPage = new DebugPage(this.layout!.getMainContent()!);
-        console.log("🎯 APP.TS - Initializing DebugPage...");
-        await this.currentPage.init();
-        console.log("✅ APP.TS - DebugPage initialized successfully");
-      } else if (path === "/dashboard") {
-        console.log("🎯 APP.TS - Creating DashboardPage...");
-        this.currentPage = new DashboardPage(this.apiService, this.mainContent);
-        console.log("🎯 APP.TS - Initializing DashboardPage...");
-        await this.currentPage.init();
-        console.log("✅ APP.TS - DashboardPage initialized successfully");
-      }
-      // Add more routes here as needed
-      // else if (path === '/surveys') {
-      //   this.currentPage = new SurveysPage();
-      //   await this.currentPage.init();
-      // }
-      else {
-        console.warn(`⚠️ APP.TS - Unknown route: ${path}`);
-        console.log("🎯 APP.TS - Fallback: Creating DebugPage...");
-        this.currentPage = new DebugPage(this.layout!.getMainContent()!);
-        console.log("🎯 APP.TS - Initializing fallback DebugPage...");
-        await this.currentPage.init();
-        console.log("✅ APP.TS - Fallback DebugPage initialized successfully");
-      }
-    } catch (error) {
-      console.error(
-        `❌ APP.TS - Failed to load page for route ${path}:`,
-        error,
+  private async validateInitialAuthentication(
+    context: LayoutContext,
+  ): Promise<void> {
+    console.log("🔍 APP.TS - Performing initial authentication validation...");
+    const authServiceRef = AuthService.getRegisteredReference(context);
+    await authServiceRef
+      .get()
+      .then((service) => service.validateAuthentication("app-startup"))
+      .then((authenticatedUser) =>
+        console.log("✅ APP.TS - User is authenticated:", {
+          username: authenticatedUser.username,
+          userId: authenticatedUser.id,
+          accountId: authenticatedUser.accountId,
+        }),
       );
-      console.error(`❌ APP.TS - Route error stack:`, (error as Error).stack);
-      // Show error page or fallback
-      throw error;
-    }
-    console.log(`🎯 APP.TS - handleRoute('${path}') END`);
-  }
-
-  /**
-   * Navigate to a specific route
-   */
-  public navigateTo(path: string): void {
-    if (path !== window.location.pathname) {
-      window.history.pushState({}, "", path);
-      this.handleRouteChange();
-    }
-  }
-
-  /**
-   * Get current page instance
-   */
-  public getCurrentPage(): any {
-    return this.currentPage;
-  }
-
-  /**
-   * Get layout instance (for DebugPage access to LayoutContext)
-   */
-  public getLayout(): Layout | null {
-    return this.layout;
   }
 }

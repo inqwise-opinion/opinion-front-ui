@@ -1,15 +1,14 @@
-import { Context } from 'universal-router';
 import { PageComponent } from '../components/PageComponent';
 
-export interface RouteContext extends Context {
+export interface RouteContext {
   params: Record<string, string>;
   pathname: string;
   accountId?: string;
-  services?: Map<string, any>; // Map of service ID to service instance
+  services?: Map<string, any>;
 }
 
 export interface RouteResult {
-  component: typeof PageComponent;
+  component: any;
   params?: Record<string, string>;
 }
 
@@ -21,6 +20,6 @@ export interface RouterEventMap {
 
 export interface RouteDefinition {
   path: string;
-  action: (context: RouteContext) => Promise<RouteResult> | RouteResult;
+  action: (context: any) => Promise<RouteResult> | RouteResult;
   children?: RouteDefinition[];
 }

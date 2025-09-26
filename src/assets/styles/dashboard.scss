@@ -22,3 +22,12 @@
 @use 'dashboard/sidebar';
 @use 'dashboard/components';
 @use 'dashboard/responsive';
+
+// Debug style to verify CSS loading
+.content-container {
+  background: #ffffff;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

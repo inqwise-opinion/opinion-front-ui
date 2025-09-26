@@ -10,6 +10,7 @@
  */
 
 import MainContentImpl from "./MainContentImpl";
+import type { BreadcrumbItem } from "../interfaces/BreadcrumbItem";
 import type { MainContent } from "./MainContent";
 import type { ActivePage, PageInfo } from "../interfaces/ActivePage";
 import type { PageContext } from "../interfaces/PageContext";
@@ -25,6 +26,7 @@ export interface PageComponentConfig {
   autoInit?: boolean;
   pageId?: string; // Optional override for page ID
   pagePath?: string; // URL path for this page
+  params?: Record<string, string>; // Route parameters
 }
 
 export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
@@ -40,6 +42,7 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
   protected pageTitle: string;
   protected pageId: string;
   protected pagePath: string;
+  protected params: Record<string, string> = {};
   protected chainProviderUnsubscriber: (() => void) | null = null;
   
   // PageContext integration (Promise-based to handle async initialization)
@@ -55,6 +58,7 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
     this.pageTitle = config.pageTitle || "Page";
     this.pageId = config.pageId || this.constructor.name;
     this.pagePath = config.pagePath || window.location.pathname;
+    this.params = config.params || {};
 
     if (this.config.autoInit) {
       // Initialize on next tick to allow subclass constructor to complete
@@ -271,14 +275,38 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
   protected updatePageTitle(title: string): void {
     this.pageTitle = title;
     document.title = title;
-
-    // Update breadcrumb if exists
-    const breadcrumbTitle = document.getElementById("current_page_title");
-    if (breadcrumbTitle) {
-      breadcrumbTitle.textContent = title;
-    }
   }
 
+  /**
+   * Set breadcrumbs through PageContext
+   * @param items List of breadcrumb items to set (without requiring the 'active' property)
+   */
+  protected async setBreadcrumbs(items: Array<{
+    text: string;
+    href?: string;
+    caption?: string;
+    clickHandler?: (item: BreadcrumbItem) => void;
+  }>): Promise<void> {
+    try {
+      const pageContext = await this.getPageContext();
+      const breadcrumbsManager = pageContext.breadcrumbs();
+      
+      if (breadcrumbsManager && breadcrumbsManager.isAvailable()) {
+        // Convert items to proper BreadcrumbItems with IDs
+        const itemsWithIds = items.map((item, index) => ({
+          ...item,
+          id: `${this.pageId}-breadcrumb-${index}`,
+        }));
+
+        breadcrumbsManager.set(itemsWithIds);
+        console.log(`🍞 ${this.constructor.name} - Breadcrumbs set via PageContext`);
+      } else {
+        console.warn(`🍞 ${this.constructor.name} - BreadcrumbsManager not available`);
+      }
+    } catch (error) {
+      console.error(`🍞 ${this.constructor.name} - Error setting breadcrumbs:`, error);
+    }
+  }
 
   /**
    * Get element with error handling
@@ -345,6 +373,20 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
 
   public get getPageTitle(): string {
     return this.pageTitle;
+  }
+
+  /**
+   * Set route parameters
+   */
+  public setParams(params: Record<string, string>): void {
+    this.params = params;
+  }
+
+  /**
+   * Get current route parameters
+   */
+  public getParams(): Record<string, string> {
+    return this.params;
   }
 
   /**
