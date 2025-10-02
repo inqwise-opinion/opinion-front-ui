@@ -28,7 +28,8 @@
 
 ### 5. Page System
 - **Dashboard**: Functional dashboard with navigation and layout integration
-- **Survey Management**: Survey list, detail, and collector pages implemented
+- **Survey Management**: Survey list and detail pages with proper navigation integration
+- **Navigation Synchronization**: Active page tracking with automatic menu highlighting
 - **Account Management**: Account settings and authentication pages
 - **Error Handling**: Comprehensive error pages with proper navigation
 
@@ -129,9 +130,10 @@ class MyPage extends PageComponent {
 3. **Universal Router**: Entity-based routing with type-safe route management
 4. **Chain Hotkey System**: Priority-based hotkey handling with conflict resolution
 5. **EventBus Integration**: Unified communication system across all components
-6. **Test Coverage**: Comprehensive test suite with 94%+ coverage and 347+ tests
-7. **Build System**: Fast Vite development with TypeScript compilation
-8. **Responsive Design**: CSS Grid + Flexbox layout system with mobile support
+6. **NavigationService**: Active page consumer system with automatic menu synchronization
+7. **Test Coverage**: Comprehensive test suite with 94%+ coverage and 347+ tests
+8. **Build System**: Fast Vite development with TypeScript compilation
+9. **Responsive Design**: CSS Grid + Flexbox layout system with mobile support
 
 ## 🎆 Project Status: **DEVELOPMENT-READY**
 

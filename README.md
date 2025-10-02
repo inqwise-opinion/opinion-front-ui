@@ -31,9 +31,11 @@ This project represents a **complete architectural migration** from a traditiona
 ```
 src/
 ├── components/          # UI components (Layout, Header, Sidebar, etc.)
-├── pages/              # Page components (Dashboard, Debug)
+├── pages/              # Page components (Dashboard, Surveys, Debug)
+│   └── surveys/        # Survey-related pages (List, Detail)
 ├── contexts/           # Layout context and state management
-├── services/           # Business logic (MockApiService)
+├── services/           # Business logic services
+│   └── navigation/     # Navigation and active page management
 ├── utils/              # Utility functions and helpers
 ├── types/              # TypeScript type definitions
 ├── assets/             # Static assets and styles
@@ -100,6 +102,8 @@ npm test
 - **Component Architecture**: Abstract `PageComponent` base class with lifecycle management
 - **Routing System**: Custom client-side routing with browser history
 - **Global Layout**: Header, Sidebar, Footer components with coordination
+- **Navigation Synchronization**: Active page tracking with navigation menu highlighting
+- **Surveys Management**: Basic surveys page structure and routing
 - **Error Handling**: Global error boundary and user-friendly error messages
 - **Testing Setup**: Jest + JSDOM configuration with component tests
 - **Styling System**: SCSS + CSS with component-scoped styles
@@ -109,6 +113,7 @@ npm test
 - **API Integration**: MockApiService provides development data
 - **Dashboard Page**: Basic dashboard implementation
 - **Debug Tools**: Comprehensive debug page for development
+- **Surveys Implementation**: Survey creation, editing, and management features
 
 ### 📋 Planned Features
 - **Survey Management**: Create, edit, manage surveys

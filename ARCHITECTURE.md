@@ -6,6 +6,7 @@
 OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
 ├── LayoutContextImpl (src/contexts/LayoutContextImpl.ts) 🌐 GLOBAL STATE
 ├── MockApiService (src/services/MockApiService.ts) 📊 DATA LAYER
+├── NavigationService (src/services/navigation/) 🧭 NAVIGATION STATE
 ├── Layout (src/components/Layout.ts) 🏗️ LAYOUT COORDINATOR
 │   ├── AppHeaderImpl (src/components/AppHeaderImpl.ts) 📋 TOP BAR
 │   │   ├── UserMenu (src/components/UserMenu.ts) 👤 USER ACTIONS
@@ -15,7 +16,10 @@ OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
 ├── MainContent (src/components/MainContent.ts) 📱 CONTENT CONTAINER
 └── PageComponents 📄 DYNAMIC PAGES
     ├── DebugPage (src/pages/DebugPage.ts) 🛠️ DEBUG TOOLS
-    └── DashboardPage (src/pages/DashboardPage.ts) 📊 DASHBOARD
+    ├── DashboardPage (src/pages/DashboardPage.ts) 📊 DASHBOARD
+    └── Surveys Pages (src/pages/surveys/) 📋 SURVEY MANAGEMENT
+        ├── SurveyListPage 📄 SURVEY LIST
+        └── SurveyDetailPage 📄 SURVEY DETAILS
 ```
 
 ### Component Responsibilities
@@ -64,7 +68,8 @@ OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
   - Handle compact/expanded modes with toggle button
   - Manage mobile overlay behavior with slide transitions
   - Provide navigation event handling and active state management
-- **Dependencies**: LayoutContextImpl
+  - Update visual active state based on NavigationService updates
+- **Dependencies**: LayoutContextImpl, NavigationService
 
 #### 👤 **UserMenu** (User Account Controls)
 - **Scope**: User profile and account actions
@@ -102,14 +107,25 @@ OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
   - Manage message lifecycle (show/hide/clear)
 - **Dependencies**: None (standalone component)
 
+#### 🧭 **NavigationService** (Navigation State Management)
+- **Scope**: Navigation menu state and active page coordination
+- **Responsibilities**:
+  - Track active navigation items and states
+  - Implement ActivePageConsumer for page change notifications
+  - Map page IDs to navigation item IDs
+  - Synchronize navigation state with SidebarComponent
+  - Manage navigation menu structure and behavior
+- **Dependencies**: LayoutContextImpl, SidebarComponent
+
 #### 📄 **PageComponents** (Dynamic Content)
 - **Scope**: Individual page/view implementations
 - **Responsibilities**:
   - Render page-specific content
   - Handle page-specific interactions
   - Integrate with MainContent for display
-  - Manage page lifecycle
-- **Example**: DebugPage
+  - Manage page lifecycle and active page registration
+  - Declare themselves as active via LayoutContext
+- **Examples**: DebugPage, DashboardPage, SurveyListPage, SurveyDetailPage
 
 ---
 
