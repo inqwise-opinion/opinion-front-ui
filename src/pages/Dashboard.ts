@@ -7,6 +7,8 @@ import { MockApiService, ChartData, AuthenticationInfo } from '../services/MockA
 import { Opinion, Survey, User } from '../types';
 import Layout from '../components/Layout';
 import { DashboardPageComponent } from './DashboardPageComponent';
+import { RouteContextImpl } from '../router/RouteContextImpl';
+import { PageContextImpl } from '../contexts/PageContextImpl';
 
 export interface DashboardState {
   user?: User;
@@ -79,9 +81,11 @@ export class Dashboard {
       await this.layout.init();
       console.log('Dashboard - Layout initialized, footer should be visible');
       
-      // Initialize page component with layout
+      // Initialize page component with PageContext
       const mainContent = this.layout.getMainContent();
-      this.pageComponent = new DashboardPageComponent(mainContent, { layout: this.layout });
+      const routeContext = new RouteContextImpl('/dashboard', {}, this.layout.getLayoutContext());
+      const pageContext = new PageContextImpl(routeContext, this.layout.getLayoutContext());
+      this.pageComponent = new DashboardPageComponent(mainContent, pageContext, { layout: this.layout });
       await this.pageComponent.init();
       console.log('Dashboard - Page component initialized');
 

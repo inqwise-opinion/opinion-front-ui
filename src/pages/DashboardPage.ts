@@ -5,16 +5,22 @@
 
 import Dashboard from './Dashboard';
 import { MockApiService } from '../services/MockApiService';
-import { MainContentImpl } from '../components/MainContentImpl';
+import MainContentImpl from '../components/MainContentImpl';
+import { PageComponent } from '../components/PageComponent';
+import type { PageContext } from '../interfaces/PageContext';
 import '../assets/styles/dashboard.scss';
 
-export class DashboardPage {
+export class DashboardPage extends PageComponent {
   private dashboard: Dashboard;
   private apiService: MockApiService;
-  private mainContent: MainContentImpl;
 
-  constructor(mainContent: MainContentImpl) {
-    this.mainContent = mainContent;
+  constructor(mainContent: MainContentImpl, pageContext: PageContext) {
+    super(mainContent, pageContext, {
+      pageTitle: 'Dashboard - Opinion',
+      pageId: 'dashboard',
+      autoInit: false
+    });
+    
     this.apiService = new MockApiService();
     this.dashboard = new Dashboard(this.apiService);
   }
@@ -22,16 +28,18 @@ export class DashboardPage {
   /**
    * Initialize and render the dashboard page
    */
-  async init(): Promise<void> {
+  protected async onInit(): Promise<void> {
     try {
       console.log('DashboardPage - Initializing...');
       
       // Wait for DOM to be ready
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => this.render());
-      } else {
-        await this.render();
+        await new Promise((resolve) => {
+          document.addEventListener('DOMContentLoaded', resolve);
+        });
       }
+      
+      await this.render();
       
       console.log('DashboardPage - Ready');
     } catch (error) {
@@ -143,12 +151,22 @@ export class DashboardPage {
   /**
    * Cleanup when page is destroyed
    */
-  destroy(): void {
+  protected onDestroy(): void {
     console.log('DashboardPage - Destroying...');
     
     // Clean up event listeners and resources
     // Remove any global event listeners
     // Stop any running timers or intervals
+  }
+  
+  /**
+   * Setup event listeners for the dashboard page
+   */
+  protected setupEventListeners(): void {
+    // Set up event delegation for dashboard actions
+    this.setupEventDelegation();
+    
+    // Additional dashboard-specific event listeners can be added here
   }
 }
 

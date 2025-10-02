@@ -1,17 +1,19 @@
 import { PageComponent } from '../../../components/PageComponent';
 import MainContentImpl from '../../../components/MainContentImpl';
-import type { BreadcrumbItem } from '../../../interfaces/BreadcrumbItem';
+import type { PageContext } from '../../../interfaces/PageContext';
 
 export default class CollectorDetailPage extends PageComponent {
   private collectorId: string;
 
-  constructor(mainContent: MainContentImpl, collectorId: string) {
-    super(mainContent, {
+  constructor(mainContent: MainContentImpl, pageContext: PageContext) {
+    super(mainContent, pageContext, {
       pageTitle: 'Collector Details',
-      pageId: `collector-${collectorId}`,
       autoInit: false
     });
-    this.collectorId = collectorId;
+    
+    // Get collectorId from route parameters
+    const routeContext = pageContext.getRouteContext();
+    this.collectorId = routeContext.getParam('collectorId') || 'unknown';
   }
 
   protected async onInit(): Promise<void> {
@@ -29,8 +31,7 @@ export default class CollectorDetailPage extends PageComponent {
       // Set browser tab title
       document.title = 'Collector Details - Opinion';
 
-      // Set initial breadcrumb
-      this.setInitialBreadcrumb();
+      // Breadcrumbs are now managed automatically by RouterService
     } catch (error) {
       console.error('❌ CollectorDetailPage - Initialization failed:', error);
       throw error;
@@ -83,14 +84,6 @@ export default class CollectorDetailPage extends PageComponent {
     contentContainer.innerHTML = `<p>Collector ${this.collectorId} details implementation coming soon</p>`;
   }
 
-  private async setInitialBreadcrumb(): Promise<void> {
-    await this.setBreadcrumbs([
-      { text: 'Home', href: '/' },
-      { text: 'Surveys', href: '/surveys' },
-      { text: 'Collectors', href: '/collectors' },
-      { text: 'Collector Details', href: `/collectors/${this.collectorId}` }
-    ]);
-  }
 
   // Action Handlers
   private handleEditCollector(): void {

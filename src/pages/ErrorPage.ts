@@ -1,5 +1,6 @@
 import { PageComponent } from '../components/PageComponent';
 import MainContentImpl from '../components/MainContentImpl';
+import { PageContext } from '../interfaces/PageContext';
 
 interface ErrorPageParams {
   code?: string;
@@ -14,12 +15,25 @@ export default class ErrorPage extends PageComponent {
     details: 'The page you are looking for does not exist.'
   };
 
-  constructor(mainContent: MainContentImpl) {
-    super(mainContent, {
+  constructor(mainContent: MainContentImpl, pageContext: PageContext) {
+    super(mainContent, pageContext, {
       pageTitle: 'Error',
       pageId: 'error-page',
       autoInit: false
     });
+    
+    // Read error information from RouteContext if route failed
+    const routeContext = pageContext.getRouteContext();
+    if (routeContext.failed()) {
+      const failure = routeContext.failure();
+      if (failure) {
+        this.error = {
+          code: failure.code || '404',
+          message: failure.message || 'Page Not Found',
+          details: failure.details || 'The page you are looking for does not exist.'
+        };
+      }
+    }
   }
 
   setParams(params: ErrorPageParams): void {
@@ -47,10 +61,7 @@ export default class ErrorPage extends PageComponent {
       // Wait a moment for page context to be available
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      // Set breadcrumbs if page context is available
-      if (this.hasPageContext()) {
-        await this.setInitialBreadcrumb();
-      }
+      // Breadcrumbs are now managed automatically by RouterService
     } catch (error) {
       console.error('❌ ErrorPage - Initialization failed:', error);
       throw error;
@@ -76,12 +87,6 @@ export default class ErrorPage extends PageComponent {
     `;
   }
 
-  private async setInitialBreadcrumb(): Promise<void> {
-    await this.setBreadcrumbs([
-      { text: 'Home', href: '/' },
-      { text: this.error.message || 'Error' }
-    ]);
-  }
 
   protected setupEventListeners(): void {
     // Set up basic event delegation

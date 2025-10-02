@@ -10,15 +10,11 @@ import { OpinionApp } from './app';
 
 // Add global error handlers
 window.addEventListener('error', (event) => {
-  console.error('🚨 GLOBAL ERROR - Uncaught JavaScript error:', event.error);
-  console.error('🚨 GLOBAL ERROR - Error message:', event.message);
-  console.error('🚨 GLOBAL ERROR - Error source:', event.filename + ':' + event.lineno + ':' + event.colno);
-  console.error('🚨 GLOBAL ERROR - Stack trace:', event.error?.stack);
+  console.error('Global JavaScript error:', event.error);
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('🚨 GLOBAL ERROR - Unhandled promise rejection:', event.reason);
-  console.error('🚨 GLOBAL ERROR - Promise:', event.promise);
+  console.error('Unhandled promise rejection:', event.reason);
 });
 
 // Initialize the application when DOM and resources are ready
@@ -46,20 +42,11 @@ function waitForResourcesAndInit() {
 }
 
 async function initApp() {
-  console.log('🚀 MAIN.TS - initApp() START');
-  
-  console.log('🚀 MAIN.TS - Creating OpinionApp instance...');
   const app = new OpinionApp();
-  
-  console.log('🚀 MAIN.TS - Calling app.init()...');
-  await app.init(); // OpinionApp handles all error cases internally
+  await app.init();
   
   // Expose app instance globally for DebugPage access to Layout
   (window as any).app = app;
-  console.log('🎯 MAIN.TS - App instance exposed globally');
-  
-  console.log('✅ MAIN.TS - Application initialization completed successfully!');
-  console.log('🚀 MAIN.TS - initApp() END');
 }
 
 export { OpinionApp };

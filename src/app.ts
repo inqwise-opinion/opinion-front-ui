@@ -15,6 +15,12 @@ import { registerService } from "./core/ServiceIdentity";
 import type { ContextHandler } from "./components/Layout";
 import type { LayoutContext } from "./contexts/LayoutContext";
 import { RouterService } from "./router/RouterService";
+import { SurveysRouter } from "./router/SurveysRouter";
+import {
+  SERVICE_ID,
+  type NavigationService,
+} from "./services/navigation/NavigationService";
+import { NavigationServiceImpl } from "./services/navigation/NavigationServiceImpl";
 
 export class OpinionApp {
   private initialized: boolean = false;
@@ -28,32 +34,18 @@ export class OpinionApp {
   private layout: Layout | null = null;
 
   constructor() {
-    console.log("🎯 APP.TS - Constructor START");
-    try {
-      console.log("🎯 APP.TS - Creating MockApiService...");
-      this.apiService = new MockApiService();
-      console.log("✅ APP.TS - Constructor completed successfully");
-    } catch (error) {
-      console.error("❌ APP.TS - Constructor failed:", error);
-      throw error;
-    }
+    this.apiService = new MockApiService();
   }
 
   public async init(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+    
     try {
-      if (this.initialized) {
-        console.warn("🎯 APP.TS - Application already initialized");
-        return;
-      }
-
-      console.log("🎯 APP.TS - init()");
       this.setupEventListeners();
-      
-      console.log("🏢 APP.TS - Initializing Layout coordinator...");
       await this.initializeGlobalLayout();
-
       this.initialized = true;
-      console.log("✅ APP.TS - Opinion Front UI - Ready");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -111,14 +103,8 @@ export class OpinionApp {
   }
 
   private setupEventListeners(): void {
-    // Setup global event listeners
-    document.addEventListener("DOMContentLoaded", () => {
-      console.log("DOM Content Loaded");
-    });
-
     // Handle postMessage events for testing (e.g., from test-positioning.html iframe)
     window.addEventListener("message", (event) => {
-      console.log("🎯 APP.TS - Received postMessage:", event.data);
 
       if (event.data && event.data.action) {
         switch (event.data.action) {
@@ -130,7 +116,7 @@ export class OpinionApp {
             break;
           default:
             console.log(
-              "🎯 APP.TS - Unknown postMessage action:",
+              "Unknown postMessage action:",
               event.data.action,
             );
         }
@@ -144,7 +130,6 @@ export class OpinionApp {
    */
   private async initializeGlobalLayout(): Promise<void> {
     // Initialize Layout component first (manages CSS classes and coordination)
-    console.log("🎯 APP.TS - Initializing Layout coordinator...");
     this.layout = new Layout();
 
     // Register formal handlers using the new handler system
@@ -152,9 +137,9 @@ export class OpinionApp {
       .setContextHandler(
         {
           id: "app-layout-configuration",
-          priority: 800, // High priority for layout setup
-          onContextReady: (context) => {
-            this.configureLayout(context);
+          priority: 700, // Lower priority, runs after service registration
+          onContextReady: async (context) => {
+            await this.configureLayout(context);
           },
         },
         {
@@ -166,7 +151,7 @@ export class OpinionApp {
       .setContextHandler(
         {
           id: "app-service-registration",
-          priority: 700, // Lower priority, runs after layout config
+          priority: 800, // High priority - services must be registered first
           onContextReady: async (context) => {
             await this.registerServices(context);
             await this.validateInitialAuthentication(context);
@@ -179,7 +164,6 @@ export class OpinionApp {
         },
       )
       .init();
-    console.log("✅ APP.TS - Layout coordinator initialized");
   }
 
   /**
@@ -187,9 +171,6 @@ export class OpinionApp {
    * This method creates a LifecycleHandler for service registration
    */
   private async registerServices(context: LayoutContext): Promise<void> {
-    console.log(
-      "🔐 APP.TS - Service registration handler - Starting service registration...",
-    );
     // Create MockSessionAuthProvider instance
     const mockAuthProvider = new MockSessionAuthProvider(this.apiService, {
       authDelay: 300, // Shorter delay for development
@@ -222,62 +203,55 @@ export class OpinionApp {
     );
     // Use self-identifying service ID for registration
     registerService(context, AppHeaderBinderService, appHeaderBinderService);
-    console.log(
-      `✅ APP.TS - AppHeaderBinderService registered as '${AppHeaderBinderService.SERVICE_ID}'`,
-    );
+
+    // Register NavigationService using service reference pattern
+    const navigationService = new NavigationServiceImpl(context);
+    registerService(context, NavigationServiceImpl, navigationService);
+    
+    // Register SurveysRouter as a service
+    const surveysRouter = new SurveysRouter(context, 'surveys');
+    registerService(context, SurveysRouter, surveysRouter);
 
     // Initialize services in dependency order (dependencies first)
     await mockAuthProvider.init();
     await authService.init(); // AuthService depends on mockAuthProvider
     await userService.init(); // UserService depends on authService and mockAuthProvider
     await appHeaderBinderService.init(); // AppHeaderBinderService depends on authService
-    console.log("✅ APP.TS - All authentication services initialized");
+    await navigationService.init(); // Initialize NavigationService
+    await surveysRouter.init(); // Initialize SurveysRouter
 
     // Instantiate and initialize RouterService as part of service registration
-    console.log("🎯 APP.TS - Instantiating RouterService...");
     this.routerService = new RouterService(context);
     await this.routerService.init();
-    console.log("✅ APP.TS - RouterService initialized");
   }
 
   /**
    * Configure layout components using the formal handler pattern
    * This method handles sidebar navigation and user menu setup
    */
-  private configureLayout(context: LayoutContext): void {
-    console.log(
-      "🏢 APP.TS - Layout configuration handler - Setting up layout components...",
-    );
+  private async configureLayout(context: LayoutContext): Promise<void> {
 
-    // Setup sidebar navigation
-    context.getSidebar()?.updateNavigation([
-      {
-        id: "dashboard",
-        text: "Dashboard",
-        icon: "dashboard",
-        href: "/dashboard",
-        caption: "View analytics, reports and key metrics",
-        active: false,
-      },
-      {
-        id: "surveys",
-        text: "Surveys",
-        icon: "poll",
-        href: "/surveys",
-        caption: "Create and manage survey questionnaires",
-        active: false,
-      },
-      {
-        id: "debug",
-        text: "Debug",
-        icon: "bug_report",
-        href: "/",
-        caption: "Development tools and troubleshooting",
-        active: false,
-      },
-    ]);
-
-    context.getSidebar()?.setActivePage("debug");
+    // Sync sidebar navigation via NavigationService using ServiceReference for lazy resolution
+    try {
+      const navServiceRef = NavigationServiceImpl.getRegisteredReference(context);
+      const navService = await navServiceRef.get();
+      const sidebar = context.getSidebar();
+      
+      if (!navService) {
+        throw new Error("NavigationService not available after registration");
+      }
+      
+      if (!sidebar) {
+        throw new Error("Sidebar not available in LayoutContext");
+      }
+      
+      navService.syncWithSidebar(sidebar);
+      // Set active item through NavigationService - it will handle sidebar sync
+      navService.setActiveItem("debug");
+    } catch (error) {
+      console.error("❌ APP.TS - Failed to sync NavigationService with Sidebar:", error);
+      throw error; // Re-throw to trigger error handling
+    }
 
     // Setup user menu handler
     context.getHeader()?.setUserMenuHandler((user) => {
@@ -316,16 +290,12 @@ export class OpinionApp {
 
     // Note: User data will be set by AppHeaderBinderService after authentication
     // No hardcoded user data here
-    console.log(
-      "✅ APP.TS - Layout configuration handler - Configuration complete",
-    );
   }
 
   /**
    * Handle test error message from postMessage (for iframe testing)
    */
   private handleTestErrorMessage(messageData: any): void {
-    console.log("🚨 APP.TS - Handling test error message:", messageData);
 
     if (!this.layout) {
       console.warn(
@@ -335,9 +305,6 @@ export class OpinionApp {
     }
 
     const { type, title, description, source } = messageData;
-    console.log(
-      `🎯 APP.TS - Showing ${type} message from ${source || "unknown"}`,
-    );
 
     // Use the layout's error message system via onContextReady pattern (legacy for test messages)
     this.layout.onContextReady((ctx) => {
@@ -390,7 +357,6 @@ export class OpinionApp {
    * Handle clearing all error messages (for iframe testing)
    */
   private handleClearMessages(): void {
-    console.log("🧹 APP.TS - Clearing all test messages");
 
     if (!this.layout) {
       console.warn("⚠️ APP.TS - Layout not initialized, cannot clear messages");
@@ -408,17 +374,9 @@ export class OpinionApp {
   private async validateInitialAuthentication(
     context: LayoutContext,
   ): Promise<void> {
-    console.log("🔍 APP.TS - Performing initial authentication validation...");
     const authServiceRef = AuthService.getRegisteredReference(context);
     await authServiceRef
       .get()
-      .then((service) => service.validateAuthentication("app-startup"))
-      .then((authenticatedUser) =>
-        console.log("✅ APP.TS - User is authenticated:", {
-          username: authenticatedUser.username,
-          userId: authenticatedUser.id,
-          accountId: authenticatedUser.accountId,
-        }),
-      );
+      .then((service) => service.validateAuthentication("app-startup"));
   }
 }

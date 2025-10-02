@@ -56,39 +56,7 @@ export interface LayoutEvent {
 
 export type LayoutEventListener = (event: LayoutEvent) => void;
 
-// Hotkey Management Types
-export interface HotkeyHandler {
-  key: string;
-  handler: (event: KeyboardEvent) => void | boolean; // return false to prevent default
-  description?: string;
-  context?: "global" | "page"; // global = always active, page = only when page active
-  component?: string; // component identifier for cleanup
-}
-
-export interface HotkeyManagerInterface {
-  registerHotkey(hotkey: HotkeyHandler): () => void; // returns unregister function
-  unregisterHotkey(key: string, component?: string): void;
-  unregisterAllHotkeys(component?: string): void;
-  getRegisteredHotkeys(): HotkeyHandler[];
-}
-
-// Abstract Hotkey Provider Interface
-export interface HotkeyProvider {
-  /**
-   * Provide page/component-specific hotkeys as a Map
-   * Key: hotkey string (e.g., 'Ctrl+s', 'Escape')
-   * Value: handler function
-   */
-  getPageHotkeys(): Map<
-    string,
-    (event: KeyboardEvent) => void | boolean
-  > | null;
-
-  /**
-   * Component identifier for hotkey management
-   */
-  getHotkeyComponentId(): string;
-}
+// Legacy hotkey management interfaces removed - using ChainHotkeyProvider only
 
 /**
  * Main LayoutContext Interface
@@ -130,13 +98,7 @@ export interface LayoutContext extends ActivePageProvider, ServiceRegistry {
   registerSidebar(sidebar: Sidebar): void;
   getSidebar(): Sidebar | null;
 
-  // Legacy Hotkey Management (maintained for backward compatibility)
-  registerHotkey(hotkey: HotkeyHandler): () => void;
-  unregisterHotkey(key: string, component?: string): void;
-  unregisterAllHotkeys(component?: string): void;
-  getRegisteredHotkeys(): HotkeyHandler[];
-
-  // Chain-Based Hotkey Management (New System)
+  // Chain-Based Hotkey Management (Only System)
   getChainHotkeyManager(): ChainHotkeyManager;
   registerChainProvider(provider: ChainHotkeyProvider): () => void;
   unregisterChainProvider(providerId: string): void;
@@ -153,11 +115,6 @@ export interface LayoutContext extends ActivePageProvider, ServiceRegistry {
     }>;
     totalHandlers: number;
   };
-
-  // Active Hotkey Provider Management
-  setActiveHotkeyProvider(provider: HotkeyProvider): void;
-  removeActiveHotkeyProvider(provider: HotkeyProvider): void;
-  getActiveHotkeyProvider(): HotkeyProvider | null;
 
   // Active Page Management
   // (implemented via ActivePageProvider interface)
@@ -207,28 +164,6 @@ export interface LayoutContext extends ActivePageProvider, ServiceRegistry {
    */
   getModeType(): LayoutModeType;
 
-  // =================================================================================
-  // PageContext Management
-  // =================================================================================
-
-  /**
-   * Create a PageContext for the given page (Promise-based for async initialization)
-   * @param page The page to create context for
-   * @param config Optional configuration for the PageContext
-   * @returns Promise resolving to the PageContext instance
-   */
-  getPageContext(page: ActivePage, config?: PageContextConfig): Promise<PageContext>;
-
-  /**
-   * Get an existing PageContext for a page if it exists
-   * @param page The page to get context for
-   * @returns PageContext instance or null if not found
-   */
-  getExistingPageContext(page: ActivePage): PageContext | null;
-
-  /**
-   * Clear PageContext for a specific page
-   * @param page The page to clear context for
-   */
-  clearPageContext(page: ActivePage): void;
+  // PageContext management removed - now handled by RouterService
+  // Pages receive pre-created PageContext via constructor
 }

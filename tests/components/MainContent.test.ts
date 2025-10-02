@@ -276,13 +276,13 @@ describe('MainContent', () => {
       await mainContent.init();
     });
 
-    test('should clean up resources on destroy', () => {
+    test('should clean up resources on destroy', async () => {
       const element = mainContent.getElement();
       expect(element).toBeTruthy();
       
-      mainContent.destroy();
+      await mainContent.destroy();
       
-      expect(mainContent.getElement()).toBeNull();
+      expect(() => mainContent.getElement()).toThrow();
       expect(document.querySelector('.app-main')).toBeFalsy();
     });
 
@@ -292,7 +292,7 @@ describe('MainContent', () => {
       mainContent = new MainContentImpl({}, mockLayoutContext);
       await mainContent.init();
       
-      mainContent.destroy();
+      await mainContent.destroy();
       
       expect(unsubscribeMock).toHaveBeenCalled();
     });

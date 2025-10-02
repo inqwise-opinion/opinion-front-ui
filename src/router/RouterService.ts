@@ -1,48 +1,54 @@
-import UniversalRouter from 'universal-router';
+import UniversalRouter, { Route, RouteContext as UniversalRouteContext, Routes } from 'universal-router';
 import { LayoutContext } from '../contexts/LayoutContext';
 import { EventBus } from '../lib/EventBus';
 import { Service } from '../interfaces/Service';
-import { RouteContext, RouteDefinition } from './types';
+import { RouteContext, RouteDefinition, RouteResult } from './types';
+import { RouteContextImpl } from './RouteContextImpl';
+import { PageContextImpl } from '../contexts/PageContextImpl';
 import { authMiddleware } from './middleware/auth';
 import { ALL_ROUTES } from './routes';
+import type { ActivePage } from '../interfaces/ActivePage';
+import type { PageProvider } from './types';
 
-interface RouteResult {
-  component: any;
-  params?: Record<string, any>;
+/**
+ * Internal router types
+ */
+interface ErrorPageParams extends Record<string, string> {
+  code: string;
+  message: string;
+  details: string;
+}
+
+interface ProcessedRoute {
+  path: string;
+  action: (context: any, params: any) => Promise<RouteResult>;
+  children?: ProcessedRoute[];
+}
+interface NavigationState {
+  currentPath: string;
+  currentPage: ActivePage | null;
+  isNavigating: boolean;
 }
 
 export class RouterService implements Service {
   public static readonly SERVICE_ID = 'router';
-  private router: any;
-  private currentPath: string = '/';
+  private router: UniversalRouter<RouteResult> | null = null;
   private serviceId: string;
   private eventBus: EventBus;
-  private currentPage: any = null;
+  private navigationState: NavigationState = {
+    currentPath: '/',
+    currentPage: null,
+    isNavigating: false
+  };
 
   constructor(private layoutContext: LayoutContext) {
     this.serviceId = RouterService.SERVICE_ID;
     this.eventBus = layoutContext.getEventBus();
-    // Router will be initialized in init()
-    this.router = null;
   }
 
   async init(): Promise<void> {
-    console.log('🎯 ROUTER.TS - Initializing...');
-    // Initialize router with empty routes
-    this.router = new UniversalRouter([], {
-      resolveRoute: async (context) => {
-        if (!context.route?.action) return undefined; // allow nested/parent routes without action
-        const routeContext = {
-          ...context,
-          services: new Map([['layout', this.layoutContext]])
-        };
-        return context.route.action(routeContext, {});
-      }
-    });
-
-    // Register routes
-    console.log('🎯 ROUTER.TS - Registering routes...');
-    this.registerRoutes(ALL_ROUTES);
+    // Initialize router with routes directly
+    this.initializeRouter(ALL_ROUTES);
 
     // Handle initial route (skip during tests to avoid JSDOM URL issues)
     if (process.env.NODE_ENV !== 'test') {
@@ -52,8 +58,6 @@ export class RouterService implements Service {
 
     // Observe URL changes
     window.addEventListener('popstate', this.handlePopState);
-
-    console.log('✅ ROUTER.TS - Initialization complete');
   }
 
   async destroy(): Promise<void> {
@@ -64,47 +68,40 @@ export class RouterService implements Service {
     return this.serviceId;
   }
 
-  private handlePopState = () => {
+  private handlePopState = (): void => {
     this.handleRoute(window.location.pathname);
   };
 
-  registerRoutes(routes: RouteDefinition[]) {
+  private initializeRouter(routes: RouteDefinition[]): void {
     // Ensure all routes have a leading slash
-    routes = routes.map(route => ({
+    const normalizedRoutes = routes.map(route => ({
       ...route,
       path: route.path.startsWith('/') ? route.path : `/${route.path}`,
     }));
-    if (!this.router) throw new Error('Router not initialized');
 
-    // Process route tree recursively
-    const processRoute = (route: RouteDefinition): RouteDefinition => ({
+    // Process route tree recursively  
+    const processRoute = (route: RouteDefinition): ProcessedRoute => ({
       // Ensure paths start with '/' for UniversalRouter
       path: route.path.startsWith('/') ? route.path : `/${route.path}`,
-      action: async (context: RouteContext) => {
-        const routeContext = {
-          ...context,
-          services: new Map([['layout', this.layoutContext]])
-        };
-        return authMiddleware(routeContext, async () => route.action(routeContext));
+      action: async (context: any, params: any) => {
+        // Create proper RouteContext from UniversalRouter context - use pathname as primary source
+        const routePath = context.pathname || context.path || '/';
+        // Convert params to Record<string, string> format
+        const stringParams: Record<string, string> = {};
+        if (params) {
+          for (const [key, value] of Object.entries(params)) {
+            stringParams[key] = Array.isArray(value) ? value[0] : String(value);
+          }
+        }
+        const routeContext = new RouteContextImpl(routePath, stringParams, this.layoutContext);
+        return authMiddleware(context, async () => route.action(routeContext));
       },
       children: route.children?.map(processRoute)
     });
 
     // Create router with processed routes
-    const processedRoutes = routes.map(processRoute);
-    this.router = new UniversalRouter(processedRoutes, {
-      resolveRoute: async (context) => {
-        if (!context.route?.action) {
-          return undefined; // allow traversing to child routes
-        }
-        const routeContext = {
-          ...context,
-          services: new Map([['layout', this.layoutContext]])
-        };
-        const result = await context.route.action(routeContext, context.params || {});
-        return result;
-      }
-    });
+    const processedRoutes = normalizedRoutes.map(processRoute);
+    this.router = new UniversalRouter(processedRoutes);
   }
 
   /**
@@ -115,69 +112,91 @@ export class RouterService implements Service {
       throw new Error('Router or Layout not initialized');
     }
 
-    console.log(`🎯 ROUTER.TS - handleRoute('${path}') START`);
+    // Set navigation state
+    this.navigationState.isNavigating = true;
+    
     try {
       // Clean up current page if exists
-      if (this.currentPage && typeof this.currentPage.destroy === 'function') {
-        console.log('🎯 ROUTER.TS - Destroying current page...');
-        this.currentPage.destroy();
-        console.log('✅ ROUTER.TS - Current page destroyed');
+      if (this.navigationState.currentPage && 'destroy' in this.navigationState.currentPage && typeof (this.navigationState.currentPage as any).destroy === 'function') {
+        await (this.navigationState.currentPage as any).destroy();
       }
+      this.navigationState.currentPage = null;
 
       // Navigate to new page
       const result = await this.navigate(path);
 
-      if (!result || !result.component) {
-        throw new Error(`No component found for route ${path}`);
+      if (!result || !result.pageProvider) {
+        throw new Error(`No page provider found for route ${path}`);
       }
 
-      // Create and initialize new page component
-      console.log(`🎯 ROUTER.TS - Creating ${result.component.name}...`);
-      this.currentPage = new result.component(this.layoutContext.getMainContent());
-
-      // Pass any route params to the page
-      if (result.params) {
-        console.log('🎯 ROUTER.TS - Setting route params:', result.params);
-        this.currentPage.setParams?.(result.params);
+      // Create RouteContext and PageContext using consistent path from result
+      // The result.routeInfo contains the actual resolved path and params from the router
+      // Extract basePath from the route path (e.g., '/surveys/123' -> basePath: '/surveys')
+      const basePath = this.extractBasePath(result.routeInfo.path);
+      const routeContext = new RouteContextImpl(result.routeInfo.path, result.routeInfo.params, this.layoutContext, undefined, basePath);
+      
+      // If this is an error page result, mark the route as failed
+      if (result.routeInfo.params && 'errorCode' in result.routeInfo.params) {
+        routeContext.fail({
+          code: result.routeInfo.params.errorCode as string,
+          message: result.routeInfo.params.errorMessage as string,
+          details: result.routeInfo.params.errorDetails as string
+        });
       }
+      
+      const pageContext = new PageContextImpl(routeContext, this.layoutContext);
 
-      console.log('🎯 ROUTER.TS - Initializing page component...');
-      await this.currentPage.init();
-      console.log('✅ ROUTER.TS - Page component initialized successfully');
+      // Create and initialize new page component using PageProvider
+      const mainContent = this.layoutContext.getMainContent();
+      if (!mainContent) {
+        throw new Error('MainContent not available from LayoutContext');
+      }
+      // Cast to MainContentImpl since PageProvider expects concrete implementation
+      const newPage = result.pageProvider(mainContent as any, pageContext);
+
+      // Associate page with context (one-time association)
+      pageContext.setPage(newPage);
+
+      await newPage.init();
+      
+      // Update navigation state with resolved path from routeContext (most accurate)
+      this.navigationState.currentPage = newPage;
+      this.navigationState.currentPath = routeContext.getPath();
     } catch (error) {
-      console.error(
-        `❌ ROUTER.TS - Failed to load page for route ${path}:`,
-        error
-      );
-      console.error(`❌ ROUTER.TS - Route error stack:`, (error as Error).stack);
+      console.error(`Failed to load page for route ${path}:`, error);
+      
+      // Reset navigation state on error
+      this.navigationState.isNavigating = false;
       throw error;
+    } finally {
+      this.navigationState.isNavigating = false;
     }
-    console.log(`🎯 ROUTER.TS - handleRoute('${path}') END`);
   }
 
   /**
    * Navigate to a route and return the route result
    */
-  private async navigate(path: string) {
+  private async navigate(path: string): Promise<RouteResult> {
     if (!this.router) throw new Error('Router not initialized');
 
+    // Ensure path starts with /
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
     try {
-      // Ensure path starts with /
-      const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-      
       // Notify about navigation start
       this.eventBus.publish('router:navigationStart', { 
-        from: this.currentPath, 
+        from: this.navigationState.currentPath, 
         to: normalizedPath 
       });
 
       try {
         // Resolve the route
-        const result = await this.router.resolve(normalizedPath);
+        const resolveResult = await this.router.resolve(normalizedPath);
+        const result = resolveResult as RouteResult;
 
         // Update browser history and current path
         window.history.pushState(null, '', normalizedPath);
-        this.currentPath = normalizedPath;
+        this.navigationState.currentPath = normalizedPath;
 
         // Notify about successful navigation
         this.eventBus.publish('router:navigationEnd', { path: normalizedPath });
@@ -186,16 +205,24 @@ export class RouterService implements Service {
       } catch (routeError) {
         // If route not found, return 404 page
         if (routeError instanceof Error && routeError.message.includes('Route not found')) {
-          const ErrorPage = (await import('../pages/ErrorPage')).default;
-          return {
-            component: ErrorPage,
-            params: {
-              code: '404',
-              message: 'Page Not Found',
-              details: `The page '${normalizedPath}' does not exist.`
-            }
-          };
+          return await this.createErrorPageResult(
+            normalizedPath,
+            '404',
+            'Page Not Found',
+            `The page '${normalizedPath}' does not exist.`
+          );
         }
+        
+        // For other router errors, return a generic error page
+        if (routeError instanceof Error) {
+          return await this.createErrorPageResult(
+            normalizedPath,
+            '503',
+            'Service Unavailable',
+            `Routing service is temporarily unavailable: ${routeError.message}`
+          );
+        }
+        
         throw routeError;
       }
     } catch (error) {
@@ -206,10 +233,137 @@ export class RouterService implements Service {
   }
 
   getCurrentPath(): string {
-    return this.currentPath;
+    return this.navigationState.currentPath;
   }
 
-  public getCurrentPage(): any {
-    return this.currentPage;
+  public getCurrentPage(): ActivePage | null {
+    return this.navigationState.currentPage;
+  }
+  
+  public isNavigating(): boolean {
+    return this.navigationState.isNavigating;
+  }
+  
+  // =====================================================================================
+  // PROGRAMMATIC NAVIGATION METHODS
+  // =====================================================================================
+  
+  /**
+   * Navigate to a new route (pushes new state to history)
+   */
+  public async push(path: string): Promise<void> {
+    await this.handleRoute(path);
+  }
+  
+  /**
+   * Replace current route (replaces current state in history)
+   */
+  public async replace(path: string): Promise<void> {
+    // Temporarily disable history push in navigate()
+    const originalPush = window.history.pushState;
+    window.history.pushState = window.history.replaceState;
+    
+    try {
+      await this.handleRoute(path);
+    } finally {
+      // Restore original pushState
+      window.history.pushState = originalPush;
+    }
+  }
+  
+  /**
+   * Go back in history
+   */
+  public back(): void {
+    window.history.back();
+  }
+  
+  /**
+   * Go forward in history
+   */
+  public forward(): void {
+    window.history.forward();
+  }
+  
+  /**
+   * Go to specific history entry
+   */
+  public go(delta: number): void {
+    window.history.go(delta);
+  }
+  
+  /**
+   * Reload current page
+   */
+  public async reload(): Promise<void> {
+    await this.handleRoute(this.navigationState.currentPath);
+  }
+  
+  // =====================================================================================
+  // PATH HANDLING HELPERS
+  // =====================================================================================
+
+  /**
+   * Extract base path from a full route path
+   * Examples:
+   *   '/surveys' -> '/surveys'
+   *   '/surveys/123' -> '/surveys'
+   *   '/surveys/123/collectors' -> '/surveys'
+   *   '/account/456' -> '/account'
+   *   '/' -> '/'
+   */
+  private extractBasePath(fullPath: string): string {
+    // Handle root path
+    if (fullPath === '/') {
+      return '/';
+    }
+    
+    // Split path into segments
+    const segments = fullPath.split('/').filter(segment => segment.length > 0);
+    
+    if (segments.length === 0) {
+      return '/';
+    }
+    
+    // For now, use the first segment as basePath
+    // This handles common patterns like:
+    //   /surveys/123 -> /surveys
+    //   /account/456 -> /account
+    return '/' + segments[0];
+  }
+
+  // =====================================================================================
+  // ERROR HANDLING HELPERS
+  // =====================================================================================
+  
+  /**
+   * Create a standardized error page RouteResult
+   */
+  private async createErrorPageResult(
+    path: string,
+    errorCode: string = '404',
+    errorMessage: string = 'Page Not Found',
+    errorDetails?: string
+  ): Promise<RouteResult> {
+    const ErrorPage = (await import('../pages/ErrorPage')).default;
+    
+    // Put error info in route params so ErrorPage can access them
+    const errorParams = {
+      errorCode,
+      errorMessage,
+      errorDetails: errorDetails || `The page '${path}' could not be found.`
+    };
+    
+    const pageProvider: PageProvider = (mainContent, pageContext) => {
+      return new ErrorPage(mainContent, pageContext);
+    };
+    
+    return {
+      pageProvider,
+      routeInfo: {
+        path,
+        params: errorParams
+      }
+    };
   }
 }

@@ -25,6 +25,7 @@ import {
   ChainHotkeyHandler,
   HotkeyExecutionContext,
 } from "../hotkeys/HotkeyChainSystem";
+import { PageContext } from "../interfaces/PageContext";
 
 export class DebugPage extends PageComponent {
   private responsiveModeUnsubscribe: (() => void) | null = null;
@@ -39,8 +40,11 @@ export class DebugPage extends PageComponent {
     lastEventTime: 0
   };
 
-  constructor(mainContent: MainContentImpl) {
-    super(mainContent);
+  constructor(mainContent: MainContentImpl, pageContext: PageContext) {
+    super(mainContent, pageContext, {
+      pageId: "debug", // Matches navigation item ID
+      pageTitle: "Debug"
+    });
   }
 
   /**

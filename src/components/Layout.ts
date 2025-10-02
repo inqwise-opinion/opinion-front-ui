@@ -305,6 +305,13 @@ export class Layout {
   getSidebar(): Sidebar | null {
     return this.sidebar;
   }
+  
+  /**
+   * Get layout context reference
+   */
+  getLayoutContext(): LayoutContext {
+    return this.layoutContext;
+  }
 
   // Layout context access removed - use onContextReady() for setup/configuration
   // Direct context access is available to pages via PageComponent.layoutContext
@@ -717,44 +724,20 @@ export class Layout {
 
   /**
    * Set active navigation item
+   * @deprecated Use NavigationService.setActiveItem() instead for centralized navigation state management
    */
   public setActiveNavigationItem(id: string): void {
-    // Clear all active states
-    this.navigationItems.forEach((item) => {
-      item.active = false;
-      if (item.children) {
-        item.children.forEach((child) => (child.active = false));
-      }
-    });
-
-    // Set active state for the specified item
-    const item = this.navigationItems.find((item) => item.id === id);
-    if (item) {
-      item.active = true;
+    console.warn(
+      `Layout.setActiveNavigationItem is deprecated. Use NavigationService.setActiveItem('${id}') instead.`
+    );
+    
+    // Delegate to NavigationService if available
+    const navService = this.layoutContext.getService('navigation.service');
+    if (navService && 'setActiveItem' in navService) {
+      (navService as any).setActiveItem(id);
     } else {
-      // Check in children
-      for (const parentItem of this.navigationItems) {
-        if (parentItem.children) {
-          const childItem = parentItem.children.find(
-            (child) => child.id === id,
-          );
-          if (childItem) {
-            childItem.active = true;
-            parentItem.expanded = true; // Expand parent if child is active
-            break;
-          }
-        }
-      }
+      console.error('NavigationService not available. Cannot set active navigation item.');
     }
-
-    // Update sidebar if available
-    const sidebar = this.layoutContext.getSidebar();
-    if (sidebar) {
-      sidebar.updateNavigation(this.navigationItems);
-      sidebar.setActivePage(id);
-    }
-
-    console.log(`Layout - Navigation item '${id}' set as active`);
   }
 
   /**

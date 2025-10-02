@@ -11,7 +11,17 @@ import {
   HotkeyChainAction,
   HotkeyExecutionContext,
 } from './HotkeyChainSystem';
-import type { HotkeyHandler } from '../contexts/LayoutContext';
+
+/**
+ * Legacy HotkeyHandler interface for backward compatibility
+ */
+export interface HotkeyHandler {
+  key: string;
+  handler: (event: KeyboardEvent) => boolean | void;
+  description?: string;
+  context?: 'global' | 'local';
+  component?: string;
+}
 
 /**
  * Legacy hotkey wrapper that implements the new chain interface

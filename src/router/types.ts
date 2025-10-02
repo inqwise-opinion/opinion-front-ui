@@ -1,15 +1,28 @@
 import { PageComponent } from '../components/PageComponent';
+import { PageContext } from '../interfaces/PageContext';
+import MainContentImpl from '../components/MainContentImpl';
+import { RouteContext } from './RouteContext';
 
-export interface RouteContext {
+// Re-export RouteContext for backward compatibility
+export type { RouteContext } from './RouteContext';
+
+/**
+ * Page provider function - creates a page instance with pre-created PageContext
+ */
+export type PageProvider = (mainContent: MainContentImpl, pageContext: PageContext) => PageComponent;
+
+/**
+ * Route information for creating PageContext
+ * This will be used to create a RouteContext instance
+ */
+export interface RouteInfo {
+  path: string;
   params: Record<string, string>;
-  pathname: string;
-  accountId?: string;
-  services?: Map<string, any>;
 }
 
 export interface RouteResult {
-  component: any;
-  params?: Record<string, string>;
+  pageProvider: PageProvider;
+  routeInfo: RouteInfo;
 }
 
 export interface RouterEventMap {
@@ -20,6 +33,6 @@ export interface RouterEventMap {
 
 export interface RouteDefinition {
   path: string;
-  action: (context: any) => Promise<RouteResult> | RouteResult;
+  action: (context: RouteContext) => Promise<RouteResult> | RouteResult;
   children?: RouteDefinition[];
 }

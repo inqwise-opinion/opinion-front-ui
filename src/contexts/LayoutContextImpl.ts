@@ -16,8 +16,6 @@ import type {
   LayoutEvent,
   LayoutEventListener,
   LayoutViewPort,
-  HotkeyHandler,
-  HotkeyProvider,
 } from "./LayoutContext";
 import type {
   ActivePage,
@@ -38,9 +36,9 @@ import {
   ChainExecutionResult,
 } from "../hotkeys/HotkeyChainSystem";
 import { ChainHotkeyManagerImpl } from "../hotkeys/ChainHotkeyManagerImpl";
-import { LegacyHotkeyAdapter } from "../hotkeys/LegacyHotkeyAdapter";
 import type { PageContext, PageContextConfig } from "../interfaces/PageContext";
 import { PageContextImpl } from "./PageContextImpl";
+import { ServiceReference, ServiceReferenceConfig } from "../services/ServiceReference";
 
 export class LayoutContextImpl implements LayoutContext {
   // Note: Removed dedicated listeners map - now using EventBus for all events
@@ -58,18 +56,8 @@ export class LayoutContextImpl implements LayoutContext {
   private mainContentInstance: MainContent | null = null;
   private messagesInstance: Messages | null = null;
 
-  // Legacy Hotkey Management (for backward compatibility)
-  private registeredHotkeys: Map<string, HotkeyHandler[]> = new Map();
-  private globalKeydownListener: ((event: KeyboardEvent) => void) | null = null;
-
-  // Chain-Based Hotkey Management (New System)
+  // Chain-Based Hotkey Management (Only System)
   private chainHotkeyManager!: ChainHotkeyManager;
-  private legacyAdapter!: LegacyHotkeyAdapter;
-  private legacyProviderUnsubscribers: (() => void)[] = [];
-
-  // Active Hotkey Provider Management
-  private activeHotkeyProvider: HotkeyProvider | null = null;
-  private activePageHotkeyUnsubscribers: (() => void)[] = [];
 
   // Active Page Management
   private currentActivePage: ActivePage | null = null;
@@ -89,7 +77,6 @@ export class LayoutContextImpl implements LayoutContext {
     this.viewport = this.calculateViewPort();
     this.modeType = this.identifyModeType(this.viewport);
     this.setupViewportObserver();
-    this.setupHotkeyManager();
     this.setupChainHotkeySystem();
     this.setupEventBus();
     console.log("LayoutContext - Initialized with viewport:", this.viewport);
@@ -552,27 +539,8 @@ export class LayoutContextImpl implements LayoutContext {
     return messagesComponent;
   }
 
-  // =================================================================================
-  // Hotkey Management System
-  // =================================================================================
-
   /**
-   * Setup the central hotkey management system
-   */
-  private setupHotkeyManager(): void {
-    console.log("LayoutContext - Setting up central hotkey manager...");
-
-    // Create single global keydown listener
-    this.globalKeydownListener = (event: KeyboardEvent) => {
-      this.handleGlobalKeydown(event);
-    };
-
-    document.addEventListener("keydown", this.globalKeydownListener);
-    console.log("LayoutContext - Hotkey manager initialized ✅");
-  }
-
-  /**
-   * Setup the new chain-based hotkey management system
+   * Setup the chain-based hotkey management system
    */
   private setupChainHotkeySystem(): void {
     console.log("LayoutContext - Setting up chain-based hotkey system...");
@@ -580,58 +548,7 @@ export class LayoutContextImpl implements LayoutContext {
     // Initialize chain manager (it will setup its own global listener)
     this.chainHotkeyManager = new ChainHotkeyManagerImpl();
     
-    // Initialize legacy adapter for backward compatibility
-    this.legacyAdapter = new LegacyHotkeyAdapter();
-    
     console.log("LayoutContext - Chain hotkey system initialized ✅");
-  }
-
-  /**
-   * Handle global keydown events and route to registered hotkeys
-   */
-  private handleGlobalKeydown(event: KeyboardEvent): void {
-    const key = this.normalizeKey(event);
-    const handlers = this.registeredHotkeys.get(key);
-
-    if (handlers && handlers.length > 0) {
-      console.log(`LayoutContext - Handling hotkey: ${key}`);
-
-      // Execute handlers in registration order (last registered gets priority)
-      for (let i = handlers.length - 1; i >= 0; i--) {
-        const handler = handlers[i];
-        try {
-          const result = handler.handler(event);
-
-          // If handler returns false, prevent default and stop propagation
-          if (result === false) {
-            event.preventDefault();
-            event.stopPropagation();
-            break; // Stop executing other handlers
-          }
-        } catch (error) {
-          console.error(
-            `LayoutContext - Error in hotkey handler for ${key}:`,
-            error,
-          );
-        }
-      }
-    }
-  }
-
-  /**
-   * Normalize keyboard event to a consistent string representation
-   */
-  private normalizeKey(event: KeyboardEvent): string {
-    const modifiers = [];
-
-    if (event.ctrlKey) modifiers.push("Ctrl");
-    if (event.metaKey) modifiers.push("Meta"); // Cmd on Mac
-    if (event.altKey) modifiers.push("Alt");
-    if (event.shiftKey) modifiers.push("Shift");
-
-    const key = event.key;
-
-    return modifiers.length > 0 ? `${modifiers.join("+")}+${key}` : key;
   }
 
 
@@ -703,137 +620,10 @@ export class LayoutContextImpl implements LayoutContext {
   }
 
   // =================================================================================
-  // Legacy Hotkey System Integration (Backward Compatibility)
+  // Legacy Hotkey System Removed
   // =================================================================================
-
-  /**
-   * Enhanced legacy hotkey registration that uses the chain system
-   * Maintains backward compatibility while leveraging the new chain architecture
-   */
-  public registerHotkey(hotkey: HotkeyHandler): () => void {
-    console.log(
-      `LayoutContext - Registering legacy hotkey: ${hotkey.key} for component: ${hotkey.component || "unknown"}`,
-    );
-    console.log(`  Description: ${hotkey.description || "No description"}`);
-    console.log(`  Context: ${hotkey.context || "global"}`);
-
-    // Use legacy adapter to register with chain system
-    const unregister = this.legacyAdapter.registerHotkey(hotkey);
-    
-    // Update legacy providers in chain manager
-    this.updateLegacyProvidersInChain();
-    
-    // Also register with old system for double compatibility during transition
-    const key = hotkey.key;
-    if (!this.registeredHotkeys.has(key)) {
-      this.registeredHotkeys.set(key, []);
-    }
-    const handlers = this.registeredHotkeys.get(key)!;
-    handlers.push(hotkey);
-
-    // Return composite unregister function
-    return () => {
-      unregister();
-      this.unregisterHotkey(key, hotkey.component);
-      this.updateLegacyProvidersInChain();
-    };
-  }
-
-  /**
-   * Enhanced legacy hotkey unregistration
-   */
-  public unregisterHotkey(key: string, component?: string): void {
-    // Unregister from legacy adapter
-    this.legacyAdapter.unregisterHotkey(key, component);
-    
-    // Update legacy providers in chain manager
-    this.updateLegacyProvidersInChain();
-    
-    // Also unregister from old system for double compatibility
-    const handlers = this.registeredHotkeys.get(key);
-    if (!handlers) return;
-
-    if (component) {
-      const filtered = handlers.filter((h) => h.component !== component);
-      if (filtered.length === 0) {
-        this.registeredHotkeys.delete(key);
-      } else {
-        this.registeredHotkeys.set(key, filtered);
-      }
-      console.log(
-        `LayoutContext - Unregistered legacy hotkey ${key} for component: ${component}`,
-      );
-    } else {
-      this.registeredHotkeys.delete(key);
-      console.log(
-        `LayoutContext - Unregistered all legacy hotkey handlers for: ${key}`,
-      );
-    }
-  }
-
-  /**
-   * Enhanced legacy hotkey bulk unregistration
-   */
-  public unregisterAllHotkeys(component?: string): void {
-    // Unregister from legacy adapter
-    this.legacyAdapter.unregisterAllHotkeys(component);
-    
-    // Update legacy providers in chain manager
-    this.updateLegacyProvidersInChain();
-    
-    // Also unregister from old system for double compatibility
-    if (!component) {
-      this.registeredHotkeys.clear();
-      console.log("LayoutContext - Cleared all legacy hotkeys");
-      return;
-    }
-
-    for (const [key, handlers] of this.registeredHotkeys.entries()) {
-      const filtered = handlers.filter((h) => h.component !== component);
-      if (filtered.length === 0) {
-        this.registeredHotkeys.delete(key);
-      } else {
-        this.registeredHotkeys.set(key, filtered);
-      }
-    }
-
-    console.log(
-      `LayoutContext - Unregistered all legacy hotkeys for component: ${component}`,
-    );
-  }
-
-  /**
-   * Get all registered legacy hotkeys (enhanced to include both systems)
-   */
-  public getRegisteredHotkeys(): HotkeyHandler[] {
-    // Return hotkeys from legacy adapter (more accurate)
-    return this.legacyAdapter.getRegisteredHotkeys();
-  }
-
-  /**
-   * Update legacy providers in the chain manager
-   * This ensures that changes to legacy hotkeys are reflected in the chain system
-   */
-  private updateLegacyProvidersInChain(): void {
-    // Unregister existing legacy providers
-    this.legacyProviderUnsubscribers.forEach(unregister => {
-      try {
-        unregister();
-      } catch (error) {
-        console.error('LayoutContext - Error unregistering legacy provider:', error);
-      }
-    });
-    this.legacyProviderUnsubscribers = [];
-    
-    // Register current legacy providers
-    const legacyProviders = this.legacyAdapter.getAllProviders();
-    for (const provider of legacyProviders) {
-      const unregister = this.chainHotkeyManager.registerProvider(provider);
-      this.legacyProviderUnsubscribers.push(unregister);
-    }
-    
-    console.log(`LayoutContext - Updated ${legacyProviders.length} legacy providers in chain`);
-  }
+  // The legacy hotkey system has been completely removed in favor of the
+  // chain-based system. All components now use ChainHotkeyProvider directly.
 
   // =================================================================================
   // EventBus Management System
@@ -968,103 +758,10 @@ export class LayoutContextImpl implements LayoutContext {
   }
 
   // =================================================================================
-  // Active Hotkey Provider Management
+  // Active Hotkey Provider Management - Removed
   // =================================================================================
-
-  /**
-   * Set active hotkey provider (page component)
-   */
-  public setActiveHotkeyProvider(provider: HotkeyProvider): void {
-    console.log(
-      `LayoutContext - Setting active hotkey provider: ${provider.getHotkeyComponentId()}`,
-    );
-
-    // Clean up previous provider's hotkeys
-    this.clearActivePageHotkeys();
-
-    // Set new active provider
-    this.activeHotkeyProvider = provider;
-
-    // Register new provider's hotkeys
-    this.registerPageHotkeys(provider);
-  }
-
-  /**
-   * Remove active hotkey provider (only if it matches expected)
-   */
-  public removeActiveHotkeyProvider(provider: HotkeyProvider): void {
-    if (this.activeHotkeyProvider === provider) {
-      console.log(
-        `LayoutContext - Removing active hotkey provider: ${provider.getHotkeyComponentId()}`,
-      );
-      this.clearActivePageHotkeys();
-      this.activeHotkeyProvider = null;
-    } else {
-      console.warn(
-        `LayoutContext - Attempted to remove non-active provider: ${provider.getHotkeyComponentId()}`,
-      );
-    }
-  }
-
-  /**
-   * Get active hotkey provider
-   */
-  public getActiveHotkeyProvider(): HotkeyProvider | null {
-    return this.activeHotkeyProvider;
-  }
-
-  /**
-   * Register hotkeys from provider
-   */
-  private registerPageHotkeys(provider: HotkeyProvider): void {
-    const pageHotkeys = provider.getPageHotkeys();
-    if (!pageHotkeys || pageHotkeys.size === 0) {
-      console.log(
-        `LayoutContext - No page hotkeys to register for ${provider.getHotkeyComponentId()}`,
-      );
-      return;
-    }
-
-    console.log(
-      `LayoutContext - Registering ${pageHotkeys.size} page hotkeys for ${provider.getHotkeyComponentId()}`,
-    );
-
-    // Register each hotkey from the provider
-    for (const [key, handler] of pageHotkeys) {
-      const unregister = this.registerHotkey({
-        key,
-        handler,
-        description: `Page hotkey: ${key} for ${provider.getHotkeyComponentId()}`,
-        context: "page",
-        component: provider.getHotkeyComponentId(),
-      });
-
-      this.activePageHotkeyUnsubscribers.push(unregister);
-    }
-  }
-
-  /**
-   * Clear all active page hotkeys
-   */
-  private clearActivePageHotkeys(): void {
-    if (this.activePageHotkeyUnsubscribers.length > 0) {
-      console.log(
-        `LayoutContext - Clearing ${this.activePageHotkeyUnsubscribers.length} active page hotkeys`,
-      );
-
-      this.activePageHotkeyUnsubscribers.forEach((unregister) => {
-        try {
-          unregister();
-        } catch (error) {
-          console.error(
-            "LayoutContext - Error unregistering page hotkey:",
-            error,
-          );
-        }
-      });
-      this.activePageHotkeyUnsubscribers = [];
-    }
-  }
+  // The legacy HotkeyProvider system has been removed. Page components now
+  // register themselves directly as ChainHotkeyProvider instances.
 
   // =================================================================================
   // ActivePageProvider Implementation
@@ -1366,14 +1063,13 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public getServiceReference<T extends Service>(
     serviceName: string,
-    config?: import("../services/ServiceReference").ServiceReferenceConfig,
-  ): import("../services/ServiceReference").ServiceReference<T> {
-    const { ServiceReference } = require("../services/ServiceReference");
+    config?: ServiceReferenceConfig,
+  ): ServiceReference<T> {
     return new ServiceReference(
       this,
       serviceName,
       config,
-    ) as import("../services/ServiceReference").ServiceReference<T>;
+    ) as ServiceReference<T>;
   }
 
   /**
@@ -1535,69 +1231,8 @@ export class LayoutContextImpl implements LayoutContext {
     console.log("LayoutContext - Service destruction complete");
   }
 
-  // =================================================================================
-  // PageContext Management Implementation
-  // =================================================================================
-
-  /**
-   * Create a PageContext for the given page (Promise-based for async initialization)
-   */
-  public async getPageContext(
-    page: ActivePage,
-    config: PageContextConfig = {}
-  ): Promise<PageContext> {
-    const pageId = page.getPageId();
-    
-    // Check if we already have a context for this page
-    const existingContext = this.pageContexts.get(pageId);
-    if (existingContext) {
-      console.log(`🔧 PageContext - Returning existing context for page: ${pageId}`);
-      return existingContext;
-    }
-
-    // Create new PageContext
-    const pageContext = new PageContextImpl(page, this, config);
-    this.pageContexts.set(pageId, pageContext);
-    
-    console.log(`🔧 PageContext - Created new context for page: ${pageId}`);
-
-    // Wait for the context to be ready
-    return new Promise((resolve) => {
-      const checkReady = () => {
-        if (pageContext.isReady()) {
-          resolve(pageContext);
-        } else {
-          setTimeout(checkReady, 10);
-        }
-      };
-      checkReady();
-    });
-  }
-
-  /**
-   * Get an existing PageContext for a page if it exists
-   */
-  public getExistingPageContext(page: ActivePage): PageContext | null {
-    return this.pageContexts.get(page.getPageId()) || null;
-  }
-
-  /**
-   * Clear PageContext for a specific page
-   */
-  public clearPageContext(page: ActivePage): void {
-    const pageId = page.getPageId();
-    if (this.pageContexts.has(pageId)) {
-      this.pageContexts.delete(pageId);
-      console.log(`🔧 PageContext - Cleared context for page: ${pageId}`);
-    }
-  }
-
-  /**
-   * Get all active PageContexts (for debugging)
-   */
-  public getActivePageContexts(): Map<string, PageContext> {
-    return new Map(this.pageContexts);
-  }
+  // PageContext management removed - now handled by RouterService
+  // LayoutContext focuses on layout coordination only
 
   // =================================================================================
   // Cleanup and Destruction
@@ -1661,10 +1296,6 @@ export class LayoutContextImpl implements LayoutContext {
     this.currentActivePage = null;
     this.activePageConsumers.clear();
 
-    // Cleanup active hotkey providers
-    this.clearActivePageHotkeys();
-    this.activeHotkeyProvider = null;
-
     // Cleanup chain hotkey system
     console.log("LayoutContext - Cleaning up chain hotkey system...");
     if (this.chainHotkeyManager) {
@@ -1675,33 +1306,6 @@ export class LayoutContextImpl implements LayoutContext {
         console.error("LayoutContext - Error destroying chain hotkey manager:", error);
       }
     }
-
-    // Cleanup legacy hotkey adapter
-    if (this.legacyAdapter) {
-      try {
-        this.legacyAdapter.destroy();
-        console.log("LayoutContext - Legacy hotkey adapter destroyed");
-      } catch (error) {
-        console.error("LayoutContext - Error destroying legacy adapter:", error);
-      }
-    }
-
-    // Cleanup legacy provider unsubscribers
-    this.legacyProviderUnsubscribers.forEach(unregister => {
-      try {
-        unregister();
-      } catch (error) {
-        console.error('LayoutContext - Error unregistering legacy provider during destroy:', error);
-      }
-    });
-    this.legacyProviderUnsubscribers = [];
-
-    // Cleanup legacy hotkey manager
-    if (this.globalKeydownListener) {
-      document.removeEventListener("keydown", this.globalKeydownListener);
-      this.globalKeydownListener = null;
-    }
-    this.registeredHotkeys.clear();
     
     console.log("LayoutContext - Hotkey system cleanup complete");
 

@@ -1,10 +1,10 @@
 import { PageComponent } from '../../components/PageComponent';
 import MainContentImpl from '../../components/MainContentImpl';
-import type { BreadcrumbItem } from '../../interfaces/BreadcrumbItem';
+import { PageContext } from '../../interfaces/PageContext';
 
 export default class AccountSettingsPage extends PageComponent {
-  constructor(mainContent: MainContentImpl) {
-    super(mainContent, {
+  constructor(mainContent: MainContentImpl, pageContext: PageContext) {
+    super(mainContent, pageContext, {
       pageTitle: 'Account Settings',
       pageId: 'account-settings',
       autoInit: false
@@ -26,8 +26,7 @@ export default class AccountSettingsPage extends PageComponent {
       // Set browser tab title
       document.title = 'Account Settings - Opinion';
 
-      // Set initial breadcrumb
-      this.setInitialBreadcrumb();
+      // Breadcrumbs are now managed automatically by RouterService
     } catch (error) {
       console.error('❌ AccountSettingsPage - Initialization failed:', error);
       throw error;
@@ -143,13 +142,6 @@ export default class AccountSettingsPage extends PageComponent {
     }
   }
 
-  private async setInitialBreadcrumb(): Promise<void> {
-    await this.setBreadcrumbs([
-      { text: 'Home', href: '/' },
-      { text: 'Account', href: '/account' },
-      { text: 'Settings', href: '/account/settings' }
-    ]);
-  }
 
   // Action Handlers
   private async handleSubmitSettings(form: HTMLFormElement, event: Event): Promise<void> {

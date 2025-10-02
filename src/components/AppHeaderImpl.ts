@@ -309,11 +309,10 @@ export class AppHeaderImpl
    * Register chain hotkey provider with LayoutContext
    */
   private registerHotkeys(): void {
-    // Register this component as a chain provider for ESC key handling
-    this.chainProviderUnsubscriber =
-      this.layoutContext.registerChainProvider(this);
+    // Chain provider registration is already handled in init() method
+    // This method is kept for potential future hotkey-specific setup
     console.log(
-      "AppHeaderImpl - Registered as chain hotkey provider for user menu ESC handling",
+      "AppHeaderImpl - Hotkey setup complete (chain provider already registered in init)",
     );
   }
 
@@ -683,12 +682,9 @@ export class AppHeaderImpl
     });
     this.layoutUnsubscribers = [];
 
-    // Cleanup chain provider (new system)
+    // Cleanup chain provider
     this.cleanupChainProvider();
-
-    // Unregister all legacy hotkeys for this component (backward compatibility)
-    this.layoutContext.unregisterAllHotkeys("AppHeaderImpl");
-    console.log("AppHeaderImpl - Hotkeys unregistered from LayoutContext");
+    console.log("AppHeaderImpl - Chain hotkey provider cleaned up");
 
     // Destroy user menu component
     if (this.userMenu) {

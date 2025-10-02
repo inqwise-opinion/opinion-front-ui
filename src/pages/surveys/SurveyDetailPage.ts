@@ -1,17 +1,19 @@
 import { PageComponent } from '../../components/PageComponent';
 import MainContentImpl from '../../components/MainContentImpl';
-import type { BreadcrumbItem } from '../../interfaces/BreadcrumbItem';
+import type { PageContext } from '../../interfaces/PageContext';
 
 export default class SurveyDetailPage extends PageComponent {
   private surveyId: string;
 
-  constructor(mainContent: MainContentImpl, surveyId: string) {
-    super(mainContent, {
+  constructor(mainContent: MainContentImpl, pageContext: PageContext) {
+    super(mainContent, pageContext, {
       pageTitle: 'Survey Details',
-      pageId: `survey-${surveyId}`,
       autoInit: false
     });
-    this.surveyId = surveyId;
+    
+    // Get surveyId from route parameters
+    const routeContext = pageContext.getRouteContext();
+    this.surveyId = routeContext.getParam('surveyId') || 'unknown';
   }
 
   protected async onInit(): Promise<void> {
@@ -29,8 +31,7 @@ export default class SurveyDetailPage extends PageComponent {
       // Set browser tab title
       document.title = 'Survey Details - Opinion';
 
-      // Set initial breadcrumb
-      this.setInitialBreadcrumb();
+      // Breadcrumbs are now managed automatically by RouterService
     } catch (error) {
       console.error('❌ SurveyDetailPage - Initialization failed:', error);
       throw error;
@@ -89,13 +90,6 @@ export default class SurveyDetailPage extends PageComponent {
     contentContainer.innerHTML = `<p>Survey ${this.surveyId} details implementation coming soon</p>`;
   }
 
-  private async setInitialBreadcrumb(): Promise<void> {
-    await this.setBreadcrumbs([
-      { text: 'Home', href: '/' },
-      { text: 'Surveys', href: '/surveys' },
-      { text: 'Survey Details', href: `/surveys/${this.surveyId}` }
-    ]);
-  }
 
   // Action Handlers
   private handleEditSurvey(): void {

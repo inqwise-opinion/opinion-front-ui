@@ -414,13 +414,13 @@ export class MockSessionAuthProvider implements SessionAuthProvider, SelfIdentif
    * 
    * @param context - The LayoutContext to resolve from
    * @param config - Optional configuration for the ServiceReference
-   * @returns ServiceReference<MockSessionAuthProvider> for lazy resolution
+   * @returns Promise<ServiceReference<MockSessionAuthProvider>> for lazy resolution
    */
-  static getRegisteredReference(
+  static async getRegisteredReference(
     context: any, // LayoutContext - avoiding import cycle
     config?: any // ServiceReferenceConfig - avoiding import cycle
-  ): any { // ServiceReference<MockSessionAuthProvider> - avoiding import cycle
-    const { ServiceReference } = require('./ServiceReference');
+  ): Promise<any> { // ServiceReference<MockSessionAuthProvider> - avoiding import cycle
+    const { ServiceReference } = await import('../services/ServiceReference');
     return new ServiceReference(
       context,
       'mock-session-auth-provider', // Standard service key

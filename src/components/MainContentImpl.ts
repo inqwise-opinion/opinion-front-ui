@@ -5,6 +5,7 @@
 
 // Import component-scoped CSS
 import "../assets/styles/components/main-content.css";
+import BaseComponent from './BaseComponent';
 // Import layout context
 import {
   getLayoutContext,
@@ -15,7 +16,7 @@ import type { Dimensions } from "./Sidebar";
 import type { MainContent, MainContentConfig } from "./MainContent";
 import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 
-export class MainContentImpl implements MainContent, ComponentWithStatus {
+export class MainContentImpl extends BaseComponent implements MainContent, ComponentWithStatus {
   private container: HTMLElement | null = null;
   private config: MainContentConfig;
   private isInitialized: boolean = false;
@@ -26,6 +27,7 @@ export class MainContentImpl implements MainContent, ComponentWithStatus {
   private lastContentUpdate: number | null = null;
 
   constructor(config: MainContentConfig = {}, layoutContext?: LayoutContext) {
+    super();
     this.config = {
       className: "app-main main-content",
       id: "app", // Keep the existing id from HTML
@@ -43,13 +45,10 @@ export class MainContentImpl implements MainContent, ComponentWithStatus {
   /**
    * Initialize the main content area
    */
-  public async init(): Promise<void> {
+  protected async onInit(): Promise<void> {
     console.log("MainContent - Initializing...");
 
-    if (this.isInitialized) {
-      console.warn("MainContent - Already initialized");
-      return;
-    }
+    // Init validation now handled by BaseComponent
 
     // Create the main content element (will use existing app-main if available)
     await this.createMainElement();
@@ -199,6 +198,10 @@ export class MainContentImpl implements MainContent, ComponentWithStatus {
    * Get the main content element
    */
   getElement(): HTMLElement | null {
+    // Throw if the element is not available (destroyed or not created)
+    if (this.container === null) {
+      throw new Error('MainContent element is not available');
+    }
     return this.container;
   }
 
@@ -475,7 +478,7 @@ export class MainContentImpl implements MainContent, ComponentWithStatus {
   /**
    * Destroy the component
    */
-  destroy(): void {
+  protected onDestroy(): void {
     console.log("MainContent - Destroying...");
 
     // Unsubscribe from layout context events

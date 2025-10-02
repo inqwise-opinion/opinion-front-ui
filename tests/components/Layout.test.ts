@@ -99,7 +99,8 @@ const mockLayoutContext = {
   emit: jest.fn(),
   destroy: jest.fn(),
   isReady: jest.fn(() => true),
-  getRouter: jest.fn(() => ({}))
+  getRouter: jest.fn(() => ({})),
+  getService: jest.fn(() => null) // Mock service registry - returns null by default
 } as any as LayoutContext;
 
 jest.mock('../../src/contexts/LayoutContextImpl', () => {
@@ -300,12 +301,35 @@ describe('Layout', () => {
     });
 
     test('should set active navigation item', () => {
+      // Mock NavigationService
+      const mockNavigationService = {
+        setActiveItem: jest.fn((id: string) => {
+          // Simulate updating the navigation items
+          const items = layout.getNavigationItems();
+          items.forEach(item => {
+            item.active = item.id === id;
+          });
+        })
+      };
+      
+      // Mock getService to return our NavigationService
+      mockLayoutContext.getService.mockImplementation((serviceName: string) => {
+        if (serviceName === 'navigation.service') {
+          return mockNavigationService;
+        }
+        return null;
+      });
+      
       layout.setNavigationItems(testNavItems);
       layout.setActiveNavigationItem('home');
       
-      const items = layout.getNavigationItems();
-      expect(items.find(i => i.id === 'home')?.active).toBe(true);
-      expect(items.find(i => i.id === 'about')?.active).toBe(false);
+      // Verify that NavigationService.setActiveItem was called
+      expect(mockNavigationService.setActiveItem).toHaveBeenCalledWith('home');
+      
+      // Since we're testing the deprecated method, we expect a warning
+      expect(console.warn).toHaveBeenCalledWith(
+        "Layout.setActiveNavigationItem is deprecated. Use NavigationService.setActiveItem('home') instead."
+      );
     });
   });
 

@@ -129,7 +129,9 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
     const providerId = provider.getHotkeyProviderId();
     
     if (this.providers.has(providerId)) {
+      const callStack = new Error().stack;
       console.warn(`ChainHotkeyManager - Provider '${providerId}' already registered, replacing`);
+      console.warn('📍 Registration callstack:', callStack);
     }
     
     this.providers.set(providerId, provider);
@@ -151,7 +153,9 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
     if (provider) {
       provider.onChainUnregistered?.();
       this.providers.delete(providerId);
+      const callStack = new Error().stack;
       console.log(`ChainHotkeyManager - Unregistered provider '${providerId}'`);
+      console.log('📍 Unregistration callstack:', callStack);
     }
   }
 

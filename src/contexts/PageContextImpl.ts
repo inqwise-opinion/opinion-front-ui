@@ -9,10 +9,12 @@ import type { PageContext, PageContextConfig } from '../interfaces/PageContext';
 import type { BreadcrumbsManager } from '../interfaces/BreadcrumbsManager';
 import type { ActivePage } from '../interfaces/ActivePage';
 import type { LayoutContext } from './LayoutContext';
+import type { RouteContext } from '../router/RouteContext';
 import { HierarchicalBreadcrumbsManagerImpl } from './HierarchicalBreadcrumbsManagerImpl';
 
 export class PageContextImpl implements PageContext {
-  private page: ActivePage;
+  private page: ActivePage | null;
+  private routeContext: RouteContext;
   private layoutContext: LayoutContext;
   private config: Required<PageContextConfig>;
   private createdAt: number;
@@ -20,11 +22,13 @@ export class PageContextImpl implements PageContext {
   private ready: boolean = false;
 
   constructor(
-    page: ActivePage,
+    routeContext: RouteContext,
     layoutContext: LayoutContext,
-    config: PageContextConfig = {}
+    config: PageContextConfig = {},
+    page?: ActivePage
   ) {
-    this.page = page;
+    this.page = page || null;
+    this.routeContext = routeContext;
     this.layoutContext = layoutContext;
     this.createdAt = Date.now();
     
@@ -35,12 +39,8 @@ export class PageContextImpl implements PageContext {
       enableDebugLogging: config.enableDebugLogging ?? false,
     };
 
-    // Initialize hierarchical breadcrumbs manager
-    this.breadcrumbsManager = new HierarchicalBreadcrumbsManagerImpl(
-      this.layoutContext,
-      this.page,
-      this.config.enableDebugLogging
-    );
+    // Initialize breadcrumbs manager - will be properly initialized when page is set
+    this.breadcrumbsManager = this.createBreadcrumbsManager();
 
     // Initialize after a short delay to ensure components are ready
     setTimeout(() => {
@@ -48,7 +48,8 @@ export class PageContextImpl implements PageContext {
     }, this.config.breadcrumbInitDelay);
 
     if (this.config.enableDebugLogging) {
-      console.log(`🔧 PageContext - Created for page: ${page.getPageId()}`, {
+      const pageInfo = this.page ? `page: ${this.page.getPageId()}` : 'no page yet';
+      console.log(`🔧 PageContext - Created (${pageInfo})`, {
         config: this.config,
         createdAt: this.createdAt
       });
@@ -64,7 +65,8 @@ export class PageContextImpl implements PageContext {
       if (this.breadcrumbsManager.isAvailable()) {
         this.ready = true;
         if (this.config.enableDebugLogging) {
-          console.log(`🔧 PageContext - Initialized successfully for page: ${this.page.getPageId()}`);
+          const pageInfo = this.page ? this.page.getPageId() : 'no page yet';
+          console.log(`🔧 PageContext - Initialized successfully (${pageInfo})`);
         }
       } else {
         // Retry after a short delay
@@ -78,16 +80,56 @@ export class PageContextImpl implements PageContext {
     } else {
       this.ready = true;
       if (this.config.enableDebugLogging) {
-        console.log(`🔧 PageContext - Initialized (breadcrumbs disabled) for page: ${this.page.getPageId()}`);
+        const pageInfo = this.page ? this.page.getPageId() : 'no page yet';
+        console.log(`🔧 PageContext - Initialized (breadcrumbs disabled) (${pageInfo})`);
       }
     }
   }
 
   /**
-   * Get the page this context is associated with
+   * Get the page this context is associated with (null until page is created)
    */
-  getPage(): ActivePage {
+  getPage(): ActivePage | null {
     return this.page;
+  }
+
+  /**
+   * Get route context for this page
+   */
+  getRouteContext(): RouteContext {
+    return this.routeContext;
+  }
+
+  /**
+   * Associate a page with this context (called by RouterService after page creation)
+   */
+  setPage(page: ActivePage): void {
+    this.page = page;
+    
+    // Recreate breadcrumbs manager with the actual page
+    this.breadcrumbsManager = this.createBreadcrumbsManager();
+    
+    if (this.config.enableDebugLogging) {
+      console.log(`🔧 PageContext - Page associated: ${page.getPageId()}`);
+    }
+  }
+
+  /**
+   * Factory method to create a page with this context
+   * Called by RouterService with page provider function
+   */
+  createPage<T extends ActivePage>(pageProvider: (mainContent: any, pageContext: PageContext) => T, mainContent: any): T {
+    // Create the page using the provider function
+    const page = pageProvider(mainContent, this);
+    
+    // Associate the page with this context
+    this.setPage(page);
+    
+    if (this.config.enableDebugLogging) {
+      console.log(`🏢 PageContext - Created and associated page: ${page.getPageId()}`);
+    }
+    
+    return page;
   }
 
   /**
@@ -133,6 +175,30 @@ export class PageContextImpl implements PageContext {
     if (this.breadcrumbsManager instanceof HierarchicalBreadcrumbsManagerImpl) {
       // Update the breadcrumbs manager logging setting
       (this.breadcrumbsManager as any).enableLogging = enabled;
+    }
+  }
+
+  /**
+   * Create breadcrumbs manager, handling null page case
+   */
+  private createBreadcrumbsManager(): BreadcrumbsManager {
+    if (this.page) {
+      return new HierarchicalBreadcrumbsManagerImpl(
+        this.layoutContext,
+        this.page,
+        this.config.enableDebugLogging
+      );
+    } else {
+      // Create a placeholder breadcrumbs manager until page is set
+      return {
+        set: () => {},
+        clear: () => {},
+        add: () => {},
+        remove: () => {},
+        update: () => {},
+        get: () => [],
+        isAvailable: () => false
+      };
     }
   }
 }

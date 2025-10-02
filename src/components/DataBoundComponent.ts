@@ -7,6 +7,7 @@ import { PageComponent, type PageComponentConfig } from './PageComponent';
 import { Observable } from '../utils/Observable';
 import type { MainContent } from './MainContent';
 import MainContentImpl from './MainContentImpl';
+import { PageContext } from '../interfaces/PageContext';
 
 interface DataBinding<T> {
   observable: Observable<T>;
@@ -41,8 +42,8 @@ export abstract class DataBoundComponent extends PageComponent {
   private refreshTimers: Map<string, NodeJS.Timeout> = new Map();
   private observables: Map<string, Observable<any>> = new Map();
 
-  constructor(mainContent: MainContentImpl, config: PageComponentConfig = {}) {
-    super(mainContent, config);
+  constructor(mainContent: MainContentImpl, pageContext: PageContext, config: PageComponentConfig = {}) {
+    super(mainContent, pageContext, config);
   }
 
   /**

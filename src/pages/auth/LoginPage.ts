@@ -1,9 +1,10 @@
 import { PageComponent } from '../../components/PageComponent';
 import MainContentImpl from '../../components/MainContentImpl';
+import type { PageContext } from '../../interfaces/PageContext';
 
 export default class LoginPage extends PageComponent {
-  constructor(mainContent: MainContentImpl) {
-    super(mainContent, {
+  constructor(mainContent: MainContentImpl, pageContext: PageContext) {
+    super(mainContent, pageContext, {
       pageTitle: 'Login',
       pageId: 'login',
       autoInit: false

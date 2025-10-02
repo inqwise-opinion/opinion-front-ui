@@ -12,7 +12,6 @@ import { Dimensions, NavigationItem, Sidebar, SidebarConfig } from "./Sidebar";
 // Import layout event factory for typed events
 import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
 // Import hotkey interfaces
-import { HotkeyProvider } from "../contexts/LayoutContext";
 import {
   ChainHotkeyProvider,
   ChainHotkeyHandler,
@@ -20,7 +19,7 @@ import {
 } from "../hotkeys/HotkeyChainSystem";
 import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 
-export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyProvider, ComponentWithStatus {
+export class SidebarComponent implements Sidebar, ChainHotkeyProvider, ComponentWithStatus {
   private sidebar: HTMLElement | null = null;
   private isInitialized: boolean = false;
   private navigationItems: NavigationItem[] = [];
@@ -472,6 +471,15 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
    * Set active page programmatically
    */
   public setActivePage(navId: string): void {
+    if (!navId) {
+      throw new Error("SidebarComponent.setActivePage: navId parameter is required");
+    }
+    
+    if (!this.isInitialized) {
+      throw new Error("SidebarComponent.setActivePage: Sidebar not initialized. Call init() first.");
+    }
+    
+    console.log(`📍 Sidebar - setActivePage called with: ${navId}`);
     this.setActiveItem(navId);
   }
 
@@ -866,8 +874,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
     this.sidebar.style.display = "";
     console.log("📱 Sidebar - Removed inline display:none style");
     
-    // Register sidebar as hotkey provider for ESC key handling
-    this.registerAsHotkeyProvider();
+    // ESC key handling now provided via ChainHotkeyProvider interface
 
     // Add body class for blur effect
     document.body.classList.add("sidebar-mobile-open");
@@ -923,8 +930,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
       backdrop.remove();
     }
     
-    // Unregister sidebar as hotkey provider since ESC key no longer needed
-    this.unregisterAsHotkeyProvider();
+    // ESC key handling automatically disabled when mobile menu is hidden
 
     console.log("✅ Sidebar - Mobile menu hidden");
   }
@@ -984,8 +990,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
         //}, 300);
       }
       
-      // Unregister sidebar as hotkey provider since ESC key no longer needed
-      this.unregisterAsHotkeyProvider();
+      // ESC key handling automatically disabled when mobile menu is hidden
     } else {
       // Show mobile sidebar overlay
       console.log("📱 Sidebar - Showing mobile sidebar overlay");
@@ -1002,8 +1007,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
       // Add backdrop for mobile overlay
       this.createMobileBackdrop();
       
-      // Register sidebar as hotkey provider for ESC key handling
-      this.registerAsHotkeyProvider();
+      // ESC key handling provided via ChainHotkeyProvider interface
 
       // Debug: Log the sidebar's computed styles
       const computedStyle = getComputedStyle(this.sidebar);
@@ -1304,42 +1308,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
     console.log("✅ Sidebar - Mobile overlay state cleaned up");
   }
 
-  // =================================================================================
-  // HotkeyProvider Implementation - Conditional ESC Key for Mobile Menu
-  // =================================================================================
-  
-  /**
-   * Provide conditional hotkeys based on mobile menu visibility
-   * ESC key is only active when in mobile mode AND mobile menu is visible
-   */
-  getPageHotkeys(): Map<string, (event: KeyboardEvent) => void | boolean> | null {
-    // Only provide ESC hotkey when in mobile mode and mobile menu is visible
-    const isMobile = this.layoutContext.isLayoutMobile();
-    const isMobileMenuVisible = this.isMobileMenuVisible();
-    
-    if (isMobile && isMobileMenuVisible) {
-      const hotkeys = new Map<string, (event: KeyboardEvent) => void | boolean>();
-      
-      hotkeys.set('Escape', (event: KeyboardEvent) => {
-        console.log('📱 Sidebar - ESC key pressed: closing mobile menu');
-        this.hideMobileMenu('programmatic');
-        return false; // Prevent default and stop propagation
-      });
-      
-      console.log('📱 Sidebar - ESC hotkey enabled (mobile menu visible)');
-      return hotkeys;
-    }
-    
-    // No hotkeys when not in mobile mode or when mobile menu is hidden
-    return null;
-  }
-  
-  /**
-   * Component identifier for hotkey management
-   */
-  getHotkeyComponentId(): string {
-    return 'SidebarComponent';
-  }
+  // Legacy HotkeyProvider methods removed - using ChainHotkeyProvider only
   
   /**
    * Check if mobile menu is currently visible
@@ -1351,21 +1320,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
            !this.sidebar.classList.contains('sidebar-hidden');
   }
   
-  /**
-   * Register sidebar as active hotkey provider for conditional ESC key handling
-   */
-  private registerAsHotkeyProvider(): void {
-    this.layoutContext.setActiveHotkeyProvider(this);
-    console.log('⌨️ Sidebar - Registered as hotkey provider for ESC key');
-  }
-  
-  /**
-   * Unregister sidebar as active hotkey provider
-   */
-  private unregisterAsHotkeyProvider(): void {
-    this.layoutContext.removeActiveHotkeyProvider(this);
-    console.log('⌨️ Sidebar - Unregistered as hotkey provider');
-  }
+  // Legacy hotkey provider methods removed - now using ChainHotkeyProvider directly
   
   // =================================================================================
   // ChainHotkeyProvider Implementation (New System)
@@ -1573,11 +1528,8 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, HotkeyPro
   public destroy(): void {
     console.log("Sidebar - Destroying...");
     
-    // Cleanup chain provider (new system)
+    // Cleanup chain provider
     this.cleanupChainProvider();
-    
-    // Unregister hotkey provider if still registered (legacy system)
-    this.unregisterAsHotkeyProvider();
 
     if (this.sidebar) {
       this.sidebar.remove();

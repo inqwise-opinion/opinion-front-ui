@@ -8,15 +8,22 @@
 
 import type { BreadcrumbsManager } from './BreadcrumbsManager';
 import type { ActivePage } from './ActivePage';
+import type { RouteContext } from '../router/RouteContext';
 
 /**
  * Page context interface providing grouped functionality for pages
+ * Created by RouterService before page instantiation
  */
 export interface PageContext {
   /**
-   * Get the page this context is associated with
+   * Get the page this context is associated with (null until page is created)
    */
-  getPage(): ActivePage;
+  getPage(): ActivePage | null;
+
+  /**
+   * Get route context for this page
+   */
+  getRouteContext(): RouteContext;
 
   /**
    * Access breadcrumb management functionality
@@ -35,6 +42,17 @@ export interface PageContext {
    * @returns Timestamp when this context was created
    */
   getCreatedAt(): number;
+
+  /**
+   * Associate a page with this context (called by RouterService after page creation)
+   */
+  setPage(page: ActivePage): void;
+
+  /**
+   * Factory method to create a page with this context
+   * Called by RouterService with page provider function
+   */
+  createPage<T extends ActivePage>(pageProvider: (mainContent: any, pageContext: PageContext) => T, mainContent: any): T;
 
   // Future extensions can be added here:
   // toolbar?(): ToolbarManager;

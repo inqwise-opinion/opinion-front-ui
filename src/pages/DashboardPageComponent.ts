@@ -15,6 +15,7 @@ import MainContentImpl from '../components/MainContentImpl';
 import Layout from '../components/Layout';
 import type { BreadcrumbItem } from '../interfaces/BreadcrumbItem';
 import type { ChainHotkeyHandler, HotkeyExecutionContext } from '../hotkeys';
+import type { PageContext } from '../interfaces/PageContext';
 
 export interface DashboardPageConfig extends PageComponentConfig {
   layout?: Layout;
@@ -36,8 +37,8 @@ export class DashboardPageComponent extends PageComponent {
   private userMenuDropdown: HTMLElement | null = null;
   private copyrightText: HTMLElement | null = null;
 
-  constructor(mainContent: MainContentImpl, config: DashboardPageConfig = {}) {
-    super(mainContent, {
+  constructor(mainContent: MainContentImpl, pageContext: PageContext, config: DashboardPageConfig = {}) {
+    super(mainContent, pageContext, {
       pageTitle: 'Dashboard - Opinion',
       autoInit: false, // We'll initialize manually to control timing
       ...config
@@ -139,6 +140,9 @@ export class DashboardPageComponent extends PageComponent {
     
     // Close user menu when clicking outside
     this.addEventListener(document, 'click', (e) => this.handleDocumentClick(e));
+    
+    // Add resize event listener for responsive behavior
+    this.addEventListener(window, 'resize', () => this.updateResponsiveState());
   }
 
   /**

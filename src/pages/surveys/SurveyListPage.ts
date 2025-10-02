@@ -1,10 +1,11 @@
 import { PageComponent } from '../../components/PageComponent';
 import type { BreadcrumbItem } from '../../interfaces/BreadcrumbItem';
 import MainContentImpl from '../../components/MainContentImpl';
+import type { PageContext } from '../../interfaces/PageContext';
 
 export default class SurveyListPage extends PageComponent {
-  constructor(mainContent: MainContentImpl) {
-    super(mainContent, {
+  constructor(mainContent: MainContentImpl, pageContext: PageContext) {
+    super(mainContent, pageContext, {
       pageTitle: 'Surveys',
       pageId: 'survey-list',
       autoInit: false

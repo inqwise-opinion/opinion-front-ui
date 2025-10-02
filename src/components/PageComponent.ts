@@ -10,9 +10,9 @@
  */
 
 import MainContentImpl from "./MainContentImpl";
-import type { BreadcrumbItem } from "../interfaces/BreadcrumbItem";
 import type { MainContent } from "./MainContent";
-import type { ActivePage, PageInfo } from "../interfaces/ActivePage";
+import { ActivePage, PageInfo } from "../interfaces/ActivePage";
+import BaseComponent from './BaseComponent';
 import type { PageContext } from "../interfaces/PageContext";
 import {
   ChainHotkeyProvider,
@@ -24,12 +24,12 @@ export interface PageComponentConfig {
   pageTitle?: string;
   layoutConfig?: any;
   autoInit?: boolean;
-  pageId?: string; // Optional override for page ID
-  pagePath?: string; // URL path for this page
-  params?: Record<string, string>; // Route parameters
+  pageId?: string; // Optional override for page ID (deprecated - comes from PageContext)
+  pagePath?: string; // URL path for this page (deprecated - comes from PageContext)
+  params?: Record<string, string>; // Route parameters (deprecated - comes from PageContext)
 }
 
-export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
+export abstract class PageComponent extends BaseComponent implements ChainHotkeyProvider, ActivePage {
   protected initialized: boolean = false;
   protected destroyed: boolean = false;
   protected mainContent: MainContentImpl;
@@ -45,20 +45,28 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
   protected params: Record<string, string> = {};
   protected chainProviderUnsubscriber: (() => void) | null = null;
   
-  // PageContext integration (Promise-based to handle async initialization)
-  protected pageContextPromise: Promise<PageContext> | null = null;
+  // PageContext integration (provided via constructor)
+  protected pageContext: PageContext;
 
-  constructor(mainContent: MainContentImpl, config: PageComponentConfig = {}) {
+  constructor(mainContent: MainContentImpl, pageContext: PageContext, config: PageComponentConfig = {}) {
+    super();
     this.mainContent = mainContent;
+    this.pageContext = pageContext;
     this.config = {
       autoInit: false,
       ...config,
     };
 
+    // Get page info from PageContext (route-based)
+    const routeContext = pageContext.getRouteContext();
+    this.pagePath = routeContext.getPath();
+    this.params = routeContext.getParams();
+    
+    // Use config overrides or defaults
     this.pageTitle = config.pageTitle || "Page";
     this.pageId = config.pageId || this.constructor.name;
-    this.pagePath = config.pagePath || window.location.pathname;
-    this.params = config.params || {};
+
+    // Page association will be handled by RouterService
 
     if (this.config.autoInit) {
       // Initialize on next tick to allow subclass constructor to complete
@@ -111,11 +119,6 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
       
       // Register this page as the active page
       this.layoutContext.setActivePage(this);
-      
-      // Initialize PageContext (Promise-based for async handling)
-      this.pageContextPromise = this.layoutContext.getPageContext(this, {
-        enableDebugLogging: false, // Set to true for debugging if needed
-      });
 
       this.initialized = true;
       console.log(`${this.constructor.name}: Initialized successfully`);
@@ -131,7 +134,7 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
   /**
    * Cleanup and destroy the page component
    */
-  public destroy(): void {
+  public async destroy(): Promise<void> {
     if (this.destroyed) {
       console.warn(`${this.constructor.name}: Already destroyed`);
       return;
@@ -146,14 +149,14 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
       // Deactivate this page if it's currently active
       this.layoutContext.deactivatePage(this);
       
-      // Cleanup PageContext
-      if (this.pageContextPromise) {
-        this.layoutContext.clearPageContext(this);
-        this.pageContextPromise = null;
-      }
+      // PageContext cleanup handled by RouterService
       
-      // Cleanup page-specific functionality
-      this.onDestroy();
+      try {
+        // Cleanup page-specific functionality
+        this.onDestroy();
+      } catch (error) {
+        console.error(`${this.constructor.name}: onDestroy failed:`, error);
+      }
 
       // Remove all event listeners
       this.removeAllEventListeners();
@@ -167,6 +170,9 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
       console.log(`${this.constructor.name}: Destroyed successfully`);
     } catch (error) {
       console.error(`${this.constructor.name}: Destruction failed:`, error);
+      // Still mark as destroyed to prevent repeated attempts
+      this.destroyed = true;
+      this.initialized = false;
     }
   }
 
@@ -275,37 +281,34 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
   protected updatePageTitle(title: string): void {
     this.pageTitle = title;
     document.title = title;
+    
+    // Also update title element if it exists
+    const titleElement = document.getElementById('current_page_title');
+    if (titleElement) {
+      titleElement.textContent = title;
+    }
   }
 
   /**
-   * Set breadcrumbs through PageContext
-   * @param items List of breadcrumb items to set (without requiring the 'active' property)
+   * Show loading state
    */
-  protected async setBreadcrumbs(items: Array<{
-    text: string;
-    href?: string;
-    caption?: string;
-    clickHandler?: (item: BreadcrumbItem) => void;
-  }>): Promise<void> {
-    try {
-      const pageContext = await this.getPageContext();
-      const breadcrumbsManager = pageContext.breadcrumbs();
-      
-      if (breadcrumbsManager && breadcrumbsManager.isAvailable()) {
-        // Convert items to proper BreadcrumbItems with IDs
-        const itemsWithIds = items.map((item, index) => ({
-          ...item,
-          id: `${this.pageId}-breadcrumb-${index}`,
-        }));
+  protected showLoading(message?: string): void {
+    const loadingMessage = message || 'Loading...';
+    console.log(`${this.constructor.name}: ${loadingMessage}`);
+  }
 
-        breadcrumbsManager.set(itemsWithIds);
-        console.log(`🍞 ${this.constructor.name} - Breadcrumbs set via PageContext`);
-      } else {
-        console.warn(`🍞 ${this.constructor.name} - BreadcrumbsManager not available`);
-      }
-    } catch (error) {
-      console.error(`🍞 ${this.constructor.name} - Error setting breadcrumbs:`, error);
-    }
+  /**
+   * Hide loading state
+   */
+  protected hideLoading(): void {
+    console.log(`${this.constructor.name}: Loading complete`);
+  }
+
+  /**
+   * Show error message
+   */
+  protected showError(message: string, error?: Error): void {
+    console.error(`${this.constructor.name}: ${message}`, error);
   }
 
   /**
@@ -341,13 +344,6 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
    */
   protected abstract onInit(): Promise<void> | void;
 
-  /**
-   * Post-initialization hook
-   * Called after init() completes - override in subclasses if needed
-   */
-  protected onPostInit(): Promise<void> | void {
-    // Optional override
-  }
 
   /**
    * Cleanup page-specific functionality
@@ -397,22 +393,19 @@ export abstract class PageComponent implements ChainHotkeyProvider, ActivePage {
   }
   
   /**
-   * Get PageContext (Promise-based for async initialization)
-   * @returns Promise resolving to PageContext instance
+   * Get PageContext
+   * @returns PageContext instance
    */
-  protected async getPageContext(): Promise<PageContext> {
-    if (!this.pageContextPromise) {
-      throw new Error(`${this.constructor.name}: PageContext not initialized. Call this after init().`);
-    }
-    return this.pageContextPromise;
+  protected getPageContext(): PageContext {
+    return this.pageContext;
   }
   
   /**
-   * Check if PageContext is available (for conditional usage)
-   * @returns True if PageContext is initialized
+   * Check if PageContext is available (always true with new architecture)
+   * @returns True (PageContext is always available)
    */
   protected hasPageContext(): boolean {
-    return this.pageContextPromise !== null;
+    return true;
   }
   
   
