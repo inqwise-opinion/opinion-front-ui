@@ -73,6 +73,10 @@ export class LayoutContextImpl implements LayoutContext {
   // PageContext Management
   private pageContexts: Map<string, PageContext> = new Map();
 
+  // Failure Tracking
+  private failureError: Error | null = null;
+  private hasFailed: boolean = false;
+
   public constructor() {
     this.viewport = this.calculateViewPort();
     this.modeType = this.identifyModeType(this.viewport);
@@ -1236,6 +1240,70 @@ export class LayoutContextImpl implements LayoutContext {
 
   // PageContext management removed - now handled by RouterService
   // LayoutContext focuses on layout coordination only
+
+  // =================================================================================
+  // Failure Tracking
+  // =================================================================================
+
+  /**
+   * Mark the layout context as failed with an error
+   */
+  public fail(error: Error | string): void {
+    this.hasFailed = true;
+    if (typeof error === 'string') {
+      this.failureError = new Error(error);
+    } else {
+      this.failureError = error;
+    }
+    console.error('LayoutContext - Marked as failed:', this.failureError);
+    
+    // Handle error UI logic
+    const errorMessage = this.failureError.message;
+    const isCritical = errorMessage.includes("critical") || errorMessage.includes("layout");
+    
+    // Show error message if messages component is available
+    const messages = this.getMessages();
+    if (messages) {
+      messages.showError(
+        isCritical ? "Critical Error" : "Initialization Warning",
+        isCritical
+          ? "Application failed to initialize. Please refresh the page."
+          : "Some features may be unavailable. You can continue with limited functionality.",
+      );
+    } else {
+      // No messages component - show full page error
+      const errorStack = this.failureError.stack || "No stack trace";
+      document.body.innerHTML = `
+        <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+          <h2>${isCritical ? "Critical Error" : "Application Error"}</h2>
+          <p>${
+            isCritical
+              ? "The application cannot start due to a critical error. Please refresh the page or contact support if the issue persists."
+              : "Failed to load some application features. You may continue with limited functionality or refresh the page to try again."
+          }</p>
+          <button onclick="window.location.reload()" style="padding: 10px 20px; margin-top: 20px;">Reload Page</button>
+          <details style="margin-top: 20px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+            <summary>Technical Details</summary>
+            <pre style="background: #f5f5f5; padding: 10px; overflow: auto;">${errorStack}</pre>
+          </details>
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * Check if the layout context has failed
+   */
+  public failed(): boolean {
+    return this.hasFailed;
+  }
+
+  /**
+   * Get the failure error (null if not failed)
+   */
+  public failure(): Error | null {
+    return this.failureError;
+  }
 
   // =================================================================================
   // Cleanup and Destruction

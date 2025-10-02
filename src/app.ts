@@ -79,27 +79,7 @@ export class OpinionApp {
       await this.initializeGlobalLayout();
       this.initialized = true;
     } catch (error) {
-      // Use the centralized error handler for all logic
       this.handleError(error);
-      
-      // Only handle layout-specific UI updates here
-      if (this.layout) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const isCritical = !this.layout || errorMessage.includes("critical") || errorMessage.includes("layout");
-        
-        this.layout.onContextReady((ctx) => {
-          ctx
-            .getMessages()
-            ?.showError(
-              isCritical ? "Critical Error" : "Initialization Warning",
-              isCritical
-                ? "Application failed to initialize. Please refresh the page."
-                : "Some features may be unavailable. You can continue with limited functionality.",
-            );
-        });
-      }
-
-      // Don't rethrow - we've handled the error completely
     }
   }
 
@@ -132,6 +112,13 @@ export class OpinionApp {
   private async initializeGlobalLayout(): Promise<void> {
     // Initialize Layout component first (manages CSS classes and coordination)
     this.layout = new Layout();
+    
+    // Set LayoutContext.fail as the error handler as soon as possible
+    this.layout.onContextReady((ctx) => {
+      this.setErrorHandler((error) => {
+        ctx.fail(error instanceof Error ? error : String(error));
+      });
+    });
 
     // Register formal handlers using the new handler system
     await this.layout

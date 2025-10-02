@@ -141,6 +141,11 @@ export interface LayoutContext extends ActivePageProvider, ServiceRegistry {
   // Messages Interface Access - EXCLUSIVE access point for all message functionality
   getMessages(): Messages | null;
 
+  // Failure Tracking
+  fail(error: Error | string): void;
+  failed(): boolean;
+  failure(): Error | null;
+
   // Lifecycle
   destroy(): void;
 
