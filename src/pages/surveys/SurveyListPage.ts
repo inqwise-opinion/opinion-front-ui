@@ -7,7 +7,7 @@ export default class SurveyListPage extends PageComponent {
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
     super(mainContent, pageContext, {
       pageTitle: 'Surveys',
-      pageId: 'survey-list',
+      pageId: 'surveys',
       autoInit: false
     });
   }

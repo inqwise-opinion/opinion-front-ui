@@ -24,7 +24,13 @@ describe('NavigationServiceImpl', () => {
         publish: jest.fn(),
         subscribe: jest.fn(),
         unsubscribe: jest.fn()
-      })
+      }),
+      // ActivePageProvider methods
+      setActivePage: jest.fn(),
+      deactivatePage: jest.fn(),
+      getActivePage: jest.fn(),
+      registerActivePageConsumer: jest.fn().mockReturnValue(() => {}), // Returns unregister function
+      unregisterActivePageConsumer: jest.fn()
     } as unknown as jest.Mocked<LayoutContext>;
   });
 

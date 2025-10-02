@@ -838,9 +838,14 @@ export class LayoutContextImpl implements LayoutContext {
 
     // Immediately notify the new consumer of current state
     if (this.currentActivePage) {
-      setTimeout(() => {
+      try {
         consumer.onActivePageChanged(this.currentActivePage, null);
-      }, 0);
+      } catch (error) {
+        console.error(
+          "LayoutContext - Error in immediate active page consumer notification:",
+          error,
+        );
+      }
     }
 
     // Return unregister function
@@ -877,19 +882,17 @@ export class LayoutContextImpl implements LayoutContext {
       `LayoutContext - Notifying ${this.activePageConsumers.size} consumers of active page change`,
     );
 
-    // Notify asynchronously to avoid blocking the page change
-    setTimeout(() => {
-      this.activePageConsumers.forEach((consumer) => {
-        try {
-          consumer.onActivePageChanged(activePage, previousPage);
-        } catch (error) {
-          console.error(
-            "LayoutContext - Error in active page consumer notification:",
-            error,
-          );
-        }
-      });
-    }, 0);
+    // Notify synchronously for immediate UI updates - critical for navigation responsiveness
+    this.activePageConsumers.forEach((consumer) => {
+      try {
+        consumer.onActivePageChanged(activePage, previousPage);
+      } catch (error) {
+        console.error(
+          "LayoutContext - Error in active page consumer notification:",
+          error,
+        );
+      }
+    });
   }
 
   /**

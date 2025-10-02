@@ -15,13 +15,14 @@ import {
   NavigationServiceConfig,
 } from "./NavigationService";
 import { ComponentReference } from "@/components/ComponentReference";
+import { ActivePage, ActivePageConsumer } from "../../interfaces/ActivePage";
 
 /**
  * Navigation service implementation
  */
 export class NavigationServiceImpl
   extends BaseService
-  implements NavigationService, SelfIdentifyingService
+  implements NavigationService, SelfIdentifyingService, ActivePageConsumer
 {
   public static getRegisteredReference(
     context: LayoutContext,
@@ -38,6 +39,7 @@ export class NavigationServiceImpl
   private items: NavigationItem[] = [];
   private activeId: string | null = null;
   private expandedIds: Set<string> = new Set();
+  private activePageConsumerUnsubscriber: (() => void) | null = null;
 
   constructor(context: LayoutContext, config?: NavigationServiceConfig) {
     super(context, config);
@@ -76,6 +78,16 @@ export class NavigationServiceImpl
     // Register with EventBus for navigation events
     const eventBus = this.getEventBus();
 
+    // Register as active page consumer to receive page change notifications
+    this.activePageConsumerUnsubscriber = this.getContext().registerActivePageConsumer(this);
+    this.log("✅", "Registered as active page consumer");
+
+    // Check if there's already an active page and update navigation accordingly
+    const currentActivePage = this.getContext().getActivePage();
+    if (currentActivePage) {
+      this.onActivePageChanged(currentActivePage, null);
+    }
+
     try {
       // Get the sidebar reference (single attempt - no retries)
       const sidebarRef = SidebarRef.getRegisteredReference(this.getContext(), {
@@ -97,6 +109,13 @@ export class NavigationServiceImpl
 
   protected async onDestroy(): Promise<void> {
     this.log("👋", "Destroying NavigationService");
+    
+    // Unregister from active page consumer
+    if (this.activePageConsumerUnsubscriber) {
+      this.activePageConsumerUnsubscriber();
+      this.activePageConsumerUnsubscriber = null;
+      this.log("✅", "Unregistered from active page consumer");
+    }
   }
 
   // Core state management
@@ -120,8 +139,26 @@ export class NavigationServiceImpl
     this.log("🎯", `Setting active item: ${id}`);
     this.activeId = id;
     this.syncState();
-    // Immediately sync with sidebar when active item changes
-    this.syncWithSidebarAsync();
+    
+    // Immediately sync with sidebar when active item changes - synchronously for UI responsiveness
+    try {
+      const sidebarRef = SidebarRef.getRegisteredReference(this.getContext(), {
+        maxRetries: 0,
+        retryInterval: 0,
+        timeout: 0,
+      });
+      
+      // Try to get sidebar synchronously first
+      sidebarRef.get().then(sidebar => {
+        if (sidebar) {
+          this.syncWithSidebar(sidebar);
+        }
+      }).catch(error => {
+        this.log("⚠️", "Failed to sync with sidebar immediately:", error);
+      });
+    } catch (error) {
+      this.log("⚠️", "Failed to get sidebar reference for immediate sync:", error);
+    }
   }
 
   getActiveItem(): string | null {
@@ -221,6 +258,76 @@ export class NavigationServiceImpl
 
     return null;
   }
+  
+  // ActivePageConsumer implementation
+  public onActivePageChanged(activePage: ActivePage | null, previousPage: ActivePage | null): void {
+    this.log("🔄", "Active page changed:", {
+      current: activePage?.getPageId() || 'none',
+      previous: previousPage?.getPageId() || 'none'
+    });
+    
+    if (!activePage) {
+      // No active page - clear active navigation item
+      this.activeId = null;
+      this.log("📍", "Cleared active navigation item (no active page)");
+    } else {
+      // Map active page to navigation item
+      const pageId = activePage.getPageId();
+      const navigationItemId = this.mapPageIdToNavigationItem(pageId);
+      
+      if (navigationItemId && this.findItemById(navigationItemId)) {
+        this.activeId = navigationItemId;
+        this.log("📍", `Mapped active page '${pageId}' to navigation item '${navigationItemId}'`);
+      } else {
+        // No matching navigation item found
+        this.activeId = null;
+        this.log("⚠️", `No navigation item found for active page '${pageId}'`);
+      }
+    }
+    
+    // Sync state and update sidebar
+    this.syncState();
+    this.syncWithSidebarAsync();
+  }
+  
+  /**
+   * Map a page ID to a navigation item ID
+   * This method handles the mapping between page identifiers and navigation menu items
+   */
+  private mapPageIdToNavigationItem(pageId: string): string | null {
+    // Direct mapping for known page types
+    const pageToNavMap: Record<string, string> = {
+      'DashboardPage': 'dashboard',
+      'SurveyListPage': 'surveys',
+      'SurveyDetailPage': 'surveys',
+      'AccountRootPage': 'account',
+      'AccountSettingsPage': 'account',
+      'LoginPage': 'auth',
+      'DebugPage': 'debug',
+      'ErrorPage': 'debug', // Error pages typically fall under debug/troubleshooting
+    };
+    
+    // Try direct mapping first
+    if (pageToNavMap[pageId]) {
+      return pageToNavMap[pageId];
+    }
+    
+    // Try partial matching for pages that might have dynamic suffixes
+    for (const [pageName, navId] of Object.entries(pageToNavMap)) {
+      if (pageId.toLowerCase().includes(pageName.toLowerCase().replace('page', ''))) {
+        return navId;
+      }
+    }
+    
+    // Fallback: check if pageId directly matches any navigation item ID
+    if (this.findItemById(pageId)) {
+      return pageId;
+    }
+    
+    // No mapping found
+    return null;
+  }
+  
   private syncState(): void {
     // Ensure active ID exists somewhere in the tree (root or children)
     if (this.activeId && !this.findItemById(this.activeId)) {

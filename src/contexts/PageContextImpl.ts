@@ -32,20 +32,28 @@ export class PageContextImpl implements PageContext {
     this.layoutContext = layoutContext;
     this.createdAt = Date.now();
     
-    // Apply configuration with defaults
+    // Apply configuration with defaults - reduce default delay for faster UI
     this.config = {
       initializeBreadcrumbs: config.initializeBreadcrumbs ?? true,
-      breadcrumbInitDelay: config.breadcrumbInitDelay ?? 100,
+      breadcrumbInitDelay: config.breadcrumbInitDelay ?? 0, // Immediate by default for responsive UI
       enableDebugLogging: config.enableDebugLogging ?? false,
     };
 
     // Initialize breadcrumbs manager - will be properly initialized when page is set
     this.breadcrumbsManager = this.createBreadcrumbsManager();
 
-    // Initialize after a short delay to ensure components are ready
-    setTimeout(() => {
-      this.initialize();
-    }, this.config.breadcrumbInitDelay);
+    // Initialize immediately for faster UI updates
+    // Use setTimeout only if explicit delay is configured
+    if (this.config.breadcrumbInitDelay > 0) {
+      setTimeout(() => {
+        this.initialize();
+      }, this.config.breadcrumbInitDelay);
+    } else {
+      // Initialize immediately for responsive UI
+      setTimeout(() => {
+        this.initialize();
+      }, 0);
+    }
 
     if (this.config.enableDebugLogging) {
       const pageInfo = this.page ? `page: ${this.page.getPageId()}` : 'no page yet';

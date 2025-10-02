@@ -3,8 +3,6 @@ import { RouteDefinition, PageProvider } from './types';
 import { LayoutContext } from '../contexts/LayoutContext';
 import SurveyListPage from '../pages/surveys/SurveyListPage';
 import SurveyDetailPage from '../pages/surveys/SurveyDetailPage';
-import CollectorListPage from '../pages/surveys/collectors/CollectorListPage';
-import CollectorDetailPage from '../pages/surveys/collectors/CollectorDetailPage';
 
 export class SurveysRouter extends EntityRouter {
   public static readonly SERVICE_ID = 'surveys.router';
@@ -47,38 +45,6 @@ export class SurveysRouter extends EntityRouter {
             }
           };
         }
-      },
-      {
-        path: '/:surveyId/collectors',
-        action: async (context) => {
-          const pageProvider: PageProvider = (mainContent, pageContext) => 
-            new CollectorListPage(mainContent, pageContext);
-          
-          return {
-            pageProvider,
-            routeInfo: {
-              path: context.getPath(),
-              params: context.getParams()
-            }
-          };
-        },
-        children: [
-          {
-            path: ':collectorId',
-            action: async (context) => {
-              const pageProvider: PageProvider = (mainContent, pageContext) => 
-                new CollectorDetailPage(mainContent, pageContext);
-              
-              return {
-                pageProvider,
-                routeInfo: {
-                  path: context.getPath(),
-                  params: context.getParams()
-                }
-              };
-            }
-          }
-        ]
       }
     ];
   }
