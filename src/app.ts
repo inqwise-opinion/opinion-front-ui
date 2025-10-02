@@ -26,6 +26,36 @@ export class OpinionApp {
   private initialized: boolean = false;
   private apiService: MockApiService;
   private routerService: RouterService | null = null;
+  private errorHandler: (ex: Error | unknown) => void;
+
+  /**
+   * Default error handler implementation - private static const that outputs to console
+   */
+  private static readonly DEFAULT_ERROR_HANDLER = (ex: Error | unknown): void => {
+    const timestamp = new Date().toISOString();
+    const errorMessage = ex instanceof Error ? ex.message : String(ex);
+    const errorStack = ex instanceof Error ? ex.stack : "No stack trace";
+
+    // 1. Log the error with details
+    console.error(
+      `❌ OpinionApp Error:`,
+      {
+        message: errorMessage,
+        stack: errorStack,
+        timestamp
+      },
+    );
+
+    // 2. Also log as a simple console.error for easier debugging
+    if (ex instanceof Error) {
+      console.error(`❌ ${ex.name}: ${ex.message}`);
+      if (ex.stack) {
+        console.error(ex.stack);
+      }
+    } else {
+      console.error(`❌ Unknown Error:`, ex);
+    }
+  };
 
   // Global layout components
   private appHeader: AppHeaderImpl | null = null;
@@ -35,6 +65,8 @@ export class OpinionApp {
 
   constructor() {
     this.apiService = new MockApiService();
+    // Default error handler - outputs to console
+    this.errorHandler = OpinionApp.DEFAULT_ERROR_HANDLER;
   }
 
   public async init(): Promise<void> {
@@ -47,28 +79,14 @@ export class OpinionApp {
       await this.initializeGlobalLayout();
       this.initialized = true;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      const errorStack =
-        error instanceof Error ? error.stack : "No stack trace";
-      const isCritical =
-        !this.layout ||
-        errorMessage.includes("critical") ||
-        errorMessage.includes("layout");
-
-      // 1. Log the error with details
-      console.error(
-        `❌ APP.TS - ${isCritical ? "Critical" : "Non-critical"} initialization error:`,
-        {
-          message: errorMessage,
-          stack: errorStack,
-          isCritical,
-        },
-      );
-
-      // 2. Show error UI based on app state
+      // Use the centralized error handler for all logic
+      this.handleError(error);
+      
+      // Only handle layout-specific UI updates here
       if (this.layout) {
-        // Layout available - show in message system
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const isCritical = !this.layout || errorMessage.includes("critical") || errorMessage.includes("layout");
+        
         this.layout.onContextReady((ctx) => {
           ctx
             .getMessages()
@@ -79,23 +97,6 @@ export class OpinionApp {
                 : "Some features may be unavailable. You can continue with limited functionality.",
             );
         });
-      } else {
-        // No layout - show full page error
-        document.body.innerHTML = `
-          <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-            <h2>${isCritical ? "Critical Error" : "Application Error"}</h2>
-            <p>${
-              isCritical
-                ? "The application cannot start due to a critical error. Please refresh the page or contact support if the issue persists."
-                : "Failed to load some application features. You may continue with limited functionality or refresh the page to try again."
-            }</p>
-            <button onclick="window.location.reload()" style="padding: 10px 20px; margin-top: 20px;">Reload Page</button>
-            <details style="margin-top: 20px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
-              <summary>Technical Details</summary>
-              <pre style="background: #f5f5f5; padding: 10px; overflow: auto;">${errorStack}</pre>
-            </details>
-          </div>
-        `;
       }
 
       // Don't rethrow - we've handled the error completely
@@ -249,7 +250,7 @@ export class OpinionApp {
       // Set active item through NavigationService - it will handle sidebar sync
       navService.setActiveItem("debug");
     } catch (error) {
-      console.error("❌ APP.TS - Failed to sync NavigationService with Sidebar:", error);
+      this.handleError(error);
       throw error; // Re-throw to trigger error handling
     }
 
@@ -379,4 +380,26 @@ export class OpinionApp {
       .get()
       .then((service) => service.validateAuthentication("app-startup"));
   }
+
+  /**
+   * Set custom error handler
+   */
+  public setErrorHandler(handler: (ex: Error | unknown) => void): void {
+    this.errorHandler = handler;
+  }
+
+  /**
+   * Handle error using the configured error handler
+   */
+  public handleError(ex: Error | unknown): void {
+    this.errorHandler(ex);
+  }
+
+  /**
+   * Get the current error handler function
+   */
+  public getErrorHandler(): (ex: Error | unknown) => void {
+    return this.errorHandler;
+  }
+
 }
