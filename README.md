@@ -26,11 +26,6 @@
 
 This project represents a **complete architectural migration** from a traditional servlet-based Java application to a modern TypeScript SPA. The application features a **micro-kernel architecture** with component-based design, custom routing, and advanced layout management.
 
-### Reference Projects
-
-- **Admin UI Reference**: `../opinion opensource/opinion-admin-ui`
-- **Admin App Reference**: `../opinion opensource/opinion-app-admin`
-
 ## Architecture
 
 ### Core Technologies
@@ -45,36 +40,6 @@ This project represents a **complete architectural migration** from a traditiona
 - **Layout Context System**: Centralized layout coordination and error messaging
 - **Event Delegation**: `data-action` attribute-based event handling
 - **Custom Routing**: Client-side routing with browser history integration
-
-## Directory Structure
-
-```
-src/
-├── components/          # UI components (Layout, Header, Sidebar, etc.)
-├── pages/              # Page components (Dashboard, Surveys, Debug)
-│   └── surveys/        # Survey-related pages (List, Detail)
-├── contexts/           # Layout context and state management
-├── services/           # Business logic services
-│   └── navigation/     # Navigation and active page management
-├── utils/              # Utility functions and helpers
-├── types/              # TypeScript type definitions
-├── assets/             # Static assets and styles
-│   └── styles/         # SCSS and CSS files
-│       ├── components/ # Component-specific styles
-│       └── dashboard/  # Dashboard-specific styles
-├── api/                # API communication layer
-├── constants/          # Application constants
-├── hooks/              # Custom hooks
-├── examples/           # Example and demo components
-├── test/               # Test utilities and integration tests
-└── docs/               # Internal documentation
-
-public/                 # Static public files
-tests/                  # Test files and setup
-docs/                   # Comprehensive documentation
-├── diagrams/           # Architecture diagrams
-└── *.md               # Detailed documentation files
-```
 
 ## Getting Started
 
