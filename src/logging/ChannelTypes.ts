@@ -37,10 +37,27 @@ export enum ChannelType {
 }
 
 /**
+ * Log format template type
+ */
+export type LogFormat = string | ((logMessage: LogMessage) => string);
+
+/**
+ * Predefined log formats
+ */
+export enum LogFormatPresets {
+    SIMPLE = '{timestamp} [{level}] {logger}: {message}',
+    DETAILED = '{timestamp} [{level}] [{logger}] {message} {args}',
+    COMPACT = '{level} {logger}: {message}',
+    JSON = 'json',
+    CUSTOM = 'custom'
+}
+
+/**
  * Console channel configuration
  */
 export interface ConsoleChannelConfig {
     type: ChannelType.CONSOLE;
+    format?: LogFormat | LogFormatPresets;
 }
 
 /**
@@ -97,6 +114,9 @@ export interface AppenderConfig {
     
     /** Channel configuration for this appender */
     channel: ChannelConfig;
+    
+    /** Optional log format for this appender */
+    format?: LogFormat | LogFormatPresets;
     
     /** Optional date formatter for this appender */
     dateFormatter?: DateFormatter;

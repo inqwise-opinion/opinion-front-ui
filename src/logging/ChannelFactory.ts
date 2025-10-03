@@ -1,5 +1,5 @@
 import { LogChannel, RawLogChannel } from 'typescript-logging';
-import { ChannelConfig, ChannelType, CustomLogChannel, CustomRawLogChannel, MultiChannelConfig, AsyncConsumerChannelConfig } from './ChannelTypes';
+import { ChannelConfig, ChannelType, CustomLogChannel, CustomRawLogChannel, MultiChannelConfig, AsyncConsumerChannelConfig, LogFormat, LogFormatPresets, LogMessage } from './ChannelTypes';
 
 /**
  * Factory for creating logging channels
@@ -32,26 +32,162 @@ export class ChannelFactory {
     }
     
     /**
+     * Format a log message according to the specified format
+     * @internal
+     */
+    private static formatLogMessage(logMessage: any, format?: LogFormat | LogFormatPresets): string {
+        // Default format if none specified
+        if (!format) {
+            format = LogFormatPresets.SIMPLE;
+        }
+        
+        // Handle preset formats
+        if (typeof format === 'string' && Object.values(LogFormatPresets).includes(format as LogFormatPresets)) {
+            switch (format as LogFormatPresets) {
+                case LogFormatPresets.JSON:
+                    return JSON.stringify({
+                        timestamp: new Date().toISOString(),
+                        level: logMessage.level?.toString() || 'INFO',
+                        logger: Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown'),
+                        message: logMessage.message || '',
+                        args: logMessage.args
+                    });
+                case LogFormatPresets.COMPACT:
+                    format = '{level} {logger}: {message}';
+                    break;
+                case LogFormatPresets.DETAILED:
+                    format = '{timestamp} [{level}] [{logger}] {message} {args}';
+                    break;
+                case LogFormatPresets.SIMPLE:
+                default:
+                    format = '{timestamp} [{level}] {logger}: {message}';
+                    break;
+            }
+        }
+        
+        // Handle function format
+        if (typeof format === 'function') {
+            const logMsg: LogMessage = {
+                level: logMessage.level?.toString() || 'INFO',
+                timeInMillis: logMessage.timeInMillis || Date.now(),
+                logName: Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown'),
+                message: logMessage.message || '',
+                exception: logMessage.exception,
+                args: logMessage.args
+            };
+            return format(logMsg);
+        }
+        
+        // Handle string template format
+        if (typeof format === 'string') {
+            const timestamp = new Date().toISOString();
+            const level = logMessage.level?.toString() || 'INFO';
+            const logger = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
+            const message = logMessage.message || '';
+            const args = logMessage.args && logMessage.args.length > 0 
+                ? ' [' + logMessage.args.map((arg: any) => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(', ') + ']'
+                : '';
+            
+            return format
+                .replace('{timestamp}', timestamp)
+                .replace('{level}', level.toUpperCase())
+                .replace('{logger}', logger)
+                .replace('{message}', message)
+                .replace('{args}', args);
+        }
+        
+        // Fallback to default format
+        const timestamp = new Date().toISOString();
+        const level = logMessage.level?.toString() || 'INFO';
+        const logger = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
+        const message = logMessage.message || '';
+        return `${timestamp} [${level.toUpperCase()}] ${logger}: ${message}`;
+    }
+
+    /**
      * Get default console channel
      * @internal
      */
-    public static getDefaultConsoleChannel(): LogChannel {
+    public static getDefaultConsoleChannel(format?: LogFormat | LogFormatPresets): LogChannel {
         return {
             type: 'LogChannel',
             write: (logMessage: any) => {
-                // Simple console output with timestamp and level
-                const timestamp = new Date(logMessage.timeInMillis || Date.now()).toISOString();
+                // Use format processing if available, otherwise fall back to parsing pre-formatted messages
+                let formattedOutput: string;
+                
+                if (format) {
+                    // Use the specified format
+                    formattedOutput = this.formatLogMessage(logMessage, format);
+                } else {
+                    // Legacy behavior - parse pre-formatted messages
+                    let level: string;
+                    let loggerName: string;
+                    let actualMessage: string;
+                    const timestamp = new Date().toISOString();
+                    
+                    // Check if the message is pre-formatted by typescript-logging
+                    if (logMessage.message && typeof logMessage.message === 'string') {
+                        // Pattern: "2025-10-03 17:47:25,102 INFO  [_OpinionApp] LoggerFactory integrated..."
+                        const preFormattedMatch = logMessage.message.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/);
+                        
+                        if (preFormattedMatch) {
+                            // Extract from pre-formatted message
+                            level = preFormattedMatch[1];
+                            loggerName = preFormattedMatch[2];
+                            actualMessage = preFormattedMatch[3];
+                        } else {
+                            // Fallback to library-provided values
+                            level = logMessage.level?.toString() || 'INFO';
+                            loggerName = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
+                            actualMessage = logMessage.message;
+                        }
+                    } else {
+                        // Fallback to library-provided values
+                        level = logMessage.level?.toString() || 'INFO';
+                        loggerName = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
+                        actualMessage = logMessage.message || '';
+                    }
+                    
+                    formattedOutput = `${timestamp} [${level.toUpperCase()}] ${loggerName}: ${actualMessage}`;
+                }
+                
+                // Use appropriate console method based on level
                 const level = logMessage.level?.toString() || 'INFO';
-                const logName = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
-                const message = logMessage.message || '';
+                const logMethod = this.getConsoleMethod(level);
+                logMethod(formattedOutput);
                 
-                console.log(`${timestamp} [${level}] ${logName}: ${message}`);
+                // Handle arguments if present (only when not using custom format)
+                if (!format && logMessage.args && logMessage.args.length > 0) {
+                    console.log('  └─ Args:', ...logMessage.args);
+                }
                 
-                if (logMessage.exception) {
-                    console.error(logMessage.exception);
+                // Handle exceptions (only when not using custom format)
+                if (!format && logMessage.exception) {
+                    console.error('  └─ Exception:', logMessage.exception);
                 }
             }
         };
+    }
+    
+    /**
+     * Get the appropriate console method for the log level
+     * @internal
+     */
+    private static getConsoleMethod(level: string): (...args: any[]) => void {
+        const levelUpper = level.toUpperCase();
+        switch (levelUpper) {
+            case 'ERROR':
+            case 'FATAL':
+                return console.error;
+            case 'WARN':
+                return console.warn;
+            case 'DEBUG':
+            case 'TRACE':
+                return console.debug;
+            case 'INFO':
+            default:
+                return console.log;
+        }
     }
 
     /**
@@ -64,13 +200,53 @@ export class ChannelFactory {
             const logChannel: LogChannel = {
                 type: 'LogChannel',
                 write: (libMsg: any) => {
-                    // Simple mapping to our interface
+                    // Parse the pre-formatted message to extract components
+                    let level: string;
+                    let loggerName: string;
+                    let actualMessage: string;
+                    
+                    // Check if the message is pre-formatted by typescript-logging
+                    if (libMsg.message && typeof libMsg.message === 'string') {
+                        // Pattern: "2025-10-03 17:47:25,102 INFO  [CustomChannelLogger] Test message through custom channel"
+                        const preFormattedMatch = libMsg.message.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/);
+                        
+                        if (preFormattedMatch) {
+                            // Extract from pre-formatted message
+                            level = preFormattedMatch[1];
+                            loggerName = preFormattedMatch[2];
+                            actualMessage = preFormattedMatch[3];
+                        } else {
+                            // Fallback to library-provided values
+                            level = libMsg.level?.toString() || 'INFO';
+                            loggerName = Array.isArray(libMsg.logNames) ? libMsg.logNames[0] : (libMsg.logNames || 'unknown');
+                            actualMessage = libMsg.message;
+                        }
+                    } else {
+                        // Fallback to library-provided values
+                        level = libMsg.level?.toString() || 'INFO';
+                        loggerName = Array.isArray(libMsg.logNames) ? libMsg.logNames[0] : (libMsg.logNames || 'unknown');
+                        actualMessage = libMsg.message || '';
+                    }
+                    
+                    // Handle Error objects - they come in the 'error' field as strings
+                    let exception: Error | undefined;
+                    if (libMsg.error && typeof libMsg.error === 'string') {
+                        // Try to reconstruct Error object from string representation
+                        const errorMatch = libMsg.error.match(/^Error: (.+)@/);
+                        if (errorMatch) {
+                            exception = new Error(errorMatch[1]);
+                        }
+                    } else if (libMsg.exception) {
+                        exception = libMsg.exception;
+                    }
+                    
+                    // Create our LogMessage interface
                     const ourMsg = {
-                        level: libMsg.level?.toString() || 'INFO',
+                        level: level,
                         timeInMillis: libMsg.timeInMillis || Date.now(),
-                        logName: Array.isArray(libMsg.logNames) ? libMsg.logNames[0] : (libMsg.logNames || 'unknown'),
-                        message: libMsg.message || '',
-                        exception: libMsg.exception,
+                        logName: loggerName,
+                        message: actualMessage,
+                        exception: exception,
                         args: libMsg.args
                     };
                     channel.write(ourMsg);
@@ -82,12 +258,53 @@ export class ChannelFactory {
             const rawChannel: RawLogChannel = {
                 type: 'RawLogChannel',
                 write: (libMsg: any, formatArg: (arg: unknown) => string) => {
+                    // Parse the pre-formatted message to extract components
+                    let level: string;
+                    let loggerName: string;
+                    let actualMessage: string;
+                    
+                    // Check if the message is pre-formatted by typescript-logging
+                    if (libMsg.message && typeof libMsg.message === 'string') {
+                        // Pattern: "2025-10-03 17:47:25,102 INFO  [CustomChannelLogger] Test message through custom channel"
+                        const preFormattedMatch = libMsg.message.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/);
+                        
+                        if (preFormattedMatch) {
+                            // Extract from pre-formatted message
+                            level = preFormattedMatch[1];
+                            loggerName = preFormattedMatch[2];
+                            actualMessage = preFormattedMatch[3];
+                        } else {
+                            // Fallback to library-provided values
+                            level = libMsg.level?.toString() || 'INFO';
+                            loggerName = Array.isArray(libMsg.logNames) ? libMsg.logNames[0] : (libMsg.logNames || 'unknown');
+                            actualMessage = libMsg.message;
+                        }
+                    } else {
+                        // Fallback to library-provided values
+                        level = libMsg.level?.toString() || 'INFO';
+                        loggerName = Array.isArray(libMsg.logNames) ? libMsg.logNames[0] : (libMsg.logNames || 'unknown');
+                        actualMessage = libMsg.message || '';
+                    }
+                    
+                    // Handle Error objects - they come in the 'error' field as strings
+                    let exception: Error | undefined;
+                    if (libMsg.error && typeof libMsg.error === 'string') {
+                        // Try to reconstruct Error object from string representation
+                        const errorMatch = libMsg.error.match(/^Error: (.+)@/);
+                        if (errorMatch) {
+                            exception = new Error(errorMatch[1]);
+                        }
+                    } else if (libMsg.exception) {
+                        exception = libMsg.exception;
+                    }
+                    
+                    // Create our LogMessage interface
                     const ourMsg = {
-                        level: libMsg.level?.toString() || 'INFO',
+                        level: level,
                         timeInMillis: libMsg.timeInMillis || Date.now(),
-                        logName: Array.isArray(libMsg.logNames) ? libMsg.logNames[0] : (libMsg.logNames || 'unknown'),
-                        message: libMsg.message || '',
-                        exception: libMsg.exception,
+                        logName: loggerName,
+                        message: actualMessage,
+                        exception: exception,
                         args: libMsg.args
                     };
                     channel.write(ourMsg, formatArg);

@@ -1,11 +1,12 @@
 {
-  "providerName": "OpinionApp",
-  "globalLevel": 2,
+  "providerName": "OpinionFrontUI",
+  "globalLevel": "DEBUG",
   "appenders": [
     {
       "name": "console",
       "enabled": true,
-      "level": 2,
+      "level": "DEBUG",
+      "format": "{timestamp} [{level}] {logger}: {message}",
       "channel": {
         "type": "console"
       },
@@ -14,7 +15,7 @@
     {
       "name": "messages",
       "enabled": true,
-      "level": 0,
+      "level": "TRACE",
       "channel": {
         "type": "async-consumer",
         "channelName": "messages"
@@ -24,7 +25,7 @@
     {
       "name": "errors",
       "enabled": true,
-      "level": 4,
+      "level": "ERROR",
       "channel": {
         "type": "async-consumer",
         "channelName": "error-tracking"

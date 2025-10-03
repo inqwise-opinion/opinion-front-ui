@@ -172,19 +172,20 @@ describe('Service Registry', () => {
       
       layoutContext.registerService('errorService', errorService);
       
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      // Spy on the logger's warn method instead of console.warn
+      const loggerWarnSpy = jest.spyOn(layoutContext['logger'], 'warn').mockImplementation();
       
       await layoutContext.initializeServices();
       
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('LayoutContext - 1 services had initialization errors:'),
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
+        'LayoutContext - 1 services had initialization errors:',
         expect.arrayContaining([expect.objectContaining({
           name: 'errorService',
           error: expect.any(Error)
         })])
       );
       
-      consoleSpy.mockRestore();
+      loggerWarnSpy.mockRestore();
     });
 
     it('should handle service destruction errors gracefully', async () => {
@@ -196,16 +197,17 @@ describe('Service Registry', () => {
       
       layoutContext.registerService('errorService', errorService);
       
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      // Spy on the logger's error method instead of console.error
+      const loggerErrorSpy = jest.spyOn(layoutContext['logger'], 'error').mockImplementation();
       
       await layoutContext.destroyServices();
       
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerErrorSpy).toHaveBeenCalledWith(
         'LayoutContext - Service \'errorService\' destruction failed:',
         expect.any(Error)
       );
       
-      consoleSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     });
   });
 

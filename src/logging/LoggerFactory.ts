@@ -15,6 +15,37 @@ import { ChannelFactory } from './ChannelFactory';
 import { AsyncConsumerLogChannel, AsyncLogConsumer, RemoveConsumerFunction } from './AsyncConsumerLogChannel';
 
 /**
+ * Parse string log level to LogLevel enum
+ * @internal
+ */
+function parseLogLevel(level: string | number | LogLevel): LogLevel {
+  // If already a LogLevel enum, return as-is
+  if (typeof level === 'number' && level in LogLevel) {
+    return level as LogLevel;
+  }
+  
+  // If string, parse it
+  if (typeof level === 'string') {
+    const levelUpper = level.toUpperCase();
+    switch (levelUpper) {
+      case 'TRACE': return LogLevel.Trace;
+      case 'DEBUG': return LogLevel.Debug;
+      case 'INFO': return LogLevel.Info;
+      case 'WARN': case 'WARNING': return LogLevel.Warn;
+      case 'ERROR': return LogLevel.Error;
+      case 'FATAL': return LogLevel.Fatal;
+      case 'OFF': return LogLevel.Off;
+      default:
+        console.warn(`Unknown log level string: ${level}, defaulting to INFO`);
+        return LogLevel.Info;
+    }
+  }
+  
+  // Fallback for any other type
+  return LogLevel.Info;
+}
+
+/**
  * Map our LogLevel enum to the library's LogLevel enum
  * @internal
  */
@@ -94,23 +125,62 @@ export class LoggerFactory {
 
   private constructor(config: LoggerFactoryConfig = {}) {
     // Try to load config file if no config provided
-    const loadedConfig = config && Object.keys(config).length > 0 ? config : this.loadConfigFile();
+    let loadedConfig = config && Object.keys(config).length > 0 ? config : this.loadConfigFile();
     
-    this.config = {
-      providerName: "Opinion",
-      globalLevel: LogLevel.Debug,
-      defaultChannel: { type: ChannelType.CONSOLE },
-      ...loadedConfig,
-    };
-
-    // Use appenders config if provided, otherwise use typescript-logging or simple config
-    if (this.config.appenders && this.config.appenders.length > 0) {
-      this.provider = this.createProviderFromAppendersConfig();
-    } else if (this.config.typescriptLoggingConfig) {
-      this.provider = this.createProviderFromTypescriptLoggingConfig();
-    } else {
+    // Parse string levels in loaded config
+    loadedConfig = this.parseStringLevelsInConfig(loadedConfig);
+    
+    // Determine configuration approach based on what's provided
+    const useSimpleConfig = !loadedConfig.appenders && !loadedConfig.typescriptLoggingConfig && (
+      loadedConfig.defaultChannel || loadedConfig.globalLevel
+    );
+    
+    if (useSimpleConfig) {
+      // Simple configuration approach - use defaultChannel and globalLevel
+      const defaultConfig: LoggerFactoryConfig = {
+        providerName: "OpinionFrontUI",
+        globalLevel: LogLevel.Debug,
+        defaultChannel: { type: ChannelType.CONSOLE }
+      };
+      
+      this.config = {
+        ...defaultConfig,
+        ...loadedConfig,
+      };
+      
+      // Create provider using simple configuration
       this.provider = this.createProviderFromSimpleConfig();
+    } else {
+      // Appenders-based configuration with default setup
+      const defaultConfig: LoggerFactoryConfig = {
+        providerName: "OpinionFrontUI",
+        globalLevel: LogLevel.Debug,
+        defaultChannel: { type: ChannelType.CONSOLE },
+        appenders: [
+          // Pre-configure the console appender
+          {
+            name: 'console',
+            enabled: true,
+            level: LogLevel.Debug,
+            channel: { type: ChannelType.CONSOLE },
+            groups: [/.+/] // Match all logger names
+          } as AppenderConfig,
+          // Pre-configure the MessagesAppender to avoid dynamic addition
+          LoggerFactory.MessagesAppender
+        ]
+      };
+      
+      this.config = {
+        ...defaultConfig,
+        ...loadedConfig,
+      };
+      
+      // Create provider using appenders configuration
+      this.provider = this.createProviderFromAppendersConfig();
     }
+    
+    // Mark MessagesAppender as already added since it's pre-configured
+    this.hasMessagesAppenderBeenAdded = true;
   }
 
   /**
@@ -158,7 +228,13 @@ export class LoggerFactory {
       loggerName = nameOrClass;
     } else {
       // Extract class name from constructor function
-      loggerName = nameOrClass.name;
+      loggerName = nameOrClass.name || 'UnknownClass';
+      
+      // Validate that we got a meaningful name
+      if (!loggerName || loggerName === 'UnknownClass') {
+        console.warn('LoggerFactory: Could not determine class name, using fallback. Consider using string name instead.');
+        loggerName = 'UnknownClass';
+      }
     }
 
     // Check if logger already exists in cache
@@ -213,18 +289,49 @@ export class LoggerFactory {
 
   /**
    * Convenience method to add a log consumer to the "messages" channel
-   * On first call, automatically adds the MessagesAppender if no messages appender exists
+   * MessagesAppender is pre-configured, so no dynamic addition needed
    * @param consumer The log consumer to add
    * @returns Function to remove this consumer
    */
   public messagesConsumer(consumer: AsyncLogConsumer): RemoveConsumerFunction {
-    // On first call, check if we need to add the messages appender
-    if (!this.hasMessagesAppenderBeenAdded) {
-      this.ensureMessagesAppender();
-      this.hasMessagesAppenderBeenAdded = true;
+    return this.addLogConsumer("messages", consumer);
+  }
+
+  /**
+   * Parse string levels in configuration to LogLevel enums
+   * @private
+   */
+  private parseStringLevelsInConfig(config: LoggerFactoryConfig): LoggerFactoryConfig {
+    const parsedConfig = { ...config };
+    
+    // Parse globalLevel if it's a string
+    if (parsedConfig.globalLevel && typeof parsedConfig.globalLevel === 'string') {
+      parsedConfig.globalLevel = parseLogLevel(parsedConfig.globalLevel);
     }
     
-    return this.addLogConsumer("messages", consumer);
+    // Parse appender levels if they're strings
+    if (parsedConfig.appenders) {
+      parsedConfig.appenders = parsedConfig.appenders.map(appender => {
+        const parsedAppender = { ...appender };
+        if (parsedAppender.level && typeof parsedAppender.level === 'string') {
+          parsedAppender.level = parseLogLevel(parsedAppender.level);
+        }
+        return parsedAppender;
+      });
+    }
+    
+    // Parse group levels if they're strings
+    if (parsedConfig.groups) {
+      parsedConfig.groups = parsedConfig.groups.map(group => {
+        const parsedGroup = { ...group };
+        if (parsedGroup.level && typeof parsedGroup.level === 'string') {
+          parsedGroup.level = parseLogLevel(parsedGroup.level);
+        }
+        return parsedGroup;
+      });
+    }
+    
+    return parsedConfig;
   }
 
   /**
@@ -258,31 +365,6 @@ export class LoggerFactory {
     return {};
   }
 
-  /**
-   * Ensure the messages appender exists in the configuration
-   * @private
-   */
-  private ensureMessagesAppender(): void {
-    // Check if there's already a messages appender
-    const hasMessagesAppender = this.config.appenders?.some(
-      appender => appender.name === 'messages' && 
-                  appender.channel.type === ChannelType.ASYNC_CONSUMER &&
-                  (appender.channel as any).channelName === 'messages'
-    );
-    
-    if (!hasMessagesAppender) {
-      // Add the static MessagesAppender to the configuration
-      if (!this.config.appenders) {
-        this.config.appenders = [];
-      }
-      
-      this.config.appenders.push(LoggerFactory.MessagesAppender);
-      
-      // We need to recreate the provider with the new appender
-      // This is a limitation - ideally we'd want dynamic appender addition
-      console.warn('MessagesAppender added to configuration. Note: Provider recreation needed for full functionality.');
-    }
-  }
 
 
   /**
@@ -585,7 +667,7 @@ export class LoggerFactory {
   private appenderMatches(
     appender: AppenderConfig,
     logName: string,
-    messageLevel: string,
+    messageLevel: string | undefined,
   ): boolean {
     // Check level
     if (appender.level !== undefined) {
@@ -617,7 +699,12 @@ export class LoggerFactory {
    * Get numeric value for log level comparison
    * @private
    */
-  private getLogLevelValue(level: string): number {
+  private getLogLevelValue(level: string | undefined): number {
+    // Default to INFO if level is undefined or not a string
+    if (!level) {
+      return LogLevel.Info;
+    }
+    
     const levelMap: { [key: string]: number } = {
       TRACE: LogLevel.Trace,
       DEBUG: LogLevel.Debug,
@@ -644,13 +731,38 @@ export class LoggerFactory {
       const formattedMessage = this.formatMessageForAppender(logMessage, appender);
       
       // Convert to our LogMessage interface
+      // Apply same regex parsing as ChannelFactory to extract correct logger name
+      let loggerName: string;
+      let actualMessage: string;
+      
+      if (formattedMessage.message && typeof formattedMessage.message === 'string') {
+        // Check for pre-formatted typescript-logging messages
+        const preFormattedMatch = formattedMessage.message.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/);
+        
+        if (preFormattedMatch) {
+          // Extract logger name from pre-formatted message
+          loggerName = preFormattedMatch[2];
+          actualMessage = preFormattedMatch[3];
+        } else {
+          // Fallback to library-provided values
+          loggerName = Array.isArray(formattedMessage.logNames) 
+            ? formattedMessage.logNames[0] 
+            : (formattedMessage.logNames || 'unknown');
+          actualMessage = formattedMessage.message;
+        }
+      } else {
+        // Fallback to library-provided values
+        loggerName = Array.isArray(formattedMessage.logNames) 
+          ? formattedMessage.logNames[0] 
+          : (formattedMessage.logNames || 'unknown');
+        actualMessage = formattedMessage.message || '';
+      }
+      
       const ourLogMessage: LogMessage = {
         level: formattedMessage.level?.toString() || 'INFO',
         timeInMillis: formattedMessage.timeInMillis || Date.now(),
-        logName: Array.isArray(formattedMessage.logNames) 
-          ? formattedMessage.logNames[0] 
-          : (formattedMessage.logNames || 'unknown'),
-        message: formattedMessage.message || '',
+        logName: loggerName,
+        message: actualMessage,
         exception: formattedMessage.exception,
         args: formattedMessage.args
       };

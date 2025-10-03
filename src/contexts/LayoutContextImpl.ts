@@ -39,6 +39,8 @@ import { ChainHotkeyManagerImpl } from "../hotkeys/ChainHotkeyManagerImpl";
 import type { PageContext, PageContextConfig } from "../interfaces/PageContext";
 import { PageContextImpl } from "./PageContextImpl";
 import { ServiceReference, ServiceReferenceConfig } from "../services/ServiceReference";
+import { LoggerFactory } from "../logging/LoggerFactory";
+import { Logger } from "../logging/Logger";
 
 export class LayoutContextImpl implements LayoutContext {
   // Note: Removed dedicated listeners map - now using EventBus for all events
@@ -76,15 +78,21 @@ export class LayoutContextImpl implements LayoutContext {
   // Failure Tracking
   private failureError: Error | null = null;
   private hasFailed: boolean = false;
+  
+  // Logger instance
+  private logger: Logger;
 
   public constructor() {
+    // Initialize logger first
+    this.logger = LoggerFactory.getInstance().getLogger(LayoutContextImpl);
+    
     this.viewport = this.calculateViewPort();
     this.modeType = this.identifyModeType(this.viewport);
     this.setupViewportObserver();
     this.setupChainHotkeySystem();
     this.setupEventBus();
-    console.log("LayoutContext - Initialized with viewport:", this.viewport);
-    console.log("LayoutContext - Initialized layout mode type:", this.modeType);
+    this.logger.info('Initialized with viewport', this.viewport);
+    this.logger.info('Initialized layout mode type', this.modeType);
   }
 
   public getModeType(): LayoutModeType {
@@ -156,15 +164,12 @@ export class LayoutContextImpl implements LayoutContext {
 
     // Check if layout mode type changed
     const layoutModeTypeChanged = oldModeType !== newModeType;
-    console.debug(
-      `LayoutContext - Viewport changed: ${newViewPort.width}x${newViewPort.height}`,
-    );
+    this.logger.debug(`Viewport changed: ${newViewPort.width}x${newViewPort.height}`);
+    
     // Only log if layout mode type changed, not every pixel change
     if (layoutModeTypeChanged) {
       this.modeType = newModeType;
-      console.log(
-        `LayoutContext - Layout mode type changed: (${oldModeType} → ${newModeType})`,
-      );
+      this.logger.info(`Layout mode type changed: (${oldModeType} → ${newModeType})`);
 
       // Emit layout mode change event when layout mode type actually changes
       this.emitLayoutModeChange(newViewPort, newModeType, oldModeType);
@@ -178,9 +183,7 @@ export class LayoutContextImpl implements LayoutContext {
     eventType: LayoutEventType,
     listener: LayoutEventListener,
   ): () => void {
-    console.log(
-      `📋 LayoutContextImpl: Adding listener for event: ${eventType}`,
-    );
+    this.logger.debug(`Adding listener for event: ${eventType}`);
 
     // Delegate to EventBus - wrap the listener to handle LayoutEvent structure
     const wrappedListener = (data: any) => {
@@ -209,9 +212,7 @@ export class LayoutContextImpl implements LayoutContext {
     const consumer = this.eventBus.consume(eventType, wrappedListener);
 
     return () => {
-      console.log(
-        `📋 LayoutContextImpl: Removing listener for event: ${eventType}`,
-      );
+      this.logger.debug(`Removing listener for event: ${eventType}`);
       consumer.unregister();
     };
   }
@@ -226,7 +227,7 @@ export class LayoutContextImpl implements LayoutContext {
       timestamp: Date.now(),
     };
 
-    console.log(`📋 LayoutContextImpl: Emitting event: ${eventType}`);
+    this.logger.debug(`Emitting event: ${eventType}`);
 
     // Delegate to EventBus publish method
     this.eventBus.publish(eventType, event);
@@ -243,7 +244,7 @@ export class LayoutContextImpl implements LayoutContext {
    * Mark layout as ready (called when all components are initialized)
    */
   public markReady(): void {
-    console.log("LayoutContext - Layout marked as ready");
+    this.logger.info('Layout marked as ready');
 
     // Set ready state
     this.isLayoutReady = true;
@@ -268,13 +269,13 @@ export class LayoutContextImpl implements LayoutContext {
     newModeType: LayoutModeType,
     previousModeType?: LayoutModeType,
   ): void {
-    console.log(`LayoutContext - Layout mode switching to: ${newModeType}`);
+    this.logger.info(`Layout mode switching to: ${newModeType}`);
 
     // Coordinate component states during layout mode switches
     this.coordinateComponentsForLayoutMode(newModeType);
 
     // Emit layout mode change event for components that need to respond
-    console.log("LayoutContext - Firing layout-mode-change event");
+    this.logger.debug('Firing layout-mode-change event');
 
     // Create properly typed event using the factory
     const event = LayoutEventFactory.createLayoutModeChangeEvent(
@@ -292,29 +293,21 @@ export class LayoutContextImpl implements LayoutContext {
    * Coordinate registered components during mobile/non-mobile layout mode switches
    */
   private coordinateComponentsForLayoutMode(newModeType: LayoutModeType): void {
-    console.log(
-      `LayoutContext - Coordinating components for ${newModeType} mode...`,
-    );
+    this.logger.debug(`Coordinating components for ${newModeType} mode...`);
 
     const isMobile = newModeType === "mobile";
     const wasNonMobile = !isMobile;
 
     // Coordinate sidebar behavior during layout mode transitions
     if (this.sidebarInstance) {
-      console.log(
-        `LayoutContext - Coordinating sidebar for ${newModeType} mode`,
-      );
+      this.logger.debug(`Coordinating sidebar for ${newModeType} mode`);
 
       // Sidebar will handle its own DOM changes via layout-mode-change subscription
       // This coordination ensures proper sequencing of state changes
       if (isMobile) {
-        console.log(
-          "LayoutContext - Switching TO mobile: Sidebar will hide and enable overlay mode",
-        );
+        this.logger.debug('Switching TO mobile: Sidebar will hide and enable overlay mode');
       } else {
-        console.log(
-          "LayoutContext - Switching FROM mobile: Sidebar will show and disable overlay mode",
-        );
+        this.logger.debug('Switching FROM mobile: Sidebar will show and disable overlay mode');
       }
     }
 
@@ -323,9 +316,7 @@ export class LayoutContextImpl implements LayoutContext {
     // - Footer layout adjustments
     // - MainContent responsive classes
 
-    console.log(
-      `LayoutContext - Component coordination for ${newModeType} complete`,
-    );
+    this.logger.debug(`Component coordination for ${newModeType} complete`);
   }
 
   // =================================================================================
@@ -362,13 +353,11 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public registerSidebar(sidebar: Sidebar): void {
     if (this.sidebarInstance && this.sidebarInstance !== sidebar) {
-      console.warn(
-        "LayoutContext - Replacing existing sidebar instance. This might indicate a setup issue.",
-      );
+      this.logger.warn('Replacing existing sidebar instance. This might indicate a setup issue.');
     }
 
     this.sidebarInstance = sidebar;
-    console.log("LayoutContext - Sidebar instance registered successfully");
+    this.logger.info('Sidebar instance registered successfully');
   }
 
   /**
@@ -383,7 +372,7 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public unregisterSidebar(): void {
     if (this.sidebarInstance) {
-      console.log("LayoutContext - Sidebar instance unregistered");
+      this.logger.info('Sidebar instance unregistered');
       this.sidebarInstance = null;
     }
   }
@@ -398,13 +387,11 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public registerHeader(header: AppHeader): void {
     if (this.headerInstance && this.headerInstance !== header) {
-      console.warn(
-        "LayoutContext - Replacing existing Header instance. This might indicate a setup issue.",
-      );
+      this.logger.warn('Replacing existing Header instance. This might indicate a setup issue.');
     }
 
     this.headerInstance = header;
-    console.log("LayoutContext - Header component registered successfully");
+    this.logger.info('Header component registered successfully');
   }
 
   /**
@@ -413,13 +400,11 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public registerFooter(footer: AppFooter): void {
     if (this.footerInstance && this.footerInstance !== footer) {
-      console.warn(
-        "LayoutContext - Replacing existing Footer instance. This might indicate a setup issue.",
-      );
+      this.logger.warn('Replacing existing Footer instance. This might indicate a setup issue.');
     }
 
     this.footerInstance = footer;
-    console.log("LayoutContext - Footer component registered successfully");
+    this.logger.info('Footer component registered successfully');
   }
 
   /**
@@ -428,15 +413,11 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public registerMainContent(mainContent: MainContent): void {
     if (this.mainContentInstance && this.mainContentInstance !== mainContent) {
-      console.warn(
-        "LayoutContext - Replacing existing MainContent instance. This might indicate a setup issue.",
-      );
+      this.logger.warn('Replacing existing MainContent instance. This might indicate a setup issue.');
     }
 
     this.mainContentInstance = mainContent;
-    console.log(
-      "LayoutContext - MainContent component registered successfully",
-    );
+    this.logger.info('MainContent component registered successfully');
   }
 
   /**
@@ -445,13 +426,11 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public registerMessages(messages: Messages): void {
     if (this.messagesInstance && this.messagesInstance !== messages) {
-      console.warn(
-        "LayoutContext - Replacing existing Messages instance. This might indicate a setup issue.",
-      );
+      this.logger.warn('Replacing existing Messages instance. This might indicate a setup issue.');
     }
 
     this.messagesInstance = messages;
-    console.log("LayoutContext - Messages component registered successfully");
+    this.logger.info('Messages component registered successfully');
   }
 
   /**
@@ -518,7 +497,7 @@ export class LayoutContextImpl implements LayoutContext {
    * Unregister all components (used during cleanup)
    */
   public unregisterAllComponents(): void {
-    console.log("LayoutContext - Unregistering all components");
+    this.logger.info('Unregistering all components');
 
     this.headerInstance = null;
     this.footerInstance = null;
@@ -526,7 +505,7 @@ export class LayoutContextImpl implements LayoutContext {
     this.messagesInstance = null;
     this.sidebarInstance = null;
 
-    console.log("LayoutContext - All components unregistered");
+    this.logger.info('All components unregistered');
   }
 
   // =================================================================================
@@ -547,12 +526,12 @@ export class LayoutContextImpl implements LayoutContext {
    * Setup the chain-based hotkey management system
    */
   private setupChainHotkeySystem(): void {
-    console.log("LayoutContext - Setting up chain-based hotkey system...");
+    this.logger.debug('Setting up chain-based hotkey system...');
     
     // Initialize chain manager (it will setup its own global listener)
     this.chainHotkeyManager = new ChainHotkeyManagerImpl();
     
-    console.log("LayoutContext - Chain hotkey system initialized ✅");
+    this.logger.info('Chain hotkey system initialized');
   }
 
 
@@ -576,9 +555,7 @@ export class LayoutContextImpl implements LayoutContext {
   public registerChainProvider(provider: ChainHotkeyProvider): () => void {
     const unregister = this.chainHotkeyManager.registerProvider(provider);
     
-    console.log(
-      `LayoutContext - Registered chain provider: ${provider.getHotkeyProviderId()} with priority ${provider.getProviderPriority()}`,
-    );
+    this.logger.debug(`Registered chain provider: ${provider.getHotkeyProviderId()} with priority ${provider.getProviderPriority()}`);
     
     return unregister;
   }
@@ -588,7 +565,7 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public unregisterChainProvider(providerId: string): void {
     this.chainHotkeyManager.unregisterProvider(providerId);
-    console.log(`LayoutContext - Unregistered chain provider: ${providerId}`);
+    this.logger.debug(`Unregistered chain provider: ${providerId}`);
   }
 
   /**
@@ -603,7 +580,7 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public setChainProviderEnabled(providerId: string, enabled: boolean): void {
     this.chainHotkeyManager.setProviderEnabled(providerId, enabled);
-    console.log(`LayoutContext - Chain provider ${providerId} ${enabled ? 'enabled' : 'disabled'}`);
+    this.logger.debug(`Chain provider ${providerId} ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -637,9 +614,7 @@ export class LayoutContextImpl implements LayoutContext {
    * Setup the EventBus for cross-component communication
    */
   private setupEventBus(): void {
-    console.log(
-      "LayoutContext - Setting up EventBus for cross-component communication...",
-    );
+    this.logger.debug('Setting up EventBus for cross-component communication...');
 
     this.eventBus = new EventBusImpl({
       debug: false, // Set to true for development debugging
@@ -647,7 +622,7 @@ export class LayoutContextImpl implements LayoutContext {
       maxConsumersPerEvent: 0, // Unlimited consumers
     });
 
-    console.log("LayoutContext - EventBus initialized ✅");
+    this.logger.info('EventBus initialized');
   }
 
   /**
@@ -661,7 +636,7 @@ export class LayoutContextImpl implements LayoutContext {
    * PUBLISH - Broadcast event to ALL consumers (non-blocking)
    */
   public publish(event: string, data: any): void {
-    console.log(`LayoutContext - Publishing event: ${event}`);
+    this.logger.debug(`Publishing event: ${event}`);
     this.eventBus.publish(event, data);
   }
 
@@ -669,7 +644,7 @@ export class LayoutContextImpl implements LayoutContext {
    * SEND - Deliver event to FIRST consumer only (non-blocking)
    */
   public send(event: string, data: any): void {
-    console.log(`LayoutContext - Sending event: ${event}`);
+    this.logger.debug(`Sending event: ${event}`);
     this.eventBus.send(event, data);
   }
 
@@ -677,7 +652,7 @@ export class LayoutContextImpl implements LayoutContext {
    * REQUEST - Send to FIRST consumer and await response (non-blocking Promise)
    */
   public request(event: string, data: any, timeout?: number): Promise<any> {
-    console.log(`LayoutContext - Requesting response for event: ${event}`);
+    this.logger.debug(`Requesting response for event: ${event}`);
     return this.eventBus.request(event, data);
   }
 
@@ -689,9 +664,7 @@ export class LayoutContextImpl implements LayoutContext {
     handler: (data: any) => any,
     component?: string,
   ): Consumer {
-    console.log(
-      `LayoutContext - Registering consumer for event: ${event}${component ? ` (component: ${component})` : ""}`,
-    );
+    this.logger.debug(`Registering consumer for event: ${event}${component ? ` (component: ${component})` : ''}`);
 
     const consumer = this.eventBus.consume(event, handler);
 
@@ -725,9 +698,7 @@ export class LayoutContextImpl implements LayoutContext {
 
     this.eventBusConsumers.delete(component);
 
-    console.log(
-      `LayoutContext - Unregistered ${unregisteredCount} EventBus consumers for component: ${component}`,
-    );
+    this.logger.debug(`Unregistered ${unregisteredCount} EventBus consumers for component: ${component}`);
     return unregisteredCount;
   }
 
@@ -782,9 +753,7 @@ export class LayoutContextImpl implements LayoutContext {
       return;
     }
 
-    console.log(
-      `LayoutContext - Setting active page: ${page.getPageId()} (${page.getPageInfo().name})`,
-    );
+    this.logger.info(`Setting active page: ${page.getPageId()} (${page.getPageInfo().name})`);
 
     this.currentActivePage = page;
 
@@ -801,15 +770,11 @@ export class LayoutContextImpl implements LayoutContext {
   public deactivatePage(page: ActivePage): boolean {
     if (this.currentActivePage !== page) {
       // Page is not currently active
-      console.log(
-        `LayoutContext - Cannot deactivate page ${page.getPageId()}: not currently active`,
-      );
+      this.logger.debug(`Cannot deactivate page ${page.getPageId()}: not currently active`);
       return false;
     }
 
-    console.log(
-      `LayoutContext - Deactivating active page: ${page.getPageId()} (${page.getPageInfo().name})`,
-    );
+    this.logger.info(`Deactivating active page: ${page.getPageId()} (${page.getPageInfo().name})`);
 
     const previousPage = this.currentActivePage;
     this.currentActivePage = null;
@@ -836,19 +801,14 @@ export class LayoutContextImpl implements LayoutContext {
   public registerActivePageConsumer(consumer: ActivePageConsumer): () => void {
     this.activePageConsumers.add(consumer);
 
-    console.log(
-      `LayoutContext - Registered active page consumer (${this.activePageConsumers.size} total)`,
-    );
+    this.logger.debug(`Registered active page consumer (${this.activePageConsumers.size} total)`);
 
     // Immediately notify the new consumer of current state
     if (this.currentActivePage) {
       try {
         consumer.onActivePageChanged(this.currentActivePage, null);
       } catch (error) {
-        console.error(
-          "LayoutContext - Error in immediate active page consumer notification:",
-          error,
-        );
+        this.logger.error('Error in immediate active page consumer notification', error as Error);
       }
     }
 
@@ -865,9 +825,7 @@ export class LayoutContextImpl implements LayoutContext {
     const wasRegistered = this.activePageConsumers.delete(consumer);
 
     if (wasRegistered) {
-      console.log(
-        `LayoutContext - Unregistered active page consumer (${this.activePageConsumers.size} remaining)`,
-      );
+      this.logger.debug(`Unregistered active page consumer (${this.activePageConsumers.size} remaining)`);
     }
   }
 
@@ -882,19 +840,14 @@ export class LayoutContextImpl implements LayoutContext {
       return;
     }
 
-    console.log(
-      `LayoutContext - Notifying ${this.activePageConsumers.size} consumers of active page change`,
-    );
+    this.logger.debug(`Notifying ${this.activePageConsumers.size} consumers of active page change`);
 
     // Notify synchronously for immediate UI updates - critical for navigation responsiveness
     this.activePageConsumers.forEach((consumer) => {
       try {
         consumer.onActivePageChanged(activePage, previousPage);
       } catch (error) {
-        console.error(
-          "LayoutContext - Error in active page consumer notification:",
-          error,
-        );
+        this.logger.error('Error in active page consumer notification', error as Error);
       }
     });
   }
@@ -911,13 +864,9 @@ export class LayoutContextImpl implements LayoutContext {
     // ActivePage and HotkeyProvider systems
 
     if (activePage) {
-      console.log(
-        `LayoutContext - Active page context updated for page: ${activePage.getPageId()}`,
-      );
+      this.logger.debug(`Active page context updated for page: ${activePage.getPageId()}`);
     } else {
-      console.log(
-        `LayoutContext - Active page context cleared (no active page)`,
-      );
+      this.logger.debug('Active page context cleared (no active page)');
     }
 
     // Future: Enable/disable hotkeys based on activePage context
@@ -957,21 +906,19 @@ export class LayoutContextImpl implements LayoutContext {
     const serviceId = service.getServiceId();
 
     if (this.serviceRegistry.has(name)) {
-      console.warn(
-        `LayoutContext - Service '${name}' is already registered, replacing existing service`,
-        {
-          existingServiceId: this.serviceRegistry.get(name)?.getServiceId(),
-          newServiceId: serviceId,
-        },
-      );
+      const existingService = this.serviceRegistry.get(name);
+      this.logger.warn(`Service '${name}' is already registered, replacing existing service`, {
+        existingServiceId: existingService?.getServiceId(),
+        newServiceId: serviceId,
+      });
     }
 
     this.serviceRegistry.set(name, service);
 
-    console.log(
-      `LayoutContext - Service '${name}' registered (${this.serviceRegistry.size} total services)`,
-      { serviceId, serviceType: service.constructor?.name || "Unknown" },
-    );
+    this.logger.info(`Service '${name}' registered (${this.serviceRegistry.size} total services)`, {
+      serviceId, 
+      serviceType: service.constructor?.name || 'Unknown'
+    });
   }
 
   /**
@@ -979,14 +926,14 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public getService<T extends Service>(name: string): T | null {
     if (!name || typeof name !== "string" || name.trim() === "") {
-      console.warn("LayoutContext - Service name must be a non-empty string");
+      this.logger.warn('Service name must be a non-empty string');
       return null;
     }
 
     const service = this.serviceRegistry.get(name) as T;
 
     if (!service) {
-      console.warn(`LayoutContext - Service '${name}' not found`);
+      this.logger.warn(`Service '${name}' not found`);
       return null;
     }
 
@@ -1011,7 +958,7 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public async unregisterService(name: string): Promise<boolean> {
     if (!name || typeof name !== "string" || name.trim() === "") {
-      console.warn("LayoutContext - Service name must be a non-empty string");
+      this.logger.warn('Service name must be a non-empty string');
       return false;
     }
 
@@ -1026,24 +973,24 @@ export class LayoutContextImpl implements LayoutContext {
           if (result instanceof Promise) {
             await result;
           }
-          console.log(
+          this.logger.info(
             `LayoutContext - Service '${name}' destroyed during unregistration`,
             { serviceId: service.getServiceId() },
           );
         } catch (error) {
-          console.error(
+          this.logger.error(
             `LayoutContext - Service '${name}' destroy failed during unregistration:`,
             error,
           );
         }
       }
 
-      console.log(
+      this.logger.info(
         `LayoutContext - Service '${name}' unregistered (${this.serviceRegistry.size} remaining services)`,
         { serviceId: service.getServiceId() },
       );
     } else {
-      console.warn(`LayoutContext - Service '${name}' was not registered`);
+      this.logger.warn(`LayoutContext - Service '${name}' was not registered`);
     }
 
     return wasRegistered;
@@ -1085,11 +1032,11 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public async initializeServices(): Promise<void> {
     if (this.serviceRegistry.size === 0) {
-      console.log("LayoutContext - No services to initialize");
+      this.logger.info("No services to initialize");
       return;
     }
 
-    console.log(
+    this.logger.info(
       `LayoutContext - Initializing ${this.serviceRegistry.size} services...`,
     );
 
@@ -1114,18 +1061,18 @@ export class LayoutContextImpl implements LayoutContext {
             );
           }
 
-          console.log(`LayoutContext - Service '${name}' initialized`, {
+          this.logger.info(`LayoutContext - Service '${name}' initialized`, {
             serviceId: service.getServiceId(),
           });
         } catch (error) {
           errors.push({ name, error: error as Error });
-          console.error(
+          this.logger.error(
             `LayoutContext - Service '${name}' initialization failed:`,
             error,
           );
         }
       } else {
-        console.log(
+        this.logger.info(
           `LayoutContext - Service '${name}' has no init method, skipping`,
           { serviceId: service.getServiceId() },
         );
@@ -1137,7 +1084,7 @@ export class LayoutContextImpl implements LayoutContext {
       try {
         await Promise.all(initPromises);
       } catch (error) {
-        console.error(
+        this.logger.error(
           "LayoutContext - Some services failed to initialize:",
           error,
         );
@@ -1146,13 +1093,13 @@ export class LayoutContextImpl implements LayoutContext {
     }
 
     if (errors.length > 0) {
-      console.warn(
+      this.logger.warn(
         `LayoutContext - ${errors.length} services had initialization errors:`,
         errors,
       );
     }
 
-    console.log(
+    this.logger.info(
       `LayoutContext - Service initialization complete (${this.serviceRegistry.size - errors.length}/${this.serviceRegistry.size} successful)`,
     );
   }
@@ -1163,11 +1110,11 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public async destroyServices(): Promise<void> {
     if (this.serviceRegistry.size === 0) {
-      console.log("LayoutContext - No services to destroy");
+      this.logger.info("No services to destroy");
       return;
     }
 
-    console.log(
+    this.logger.info(
       `LayoutContext - Destroying ${this.serviceRegistry.size} services...`,
     );
 
@@ -1186,7 +1133,7 @@ export class LayoutContextImpl implements LayoutContext {
             destroyPromises.push(
               result.catch((error) => {
                 errors.push({ name, error });
-                console.error(
+                this.logger.error(
                   `LayoutContext - Service '${name}' destruction failed:`,
                   error,
                 );
@@ -1194,18 +1141,18 @@ export class LayoutContextImpl implements LayoutContext {
             );
           }
 
-          console.log(`LayoutContext - Service '${name}' destroyed`, {
+          this.logger.info(`LayoutContext - Service '${name}' destroyed`, {
             serviceId: service.getServiceId(),
           });
         } catch (error) {
           errors.push({ name, error: error as Error });
-          console.error(
+          this.logger.error(
             `LayoutContext - Service '${name}' destruction failed:`,
             error,
           );
         }
       } else {
-        console.log(
+        this.logger.info(
           `LayoutContext - Service '${name}' has no destroy method, skipping`,
           { serviceId: service.getServiceId() },
         );
@@ -1217,7 +1164,7 @@ export class LayoutContextImpl implements LayoutContext {
       try {
         await Promise.all(destroyPromises);
       } catch (error) {
-        console.error(
+        this.logger.error(
           "LayoutContext - Some services failed to destroy cleanly:",
           error,
         );
@@ -1226,7 +1173,7 @@ export class LayoutContextImpl implements LayoutContext {
     }
 
     if (errors.length > 0) {
-      console.warn(
+      this.logger.warn(
         `LayoutContext - ${errors.length} services had destruction errors:`,
         errors,
       );
@@ -1235,7 +1182,7 @@ export class LayoutContextImpl implements LayoutContext {
     // Clear the registry after destruction attempts
     this.serviceRegistry.clear();
 
-    console.log("LayoutContext - Service destruction complete");
+    this.logger.info("Service destruction complete");
   }
 
   // PageContext management removed - now handled by RouterService
@@ -1255,7 +1202,7 @@ export class LayoutContextImpl implements LayoutContext {
     } else {
       this.failureError = error;
     }
-    console.error('LayoutContext - Marked as failed:', this.failureError);
+    this.logger.error('LayoutContext marked as failed', this.failureError);
     
     // Handle error UI logic
     const errorMessage = this.failureError.message;
@@ -1313,11 +1260,11 @@ export class LayoutContextImpl implements LayoutContext {
    * Enhanced destroy method - cleanup all resources: services, hotkeys, active pages, layout state
    */
   public destroy(): void {
-    console.log("LayoutContext - Destroying...");
+    this.logger.info("Destroying...");
 
     // Cleanup services first (async services will be destroyed synchronously, warnings logged)
     if (this.serviceRegistry.size > 0) {
-      console.log("LayoutContext - Cleaning up services during destroy...");
+      this.logger.info("Cleaning up services during destroy...");
 
       // Call destroy synchronously - any async cleanup will be logged as warnings
       for (const [name, service] of this.serviceRegistry) {
@@ -1325,12 +1272,12 @@ export class LayoutContextImpl implements LayoutContext {
           try {
             const result = service.destroy();
             if (result instanceof Promise) {
-              console.warn(
+              this.logger.warn(
                 `LayoutContext - Service '${name}' returned Promise from destroy() during synchronous cleanup - async cleanup may not complete`,
               );
             }
           } catch (error) {
-            console.error(
+            this.logger.error(
               `LayoutContext - Service '${name}' destruction failed during cleanup:`,
               error,
             );
@@ -1339,11 +1286,11 @@ export class LayoutContextImpl implements LayoutContext {
       }
 
       this.serviceRegistry.clear();
-      console.log("LayoutContext - Service registry cleared");
+      this.logger.info("Service registry cleared");
     }
 
     // Cleanup EventBus consumers
-    console.log("LayoutContext - Cleaning up EventBus consumers...");
+    this.logger.info("Cleaning up EventBus consumers...");
     let totalUnregistered = 0;
     for (const [component, consumers] of this.eventBusConsumers) {
       const count = consumers.filter((c) => c.isActive()).length;
@@ -1353,13 +1300,13 @@ export class LayoutContextImpl implements LayoutContext {
           totalUnregistered++;
         }
       });
-      console.log(
+      this.logger.info(
         `LayoutContext - Unregistered ${count} EventBus consumers for component: ${component}`,
       );
     }
     this.eventBusConsumers.clear();
     this.eventBus.removeAllConsumers();
-    console.log(
+    this.logger.info(
       `LayoutContext - EventBus cleanup complete (${totalUnregistered} consumers unregistered)`,
     );
 
@@ -1368,22 +1315,22 @@ export class LayoutContextImpl implements LayoutContext {
     this.activePageConsumers.clear();
 
     // Cleanup chain hotkey system
-    console.log("LayoutContext - Cleaning up chain hotkey system...");
+    this.logger.info("Cleaning up chain hotkey system...");
     if (this.chainHotkeyManager) {
       try {
         this.chainHotkeyManager.destroy();
-        console.log("LayoutContext - Chain hotkey manager destroyed");
+        this.logger.info("Chain hotkey manager destroyed");
       } catch (error) {
-        console.error("LayoutContext - Error destroying chain hotkey manager:", error);
+        this.logger.error("Error destroying chain hotkey manager:", error);
       }
     }
     
-    console.log("LayoutContext - Hotkey system cleanup complete");
+    this.logger.info("Hotkey system cleanup complete");
 
     // Cleanup PageContexts
-    console.log("LayoutContext - Cleaning up PageContexts...");
+    this.logger.info("Cleaning up PageContexts...");
     this.pageContexts.clear();
-    console.log("LayoutContext - PageContext cleanup complete");
+    this.logger.info("PageContext cleanup complete");
 
     // Reset ready state
     this.isLayoutReady = false;
@@ -1402,7 +1349,7 @@ export class LayoutContextImpl implements LayoutContext {
       this.resizeTimeout = null;
     }
 
-    console.log("LayoutContext - Destroyed successfully");
+    this.logger.info("Destroyed successfully");
   }
 }
 

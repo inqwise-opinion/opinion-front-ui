@@ -21,40 +21,27 @@ import {
   type NavigationService,
 } from "./services/navigation/NavigationService";
 import { NavigationServiceImpl } from "./services/navigation/NavigationServiceImpl";
+import { LoggerFactory } from "./logging/LoggerFactory";
+import { MessagesLogAdapter } from "./adapters/MessagesLogAdapter";
+import { Logger } from "./logging/Logger";
 
 export class OpinionApp {
   private initialized: boolean = false;
   private apiService: MockApiService;
   private routerService: RouterService | null = null;
   private errorHandler: (ex: Error | unknown) => void;
+  private logger: Logger;
 
   /**
    * Default error handler implementation - private static const that outputs to console
    */
   private static readonly DEFAULT_ERROR_HANDLER = (ex: Error | unknown): void => {
-    const timestamp = new Date().toISOString();
-    const errorMessage = ex instanceof Error ? ex.message : String(ex);
-    const errorStack = ex instanceof Error ? ex.stack : "No stack trace";
-
-    // 1. Log the error with details
-    console.error(
-      `❌ OpinionApp Error:`,
-      {
-        message: errorMessage,
-        stack: errorStack,
-        timestamp
-      },
-    );
-
-    // 2. Also log as a simple console.error for easier debugging
-    if (ex instanceof Error) {
-      console.error(`❌ ${ex.name}: ${ex.message}`);
-      if (ex.stack) {
-        console.error(ex.stack);
-      }
-    } else {
-      console.error(`❌ Unknown Error:`, ex);
-    }
+    // Placeholder; constructor overrides with logger-based handler
+    const err = ex instanceof Error ? ex : new Error(String(ex));
+    // Fallback to console to avoid recursive dependency before logger is ready
+    // This will only be used if someone calls OpinionApp.DEFAULT_ERROR_HANDLER directly
+    // Normal flow replaces errorHandler in constructor
+    console.error('OpinionApp error (default handler):', err);
   };
 
   // Global layout components
@@ -65,8 +52,13 @@ export class OpinionApp {
 
   constructor() {
     this.apiService = new MockApiService();
-    // Default error handler - outputs to console
-    this.errorHandler = OpinionApp.DEFAULT_ERROR_HANDLER;
+    // Initialize logger for OpinionApp using string name to avoid typescript-logging conflicts
+    this.logger = LoggerFactory.getInstance().getLogger('OpinionApp');
+    // Default error handler uses logger
+    this.errorHandler = (ex: Error | unknown) => {
+      const err = ex instanceof Error ? ex : new Error(String(ex));
+      this.logger.error('OpinionApp error', err);
+    };
   }
 
   public async init(): Promise<void> {
@@ -96,10 +88,7 @@ export class OpinionApp {
             this.handleClearMessages();
             break;
           default:
-            console.log(
-              "Unknown postMessage action:",
-              event.data.action,
-            );
+            this.logger.warn('Unknown postMessage action:', event.data.action);
         }
       }
     });
@@ -118,6 +107,16 @@ export class OpinionApp {
       this.setErrorHandler((error) => {
         ctx.fail(error instanceof Error ? error : String(error));
       });
+      
+      // Integrate LoggerFactory with Messages system
+      const messages = ctx.getMessages();
+      if (messages) {
+        const adapter = new MessagesLogAdapter(messages);
+        LoggerFactory.getInstance().messagesConsumer(adapter);
+        this.logger.info('LoggerFactory integrated with Messages system');
+      } else {
+        this.logger.warn('Messages system not available for LoggerFactory integration');
+      }
     });
 
     // Register formal handlers using the new handler system
@@ -286,9 +285,7 @@ export class OpinionApp {
   private handleTestErrorMessage(messageData: any): void {
 
     if (!this.layout) {
-      console.warn(
-        "⚠️ APP.TS - Layout not initialized, cannot show error message",
-      );
+      this.logger.warn('Layout not initialized, cannot show error message');
       return;
     }
 
@@ -333,7 +330,7 @@ export class OpinionApp {
             );
           break;
         default:
-          console.warn("⚠️ APP.TS - Unknown message type:", type);
+          this.logger.warn('Unknown message type:', type);
           ctx
             .getMessages()
             ?.showInfo("Test Message", "Unknown message type: " + type);
@@ -347,7 +344,7 @@ export class OpinionApp {
   private handleClearMessages(): void {
 
     if (!this.layout) {
-      console.warn("⚠️ APP.TS - Layout not initialized, cannot clear messages");
+      this.logger.warn('Layout not initialized, cannot clear messages');
       return;
     }
 
