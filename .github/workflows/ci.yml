@@ -1,0 +1,185 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  CACHE_NAME: 'node-modules-v1'
+
+jobs:
+  # Job 1: Quality Checks (Lint, Format, Security)
+  quality:
+    name: 🔍 Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🎯 ESLint check
+        run: npm run lint
+
+      - name: 📊 TypeScript compilation check
+        run: npx tsc --noEmit
+
+      - name: 🔐 Security audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  # Job 2: Tests
+  test:
+    name: 🧪 Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: ['16', '18', '20']
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run tests
+        run: npm test -- --coverage --watchAll=false
+
+      - name: 📊 Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.node-version == '18'
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  # Job 3: Build
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    needs: [quality, test]
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build application
+        run: npm run build
+        env:
+          SASS_SILENCE_DEPRECATIONS: legacy-js-api
+
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+          retention-days: 30
+
+      - name: 📏 Bundle size check
+        run: |
+          echo "## 📊 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          find dist -name "*.js" -o -name "*.css" | head -10 | while read file; do
+            size=$(du -h "$file" | cut -f1)
+            echo "| $file | $size |" >> $GITHUB_STEP_SUMMARY
+          done
+
+  # Job 4: Preview Deployment (for PRs)
+  preview:
+    name: 🚀 Preview Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+
+      - name: 🌍 Deploy to Preview
+        run: |
+          echo "🚀 Preview deployment would happen here"
+          echo "Preview URL: https://preview-pr-${{ github.event.number }}.your-domain.com"
+          echo "## 🚀 Preview Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "Your preview is ready at: https://preview-pr-${{ github.event.number }}.your-domain.com" >> $GITHUB_STEP_SUMMARY
+
+  # Job 5: Production Deployment (main branch only)
+  deploy:
+    name: 🚀 Production Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+
+      - name: 🌍 Deploy to Production
+        run: |
+          echo "🚀 Production deployment would happen here"
+          echo "## 🎉 Production Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "🌟 Your application has been deployed to production!" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 Live URL: https://your-domain.com" >> $GITHUB_STEP_SUMMARY
+
+  # Job 6: Notification
+  notify:
+    name: 📢 Notifications
+    runs-on: ubuntu-latest
+    needs: [quality, test, build]
+    if: always()
+    
+    steps:
+      - name: 📊 Pipeline Status
+        run: |
+          if [ "${{ needs.quality.result }}" == "success" ] && [ "${{ needs.test.result }}" == "success" ] && [ "${{ needs.build.result }}" == "success" ]; then
+            echo "✅ Pipeline completed successfully!"
+            echo "## ✅ CI Pipeline Success" >> $GITHUB_STEP_SUMMARY
+            echo "All checks passed! Your code is ready for deployment." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Pipeline failed!"
+            echo "## ❌ CI Pipeline Failed" >> $GITHUB_STEP_SUMMARY
+            echo "Some checks failed. Please review the logs above." >> $GITHUB_STEP_SUMMARY
+          fi

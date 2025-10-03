@@ -1,0 +1,60 @@
+name: "CodeQL Security Analysis"
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '30 1 * * 1'  # Weekly on Mondays at 1:30 AM UTC
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  analyze:
+    name: 🔍 CodeQL Analysis
+    runs-on: ubuntu-latest
+    
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: 🏗️ Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: 🔎 Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+      - name: 📊 Analysis Summary
+        run: |
+          echo "## 🔍 CodeQL Security Analysis Complete" >> $GITHUB_STEP_SUMMARY
+          echo "Security analysis has been completed for JavaScript/TypeScript code." >> $GITHUB_STEP_SUMMARY
+          echo "Results are available in the Security tab of your repository." >> $GITHUB_STEP_SUMMARY
