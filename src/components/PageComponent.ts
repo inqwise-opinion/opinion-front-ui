@@ -19,6 +19,8 @@ import {
   ChainHotkeyHandler,
   HotkeyExecutionContext,
 } from "../hotkeys/HotkeyChainSystem";
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export interface PageComponentConfig {
   pageTitle?: string;
@@ -34,6 +36,7 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
   protected destroyed: boolean = false;
   protected mainContent: MainContentImpl;
   protected config: PageComponentConfig;
+  protected readonly logger: Logger;
   protected eventListeners: Array<{
     element: Element | Window | Document;
     event: string;
@@ -50,6 +53,7 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
 
   constructor(mainContent: MainContentImpl, pageContext: PageContext, config: PageComponentConfig = {}) {
     super();
+    this.logger = LoggerFactory.getInstance().getLogger(`PageComponent:${this.constructor.name}`);
     this.mainContent = mainContent;
     this.pageContext = pageContext;
     this.config = {
@@ -80,19 +84,17 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
    */
   public async init(): Promise<void> {
     if (!this.mainContent.isReady) {
-      console.warn(`${this.constructor.name}: mainContent not ready`);
+      this.logger.warn('mainContent not ready');
       return;
     }
 
     if (this.initialized || this.destroyed) {
-      console.warn(
-        `${this.constructor.name}: Cannot initialize - already initialized or destroyed`,
-      );
+      this.logger.warn('Cannot initialize - already initialized or destroyed');
       return;
     }
 
     try {
-      console.log(`${this.constructor.name}: Initializing...`);
+      this.logger.debug('Initializing...');
 
       // Wait for DOM if needed
       if (document.readyState === "loading") {
@@ -113,20 +115,20 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
       this.setupKeyboardShortcuts();
       
       // Register this page as chain hotkey provider
-      console.log(`🔑 ${this.constructor.name} - Registering as chain hotkey provider...`);
+      this.logger.debug('Registering as chain hotkey provider...');
       this.chainProviderUnsubscriber = this.layoutContext.registerChainProvider(this);
-      console.log(`✅ ${this.constructor.name} - Chain provider registered successfully`);
+      this.logger.debug('Chain provider registered successfully');
       
       // Register this page as the active page
       this.layoutContext.setActivePage(this);
 
       this.initialized = true;
-      console.log(`${this.constructor.name}: Initialized successfully`);
+      this.logger.info('Initialized successfully');
 
       // Trigger post-initialization hook
       await this.onPostInit();
     } catch (error) {
-      console.error(`${this.constructor.name}: Initialization failed:`, error);
+      this.logger.error('Initialization failed', error);
       throw error;
     }
   }
@@ -136,12 +138,12 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
    */
   public async destroy(): Promise<void> {
     if (this.destroyed) {
-      console.warn(`${this.constructor.name}: Already destroyed`);
+      this.logger.warn('Already destroyed');
       return;
     }
 
     try {
-      console.log(`${this.constructor.name}: Destroying...`);
+      this.logger.debug('Destroying...');
 
       // Cleanup chain provider
       this.cleanupChainProvider();
@@ -155,7 +157,7 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
         // Cleanup page-specific functionality
         this.onDestroy();
       } catch (error) {
-        console.error(`${this.constructor.name}: onDestroy failed:`, error);
+        this.logger.error('onDestroy failed', error);
       }
 
       // Remove all event listeners
@@ -167,9 +169,9 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
       this.destroyed = true;
       this.initialized = false;
 
-      console.log(`${this.constructor.name}: Destroyed successfully`);
+      this.logger.info('Destroyed successfully');
     } catch (error) {
-      console.error(`${this.constructor.name}: Destruction failed:`, error);
+      this.logger.error('Destruction failed', error);
       // Still mark as destroyed to prevent repeated attempts
       this.destroyed = true;
       this.initialized = false;

@@ -36,7 +36,7 @@ function parseLogLevel(level: string | number | LogLevel): LogLevel {
       case 'FATAL': return LogLevel.Fatal;
       case 'OFF': return LogLevel.Off;
       default:
-        console.warn(`Unknown log level string: ${level}, defaulting to INFO`);
+        // Unknown log level, defaulting to INFO
         return LogLevel.Info;
     }
   }
@@ -232,7 +232,7 @@ export class LoggerFactory {
       
       // Validate that we got a meaningful name
       if (!loggerName || loggerName === 'UnknownClass') {
-        console.warn('LoggerFactory: Could not determine class name, using fallback. Consider using string name instead.');
+        // Could not determine class name, using fallback
         loggerName = 'UnknownClass';
       }
     }
@@ -355,11 +355,11 @@ export class LoggerFactory {
       if (fs.existsSync(configPath)) {
         const configData = fs.readFileSync(configPath, 'utf-8');
         const config = JSON.parse(configData) as LoggerFactoryConfig;
-        console.log('Loaded logger configuration from logger.json');
+        // Logger configuration loaded from logger.json
         return config;
       }
     } catch (error) {
-      console.warn('Failed to load logger.json configuration:', error);
+      // Failed to load logger.json configuration - using defaults
     }
     
     return {};

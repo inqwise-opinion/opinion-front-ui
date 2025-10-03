@@ -16,6 +16,8 @@ import {
   HotkeyChainAction,
   ChainHotkeyHandler
 } from './HotkeyChainSystem';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 /**
  * Execution context implementation
@@ -89,8 +91,10 @@ class HotkeyExecutionContextImpl implements HotkeyExecutionContext {
 export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
   private providers = new Map<string, ChainHotkeyProvider>();
   private globalKeydownListener: ((event: KeyboardEvent) => void) | null = null;
+  private logger: Logger;
 
   constructor() {
+    this.logger = LoggerFactory.getInstance().getLogger('ChainHotkeyManager');
     this.setupGlobalKeydownListener();
   }
 
@@ -101,12 +105,12 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
     this.globalKeydownListener = (event: KeyboardEvent) => {
       const key = this.normalizeKey(event);
       this.executeChain(key, event).catch(error => {
-        console.error('ChainHotkeyManager - Error in chain execution:', error);
+        this.logger.error('Error in chain execution', error);
       });
     };
 
     document.addEventListener('keydown', this.globalKeydownListener);
-    console.log('ChainHotkeyManager - Global keydown listener initialized');
+    this.logger.debug('Global keydown listener initialized');
   }
 
   /**
@@ -130,14 +134,14 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
     
     if (this.providers.has(providerId)) {
       const callStack = new Error().stack;
-      console.warn(`ChainHotkeyManager - Provider '${providerId}' already registered, replacing`);
-      console.warn('📍 Registration callstack:', callStack);
+      this.logger.warn(`Provider '${providerId}' already registered, replacing`);
+      this.logger.warn('Registration callstack:', callStack);
     }
     
     this.providers.set(providerId, provider);
     provider.onChainRegistered?.();
     
-    console.log(`ChainHotkeyManager - Registered provider '${providerId}' with priority ${provider.getProviderPriority()}`);
+    this.logger.debug(`Registered provider '${providerId}' with priority ${provider.getProviderPriority()}`);
     
     // Return unregister function
     return () => {
@@ -154,8 +158,8 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
       provider.onChainUnregistered?.();
       this.providers.delete(providerId);
       const callStack = new Error().stack;
-      console.log(`ChainHotkeyManager - Unregistered provider '${providerId}'`);
-      console.log('📍 Unregistration callstack:', callStack);
+      this.logger.debug(`Unregistered provider '${providerId}'`);
+      this.logger.debug('Unregistration callstack:', callStack);
     }
   }
 
@@ -204,8 +208,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
     // Build provider chain for context
     const providerChain = enabledHandlers.map(h => h.provider.getHotkeyProviderId());
 
-    console.log(`🔗 ChainHotkeyManager - Executing chain for '${key}' with ${enabledHandlers.length} handlers:`, 
-                providerChain);
+    this.logger.debug(`Executing chain for '${key}' with ${enabledHandlers.length} handlers`, providerChain);
 
     // Execute chain
     for (let i = 0; i < enabledHandlers.length; i++) {
@@ -230,7 +233,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
       };
 
       try {
-        console.log(`  🔗 ${i + 1}/${enabledHandlers.length}: Executing ${providerId}`);
+        this.logger.debug(`${i + 1}/${enabledHandlers.length}: Executing ${providerId}`);
         
         // Execute handler
         await handler.handler(context);
@@ -239,7 +242,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
         logEntry.action = context.getCurrentAction();
         result.handlersExecuted++;
 
-        console.log(`    ✅ ${providerId}: ${logEntry.action} (prevented: ${context.isDefaultPrevented()})`);
+        this.logger.debug(`${providerId}: ${logEntry.action} (prevented: ${context.isDefaultPrevented()})`);
 
         // Update result state
         if (context.isDefaultPrevented()) {
@@ -253,7 +256,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
         if (context.getCurrentAction() === 'break') {
           result.finalAction = 'break';
           result.executionLog.push(logEntry);
-          console.log(`  🛑 Chain broken by ${providerId}`);
+          this.logger.debug(`Chain broken by ${providerId}`);
           break;
         }
 
@@ -261,7 +264,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
         
       } catch (error) {
         logEntry.error = error instanceof Error ? error.message : String(error);
-        console.error(`    ❌ ${providerId}: Error -`, error);
+        this.logger.error(`${providerId}: Error`, error);
         result.handlersExecuted++; // Count errored handlers as executed
       }
 
@@ -270,7 +273,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
 
     result.executed = result.handlersExecuted > 0;
     
-    console.log(`🏁 ChainHotkeyManager - Chain execution complete:`, {
+    this.logger.debug('Chain execution complete', {
       key,
       executed: result.executed,
       handlersExecuted: result.handlersExecuted,
@@ -310,7 +313,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
   setProviderEnabled(providerId: string, enabled: boolean): void {
     const provider = this.providers.get(providerId);
     if (!provider) {
-      console.warn(`ChainHotkeyManager - Provider '${providerId}' not found`);
+      this.logger.warn(`Provider '${providerId}' not found`);
       return;
     }
 
@@ -323,7 +326,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
           handler.disable();
         }
       }
-      console.log(`ChainHotkeyManager - Provider '${providerId}' ${enabled ? 'enabled' : 'disabled'}`);
+      this.logger.debug(`Provider '${providerId}' ${enabled ? 'enabled' : 'disabled'}`);
     }
   }
 
@@ -388,7 +391,7 @@ export class ChainHotkeyManagerImpl implements ChainHotkeyManager {
     }
 
     this.providers.clear();
-    console.log('ChainHotkeyManager - Destroyed');
+    this.logger.debug('Destroyed');
   }
 }
 

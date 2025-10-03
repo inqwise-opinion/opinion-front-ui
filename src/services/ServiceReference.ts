@@ -22,6 +22,8 @@
 import type { LayoutContext } from "../contexts/LayoutContext";
 import type { Service } from "../interfaces/Service";
 import { AuthenticationError } from "../auth/exceptions/AuthenticationExceptions";
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 /**
  * Service reference configuration
@@ -47,6 +49,7 @@ export class ServiceReference<T extends Service> {
   private readonly config: Required<ServiceReferenceConfig>;
   private readonly context: LayoutContext;
   private readonly serviceName: string;
+  private readonly logger: Logger;
   private cachedService: T | null = null;
   private resolutionAttempts = 0;
 
@@ -65,8 +68,10 @@ export class ServiceReference<T extends Service> {
       ...config,
     };
 
+    this.logger = LoggerFactory.getInstance().getLogger(`ServiceReference:${serviceName}`);
+
     if (this.config.enableLogging) {
-      console.log(`🔄 ServiceReference created for service '${serviceName}'`);
+      this.logger.debug(`ServiceReference created for service '${serviceName}'`);
     }
   }
 
@@ -80,9 +85,7 @@ export class ServiceReference<T extends Service> {
     // Return cached service if available and caching is enabled
     if (this.config.enableCaching && this.cachedService) {
       if (this.config.enableLogging) {
-        console.log(
-          `🎯 ServiceReference: Using cached service '${this.serviceName}'`,
-        );
+        this.logger.debug(`Using cached service '${this.serviceName}'`);
       }
       return this.cachedService;
     }
@@ -125,9 +128,7 @@ export class ServiceReference<T extends Service> {
       this.resolutionAttempts = 0;
 
       if (this.config.enableLogging) {
-        console.log(
-          `🗑️ ServiceReference: Cache cleared for service '${this.serviceName}'`,
-        );
+        this.logger.debug(`Cache cleared for service '${this.serviceName}'`);
       }
     }
   }
@@ -167,9 +168,7 @@ export class ServiceReference<T extends Service> {
 
         if (service) {
           if (this.config.enableLogging) {
-            console.log(
-              `✅ ServiceReference: Resolved service '${this.serviceName}' on attempt ${attempt}`,
-            );
+            this.logger.debug(`Resolved service '${this.serviceName}' on attempt ${attempt}`);
           }
           return service;
         } else {
@@ -181,10 +180,7 @@ export class ServiceReference<T extends Service> {
         lastError = error as Error;
 
         if (this.config.enableLogging) {
-          console.warn(
-            `⚠️ ServiceReference: Resolution attempt ${attempt} failed for '${this.serviceName}':`,
-            error,
-          );
+          this.logger.warn(`Resolution attempt ${attempt} failed for '${this.serviceName}'`, error);
         }
 
         // Wait before retry (except on last attempt)

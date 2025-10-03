@@ -19,6 +19,8 @@
  */
 
 import type { LayoutContext } from '../contexts/LayoutContext';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 /**
  * Configuration options for ComponentReference
@@ -44,6 +46,7 @@ export class ComponentReference<T> {
   private readonly resolver: () => T | null;
   private readonly componentName: string;
   private readonly config: Required<ComponentReferenceConfig>;
+  private readonly logger: Logger;
   private cachedComponent: T | null = null;
   private resolving: Promise<T | null> | null = null;
   
@@ -64,8 +67,10 @@ export class ComponentReference<T> {
       ...config,
     };
     
+    this.logger = LoggerFactory.getInstance().getLogger(`ComponentReference[${componentName}]`);
+    
     if (this.config.enableLogging) {
-      console.log(`📦 ComponentReference[${componentName}] - Created with config:`, this.config);
+      this.logger.debug('Created with config', this.config);
     }
   }
   
@@ -116,7 +121,7 @@ export class ComponentReference<T> {
    */
   clearCache(): void {
     if (this.config.enableLogging) {
-      console.log(`🗑️ ComponentReference[${this.componentName}] - Cache cleared`);
+      this.logger.debug('Cache cleared');
     }
     this.cachedComponent = null;
   }
@@ -137,14 +142,14 @@ export class ComponentReference<T> {
     const startTime = Date.now();
     
     if (this.config.enableLogging) {
-      console.log(`🔍 ComponentReference[${this.componentName}] - Starting resolution...`);
+      this.logger.debug('Starting resolution...');
     }
     
     for (let attempt = 0; attempt < this.config.maxRetries; attempt++) {
       // Check timeout
       if (Date.now() - startTime > this.config.timeout) {
         if (this.config.enableLogging) {
-          console.warn(`⏰ ComponentReference[${this.componentName}] - Resolution timed out after ${this.config.timeout}ms`);
+          this.logger.warn(`Resolution timed out after ${this.config.timeout}ms`);
         }
         break;
       }
@@ -154,7 +159,7 @@ export class ComponentReference<T> {
       if (component) {
         this.cachedComponent = component;
         if (this.config.enableLogging) {
-          console.log(`✅ ComponentReference[${this.componentName}] - Resolved successfully (attempt ${attempt + 1})`);
+          this.logger.debug(`Resolved successfully (attempt ${attempt + 1})`);
         }
         return component;
       }
@@ -166,7 +171,7 @@ export class ComponentReference<T> {
     }
     
     if (this.config.enableLogging) {
-      console.warn(`❌ ComponentReference[${this.componentName}] - Failed to resolve after ${this.config.maxRetries} attempts`);
+      this.logger.warn(`Failed to resolve after ${this.config.maxRetries} attempts`);
     }
     
     return null;
@@ -180,7 +185,7 @@ export class ComponentReference<T> {
       return this.resolver();
     } catch (error) {
       if (this.config.enableLogging) {
-        console.error(`💥 ComponentReference[${this.componentName}] - Error during resolution:`, error);
+        this.logger.error('Error during resolution', error);
       }
       return null;
     }

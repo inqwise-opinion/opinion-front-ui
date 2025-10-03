@@ -171,10 +171,15 @@ export interface ChainHotkeyManager {
   destroy(): void;
 }
 
+// Import LoggerFactory for example usage
+import { LoggerFactory } from '../logging/LoggerFactory';
+
 /**
  * Example usage scenarios for the new system
  */
 export namespace HotkeyChainExamples {
+  // Example logger for demonstrations
+  const exampleLogger = LoggerFactory.getInstance().getLogger('HotkeyChainExamples');
   
   /**
    * Modal Dialog Provider (Highest Priority)
@@ -197,7 +202,7 @@ export namespace HotkeyChainExamples {
         providerId: this.getHotkeyProviderId(),
         enabled: true,
         handler: (ctx: HotkeyExecutionContext) => {
-          console.log('🚪 Modal: ESC pressed - closing modal');
+          exampleLogger.debug('Modal: ESC pressed - closing modal');
           this.closeModal();
           ctx.preventDefault();
           ctx.break(); // Stop chain - modal has priority
@@ -240,7 +245,7 @@ export namespace HotkeyChainExamples {
         providerId: this.getHotkeyProviderId(),
         enabled: true,
         handler: (ctx: HotkeyExecutionContext) => {
-          console.log('📱 Sidebar: ESC pressed - closing mobile menu');
+          exampleLogger.debug('Sidebar: ESC pressed - closing mobile menu');
           this.closeMobileMenu();
           ctx.preventDefault();
           
@@ -291,7 +296,7 @@ export namespace HotkeyChainExamples {
             return;
           }
           
-          console.log('👤 UserMenu: ESC pressed - closing user menu');
+          exampleLogger.debug('UserMenu: ESC pressed - closing user menu');
           this.closeUserMenu();
           
           // Smart chain decision
@@ -341,7 +346,7 @@ export namespace HotkeyChainExamples {
         providerId: this.getHotkeyProviderId(),
         enabled: true,
         handler: (ctx: HotkeyExecutionContext) => {
-          console.log('📄 Page: ESC pressed - page-specific handling');
+          exampleLogger.debug('Page: ESC pressed - page-specific handling');
           // Page-specific ESC behavior
           ctx.break(); // End of chain
         },

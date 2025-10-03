@@ -9,14 +9,18 @@ import type { BreadcrumbsManager } from '../interfaces/BreadcrumbsManager';
 import type { BreadcrumbItem } from '../interfaces/BreadcrumbItem';
 import type { BreadcrumbsComponent } from '../components/BreadcrumbsComponent';
 import type { LayoutContext } from './LayoutContext';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export class BreadcrumbsManagerImpl implements BreadcrumbsManager {
   private layoutContext: LayoutContext;
   private enableLogging: boolean;
+  private logger: Logger;
 
   constructor(layoutContext: LayoutContext, enableLogging: boolean = false) {
     this.layoutContext = layoutContext;
     this.enableLogging = enableLogging;
+    this.logger = LoggerFactory.getInstance().getLogger('BreadcrumbsManager');
   }
 
   /**
@@ -35,10 +39,10 @@ export class BreadcrumbsManagerImpl implements BreadcrumbsManager {
     if (component) {
       component.setBreadcrumbs(items);
       if (this.enableLogging) {
-        console.log(`🍞 PageContext - Set ${items.length} breadcrumbs:`, items.map(item => item.text));
+        this.logger.debug(`Set ${items.length} breadcrumbs`, items.map(item => item.text));
       }
     } else if (this.enableLogging) {
-      console.warn('🍞 PageContext - BreadcrumbsComponent not available for set operation');
+      this.logger.warn('BreadcrumbsComponent not available for set operation');
     }
   }
 
@@ -50,10 +54,10 @@ export class BreadcrumbsManagerImpl implements BreadcrumbsManager {
     if (component) {
       component.clearBreadcrumbs();
       if (this.enableLogging) {
-        console.log('🍞 PageContext - Cleared all breadcrumbs');
+        this.logger.debug('Cleared all breadcrumbs');
       }
     } else if (this.enableLogging) {
-      console.warn('🍞 PageContext - BreadcrumbsComponent not available for clear operation');
+      this.logger.warn('BreadcrumbsComponent not available for clear operation');
     }
   }
 
@@ -65,10 +69,10 @@ export class BreadcrumbsManagerImpl implements BreadcrumbsManager {
     if (component) {
       component.addBreadcrumb(item);
       if (this.enableLogging) {
-        console.log(`🍞 PageContext - Added breadcrumb: ${item.text}`);
+        this.logger.debug(`Added breadcrumb: ${item.text}`);
       }
     } else if (this.enableLogging) {
-      console.warn('🍞 PageContext - BreadcrumbsComponent not available for add operation');
+      this.logger.warn('BreadcrumbsComponent not available for add operation');
     }
   }
 
@@ -80,10 +84,10 @@ export class BreadcrumbsManagerImpl implements BreadcrumbsManager {
     if (component) {
       component.removeBreadcrumb(id);
       if (this.enableLogging) {
-        console.log(`🍞 PageContext - Removed breadcrumb: ${id}`);
+        this.logger.debug(`Removed breadcrumb: ${id}`);
       }
     } else if (this.enableLogging) {
-      console.warn('🍞 PageContext - BreadcrumbsComponent not available for remove operation');
+      this.logger.warn('BreadcrumbsComponent not available for remove operation');
     }
   }
 
@@ -95,10 +99,10 @@ export class BreadcrumbsManagerImpl implements BreadcrumbsManager {
     if (component) {
       component.updateBreadcrumb(id, updates);
       if (this.enableLogging) {
-        console.log(`🍞 PageContext - Updated breadcrumb: ${id}`, updates);
+        this.logger.debug(`Updated breadcrumb: ${id}`, updates);
       }
     } else if (this.enableLogging) {
-      console.warn('🍞 PageContext - BreadcrumbsComponent not available for update operation');
+      this.logger.warn('BreadcrumbsComponent not available for update operation');
     }
   }
 
@@ -111,7 +115,7 @@ export class BreadcrumbsManagerImpl implements BreadcrumbsManager {
       return component.getBreadcrumbs();
     }
     if (this.enableLogging) {
-      console.warn('🍞 PageContext - BreadcrumbsComponent not available for get operation');
+      this.logger.warn('BreadcrumbsComponent not available for get operation');
     }
     return [];
   }

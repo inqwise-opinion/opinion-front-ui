@@ -15,11 +15,14 @@ import type { BreadcrumbItem } from '../interfaces/BreadcrumbItem';
 import type { BreadcrumbsComponent } from '../components/BreadcrumbsComponent';
 import type { LayoutContext } from './LayoutContext';
 import type { ActivePage } from '../interfaces/ActivePage';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
   private layoutContext: LayoutContext;
   private activePage: ActivePage;
   private enableLogging: boolean;
+  private logger: Logger;
 
   constructor(
     layoutContext: LayoutContext, 
@@ -29,6 +32,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     this.layoutContext = layoutContext;
     this.activePage = activePage;
     this.enableLogging = enableLogging;
+    this.logger = LoggerFactory.getInstance().getLogger('HierarchicalBreadcrumbs');
   }
 
   /**
@@ -65,7 +69,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     for (let i = 0; i < items.length; i++) {
       if (items[i].id.toLowerCase() === pageIdLower) {
         if (this.enableLogging) {
-          console.log(`🍞 HierarchicalBreadcrumbs - Found case-insensitive match for ${pageId}: ${items[i].id} at index ${i}`);
+          this.logger.debug(`Found case-insensitive match for ${pageId}: ${items[i].id} at index ${i}`);
         }
         return i;
       }
@@ -74,7 +78,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     // Page ID not found - fallback to append-only mode (after last item)
     const fallbackIndex = items.length;
     if (this.enableLogging) {
-      console.warn(`🍞 HierarchicalBreadcrumbs - Page ID "${pageId}" not found in breadcrumbs. Scope limited to append-only after index ${fallbackIndex}`, {
+      this.logger.warn(`Page ID "${pageId}" not found in breadcrumbs. Scope limited to append-only after index ${fallbackIndex}`, {
         currentBreadcrumbs: items.map(item => item.id),
         pageId: pageId,
         fallbackScope: 'append-only'
@@ -112,7 +116,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     const scopeData = this.getScopedBreadcrumbs();
     if (!scopeData) {
       if (this.enableLogging) {
-        console.warn('🍞 HierarchicalBreadcrumbs - Component not available for applying changes');
+        this.logger.warn('Component not available for applying changes');
       }
       return;
     }
@@ -124,7 +128,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     if (component) {
       component.setBreadcrumbs(newFullTrail);
       if (this.enableLogging) {
-        console.log(`🍞 HierarchicalBreadcrumbs - Applied scoped changes for ${this.activePage.getPageId()}: ${newScopedItems.length} scoped items`);
+        this.logger.debug(`Applied scoped changes for ${this.activePage.getPageId()}: ${newScopedItems.length} scoped items`);
       }
     }
   }
@@ -152,7 +156,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     const scopeData = this.getScopedBreadcrumbs();
     if (!scopeData) {
       if (this.enableLogging) {
-        console.warn('🍞 HierarchicalBreadcrumbs - Component not available for add operation');
+        this.logger.warn('Component not available for add operation');
       }
       return;
     }
@@ -162,7 +166,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     this.applyScopedChanges(newScopedItems);
     
     if (this.enableLogging) {
-      console.log(`🍞 HierarchicalBreadcrumbs - Added: ${item.text}`);
+      this.logger.debug(`Added: ${item.text}`);
     }
   }
 
@@ -173,7 +177,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     const scopeData = this.getScopedBreadcrumbs();
     if (!scopeData) {
       if (this.enableLogging) {
-        console.warn('🍞 HierarchicalBreadcrumbs - Component not available for remove operation');
+        this.logger.warn('Component not available for remove operation');
       }
       return;
     }
@@ -184,7 +188,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     if (newScopedItems.length === scopedItems.length) {
       // Item not found in scope - silently ignore (hierarchical behavior)
       if (this.enableLogging) {
-        console.log(`🍞 HierarchicalBreadcrumbs - Item ${id} not in scope, ignoring`);
+        this.logger.debug(`Item ${id} not in scope, ignoring`);
       }
       return;
     }
@@ -192,7 +196,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     this.applyScopedChanges(newScopedItems);
     
     if (this.enableLogging) {
-      console.log(`🍞 HierarchicalBreadcrumbs - Removed: ${id}`);
+      this.logger.debug(`Removed: ${id}`);
     }
   }
 
@@ -203,7 +207,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     const scopeData = this.getScopedBreadcrumbs();
     if (!scopeData) {
       if (this.enableLogging) {
-        console.warn('🍞 HierarchicalBreadcrumbs - Component not available for update operation');
+        this.logger.warn('Component not available for update operation');
       }
       return;
     }
@@ -214,7 +218,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     if (itemIndex === -1) {
       // Item not found in scope - silently ignore (hierarchical behavior)
       if (this.enableLogging) {
-        console.log(`🍞 HierarchicalBreadcrumbs - Item ${id} not in scope for update, ignoring`);
+        this.logger.debug(`Item ${id} not in scope for update, ignoring`);
       }
       return;
     }
@@ -225,7 +229,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     this.applyScopedChanges(newScopedItems);
     
     if (this.enableLogging) {
-      console.log(`🍞 HierarchicalBreadcrumbs - Updated: ${id}`);
+      this.logger.debug(`Updated: ${id}`);
     }
   }
 
@@ -236,7 +240,7 @@ export class HierarchicalBreadcrumbsManagerImpl implements BreadcrumbsManager {
     const scopeData = this.getScopedBreadcrumbs();
     if (!scopeData) {
       if (this.enableLogging) {
-        console.warn('🍞 HierarchicalBreadcrumbs - Component not available for get operation');
+        this.logger.warn('Component not available for get operation');
       }
       return [];
     }

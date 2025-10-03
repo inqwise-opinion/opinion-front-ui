@@ -10,6 +10,8 @@ import type { LayoutContext } from '../contexts/LayoutContext';
 import type { EventBus } from '../lib/EventBus';
 import type { Service, ServiceConfig } from '../interfaces/Service';
 import { ServiceError } from '../interfaces/Service';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 /**
  * Abstract base service implementation
@@ -24,6 +26,7 @@ import { ServiceError } from '../interfaces/Service';
 export abstract class BaseService implements Service {
   protected readonly _context: LayoutContext;
   protected readonly _config: ServiceConfig;
+  protected readonly _logger: Logger;
   protected _initialized = false;
   protected _destroyed = false;
 
@@ -36,7 +39,9 @@ export abstract class BaseService implements Service {
       ...config,
     };
 
-    this._log('🏗️', 'Service created');
+    // Initialize logger with service-specific name
+    this._logger = LoggerFactory.getInstance().getLogger(`Service:${this.getServiceId()}`);
+    this._logger.debug('Service created');
   }
 
   /**
@@ -247,7 +252,7 @@ export abstract class BaseService implements Service {
    * Internal logging method
    */
   private _log(emoji: string, message: string, ...args: any[]): void {
-    console.log(`${emoji} [Service:${this.getServiceId()}] ${message}`, ...args);
+    this._logger.debug(message, ...args);
   }
 
   /**
@@ -261,10 +266,10 @@ export abstract class BaseService implements Service {
       if (typeof eventBus.publish === 'function') {
         eventBus.publish(event, data);
       } else {
-        console.warn(`[Service:${this.getServiceId()}] EventBus.publish method not available`);
+        this._logger.warn('EventBus.publish method not available');
       }
     } catch (error) {
-      console.error(`[Service:${this.getServiceId()}] Failed to publish event '${event}':`, error);
+      this._logger.error(`Failed to publish event '${event}'`, error);
     }
   }
 
@@ -299,11 +304,12 @@ export class ServiceHelper {
     name: string,
     service: Service
   ): void {
+    const logger = LoggerFactory.getInstance().getLogger('ServiceHelper');
     try {
       context.registerService(name, service);
-      console.log(`✅ [ServiceHelper] Registered service: ${name} (${service.getServiceId()})`);
+      logger.debug(`Registered service: ${name} (${service.getServiceId()})`);
     } catch (error) {
-      console.error(`❌ [ServiceHelper] Failed to register service '${name}':`, error);
+      logger.error(`Failed to register service '${name}'`, error);
       throw error;
     }
   }

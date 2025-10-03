@@ -5,6 +5,8 @@
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { ApiResponse, User, Opinion } from '../types';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export interface OpinionServiceConfig {
   baseUrl: string;
@@ -62,8 +64,11 @@ export interface ChartData {
 export class OpinionService {
   private client: AxiosInstance;
   private config: OpinionServiceConfig;
+  private readonly logger: Logger;
 
   constructor(config?: Partial<OpinionServiceConfig>) {
+    this.logger = LoggerFactory.getInstance().getLogger('OpinionService');
+    
     this.config = {
       baseUrl: '/api/opinion', // Modern API endpoint
       locale: 'en_US',
@@ -95,7 +100,7 @@ export class OpinionService {
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
-        console.error('Opinion Service error:', error);
+        this.logger.error('Opinion Service error', error);
         return Promise.reject(error);
       }
     );
@@ -130,7 +135,7 @@ export class OpinionService {
 
       throw new Error('Invalid response format');
     } catch (error) {
-      console.error('User validation failed:', error);
+      this.logger.error('User validation failed', error);
       throw error;
     }
   }
@@ -170,7 +175,7 @@ export class OpinionService {
 
       throw new Error('Invalid response format');
     } catch (error) {
-      console.error('Failed to get opinions list:', error);
+      this.logger.error('Failed to get opinions list', error);
       throw error;
     }
   }
@@ -212,7 +217,7 @@ export class OpinionService {
 
       throw new Error('Invalid response format');
     } catch (error) {
-      console.error('Failed to get activity chart:', error);
+      this.logger.error('Failed to get activity chart', error);
       throw error;
     }
   }
@@ -243,7 +248,7 @@ export class OpinionService {
         throw new Error(response.data.giveUsYourFeedback.errorDescription);
       }
     } catch (error) {
-      console.error('Failed to send feedback:', error);
+      this.logger.error('Failed to send feedback', error);
       throw error;
     }
   }
@@ -274,7 +279,7 @@ export class OpinionService {
         throw new Error(response.data.accounts.updateAccountSettings.error);
       }
     } catch (error) {
-      console.error('Failed to update account settings:', error);
+      this.logger.error('Failed to update account settings', error);
       throw error;
     }
   }

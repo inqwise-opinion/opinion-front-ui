@@ -8,6 +8,8 @@ import { MockApiService } from '../services/MockApiService';
 import MainContentImpl from '../components/MainContentImpl';
 import { PageComponent } from '../components/PageComponent';
 import type { PageContext } from '../interfaces/PageContext';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 import '../assets/styles/dashboard.scss';
 
 export class DashboardPage extends PageComponent {
@@ -30,7 +32,7 @@ export class DashboardPage extends PageComponent {
    */
   protected async onInit(): Promise<void> {
     try {
-      console.log('DashboardPage - Initializing...');
+      this.logger.debug('Initializing...');
       
       // Wait for DOM to be ready
       if (document.readyState === 'loading') {
@@ -41,9 +43,9 @@ export class DashboardPage extends PageComponent {
       
       await this.render();
       
-      console.log('DashboardPage - Ready');
+      this.logger.info('Ready');
     } catch (error) {
-      console.error('DashboardPage initialization failed:', error);
+      this.logger.error('Initialization failed', error);
       throw error;
     }
   }
@@ -63,7 +65,7 @@ export class DashboardPage extends PageComponent {
       this.setupPageHandlers();
       
     } catch (error) {
-      console.error('Dashboard render failed:', error);
+      this.logger.error('Render failed', error);
       throw error;
     }
   }
@@ -88,11 +90,11 @@ export class DashboardPage extends PageComponent {
 
       // Always use MainContent component as it's required
       this.mainContent.setContent(bodyContent);
-      console.log('Dashboard template loaded into semantic <main> element');
+      this.logger.debug('Template loaded into semantic <main> element');
       
-      console.log('Dashboard template loaded');
+      this.logger.info('Template loaded');
     } catch (error) {
-      console.error('Failed to load dashboard template:', error);
+      this.logger.error('Failed to load template', error);
       throw error;
     }
   }
@@ -133,14 +135,14 @@ export class DashboardPage extends PageComponent {
   private setupResponsiveHandlers(): void {
     // Responsive behavior is now handled by LayoutContext centrally
     // Page components should rely on CSS-based responsive design
-    console.log('DashboardPage - Responsive behavior delegated to LayoutContext');
+    this.logger.debug('Responsive behavior delegated to LayoutContext');
   }
 
   /**
    * Handle navigation to different routes
    */
   private navigateTo(path: string): void {
-    console.log(`Navigating to: ${path}`);
+    this.logger.debug(`Navigating to: ${path}`);
     
     // In a full SPA, this would handle routing
     // For now, use standard navigation
@@ -152,7 +154,7 @@ export class DashboardPage extends PageComponent {
    * Cleanup when page is destroyed
    */
   protected onDestroy(): void {
-    console.log('DashboardPage - Destroying...');
+    this.logger.debug('Destroying...');
     
     // Clean up event listeners and resources
     // Remove any global event listeners

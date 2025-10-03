@@ -2,6 +2,8 @@ import { PageComponent } from '../../components/PageComponent';
 import type { BreadcrumbItem } from '../../interfaces/BreadcrumbItem';
 import MainContentImpl from '../../components/MainContentImpl';
 import type { PageContext } from '../../interfaces/PageContext';
+import { LoggerFactory } from '../../logging/LoggerFactory';
+import { Logger } from '../../logging/Logger';
 
 export default class SurveyListPage extends PageComponent {
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
@@ -30,7 +32,7 @@ export default class SurveyListPage extends PageComponent {
       // Set initial breadcrumb
       this.setInitialBreadcrumb();
     } catch (error) {
-      console.error('❌ SurveyListPage - Initialization failed:', error);
+      this.logger.error('Initialization failed', error);
       throw error;
     }
   }
@@ -113,16 +115,16 @@ export default class SurveyListPage extends PageComponent {
         ];
         breadcrumbsManager.set(items);
       } else {
-        console.warn('🍞 SurveyListPage - BreadcrumbsManager not available');
+        this.logger.warn('BreadcrumbsManager not available');
       }
     } catch (error) {
-      console.error('🍞 SurveyListPage - Error setting breadcrumbs:', error);
+      this.logger.error('Error setting breadcrumbs', error);
     }
   }
 
   // Action Handlers
   private handleCreateSurvey(): void {
     // TODO: Implement survey creation logic
-    console.log('Create survey clicked');
+    this.logger.debug('Create survey clicked');
   }
 }

@@ -11,6 +11,8 @@ import type { ActivePage } from '../interfaces/ActivePage';
 import type { LayoutContext } from './LayoutContext';
 import type { RouteContext } from '../router/RouteContext';
 import { HierarchicalBreadcrumbsManagerImpl } from './HierarchicalBreadcrumbsManagerImpl';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export class PageContextImpl implements PageContext {
   private page: ActivePage | null;
@@ -20,6 +22,7 @@ export class PageContextImpl implements PageContext {
   private createdAt: number;
   private breadcrumbsManager: BreadcrumbsManager;
   private ready: boolean = false;
+  private logger: Logger;
 
   constructor(
     routeContext: RouteContext,
@@ -39,6 +42,8 @@ export class PageContextImpl implements PageContext {
       enableDebugLogging: config.enableDebugLogging ?? false,
     };
 
+    this.logger = LoggerFactory.getInstance().getLogger('PageContext');
+
     // Initialize breadcrumbs manager - will be properly initialized when page is set
     this.breadcrumbsManager = this.createBreadcrumbsManager();
 
@@ -57,7 +62,7 @@ export class PageContextImpl implements PageContext {
 
     if (this.config.enableDebugLogging) {
       const pageInfo = this.page ? `page: ${this.page.getPageId()}` : 'no page yet';
-      console.log(`🔧 PageContext - Created (${pageInfo})`, {
+      this.logger.debug(`Created (${pageInfo})`, {
         config: this.config,
         createdAt: this.createdAt
       });
@@ -74,12 +79,12 @@ export class PageContextImpl implements PageContext {
         this.ready = true;
         if (this.config.enableDebugLogging) {
           const pageInfo = this.page ? this.page.getPageId() : 'no page yet';
-          console.log(`🔧 PageContext - Initialized successfully (${pageInfo})`);
+          this.logger.debug(`Initialized successfully (${pageInfo})`);
         }
       } else {
         // Retry after a short delay
         if (this.config.enableDebugLogging) {
-          console.warn(`🔧 PageContext - Breadcrumbs not available yet, retrying...`);
+          this.logger.warn('Breadcrumbs not available yet, retrying...');
         }
         setTimeout(() => {
           this.initialize();
@@ -89,7 +94,7 @@ export class PageContextImpl implements PageContext {
       this.ready = true;
       if (this.config.enableDebugLogging) {
         const pageInfo = this.page ? this.page.getPageId() : 'no page yet';
-        console.log(`🔧 PageContext - Initialized (breadcrumbs disabled) (${pageInfo})`);
+        this.logger.debug(`Initialized (breadcrumbs disabled) (${pageInfo})`);
       }
     }
   }
@@ -118,7 +123,7 @@ export class PageContextImpl implements PageContext {
     this.breadcrumbsManager = this.createBreadcrumbsManager();
     
     if (this.config.enableDebugLogging) {
-      console.log(`🔧 PageContext - Page associated: ${page.getPageId()}`);
+      this.logger.debug(`Page associated: ${page.getPageId()}`);
     }
   }
 
@@ -134,7 +139,7 @@ export class PageContextImpl implements PageContext {
     this.setPage(page);
     
     if (this.config.enableDebugLogging) {
-      console.log(`🏢 PageContext - Created and associated page: ${page.getPageId()}`);
+      this.logger.debug(`Created and associated page: ${page.getPageId()}`);
     }
     
     return page;

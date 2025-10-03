@@ -4,6 +4,8 @@
  */
 
 import { Opinion, Survey, User, UserRole, OpinionStatus } from '../types';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export interface AuthenticationInfo {
   userInfo: User;
@@ -24,9 +26,11 @@ export interface ChartData {
 
 export class MockApiService {
   private delay = 500; // Simulate network delay
+  private readonly logger: Logger;
 
   constructor() {
-    console.log('MockApiService: Using mock data for development');
+    this.logger = LoggerFactory.getInstance().getLogger('MockApiService');
+    this.logger.info('Using mock data for development');
   }
 
   /**
@@ -153,7 +157,7 @@ export class MockApiService {
   async validateUser(): Promise<AuthenticationInfo> {
     await this.simulateDelay();
     
-    console.log('MockApiService: Validating user...');
+    this.logger.debug('Validating user...');
     
     const user = this.createMockUser();
     
@@ -177,7 +181,7 @@ export class MockApiService {
   }): Promise<{ list: Survey[] }> {
     await this.simulateDelay();
     
-    console.log('MockApiService: Fetching opinions list...', params);
+    this.logger.debug('Fetching opinions list...', params);
     
     let surveys = this.createMockSurveys();
     
@@ -208,7 +212,7 @@ export class MockApiService {
   }): Promise<ChartData> {
     await this.simulateDelay();
     
-    console.log('MockApiService: Fetching activity chart...', params);
+    this.logger.debug('Fetching activity chart...', params);
     
     return this.createMockChartData();
   }
@@ -223,10 +227,10 @@ export class MockApiService {
   }): Promise<void> {
     await this.simulateDelay();
     
-    console.log('MockApiService: Sending feedback...', params);
+    this.logger.debug('Sending feedback...', params);
     
     // Simulate successful feedback submission
-    console.log('MockApiService: Feedback sent successfully');
+    this.logger.info('Feedback sent successfully');
   }
 
   /**
@@ -238,10 +242,10 @@ export class MockApiService {
   }): Promise<void> {
     await this.simulateDelay();
     
-    console.log('MockApiService: Updating account settings...', params);
+    this.logger.debug('Updating account settings...', params);
     
     // Simulate successful settings update
-    console.log('MockApiService: Account settings updated successfully');
+    this.logger.info('Account settings updated successfully');
   }
 }
 

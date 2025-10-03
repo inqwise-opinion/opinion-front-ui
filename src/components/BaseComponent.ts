@@ -1,4 +1,6 @@
 import { LifecycleHandler } from '../interfaces/LifecycleHandler';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 /**
  * Base component class that implements lifecycle methods
@@ -7,6 +9,11 @@ import { LifecycleHandler } from '../interfaces/LifecycleHandler';
 export abstract class BaseComponent {
   protected _initialized = false;
   protected _destroyed = false;
+  protected logger: Logger;
+
+  constructor() {
+    this.logger = LoggerFactory.getInstance().getLogger(this.constructor.name);
+  }
 
   /**
    * Called before component initialization
@@ -58,7 +65,7 @@ export abstract class BaseComponent {
    */
   public async init(): Promise<void> {
     if (this._initialized || this._destroyed) {
-      console.warn(`${this.constructor.name}: Cannot initialize - already initialized or destroyed`);
+      this.logger.warn('Cannot initialize - already initialized or destroyed');
       return;
     }
 
@@ -68,7 +75,7 @@ export abstract class BaseComponent {
       this._initialized = true;
       await this.onPostInit();
     } catch (error) {
-      console.error(`${this.constructor.name}: Initialization failed:`, error);
+      this.logger.error('Initialization failed', error);
       throw error;
     }
   }
@@ -79,7 +86,7 @@ export abstract class BaseComponent {
    */
   public async destroy(): Promise<void> {
     if (this._destroyed) {
-      console.warn(`${this.constructor.name}: Already destroyed`);
+      this.logger.warn('Already destroyed');
       return;
     }
 
@@ -90,7 +97,7 @@ export abstract class BaseComponent {
       this._initialized = false;
       await this.onAfterDestroy();
     } catch (error) {
-      console.error(`${this.constructor.name}: Destruction failed:`, error);
+      this.logger.error('Destruction failed', error);
       throw error;
     }
   }

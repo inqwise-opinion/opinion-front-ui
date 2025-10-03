@@ -28,6 +28,8 @@ import type {
   HandlerPriority,
 } from "../types/LayoutHandlers";
 import { isLifecycleHandler, isContextHandler } from "../types/LayoutHandlers";
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 // Re-export handler types for convenience
 export type { ContextHandler, LifecycleHandler, HandlerConfig, HandlerResult };
@@ -88,6 +90,7 @@ export class Layout {
   // Unified handler system (replaces old onReadyHandlers)
   private registeredHandlers: Array<HandlerRegistration> = [];
   private contextHandlers: Array<ContextHandler | LifecycleHandler> = [];
+  private readonly logger: Logger;
 
   // Navigation and user menu state
   private navigationItems: NavigationItem[] = [];
@@ -125,6 +128,9 @@ export class Layout {
       userMenu: config.userMenu || [],
     };
 
+    // Initialize logger
+    this.logger = LoggerFactory.getInstance().getLogger('Layout');
+
     // Initialize layout context first
     this.layoutContext = new LayoutContextImpl();
 
@@ -144,79 +150,79 @@ export class Layout {
    * Initialize the layout and all components
    */
   async init(): Promise<void> {
-    console.log("🏢 LAYOUT - init() START");
+    this.logger.debug('init() START');
 
     try {
-      console.log("🏢 LAYOUT - Starting layout initialization...");
+      this.logger.info('Starting layout initialization...');
 
       // Initialize header
       if (this.config.header?.enabled) {
-        console.log("🏢 LAYOUT - Header enabled, initializing...");
+        this.logger.debug('Header enabled, initializing...');
         await this.header.init();
-        console.log("✅ LAYOUT - Header initialized successfully");
+        this.logger.debug('Header initialized successfully');
 
         // Update brand if configured
         if (this.config.header.brandTitle) {
-          console.log("🏢 LAYOUT - Updating header brand...");
+          this.logger.debug('Updating header brand...');
           this.header.updateBrand(
             this.config.header.brandTitle,
             this.config.header.brandHref,
           );
-          console.log("✅ LAYOUT - Header brand updated");
+          this.logger.debug('Header brand updated');
         }
 
         // Apply user menu items to header
-        console.log("🏢 LAYOUT - Applying user menu items to header...");
+        this.logger.debug('Applying user menu items to header...');
 
-        console.log("✅ LAYOUT - User menu items applied to header");
+        this.logger.debug('User menu items applied to header');
       } else {
-        console.log("⚠️ LAYOUT - Header disabled in config");
+        this.logger.warn('Header disabled in config');
       }
 
       // Initialize MainContent area (manages existing element)
-      console.log("🏢 LAYOUT - Initializing MainContent...");
+      this.logger.debug('Initializing MainContent...');
       this.mainContent.init();
-      console.log("✅ LAYOUT - MainContent initialized");
+      this.logger.debug('MainContent initialized');
 
       // Initialize Messages component
-      console.log("🏢 LAYOUT - Initializing MessagesComponent...");
+      this.logger.debug('Initializing MessagesComponent...');
       this.messagesComponent = new MessagesComponent(this.layoutContext);
       await this.messagesComponent.init();
 
-      console.log("✅ LAYOUT - MessagesComponent initialized");
+      this.logger.debug('MessagesComponent initialized');
 
       // Initialize sidebar component if enabled
       if (this.config.sidebar?.enabled) {
-        console.log("🏢 LAYOUT - Sidebar enabled, initializing...");
+        this.logger.debug('Sidebar enabled, initializing...');
         await this.initSidebar();
-        console.log("✅ LAYOUT - Sidebar initialized successfully");
+        this.logger.debug('Sidebar initialized successfully');
       } else {
-        console.log("⚠️ LAYOUT - Sidebar disabled in config");
+        this.logger.warn('Sidebar disabled in config');
       }
 
       // Initialize footer
       if (this.config.footer?.enabled) {
-        console.log("🏢 LAYOUT - Footer enabled, initializing...");
+        this.logger.debug('Footer enabled, initializing...');
         await this.footer.init();
-        console.log("✅ LAYOUT - Footer initialized successfully");
+        this.logger.debug('Footer initialized successfully');
       } else {
-        console.log("⚠️ LAYOUT - Footer disabled in config");
+        this.logger.warn('Footer disabled in config');
       }
 
       // Setup component coordination
-      console.log("🏢 LAYOUT - Setting up component coordination...");
+      this.logger.debug('Setting up component coordination...');
       this.setupComponentCoordination();
-      console.log("✅ LAYOUT - Component coordination setup complete");
+      this.logger.debug('Component coordination setup complete');
 
       // Setup responsive behavior
-      console.log("🏢 LAYOUT - Setting up responsive behavior...");
+      this.logger.debug('Setting up responsive behavior...');
       this.setupResponsiveBehavior();
-      console.log("✅ LAYOUT - Responsive behavior setup complete");
+      this.logger.debug('Responsive behavior setup complete');
 
       // Subscribe to layout context events
-      console.log("🏢 LAYOUT - Subscribing to layout context events...");
+      this.logger.debug('Subscribing to layout context events...');
       this.subscribeToLayoutContext();
-      console.log("✅ LAYOUT - Layout context subscription complete");
+      this.logger.debug('Layout context subscription complete');
 
       // Mark layout as ready
       this.layoutContext.markReady();
@@ -225,14 +231,13 @@ export class Layout {
       await this.executeRegisteredHandlers();
 
       this.isInitialized = true;
-      console.log("✅ LAYOUT - Layout initialization completed successfully!");
+      this.logger.info('Layout initialization completed successfully!');
     } catch (error) {
-      console.error("❌ LAYOUT - Layout initialization failed:", error);
-      console.error("❌ LAYOUT - Error stack:", (error as Error).stack);
+      this.logger.error('Layout initialization failed', error);
       throw error;
     }
 
-    console.log("🏢 LAYOUT - init() END");
+    this.logger.debug('init() END');
   }
 
   /**
@@ -250,13 +255,13 @@ export class Layout {
         },
       };
 
-      console.log("🏢 LAYOUT - Creating sidebar with config:", sidebarConfig);
+      this.logger.debug('Creating sidebar with config', sidebarConfig);
       this.sidebar = new SidebarComponent(sidebarConfig, this.layoutContext);
 
       // Initialize the sidebar
       await this.sidebar.init();
     } catch (error) {
-      console.error("❌ LAYOUT - Sidebar initialization failed:", error);
+      this.logger.error('Sidebar initialization failed', error);
       throw error;
     }
   }
@@ -267,7 +272,7 @@ export class Layout {
   private setupComponentCoordination(): void {
     // Note: Component coordination is now handled by the layout context
     // All components subscribe to layout context events for coordination
-    console.log("Layout - Component coordination delegated to layout context");
+    this.logger.debug('Component coordination delegated to layout context');
   }
 
   /**
@@ -324,7 +329,7 @@ export class Layout {
       this.header.updateUser(user);
     }
 
-    console.log("Layout - User updated across components");
+    this.logger.debug('User updated across components');
   }
 
   /**
@@ -417,9 +422,7 @@ export class Layout {
    */
   updateCopyrightText(text: string): void {
     // Footer copyright is immutable - set only during construction
-    console.warn(
-      "Layout - Footer copyright text cannot be updated after initialization",
-    );
+    this.logger.warn('Footer copyright text cannot be updated after initialization');
 
     // Update sidebar copyright (if it exists) - this may still be dynamic
     const sidebarCopyright = document.querySelector(
@@ -427,7 +430,7 @@ export class Layout {
     ) as HTMLElement;
     if (sidebarCopyright) {
       sidebarCopyright.textContent = text;
-      console.log("Layout - Sidebar copyright text updated:", text);
+      this.logger.debug(`Sidebar copyright text updated: ${text}`);
     }
   }
 
@@ -435,7 +438,7 @@ export class Layout {
    * Subscribe to layout context events
    */
   private subscribeToLayoutContext(): void {
-    console.log("Layout - Subscribing to layout context events...");
+    this.logger.debug('Subscribing to layout context events...');
 
     // Subscribe to layout ready events
     const layoutReadyUnsubscribe = this.layoutContext.subscribe(
@@ -460,14 +463,14 @@ export class Layout {
     );
     this.layoutUnsubscribers.push(layoutModeUnsubscribe);
 
-    console.log("Layout - Successfully subscribed to layout context events ✅");
+    this.logger.debug('Successfully subscribed to layout context events');
   }
 
   /**
    * Handle layout ready event
    */
   private handleLayoutReady(event: any): void {
-    console.log("Layout - Layout context marked as ready:", event.data);
+    this.logger.debug('Layout context marked as ready', event.data);
 
     // Perform any final coordination between components
     this.finalizeComponentCoordination();
@@ -501,7 +504,7 @@ export class Layout {
    * Finalize component coordination after layout is ready
    */
   private finalizeComponentCoordination(): void {
-    console.log("Layout - Finalizing component coordination...");
+    this.logger.debug('Finalizing component coordination...');
   }
 
   /**
@@ -509,15 +512,12 @@ export class Layout {
    */
   private handleLayoutModeChange(event: LayoutEvent): void {
     const layoutMode = event.data as LayoutModeType;
-    console.log("Layout - Received layout mode change:", layoutMode);
+    this.logger.debug('Received layout mode change', layoutMode);
 
     if (layoutMode) {
       this.updateComponentCSSClasses(this.layoutContext);
     } else {
-      console.error(
-        "Layout - Received undefined layout mode data in event:",
-        event,
-      );
+      this.logger.error('Received undefined layout mode data in event', event);
     }
   }
 
@@ -991,7 +991,7 @@ export class Layout {
     if (defaultConfig.enableLogging) {
       const handlerType = isLifecycleHandler(handler) ? 'LifecycleHandler' : 'ContextHandler';
       const id = isLifecycleHandler(handler) ? handler.id : 'anonymous';
-      console.log(`Layout - Registered ${handlerType} (${id})`);
+      this.logger.debug(`Registered ${handlerType} (${id})`);
     }
 
     // If layout is already initialized, execute immediately
@@ -1042,7 +1042,7 @@ export class Layout {
     } catch (error) {
       result.error = error as Error;
       if (config.enableLogging) {
-        console.error('Layout - Handler execution failed:', error);
+        this.logger.error('Handler execution failed', error);
       }
       
       // Execute error handler if it's a lifecycle handler
@@ -1050,7 +1050,7 @@ export class Layout {
         try {
           await handler.onError(error as Error, this.layoutContext);
         } catch (errorHandlerError) {
-          console.error('Layout - Error handler also failed:', errorHandlerError);
+          this.logger.error('Error handler also failed', errorHandlerError);
         }
       }
       
@@ -1158,7 +1158,7 @@ export class Layout {
       return;
     }
 
-    console.log(`Layout - Executing ${this.registeredHandlers.length} registered handlers`);
+    this.logger.debug(`Executing ${this.registeredHandlers.length} registered handlers`);
 
     // Sort handlers by priority (higher priority = executed first)
     const sortedRegistrations = [...this.registeredHandlers].sort((a, b) => {
@@ -1171,7 +1171,7 @@ export class Layout {
       await this.executeHandler(registration);
     }
 
-    console.log('Layout - All registered handlers executed');
+    this.logger.debug('All registered handlers executed');
   }
 
   /**
@@ -1198,26 +1198,21 @@ export class Layout {
    * Cleanup when layout is destroyed
    */
   destroy(): void {
-    console.log("Layout - Destroying...");
+    this.logger.info('Destroying...');
 
     // Unsubscribe from layout context events
     this.layoutUnsubscribers.forEach((unsubscribe) => {
       try {
         unsubscribe();
       } catch (error) {
-        console.error(
-          "Layout - Error unsubscribing from layout context:",
-          error,
-        );
+        this.logger.error('Error unsubscribing from layout context', error);
       }
     });
     this.layoutUnsubscribers = [];
 
     // Clear all registered handlers (unified system)
     if (this.registeredHandlers.length > 0) {
-      console.log(
-        `Layout - Clearing ${this.registeredHandlers.length} registered handlers`,
-      );
+      this.logger.debug(`Clearing ${this.registeredHandlers.length} registered handlers`);
       this.registeredHandlers = [];
       this.contextHandlers = [];
     }
@@ -1282,7 +1277,7 @@ export class Layout {
     // Note: In a real app, you'd want to keep track of listeners to remove them properly
 
     this.isInitialized = false;
-    console.log("Layout - Destroyed");
+    this.logger.info('Destroyed');
   }
 }
 

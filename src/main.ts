@@ -7,14 +7,18 @@ import './assets/styles/app-layout.css';
 import './assets/styles/main.scss';
 import './assets/styles/dashboard.scss';
 import { OpinionApp } from './app';
+import { LoggerFactory } from './logging/LoggerFactory';
+
+// Initialize logger for main module
+const logger = LoggerFactory.getInstance().getLogger('Main');
 
 // Add temporary global error handlers (will be replaced after app init)
 const globalErrorHandler = (event: ErrorEvent) => {
-  console.error('Global JavaScript error (before app init):', event.error);
+  logger.error('Global JavaScript error (before app init)', event.error);
 };
 
 const globalRejectionHandler = (event: PromiseRejectionEvent) => {
-  console.error('Unhandled promise rejection (before app init):', event.reason);
+  logger.error('Unhandled promise rejection (before app init)', event.reason);
 };
 
 window.addEventListener('error', globalErrorHandler);

@@ -335,7 +335,7 @@ export class ChannelFactory {
                 
                 // The LoggerFactory will override this channel's write method
                 // to route messages to the appropriate async consumers
-                console.log(`AsyncConsumerChannel[${config.channelName}]:`, ourMsg);
+                // Temporary placeholder - will be overridden by LoggerFactory
             }
         };
     }
