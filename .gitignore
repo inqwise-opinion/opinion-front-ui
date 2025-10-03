@@ -73,3 +73,9 @@ tmp/
 temp/
 docs/archive/
 debug/
+
+# Editor/IDE configuration
+.cursor/
+
+# MCP configuration
+.mcp.json
