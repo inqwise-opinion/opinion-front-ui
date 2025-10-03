@@ -1,0 +1,35 @@
+{
+  "providerName": "OpinionApp",
+  "globalLevel": 2,
+  "appenders": [
+    {
+      "name": "console",
+      "enabled": true,
+      "level": 2,
+      "channel": {
+        "type": "console"
+      },
+      "groups": [".+"]
+    },
+    {
+      "name": "messages",
+      "enabled": true,
+      "level": 0,
+      "channel": {
+        "type": "async-consumer",
+        "channelName": "messages"
+      },
+      "groups": [".+"]
+    },
+    {
+      "name": "errors",
+      "enabled": true,
+      "level": 4,
+      "channel": {
+        "type": "async-consumer",
+        "channelName": "error-tracking"
+      },
+      "groups": [".*Service$", ".*Controller$"]
+    }
+  ]
+}
