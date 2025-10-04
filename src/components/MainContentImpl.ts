@@ -12,7 +12,6 @@ import {
   type LayoutContext,
   type LayoutEvent,
 } from "../contexts";
-import type { Dimensions } from "./Sidebar";
 import type { MainContent, MainContentConfig } from "./MainContent";
 import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 

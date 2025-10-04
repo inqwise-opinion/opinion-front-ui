@@ -9,7 +9,6 @@ import "../assets/styles/components/footer.css";
 import { getLayoutContext } from "../contexts/index";
 import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
 import { AppFooter, FooterConfig } from "./AppFooter";
-import type { Dimensions } from "./Sidebar";
 import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
 
 export class AppFooterImpl implements AppFooter, ComponentWithStatus {

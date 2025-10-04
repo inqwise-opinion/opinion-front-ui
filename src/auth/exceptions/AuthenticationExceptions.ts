@@ -70,7 +70,7 @@ export class AuthenticationError extends Error {
    * @param error - Error to check
    * @returns true if error is an AuthenticationError or has auth-related cause
    */
-  static isAuthenticationError(error: any): error is AuthenticationError {
+  static isAuthenticationError(error: unknown): error is AuthenticationError {
     return error instanceof AuthenticationError ||
            (error?.name === 'AuthenticationError') ||
            (error?.cause instanceof AuthenticationError);
@@ -80,7 +80,7 @@ export class AuthenticationError extends Error {
 /**
  * Type guard function for authentication errors
  */
-export function isAuthenticationError(error: any): error is AuthenticationError {
+export function isAuthenticationError(error: unknown): error is AuthenticationError {
   return AuthenticationError.isAuthenticationError(error);
 }
 

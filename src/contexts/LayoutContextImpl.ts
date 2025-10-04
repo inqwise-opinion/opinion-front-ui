@@ -3,7 +3,7 @@
  * Provides a centralized event system for layout components
  */
 
-import type { Dimensions, Sidebar } from "../components/Sidebar";
+import type { Sidebar } from "../components/Sidebar";
 
 import type { AppHeader } from "../components/AppHeader";
 import type { AppFooter } from "../components/AppFooter";
@@ -20,15 +20,13 @@ import type {
 import type {
   ActivePage,
   ActivePageConsumer,
-  ActivePageProvider,
 } from "../interfaces/ActivePage";
-import type { Service, ServiceConfig } from "../interfaces/Service";
+import type { Service } from "../interfaces/Service";
 import { ServiceError } from "../interfaces/Service";
 import type { EventBus, Consumer } from "../lib/EventBus";
 import { EventBusImpl } from "../lib/EventBusImpl";
 import {
   LayoutEventFactory,
-  type TypedLayoutEvent,
 } from "./LayoutEventFactory";
 import {
   ChainHotkeyManager,
@@ -36,8 +34,6 @@ import {
   ChainExecutionResult,
 } from "../hotkeys/HotkeyChainSystem";
 import { ChainHotkeyManagerImpl } from "../hotkeys/ChainHotkeyManagerImpl";
-import type { PageContext, PageContextConfig } from "../interfaces/PageContext";
-import { PageContextImpl } from "./PageContextImpl";
 import { ServiceReference, ServiceReferenceConfig } from "../services/ServiceReference";
 import { LoggerFactory } from "../logging/LoggerFactory";
 import { Logger } from "../logging/Logger";

@@ -13,7 +13,6 @@ import type { UserMenuItem } from "./Layout";
 import type { BreadcrumbItem } from "../interfaces/BreadcrumbItem";
 
 // Type-only import for the interface
-import { Dimensions } from "./Sidebar";
 // Import layout context
 import { getLayoutContext } from "../contexts/index";
 import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
@@ -319,7 +318,7 @@ export class AppHeaderImpl
   /**
    * Handle ESC key via LayoutContext hotkey system
    */
-  private handleEscapeKey(event: KeyboardEvent): void {
+  private handleEscapeKey(_event: KeyboardEvent): void {
     // Emit user menu request event instead of direct call
     // This maintains separation between header and user menu components
     const requestEvent = LayoutEventFactory.createUserMenuRequestEvent(
@@ -368,7 +367,7 @@ export class AppHeaderImpl
   /**
    * Handle data-action based interactions
    */
-  private handleAction(action: string | null, element: HTMLElement): void {
+  private handleAction(action: string | null, _element: HTMLElement): void {
     if (!action) return;
 
     switch (action) {
@@ -705,7 +704,7 @@ export class AppHeaderImpl
   /**
    * Legacy/test adapter: expose sidebar reference via layout context
    */
-  public getSidebar(): any {
+  public getSidebar(): unknown {
     return this.layoutContext.getSidebar();
   }
 

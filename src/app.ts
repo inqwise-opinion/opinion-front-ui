@@ -277,7 +277,7 @@ export class OpinionApp {
   /**
    * Handle test error message from postMessage (for iframe testing)
    */
-  private handleTestErrorMessage(messageData: any): void {
+  private handleTestErrorMessage(messageData: { type?: string; title?: string; description?: string }): void {
 
     if (!this.layout) {
       this.logger.warn('Layout not initialized, cannot show error message');

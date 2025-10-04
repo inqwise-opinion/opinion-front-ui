@@ -9,14 +9,11 @@ import type { Messages } from "../interfaces/Messages";
 import { AppFooter } from "../components/AppFooter";
 import { MainContent } from "../components/MainContent";
 import {
-  ActivePage,
-  ActivePageConsumer,
   ActivePageProvider,
 } from "../interfaces/ActivePage";
 import type {
   Service,
   ServiceRegistry,
-  ServiceConfig,
 } from "../interfaces/Service";
 import type { EventBus, Consumer } from "../lib/EventBus";
 import type {
@@ -28,7 +25,6 @@ import type {
   ChainHotkeyProvider,
   ChainExecutionResult,
 } from "../hotkeys/HotkeyChainSystem";
-import type { PageContext, PageContextConfig } from "../interfaces/PageContext";
 
 export interface LayoutViewPort {
   width: number;

@@ -35,11 +35,11 @@ interface LoaderBinding<T> {
 }
 
 export abstract class DataBoundComponent extends PageComponent {
-  private bindings: Map<string, DataBinding<any>> = new Map();
-  private loaderBindings: Map<string, LoaderBinding<any>> = new Map();
+  private bindings: Map<string, DataBinding<unknown>> = new Map();
+  private loaderBindings: Map<string, LoaderBinding<unknown>> = new Map();
   private unsubscribers: Map<string, () => void> = new Map();
   private refreshTimers: Map<string, NodeJS.Timeout> = new Map();
-  private observables: Map<string, Observable<any>> = new Map();
+  private observables: Map<string, Observable<unknown>> = new Map();
 
   constructor(mainContent: MainContentImpl, pageContext: PageContext, config: PageComponentConfig = {}) {
     super(mainContent, pageContext, config);
@@ -237,9 +237,9 @@ export abstract class DataBoundComponent extends PageComponent {
     } else if (property === 'innerHTML') {
       element.innerHTML = value;
     } else if (property === 'value' && 'value' in element) {
-      (element as any).value = value;
+      (element as HTMLInputElement).value = value;
     } else {
-      (element as any)[property] = value;
+      (element as Record<string, unknown>)[property] = value;
     }
   }
 
@@ -347,7 +347,7 @@ export abstract class DataBoundComponent extends PageComponent {
             `auto-${bindKey}`,
             observable,
             `[data-bind="${bindKey}"]`,
-            { property: bindProperty as any }
+            { property: bindProperty as keyof HTMLElement }
           );
 
           console.log(`🤖 DataBoundComponent - Auto-bound: ${bindKey}`);

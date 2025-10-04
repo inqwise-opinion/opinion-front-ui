@@ -354,7 +354,7 @@ export class MockSessionAuthProvider implements SessionAuthProvider, SelfIdentif
   /**
    * Simple logging method
    */
-  private log(prefix: string, message: string, data?: any): void {
+  private log(prefix: string, message: string, data?: unknown): void {
     const serviceId = this.getServiceId();
     if (data) {
       console.log(`${prefix} [${serviceId}] ${message}`, data);
@@ -417,9 +417,9 @@ export class MockSessionAuthProvider implements SessionAuthProvider, SelfIdentif
    * @returns Promise<ServiceReference<MockSessionAuthProvider>> for lazy resolution
    */
   static async getRegisteredReference(
-    context: any, // LayoutContext - avoiding import cycle
-    config?: any // ServiceReferenceConfig - avoiding import cycle
-  ): Promise<any> { // ServiceReference<MockSessionAuthProvider> - avoiding import cycle
+    context: unknown, // LayoutContext - avoiding import cycle
+    config?: unknown // ServiceReferenceConfig - avoiding import cycle
+  ): Promise<unknown> { // ServiceReference<MockSessionAuthProvider> - avoiding import cycle
     const { ServiceReference } = await import('../services/ServiceReference');
     return new ServiceReference(
       context,

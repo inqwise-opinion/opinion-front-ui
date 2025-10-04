@@ -116,7 +116,7 @@ export const AuthEventFactory = {
  * @param event - Event to check
  * @returns true if event is an authentication event
  */
-export function isAuthEvent(event: any): event is AuthEvent<AuthEventName> {
+export function isAuthEvent(event: unknown): event is AuthEvent<AuthEventName> {
   return event &&
          typeof event.name === 'string' &&
          Object.values(AUTH_EVENTS).includes(event.name as AuthEventName) &&

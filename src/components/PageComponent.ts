@@ -10,7 +10,6 @@
  */
 
 import MainContentImpl from "./MainContentImpl";
-import type { MainContent } from "./MainContent";
 import { ActivePage, PageInfo } from "../interfaces/ActivePage";
 import BaseComponent from './BaseComponent';
 import type { PageContext } from "../interfaces/PageContext";
@@ -255,7 +254,7 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
   /**
    * Handle Escape key - override in subclasses
    */
-  protected handleEscape(event: KeyboardEvent): void {
+  protected handleEscape(_event: KeyboardEvent): void {
     // Close any open dropdowns, modals, etc.
     const openDropdowns = document.querySelectorAll('[aria-expanded="true"]');
     openDropdowns.forEach((dropdown) => {

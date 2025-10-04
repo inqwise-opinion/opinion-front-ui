@@ -100,7 +100,7 @@ export class AuthenticatedUser {
   /**
    * Type guard to check if an object is an AuthenticatedUser
    */
-  static isAuthenticatedUser(obj: any): obj is AuthenticatedUser {
+  static isAuthenticatedUser(obj: unknown): obj is AuthenticatedUser {
     return obj instanceof AuthenticatedUser ||
            (obj && 
             typeof obj.id === 'number' &&
