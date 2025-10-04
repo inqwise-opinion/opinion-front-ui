@@ -250,7 +250,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
   /**
    * Handle navigation link clicks
    */
-  private handleNavigationClick(link: HTMLAnchorElement, event: Event): void {
+  private handleNavigationClick(link: HTMLAnchorElement, _event: Event): void {
     const href = link.getAttribute("href");
     
     this.navigationClickCount++;

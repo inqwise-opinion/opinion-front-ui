@@ -53,9 +53,9 @@ export type ExtractServiceId<T> = T extends { SERVICE_ID: infer U } ? U : never;
  * Helper for type-safe service registration
  */
 export function registerService<T extends ServiceIdentity>(
-  context: any,
+  context: { registerService: (id: string, instance: unknown) => void },
   ServiceClass: T,
-  instance: any
+  instance: unknown
 ): void {
   const serviceId = ServiceClass.SERVICE_ID;
   context.registerService(serviceId, instance);
@@ -66,7 +66,7 @@ export function registerService<T extends ServiceIdentity>(
  * Helper for type-safe service resolution
  */
 export function resolveService<T extends ServiceIdentity, R>(
-  context: any,
+  context: { getService: (id: string) => unknown },
   ServiceClass: T
 ): R | null {
   const serviceId = ServiceClass.SERVICE_ID;
@@ -77,7 +77,7 @@ export function resolveService<T extends ServiceIdentity, R>(
  * Validation helper to ensure service implements required identity
  */
 export function validateServiceIdentity<T>(
-  ServiceClass: any,
+  ServiceClass: unknown,
   instance: T
 ): asserts ServiceClass is ServiceIdentity {
   if (!ServiceClass.SERVICE_ID || typeof ServiceClass.SERVICE_ID !== 'string') {
@@ -87,7 +87,7 @@ export function validateServiceIdentity<T>(
     );
   }
   
-  if (instance && typeof (instance as any).getServiceId !== 'function') {
+  if (instance && typeof (instance as { getServiceId?: () => string }).getServiceId !== 'function') {
     throw new Error(
       `Service instance must implement getServiceId() method. ` +
       `Service: ${ServiceClass.SERVICE_ID}`

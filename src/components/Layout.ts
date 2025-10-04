@@ -3,7 +3,7 @@
  * Manages all master page components (Header, Sidebar, Footer) and their coordination
  */
 
-import AppHeaderImpl, { HeaderConfig } from "./AppHeaderImpl";
+import AppHeaderImpl from "./AppHeaderImpl";
 import { HeaderUser } from "./AppHeader";
 import AppFooterImpl from "./AppFooterImpl";
 import { FooterConfig } from "./AppFooter";
@@ -27,7 +27,7 @@ import type {
   HandlerResult,
   HandlerPriority,
 } from "../types/LayoutHandlers";
-import { isLifecycleHandler, isContextHandler } from "../types/LayoutHandlers";
+import { isLifecycleHandler } from "../types/LayoutHandlers";
 import { LoggerFactory } from '../logging/LoggerFactory';
 import { Logger } from '../logging/Logger';
 

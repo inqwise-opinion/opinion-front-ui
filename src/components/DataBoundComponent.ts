@@ -5,7 +5,6 @@
 
 import { PageComponent, type PageComponentConfig } from './PageComponent';
 import { Observable } from '../utils/Observable';
-import type { MainContent } from './MainContent';
 import MainContentImpl from './MainContentImpl';
 import { PageContext } from '../interfaces/PageContext';
 

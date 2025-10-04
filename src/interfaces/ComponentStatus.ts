@@ -41,18 +41,18 @@ export interface ComponentStatus {
   /**
    * Event system integration - flexible structure
    */
-  eventListeners?: Record<string, any>;
+  eventListeners?: Record<string, unknown>;
   
   /**
    * Configuration and state
    */
-  configuration?: Record<string, any>;
-  currentState?: Record<string, any>;
+  configuration?: Record<string, unknown>;
+  currentState?: Record<string, unknown>;
   
   /**
    * Performance metrics - flexible structure
    */
-  performance?: Record<string, any>;
+  performance?: Record<string, unknown>;
   
   /**
    * Issues - can be array or object
@@ -65,7 +65,7 @@ export interface ComponentStatus {
   /**
    * Additional component-specific data
    */
-  customData?: Record<string, any>;
+  customData?: Record<string, unknown>;
 }
 
 /**

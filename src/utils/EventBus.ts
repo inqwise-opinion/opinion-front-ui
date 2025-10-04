@@ -4,7 +4,7 @@
  * Following Rule 3: Event-driven communication between components
  */
 
-export type EventCallback<T = any> = (data: T) => void;
+export type EventCallback<T = unknown> = (data: T) => void;
 
 export interface EventSubscription {
   unsubscribe: () => void;
@@ -23,7 +23,7 @@ export class EventBus {
    * @param callback - Function to call when event is fired
    * @returns Subscription object with unsubscribe method
    */
-  subscribe<T = any>(eventName: string, callback: EventCallback<T>): EventSubscription {
+  subscribe<T = unknown>(eventName: string, callback: EventCallback<T>): EventSubscription {
     // Get or create event set
     if (!this.events.has(eventName)) {
       this.events.set(eventName, new Set());
@@ -49,7 +49,7 @@ export class EventBus {
    * @param eventName - Name of the event to fire
    * @param data - Data to pass to event handlers
    */
-  publish<T = any>(eventName: string, data?: T): void {
+  publish<T = unknown>(eventName: string, data?: T): void {
     const eventSet = this.events.get(eventName);
     if (eventSet) {
       // Call all subscribers
