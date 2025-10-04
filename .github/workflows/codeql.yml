@@ -9,7 +9,7 @@ on:
     - cron: '30 1 * * 1'  # Weekly on Mondays at 1:30 AM UTC
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
 
 jobs:
   analyze:

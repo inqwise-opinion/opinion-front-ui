@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   CACHE_NAME: 'node-modules-v1'
 
 jobs:
@@ -92,7 +92,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: ['18', '20']
+        node-version: ['20', '22']
     
     steps:
       - name: 📥 Checkout repository
@@ -136,7 +136,7 @@ jobs:
 
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v5
-        if: matrix.node-version == '18'
+        if: matrix.node-version == '20'
         with:
           file: ./coverage/lcov.info
           flags: unittests
