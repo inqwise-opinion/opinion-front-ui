@@ -28,7 +28,7 @@ import { AuthenticationError } from './exceptions/AuthenticationExceptions';
 import { MockApiService } from '../services/MockApiService';
 import { User } from '../types';
 import type { ServiceConfig } from '../interfaces/Service';
-import { SelfIdentifyingService, ServiceIdentity, validateServiceIdentity } from '../core/ServiceIdentity';
+import { SelfIdentifyingService, validateServiceIdentity } from '../core/ServiceIdentity';
 
 /**
  * Configuration for MockSessionAuthProvider

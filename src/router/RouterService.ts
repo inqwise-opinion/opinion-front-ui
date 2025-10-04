@@ -1,6 +1,7 @@
 import UniversalRouter, { Route, RouteContext as UniversalRouteContext, Routes } from 'universal-router';
 import { LayoutContext } from '../contexts/LayoutContext';
 import { EventBus } from '../lib/EventBus';
+import { MainContent } from '../components/MainContent';
 import { Service } from '../interfaces/Service';
 import { RouteContext, RouteDefinition, RouteResult } from './types';
 import { RouteContextImpl } from './RouteContextImpl';
@@ -21,7 +22,7 @@ interface ErrorPageParams extends Record<string, string> {
 
 interface ProcessedRoute {
   path: string;
-  action: (context: any, params: any) => Promise<RouteResult>;
+  action: (context: UniversalRouteContext, params: Record<string, string | string[]>) => Promise<RouteResult>;
   children?: ProcessedRoute[];
 }
 interface NavigationState {
@@ -83,7 +84,7 @@ export class RouterService implements Service {
     const processRoute = (route: RouteDefinition): ProcessedRoute => ({
       // Ensure paths start with '/' for UniversalRouter
       path: route.path.startsWith('/') ? route.path : `/${route.path}`,
-      action: async (context: any, params: any) => {
+      action: async (context: UniversalRouteContext, params: Record<string, string | string[]>) => {
         // Create proper RouteContext from UniversalRouter context - use pathname as primary source
         const routePath = context.pathname || context.path || '/';
         // Convert params to Record<string, string> format
@@ -117,8 +118,8 @@ export class RouterService implements Service {
     
     try {
       // Clean up current page if exists
-      if (this.navigationState.currentPage && 'destroy' in this.navigationState.currentPage && typeof (this.navigationState.currentPage as any).destroy === 'function') {
-        await (this.navigationState.currentPage as any).destroy();
+      if (this.navigationState.currentPage && 'destroy' in this.navigationState.currentPage && typeof (this.navigationState.currentPage as { destroy?: () => Promise<void> }).destroy === 'function') {
+        await (this.navigationState.currentPage as { destroy: () => Promise<void> }).destroy();
       }
       this.navigationState.currentPage = null;
 
@@ -152,7 +153,7 @@ export class RouterService implements Service {
         throw new Error('MainContent not available from LayoutContext');
       }
       // Cast to MainContentImpl since PageProvider expects concrete implementation
-      const newPage = result.pageProvider(mainContent as any, pageContext);
+      const newPage = result.pageProvider(mainContent as MainContent, pageContext);
 
       // Associate page with context (one-time association)
       pageContext.setPage(newPage);

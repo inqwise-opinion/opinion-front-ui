@@ -19,12 +19,12 @@ export interface DataLoaderConfig {
   /**
    * Cache key function for custom cache keys
    */
-  cacheKeyFn?: (key: any) => any;
+  cacheKeyFn?: <K>(key: K) => string;
 
   /**
    * Cache map implementation (default: Map)
    */
-  cacheMap?: Map<any, any>;
+  cacheMap?: Map<string, unknown>;
 
   /**
    * Whether to enable caching (default: true)
@@ -34,7 +34,7 @@ export interface DataLoaderConfig {
   /**
    * Batch function - how to batch load keys
    */
-  batchLoadFn: (keys: readonly any[]) => Promise<any[]>;
+  batchLoadFn: <K, V>(keys: readonly K[]) => Promise<V[]>;
 }
 
 /**

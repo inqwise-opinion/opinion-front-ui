@@ -464,7 +464,7 @@ export class LoggerFactory {
     let processedGroups = tsConfig.groups;
     if (this.config.groups) {
       processedGroups = this.config.groups.map((group) => {
-        const processedGroup: any = { ...group };
+        const processedGroup: Record<string, unknown> = { ...group };
 
         // Convert our LogLevel to library LogLevel if present
         if (group.level !== undefined) {
@@ -507,7 +507,7 @@ export class LoggerFactory {
     let groups = this.config.groups;
     if (groups) {
       groups = groups.map((group) => {
-        const processedGroup: any = { ...group };
+        const processedGroup: Record<string, unknown> = { ...group };
 
         // Convert our LogLevel to library LogLevel if present
         if (group.level !== undefined) {
@@ -603,7 +603,7 @@ export class LoggerFactory {
   private createMultiAppenderChannel(appenders: AppenderConfig[]): LogChannel {
     return {
       type: "LogChannel",
-      write: (logMessage: any) => {
+      write: (logMessage: unknown) => {
         const logName = Array.isArray(logMessage.logNames)
           ? logMessage.logNames[0]
           : logMessage.logNames || "unknown";
@@ -721,8 +721,8 @@ export class LoggerFactory {
    * Handle ASYNC_CONSUMER appender by routing to the consumer system
    * @private
    */
-  private handleAsyncConsumerAppender(appender: AppenderConfig, logMessage: any): void {
-    const channelConfig = appender.channel as any; // AsyncConsumerChannelConfig
+  private handleAsyncConsumerAppender(appender: AppenderConfig, logMessage: unknown): void {
+    const channelConfig = appender.channel as { channelName: string }; // AsyncConsumerChannelConfig
     const channelName = channelConfig.channelName;
     
     // Get consumers for this channel name from our map
@@ -791,9 +791,9 @@ export class LoggerFactory {
    * @private
    */
   private formatMessageForAppender(
-    logMessage: any,
+    logMessage: unknown,
     appender: AppenderConfig,
-  ): any {
+  ): unknown {
     const formatted = { ...logMessage };
 
     // Apply custom date formatter if provided

@@ -186,7 +186,7 @@ export class LayoutContextImpl implements LayoutContext {
     this.logger.debug(`Adding listener for event: ${eventType}`);
 
     // Delegate to EventBus - wrap the listener to handle LayoutEvent structure
-    const wrappedListener = (data: any) => {
+    const wrappedListener = (data: unknown) => {
       // If data is already a LayoutEvent, use it directly
       // Otherwise wrap it in a LayoutEvent structure
       let event: LayoutEvent;
@@ -220,7 +220,7 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * Emit layout event
    */
-  public emit(eventType: LayoutEventType, data: any): void {
+  public emit(eventType: LayoutEventType, data: unknown): void {
     const event: LayoutEvent = {
       type: eventType,
       data,
@@ -635,7 +635,7 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * PUBLISH - Broadcast event to ALL consumers (non-blocking)
    */
-  public publish(event: string, data: any): void {
+  public publish(event: string, data: unknown): void {
     this.logger.debug(`Publishing event: ${event}`);
     this.eventBus.publish(event, data);
   }
@@ -643,7 +643,7 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * SEND - Deliver event to FIRST consumer only (non-blocking)
    */
-  public send(event: string, data: any): void {
+  public send(event: string, data: unknown): void {
     this.logger.debug(`Sending event: ${event}`);
     this.eventBus.send(event, data);
   }
@@ -651,7 +651,7 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * REQUEST - Send to FIRST consumer and await response (non-blocking Promise)
    */
-  public request(event: string, data: any, timeout?: number): Promise<any> {
+  public request(event: string, data: unknown, timeout?: number): Promise<unknown> {
     this.logger.debug(`Requesting response for event: ${event}`);
     return this.eventBus.request(event, data);
   }
@@ -661,7 +661,7 @@ export class LayoutContextImpl implements LayoutContext {
    */
   public consume(
     event: string,
-    handler: (data: any) => any,
+    handler: (data: unknown) => unknown,
     component?: string,
   ): Consumer {
     this.logger.debug(`Registering consumer for event: ${event}${component ? ` (component: ${component})` : ''}`);

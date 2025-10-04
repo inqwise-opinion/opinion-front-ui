@@ -28,7 +28,7 @@
  * ```
  */
 
-import { AuthProvider, AuthenticationError } from "./AuthProvider";
+import { AuthProvider } from "./AuthProvider";
 
 /**
  * Account information structure
@@ -98,9 +98,9 @@ export function isSessionAuthProvider(
     "getAccounts" in obj &&
     "switchAccount" in obj &&
     "getCurrentAccountId" in obj &&
-    typeof (obj as any).getAccounts === "function" &&
-    typeof (obj as any).switchAccount === "function" &&
-    typeof (obj as any).getCurrentAccountId === "function"
+    typeof (obj as unknown as SessionAuthProvider).getAccounts === "function" &&
+    typeof (obj as unknown as SessionAuthProvider).switchAccount === "function" &&
+    typeof (obj as unknown as SessionAuthProvider).getCurrentAccountId === "function"
   );
 }
 
