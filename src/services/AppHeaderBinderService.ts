@@ -30,7 +30,7 @@ import { UserMenu } from '../components/UserMenu';
 import type { Consumer } from '../lib/EventBus';
 import type { LayoutContext } from '../contexts/LayoutContext';
 import type { ServiceConfig } from '../interfaces/Service';
-import { SelfIdentifyingService, ServiceIdentity, validateServiceIdentity } from '../core/ServiceIdentity';
+import { SelfIdentifyingService, validateServiceIdentity } from '../core/ServiceIdentity';
 
 /**
  * AppHeader binder service configuration
@@ -174,7 +174,7 @@ export class AppHeaderBinderService extends BaseService implements SelfIdentifyi
     try {
       this.eventConsumer = eventBus.consume(
         AUTH_EVENTS.USER_AUTHENTICATED,
-        (payload: UserAuthenticatedPayload) => this.handleUserAuthenticated(payload)
+        (data: unknown) => this.handleUserAuthenticated(data as UserAuthenticatedPayload)
       );
       
       this.log('📡', 'Subscribed to authentication events', { 
@@ -263,7 +263,7 @@ export class AppHeaderBinderService extends BaseService implements SelfIdentifyi
     }
     
     // Set up UserMenu handler for logout actions
-    appHeader.setUserMenuHandler((userMenu: UserMenu) => {
+    appHeader.setUserMenuHandler((_userMenu: UserMenu) => {
       this.log('🔧', 'Setting up UserMenu action handlers');
       
       // Note: This is a conceptual approach - actual implementation 

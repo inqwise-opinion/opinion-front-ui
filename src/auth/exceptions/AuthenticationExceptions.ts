@@ -72,8 +72,8 @@ export class AuthenticationError extends Error {
    */
   static isAuthenticationError(error: unknown): error is AuthenticationError {
     return error instanceof AuthenticationError ||
-           (error?.name === 'AuthenticationError') ||
-           (error?.cause instanceof AuthenticationError);
+           (error !== null && typeof error === 'object' && (error as any)?.name === 'AuthenticationError') ||
+           (error !== null && typeof error === 'object' && (error as any)?.cause instanceof AuthenticationError);
   }
 }
 

@@ -3,7 +3,7 @@
  * Provides realistic test data for development until real API is ready
  */
 
-import { Opinion, Survey, User, UserRole, OpinionStatus } from '../types';
+import { Survey, User, UserRole, OpinionStatus } from '../types';
 import { LoggerFactory } from '../logging/LoggerFactory';
 import { Logger } from '../logging/Logger';
 

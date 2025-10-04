@@ -52,10 +52,10 @@ export type ExtractServiceId<T> = T extends { SERVICE_ID: infer U } ? U : never;
 /**
  * Helper for type-safe service registration
  */
-export function registerService<T extends ServiceIdentity>(
-  context: { registerService: (id: string, instance: unknown) => void },
+export function registerService<T extends ServiceIdentity, S extends { getServiceId(): string }>(
+  context: { registerService: <R extends { getServiceId(): string }>(name: string, service: R) => void },
   ServiceClass: T,
-  instance: unknown
+  instance: S
 ): void {
   const serviceId = ServiceClass.SERVICE_ID;
   context.registerService(serviceId, instance);
@@ -80,17 +80,18 @@ export function validateServiceIdentity<T>(
   ServiceClass: unknown,
   instance: T
 ): asserts ServiceClass is ServiceIdentity {
-  if (!ServiceClass.SERVICE_ID || typeof ServiceClass.SERVICE_ID !== 'string') {
+  const serviceClass = ServiceClass as any;
+  if (!serviceClass.SERVICE_ID || typeof serviceClass.SERVICE_ID !== 'string') {
     throw new Error(
       `Service class must declare static SERVICE_ID constant. ` +
-      `Found: ${ServiceClass.name || 'Unknown'}`
+      `Found: ${serviceClass.name || 'Unknown'}`
     );
   }
   
   if (instance && typeof (instance as { getServiceId?: () => string }).getServiceId !== 'function') {
     throw new Error(
       `Service instance must implement getServiceId() method. ` +
-      `Service: ${ServiceClass.SERVICE_ID}`
+      `Service: ${serviceClass.SERVICE_ID}`
     );
   }
 }
@@ -156,6 +157,6 @@ export class ServiceIdentityRegistry {
       graph.push(...subDeps);
     }
     
-    return [...new Set(graph)]; // Remove duplicates
+    return Array.from(new Set(graph)); // Remove duplicates
   }
 }

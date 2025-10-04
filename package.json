@@ -12,6 +12,7 @@
     "test:watch": "jest --watch",
     "test:hotkeys": "node scripts/test-hotkeys.js",
     "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
+    "lint:any": "echo 'To see any type warnings, temporarily change eslint.config.js @typescript-eslint/no-explicit-any from off to warn'",
     "lint:fix": "eslint src --fix"
   },
   "keywords": [

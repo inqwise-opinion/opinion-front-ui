@@ -61,7 +61,7 @@ export abstract class DataBoundComponent extends PageComponent {
       ...options,
     };
 
-    this.bindings.set(key, binding);
+    this.bindings.set(key, binding as DataBinding<unknown>);
 
     // Subscribe to observable changes
     const unsubscribe = observable.subscribe((value) => {
@@ -90,7 +90,7 @@ export abstract class DataBoundComponent extends PageComponent {
       ...options,
     };
 
-    this.loaderBindings.set(key, binding);
+    this.loaderBindings.set(key, binding as LoaderBinding<unknown>);
 
     // Initial load
     this.loadAndBind(key, binding);
@@ -113,7 +113,7 @@ export abstract class DataBoundComponent extends PageComponent {
    */
   protected createObservable<T>(key: string, initialValue: T): Observable<T> {
     const observable = new Observable(initialValue);
-    this.observables.set(key, observable);
+    this.observables.set(key, observable as Observable<unknown>);
     console.log(`📊 DataBoundComponent - Created observable: ${key}`);
     return observable;
   }
@@ -122,7 +122,7 @@ export abstract class DataBoundComponent extends PageComponent {
    * Get an existing observable
    */
   protected getObservable<T>(key: string): Observable<T> | undefined {
-    return this.observables.get(key);
+    return this.observables.get(key) as Observable<T> | undefined;
   }
 
   /**
@@ -143,7 +143,7 @@ export abstract class DataBoundComponent extends PageComponent {
    */
   protected getData<T>(key: string): T | undefined {
     const observable = this.observables.get(key);
-    return observable?.value;
+    return observable?.value as T | undefined;
   }
 
   /**
@@ -239,7 +239,7 @@ export abstract class DataBoundComponent extends PageComponent {
     } else if (property === 'value' && 'value' in element) {
       (element as HTMLInputElement).value = value;
     } else {
-      (element as Record<string, unknown>)[property] = value;
+      (element as any)[property] = value;
     }
   }
 

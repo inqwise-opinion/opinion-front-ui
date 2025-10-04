@@ -37,7 +37,7 @@ export class PageTracker {
   public async getInfo(): Promise<PageTrackerInfo> {
     try {
       // Request current page status via EventBus
-      const status = await globalEventBus.request('page:get-status', {});
+      const status = await globalEventBus.request('page:get-status', {}) as ActivePageStatus;
       const debugInfo = globalEventBus.getDebugInfo();
 
       return {
@@ -70,7 +70,7 @@ export class PageTracker {
    */
   public async getCurrentPageInfo(): Promise<PageInfo | null> {
     try {
-      return await globalEventBus.request('page:get-current-info', {});
+      return await globalEventBus.request('page:get-current-info', {}) as PageInfo | null;
     } catch (error) {
       console.error('📊 PageTracker - Error getting current page info:', error);
       return null;
@@ -82,7 +82,7 @@ export class PageTracker {
    */
   public async isPageActive(pageId: string): Promise<boolean> {
     try {
-      return await globalEventBus.request('page:is-active', { pageId });
+      return await globalEventBus.request('page:is-active', { pageId }) as boolean;
     } catch (error) {
       console.error('📊 PageTracker - Error checking if page is active:', error);
       return false;
@@ -156,7 +156,8 @@ export class PageTracker {
    */
   private setupEventListeners(): void {
     // Listen to page status updates
-    const statusConsumer = globalEventBus.consume('page:status-updated', (status: ActivePageStatus) => {
+    const statusConsumer = globalEventBus.consume('page:status-updated', (data: unknown) => {
+      const status = data as ActivePageStatus;
       this.addEventToHistory('page:status-updated', {
         pageId: status.pageId,
         pageName: status.pageName,
@@ -166,30 +167,36 @@ export class PageTracker {
     this.consumers.push(statusConsumer);
 
     // Listen to page activations
-    const activatedConsumer = globalEventBus.consume('page:activated', (data) => {
+    const activatedConsumer = globalEventBus.consume('page:activated', (data: unknown) => {
+      const eventData = data as { page: { getPageId(): string; getPageInfo(): { name: string } } };
       this.addEventToHistory('page:activated', {
-        pageId: data.page.getPageId(),
-        pageName: data.page.getPageInfo().name
+        pageId: eventData.page.getPageId(),
+        pageName: eventData.page.getPageInfo().name
       });
     });
     this.consumers.push(activatedConsumer);
 
     // Listen to page deactivations
-    const deactivatedConsumer = globalEventBus.consume('page:deactivated', (data) => {
+    const deactivatedConsumer = globalEventBus.consume('page:deactivated', (data: unknown) => {
+      const eventData = data as { page: { getPageId(): string; getPageInfo(): { name: string } } };
       this.addEventToHistory('page:deactivated', {
-        pageId: data.page.getPageId(),
-        pageName: data.page.getPageInfo().name
+        pageId: eventData.page.getPageId(),
+        pageName: eventData.page.getPageInfo().name
       });
     });
     this.consumers.push(deactivatedConsumer);
 
     // Listen to page changes
-    const changedConsumer = globalEventBus.consume('page:changed', (data) => {
+    const changedConsumer = globalEventBus.consume('page:changed', (data: unknown) => {
+      const eventData = data as { 
+        previousPage?: { getPageId(): string; getPageInfo(): { name: string } };
+        currentPage?: { getPageId(): string; getPageInfo(): { name: string } };
+      };
       this.addEventToHistory('page:changed', {
-        fromPageId: data.previousPage?.getPageId(),
-        toPageId: data.currentPage?.getPageId(),
-        fromPageName: data.previousPage?.getPageInfo().name,
-        toPageName: data.currentPage?.getPageInfo().name
+        fromPageId: eventData.previousPage?.getPageId(),
+        toPageId: eventData.currentPage?.getPageId(),
+        fromPageName: eventData.previousPage?.getPageInfo().name,
+        toPageName: eventData.currentPage?.getPageInfo().name
       });
     });
     this.consumers.push(changedConsumer);

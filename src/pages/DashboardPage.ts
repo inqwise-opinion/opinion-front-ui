@@ -8,8 +8,6 @@ import { MockApiService } from '../services/MockApiService';
 import MainContentImpl from '../components/MainContentImpl';
 import { PageComponent } from '../components/PageComponent';
 import type { PageContext } from '../interfaces/PageContext';
-import { LoggerFactory } from '../logging/LoggerFactory';
-import { Logger } from '../logging/Logger';
 import '../assets/styles/dashboard.scss';
 
 export class DashboardPage extends PageComponent {

@@ -14,6 +14,20 @@ import { ChannelFactory } from './ChannelFactory';
 import { AsyncConsumerLogChannel, AsyncLogConsumer, RemoveConsumerFunction } from './AsyncConsumerLogChannel';
 
 /**
+ * Internal type for raw log messages from typescript-logging
+ */
+interface InternalLogMessage {
+  level?: { toString(): string };
+  timeInMillis?: number;
+  logNames?: string | string[];
+  message?: string;
+  exception?: unknown;
+  args?: unknown[];
+  formattedDate?: string;
+  appenderName?: string;
+}
+
+/**
  * Parse string log level to LogLevel enum
  * @internal
  */
@@ -65,7 +79,6 @@ function mapLogLevel(level: LogLevel): LibLogLevel {
     case LogLevel.Off:
       return LibLogLevel.Off;
     default: {
-      const _exhaustive: never = level;
       throw new Error(`Unknown log level: ${level}`);
     }
   }
@@ -415,7 +428,6 @@ export class LoggerFactory {
     const channel = new AsyncConsumerLogChannel(channelName);
     
     // Override the write method to dispatch to our managed consumers
-    const originalWrite = channel.write.bind(channel);
     channel.write = (message) => {
       // Get consumers for this channel name from our map
       const consumers = this.asyncConsumers.get(channelName);
@@ -463,7 +475,7 @@ export class LoggerFactory {
     let processedGroups = tsConfig.groups;
     if (this.config.groups) {
       processedGroups = this.config.groups.map((group) => {
-        const processedGroup: Record<string, unknown> = { ...group };
+        const processedGroup: any = { ...group };
 
         // Convert our LogLevel to library LogLevel if present
         if (group.level !== undefined) {
@@ -506,7 +518,7 @@ export class LoggerFactory {
     let groups = this.config.groups;
     if (groups) {
       groups = groups.map((group) => {
-        const processedGroup: Record<string, unknown> = { ...group };
+        const processedGroup: any = { ...group };
 
         // Convert our LogLevel to library LogLevel if present
         if (group.level !== undefined) {
@@ -602,14 +614,14 @@ export class LoggerFactory {
   private createMultiAppenderChannel(appenders: AppenderConfig[]): LogChannel {
     return {
       type: "LogChannel",
-      write: (logMessage: unknown) => {
+      write: (logMessage: InternalLogMessage) => {
         const logName = Array.isArray(logMessage.logNames)
           ? logMessage.logNames[0]
           : logMessage.logNames || "unknown";
 
         // Find matching appenders for this log message
         const matchingAppenders = appenders.filter((appender) =>
-          this.appenderMatches(appender, logName, logMessage.level),
+          this.appenderMatches(appender, logName, logMessage.level?.toString()),
         );
 
         // Write to all matching appenders
@@ -632,7 +644,7 @@ export class LoggerFactory {
             );
 
             if (appenderChannel.type === "LogChannel") {
-              appenderChannel.write(formattedMessage);
+              (appenderChannel as any).write(formattedMessage);
             } else {
               // Handle RawLogChannel
               const formatArg =
@@ -650,7 +662,7 @@ export class LoggerFactory {
                   return String(arg);
                 });
 
-              appenderChannel.write(formattedMessage, formatArg);
+              (appenderChannel as any).write(formattedMessage, formatArg);
             }
           } catch (error) {
             console.error(`Error in appender ${appender.name}:`, error);
@@ -720,7 +732,7 @@ export class LoggerFactory {
    * Handle ASYNC_CONSUMER appender by routing to the consumer system
    * @private
    */
-  private handleAsyncConsumerAppender(appender: AppenderConfig, logMessage: unknown): void {
+  private handleAsyncConsumerAppender(appender: AppenderConfig, logMessage: InternalLogMessage): void {
     const channelConfig = appender.channel as { channelName: string }; // AsyncConsumerChannelConfig
     const channelName = channelConfig.channelName;
     
@@ -774,7 +786,7 @@ export class LoggerFactory {
         timeInMillis: formattedMessage.timeInMillis || Date.now(),
         logName: loggerName,
         message: actualMessage,
-        exception: formattedMessage.exception,
+        exception: formattedMessage.exception as Error | undefined,
         args: formattedMessage.args
       };
       
@@ -790,9 +802,9 @@ export class LoggerFactory {
    * @private
    */
   private formatMessageForAppender(
-    logMessage: unknown,
+    logMessage: InternalLogMessage,
     appender: AppenderConfig,
-  ): unknown {
+  ): InternalLogMessage {
     const formatted = { ...logMessage };
 
     // Apply custom date formatter if provided

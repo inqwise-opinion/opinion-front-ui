@@ -77,7 +77,7 @@ export default class LoginPage extends PageComponent {
     // Get form data
     const formData = new FormData(form);
     const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    // const password = formData.get('password') as string; // TODO: Use when implementing actual login
 
     try {
       // TODO: Implement login logic

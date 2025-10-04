@@ -28,8 +28,8 @@ import type {
   HandlerPriority,
 } from "../types/LayoutHandlers";
 import { isLifecycleHandler } from "../types/LayoutHandlers";
-import { LoggerFactory } from '../logging/LoggerFactory';
-import { Logger } from '../logging/Logger';
+import { LoggerFactory } from "../logging/LoggerFactory";
+import { Logger } from "../logging/Logger";
 
 // Re-export handler types for convenience
 export type { ContextHandler, LifecycleHandler, HandlerConfig, HandlerResult };
@@ -129,7 +129,7 @@ export class Layout {
     };
 
     // Initialize logger
-    this.logger = LoggerFactory.getInstance().getLogger('Layout');
+    this.logger = LoggerFactory.getInstance().getLogger("Layout");
 
     // Initialize layout context first
     this.layoutContext = new LayoutContextImpl();
@@ -137,11 +137,14 @@ export class Layout {
     // Pass the layoutContext to components so they register with the correct instance
     this.header = new AppHeaderImpl(this.config.header, this.layoutContext);
     this.footer = new AppFooterImpl(this.config.footer, this.layoutContext);
-    this.mainContent = new MainContentImpl({
-      className: "main-content",
-      id: "app",
-      ariaLabel: "Main application content",
-    }, this.layoutContext);
+    this.mainContent = new MainContentImpl(
+      {
+        className: "main-content",
+        id: "app",
+        ariaLabel: "Main application content",
+      },
+      this.layoutContext,
+    );
 
     // Note: Components will be registered with LayoutContext at the start of init()
   }
@@ -150,79 +153,79 @@ export class Layout {
    * Initialize the layout and all components
    */
   async init(): Promise<void> {
-    this.logger.debug('init() START');
+    this.logger.debug("init() START");
 
     try {
-      this.logger.info('Starting layout initialization...');
+      this.logger.info("Starting layout initialization...");
 
       // Initialize header
       if (this.config.header?.enabled) {
-        this.logger.debug('Header enabled, initializing...');
+        this.logger.debug("Header enabled, initializing...");
         await this.header.init();
-        this.logger.debug('Header initialized successfully');
+        this.logger.debug("Header initialized successfully");
 
         // Update brand if configured
         if (this.config.header.brandTitle) {
-          this.logger.debug('Updating header brand...');
+          this.logger.debug("Updating header brand...");
           this.header.updateBrand(
             this.config.header.brandTitle,
             this.config.header.brandHref,
           );
-          this.logger.debug('Header brand updated');
+          this.logger.debug("Header brand updated");
         }
 
         // Apply user menu items to header
-        this.logger.debug('Applying user menu items to header...');
+        this.logger.debug("Applying user menu items to header...");
 
-        this.logger.debug('User menu items applied to header');
+        this.logger.debug("User menu items applied to header");
       } else {
-        this.logger.warn('Header disabled in config');
+        this.logger.warn("Header disabled in config");
       }
 
       // Initialize MainContent area (manages existing element)
-      this.logger.debug('Initializing MainContent...');
+      this.logger.debug("Initializing MainContent...");
       this.mainContent.init();
-      this.logger.debug('MainContent initialized');
+      this.logger.debug("MainContent initialized");
 
       // Initialize Messages component
-      this.logger.debug('Initializing MessagesComponent...');
+      this.logger.debug("Initializing MessagesComponent...");
       this.messagesComponent = new MessagesComponent(this.layoutContext);
       await this.messagesComponent.init();
 
-      this.logger.debug('MessagesComponent initialized');
+      this.logger.debug("MessagesComponent initialized");
 
       // Initialize sidebar component if enabled
       if (this.config.sidebar?.enabled) {
-        this.logger.debug('Sidebar enabled, initializing...');
+        this.logger.debug("Sidebar enabled, initializing...");
         await this.initSidebar();
-        this.logger.debug('Sidebar initialized successfully');
+        this.logger.debug("Sidebar initialized successfully");
       } else {
-        this.logger.warn('Sidebar disabled in config');
+        this.logger.warn("Sidebar disabled in config");
       }
 
       // Initialize footer
       if (this.config.footer?.enabled) {
-        this.logger.debug('Footer enabled, initializing...');
+        this.logger.debug("Footer enabled, initializing...");
         await this.footer.init();
-        this.logger.debug('Footer initialized successfully');
+        this.logger.debug("Footer initialized successfully");
       } else {
-        this.logger.warn('Footer disabled in config');
+        this.logger.warn("Footer disabled in config");
       }
 
       // Setup component coordination
-      this.logger.debug('Setting up component coordination...');
+      this.logger.debug("Setting up component coordination...");
       this.setupComponentCoordination();
-      this.logger.debug('Component coordination setup complete');
+      this.logger.debug("Component coordination setup complete");
 
       // Setup responsive behavior
-      this.logger.debug('Setting up responsive behavior...');
+      this.logger.debug("Setting up responsive behavior...");
       this.setupResponsiveBehavior();
-      this.logger.debug('Responsive behavior setup complete');
+      this.logger.debug("Responsive behavior setup complete");
 
       // Subscribe to layout context events
-      this.logger.debug('Subscribing to layout context events...');
+      this.logger.debug("Subscribing to layout context events...");
       this.subscribeToLayoutContext();
-      this.logger.debug('Layout context subscription complete');
+      this.logger.debug("Layout context subscription complete");
 
       // Mark layout as ready
       this.layoutContext.markReady();
@@ -231,13 +234,13 @@ export class Layout {
       await this.executeRegisteredHandlers();
 
       this.isInitialized = true;
-      this.logger.info('Layout initialization completed successfully!');
+      this.logger.info("Layout initialization completed successfully!");
     } catch (error) {
-      this.logger.error('Layout initialization failed', error);
+      this.logger.error("Layout initialization failed", error);
       throw error;
     }
 
-    this.logger.debug('init() END');
+    this.logger.debug("init() END");
   }
 
   /**
@@ -255,13 +258,13 @@ export class Layout {
         },
       };
 
-      this.logger.debug('Creating sidebar with config', sidebarConfig);
+      this.logger.debug("Creating sidebar with config", sidebarConfig);
       this.sidebar = new SidebarComponent(sidebarConfig, this.layoutContext);
 
       // Initialize the sidebar
       await this.sidebar.init();
     } catch (error) {
-      this.logger.error('Sidebar initialization failed', error);
+      this.logger.error("Sidebar initialization failed", error);
       throw error;
     }
   }
@@ -272,7 +275,7 @@ export class Layout {
   private setupComponentCoordination(): void {
     // Note: Component coordination is now handled by the layout context
     // All components subscribe to layout context events for coordination
-    this.logger.debug('Component coordination delegated to layout context');
+    this.logger.debug("Component coordination delegated to layout context");
   }
 
   /**
@@ -310,7 +313,7 @@ export class Layout {
   getSidebar(): Sidebar | null {
     return this.sidebar;
   }
-  
+
   /**
    * Get layout context reference
    */
@@ -329,7 +332,7 @@ export class Layout {
       this.header.updateUser(user);
     }
 
-    this.logger.debug('User updated across components');
+    this.logger.debug("User updated across components");
   }
 
   /**
@@ -381,14 +384,6 @@ export class Layout {
   }
 
   /**
-   * Get component references (duplicate methods removed)
-   */
-  getSidebarLegacy(): any | null {
-    // Legacy method - use getSidebar() instead
-    return this.getSidebar();
-  }
-
-  /**
    * Check if layout is initialized
    */
   isReady(): boolean {
@@ -422,7 +417,9 @@ export class Layout {
    */
   updateCopyrightText(text: string): void {
     // Footer copyright is immutable - set only during construction
-    this.logger.warn('Footer copyright text cannot be updated after initialization');
+    this.logger.warn(
+      "Footer copyright text cannot be updated after initialization",
+    );
 
     // Update sidebar copyright (if it exists) - this may still be dynamic
     const sidebarCopyright = document.querySelector(
@@ -438,7 +435,7 @@ export class Layout {
    * Subscribe to layout context events
    */
   private subscribeToLayoutContext(): void {
-    this.logger.debug('Subscribing to layout context events...');
+    this.logger.debug("Subscribing to layout context events...");
 
     // Subscribe to layout ready events
     const layoutReadyUnsubscribe = this.layoutContext.subscribe(
@@ -463,48 +460,24 @@ export class Layout {
     );
     this.layoutUnsubscribers.push(layoutModeUnsubscribe);
 
-    this.logger.debug('Successfully subscribed to layout context events');
+    this.logger.debug("Successfully subscribed to layout context events");
   }
 
   /**
    * Handle layout ready event
    */
-  private handleLayoutReady(event: any): void {
-    this.logger.debug('Layout context marked as ready', event.data);
+  private handleLayoutReady(event: unknown): void {
+    this.logger.debug("Layout context marked as ready", event && typeof event === 'object' && event !== null ? (event as any).data : event);
 
     // Perform any final coordination between components
     this.finalizeComponentCoordination();
   }
 
   /**
-   * Handle sidebar dimension changes for global coordination
-   */
-  private handleSidebarDimensionsChange(event: any): void {
-    const dimensions = event.data;
-    console.log(
-      "Layout - Received sidebar dimensions change for coordination:",
-      dimensions,
-    );
-
-    // Layout component can perform any global coordination here
-    // Individual components already handle their own layout updates
-
-    // Example: Could update global CSS variables or dispatch custom events
-    document.documentElement.style.setProperty(
-      "--sidebar-width",
-      `${dimensions.width}px`,
-    );
-    document.documentElement.style.setProperty(
-      "--content-margin-left",
-      `${dimensions.width}px`,
-    );
-  }
-
-  /**
    * Finalize component coordination after layout is ready
    */
   private finalizeComponentCoordination(): void {
-    this.logger.debug('Finalizing component coordination...');
+    this.logger.debug("Finalizing component coordination...");
   }
 
   /**
@@ -512,12 +485,12 @@ export class Layout {
    */
   private handleLayoutModeChange(event: LayoutEvent): void {
     const layoutMode = event.data as LayoutModeType;
-    this.logger.debug('Received layout mode change', layoutMode);
+    this.logger.debug("Received layout mode change", layoutMode);
 
     if (layoutMode) {
       this.updateComponentCSSClasses(this.layoutContext);
     } else {
-      this.logger.error('Received undefined layout mode data in event', event);
+      this.logger.error("Received undefined layout mode data in event", event);
     }
   }
 
@@ -728,15 +701,17 @@ export class Layout {
    */
   public setActiveNavigationItem(id: string): void {
     console.warn(
-      `Layout.setActiveNavigationItem is deprecated. Use NavigationService.setActiveItem('${id}') instead.`
+      `Layout.setActiveNavigationItem is deprecated. Use NavigationService.setActiveItem('${id}') instead.`,
     );
-    
+
     // Delegate to NavigationService if available
-    const navService = this.layoutContext.getService('navigation.service');
-    if (navService && 'setActiveItem' in navService) {
+    const navService = this.layoutContext.getService("navigation.service");
+    if (navService && "setActiveItem" in navService) {
       (navService as any).setActiveItem(id);
     } else {
-      console.error('NavigationService not available. Cannot set active navigation item.');
+      console.error(
+        "NavigationService not available. Cannot set active navigation item.",
+      );
     }
   }
 
@@ -892,16 +867,18 @@ export class Layout {
    * Register a callback to execute when LayoutContext is ready
    * Provides safe access to LayoutContext with proper error handling
    * Defers handler execution until LayoutContext is fully initialized
-   * 
+   *
    * NOTE: This method now uses the unified handler system internally
    *
    * @param handler - Function that receives the LayoutContext instance when ready
    * @returns Layout instance for method chaining
    */
-  public onContextReady<T extends void>(handler: (layoutContext: LayoutContext) => T): Layout {
+  public onContextReady<T extends void>(
+    handler: (layoutContext: LayoutContext) => T,
+  ): Layout {
     // Convert simple handler to ContextHandler and use new system
     const contextHandler: ContextHandler<T> = handler;
-    
+
     return this.setContextHandler(contextHandler, {
       enableLogging: false, // Keep simple usage quiet by default
       continueOnError: true,
@@ -912,7 +889,7 @@ export class Layout {
   /**
    * Convenience method: Register a simple handler with standard configuration
    * For more advanced scenarios, use setContextHandler() directly
-   * 
+   *
    * @param handler - Simple context handler function
    * @param priority - Execution priority (optional)
    * @returns Layout instance for method chaining
@@ -920,32 +897,38 @@ export class Layout {
   public addHandler(handler: ContextHandler, _priority?: number): Layout {
     return this.setContextHandler(handler, {
       enableLogging: false,
-      continueOnError: true, 
+      continueOnError: true,
       timeout: 5000,
     });
   }
 
   /**
    * Convenience method: Register a service registration handler
-   * 
+   *
    * @param services - Array of services to register
    * @param id - Handler identifier (optional)
    * @param priority - Execution priority (optional)
    * @returns Layout instance for method chaining
    */
   public addServiceRegistration(
-    services: Array<{ name: string; factory: (context: LayoutContext) => any; dependencies?: string[] }>,
+    services: Array<{
+      name: string;
+      factory: (context: LayoutContext) => any;
+      dependencies?: string[];
+    }>,
     id?: string,
-    priority: number = 500 // Default to high priority for service registration
+    priority: number = 500, // Default to high priority for service registration
   ): Layout {
     const lifecycleHandler: LifecycleHandler = {
-      id: id || 'service-registration',
+      id: id || "service-registration",
       priority,
       onContextReady: (context) => {
-        services.forEach(({ name, factory, dependencies: _dependencies = [] }) => {
-          const service = factory(context);
-          context.registerService(name, service);
-        });
+        services.forEach(
+          ({ name, factory, dependencies: _dependencies = [] }) => {
+            const service = factory(context);
+            context.registerService(name, service);
+          },
+        );
       },
     };
 
@@ -959,7 +942,7 @@ export class Layout {
   // =====================================================================================
   // FORMAL HANDLER SYSTEM (Advanced Pattern)
   // =====================================================================================
-  
+
   /**
    * Register a formal context handler with lifecycle support
    * This is the advanced handler pattern for complex service registration scenarios
@@ -970,7 +953,7 @@ export class Layout {
    */
   public setContextHandler(
     handler: ContextHandler | LifecycleHandler,
-    config: HandlerConfig = {}
+    config: HandlerConfig = {},
   ): Layout {
     const defaultConfig: HandlerConfig = {
       timeout: 5000,
@@ -989,8 +972,10 @@ export class Layout {
     this.contextHandlers.push(handler);
 
     if (defaultConfig.enableLogging) {
-      const handlerType = isLifecycleHandler(handler) ? 'LifecycleHandler' : 'ContextHandler';
-      const id = isLifecycleHandler(handler) ? handler.id : 'anonymous';
+      const handlerType = isLifecycleHandler(handler)
+        ? "LifecycleHandler"
+        : "ContextHandler";
+      const id = isLifecycleHandler(handler) ? handler.id : "anonymous";
       this.logger.debug(`Registered ${handlerType} (${id})`);
     }
 
@@ -1010,7 +995,10 @@ export class Layout {
    * @returns Layout instance for method chaining
    */
   public setContextHandlers(
-    handlers: Array<{ handler: ContextHandler | LifecycleHandler; config?: HandlerConfig }>
+    handlers: Array<{
+      handler: ContextHandler | LifecycleHandler;
+      config?: HandlerConfig;
+    }>,
   ): Layout {
     handlers.forEach(({ handler, config }) => {
       this.setContextHandler(handler, config);
@@ -1022,10 +1010,12 @@ export class Layout {
    * Execute a single formal handler with full lifecycle support
    * @private
    */
-  private async executeHandler(registration: HandlerRegistration): Promise<HandlerResult> {
+  private async executeHandler(
+    registration: HandlerRegistration,
+  ): Promise<HandlerResult> {
     const { handler, config } = registration;
     const startTime = Date.now();
-    
+
     const result: HandlerResult = {
       success: false,
       executionTime: 0,
@@ -1037,23 +1027,23 @@ export class Layout {
       } else {
         await this.executeContextHandler(handler, config);
       }
-      
+
       result.success = true;
     } catch (error) {
       result.error = error as Error;
       if (config.enableLogging) {
-        this.logger.error('Handler execution failed', error);
+        this.logger.error("Handler execution failed", error);
       }
-      
+
       // Execute error handler if it's a lifecycle handler
       if (isLifecycleHandler(handler) && handler.onError) {
         try {
           await handler.onError(error as Error, this.layoutContext);
         } catch (errorHandlerError) {
-          this.logger.error('Error handler also failed', errorHandlerError);
+          this.logger.error("Error handler also failed", errorHandlerError);
         }
       }
-      
+
       if (!config.continueOnError) {
         throw error;
       }
@@ -1068,9 +1058,12 @@ export class Layout {
    * Execute a lifecycle handler with all phases
    * @private
    */
-  private async executeLifecycleHandler(handler: LifecycleHandler, config: HandlerConfig): Promise<void> {
-    const id = handler.id || 'anonymous';
-    
+  private async executeLifecycleHandler(
+    handler: LifecycleHandler,
+    config: HandlerConfig,
+  ): Promise<void> {
+    const id = handler.id || "anonymous";
+
     if (config.enableLogging) {
       console.log(`Layout - Executing LifecycleHandler: ${id}`);
     }
@@ -1089,7 +1082,7 @@ export class Layout {
     }
     await this.executeWithTimeout(
       () => handler.onContextReady(this.layoutContext),
-      config.timeout!
+      config.timeout!,
     );
 
     // Phase 3: Post-init
@@ -1099,7 +1092,7 @@ export class Layout {
       }
       await this.executeWithTimeout(
         () => handler.onPostInit!(this.layoutContext),
-        config.timeout!
+        config.timeout!,
       );
     }
 
@@ -1112,14 +1105,17 @@ export class Layout {
    * Execute a simple context handler
    * @private
    */
-  private async executeContextHandler(handler: ContextHandler, config: HandlerConfig): Promise<void> {
+  private async executeContextHandler(
+    handler: ContextHandler,
+    config: HandlerConfig,
+  ): Promise<void> {
     if (config.enableLogging) {
-      console.log('Layout - Executing ContextHandler');
+      console.log("Layout - Executing ContextHandler");
     }
-    
+
     await this.executeWithTimeout(
       () => handler(this.layoutContext),
-      config.timeout!
+      config.timeout!,
     );
   }
 
@@ -1129,7 +1125,7 @@ export class Layout {
    */
   private async executeWithTimeout<T>(
     fn: () => T | Promise<T>,
-    timeoutMs: number
+    timeoutMs: number,
   ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
@@ -1158,12 +1154,18 @@ export class Layout {
       return;
     }
 
-    this.logger.debug(`Executing ${this.registeredHandlers.length} registered handlers`);
+    this.logger.debug(
+      `Executing ${this.registeredHandlers.length} registered handlers`,
+    );
 
     // Sort handlers by priority (higher priority = executed first)
     const sortedRegistrations = [...this.registeredHandlers].sort((a, b) => {
-      const priorityA = isLifecycleHandler(a.handler) ? a.handler.priority || 0 : 0;
-      const priorityB = isLifecycleHandler(b.handler) ? b.handler.priority || 0 : 0;
+      const priorityA = isLifecycleHandler(a.handler)
+        ? a.handler.priority || 0
+        : 0;
+      const priorityB = isLifecycleHandler(b.handler)
+        ? b.handler.priority || 0
+        : 0;
       return priorityB - priorityA;
     });
 
@@ -1171,20 +1173,20 @@ export class Layout {
       await this.executeHandler(registration);
     }
 
-    this.logger.debug('All registered handlers executed');
+    this.logger.debug("All registered handlers executed");
   }
 
   /**
    * Get information about registered handlers
    */
   public getRegisteredHandlers(): Array<{
-    type: 'ContextHandler' | 'LifecycleHandler';
+    type: "ContextHandler" | "LifecycleHandler";
     id?: string;
     priority?: number;
     registered: Date;
   }> {
     return this.registeredHandlers.map(({ handler, registered }) => ({
-      type: isLifecycleHandler(handler) ? 'LifecycleHandler' : 'ContextHandler',
+      type: isLifecycleHandler(handler) ? "LifecycleHandler" : "ContextHandler",
       id: isLifecycleHandler(handler) ? handler.id : undefined,
       priority: isLifecycleHandler(handler) ? handler.priority : undefined,
       registered,
@@ -1198,21 +1200,23 @@ export class Layout {
    * Cleanup when layout is destroyed
    */
   destroy(): void {
-    this.logger.info('Destroying...');
+    this.logger.info("Destroying...");
 
     // Unsubscribe from layout context events
     this.layoutUnsubscribers.forEach((unsubscribe) => {
       try {
         unsubscribe();
       } catch (error) {
-        this.logger.error('Error unsubscribing from layout context', error);
+        this.logger.error("Error unsubscribing from layout context", error);
       }
     });
     this.layoutUnsubscribers = [];
 
     // Clear all registered handlers (unified system)
     if (this.registeredHandlers.length > 0) {
-      this.logger.debug(`Clearing ${this.registeredHandlers.length} registered handlers`);
+      this.logger.debug(
+        `Clearing ${this.registeredHandlers.length} registered handlers`,
+      );
       this.registeredHandlers = [];
       this.contextHandlers = [];
     }
@@ -1277,7 +1281,7 @@ export class Layout {
     // Note: In a real app, you'd want to keep track of listeners to remove them properly
 
     this.isInitialized = false;
-    this.logger.info('Destroyed');
+    this.logger.info("Destroyed");
   }
 }
 

@@ -117,11 +117,13 @@ export const AuthEventFactory = {
  * @returns true if event is an authentication event
  */
 export function isAuthEvent(event: unknown): event is AuthEvent<AuthEventName> {
-  return event &&
-         typeof event.name === 'string' &&
-         Object.values(AUTH_EVENTS).includes(event.name as AuthEventName) &&
-         event.payload &&
-         typeof event.payload === 'object';
+  return event !== null &&
+         typeof event === 'object' &&
+         event !== null &&
+         typeof (event as any).name === 'string' &&
+         Object.values(AUTH_EVENTS).includes((event as any).name as AuthEventName) &&
+         (event as any).payload &&
+         typeof (event as any).payload === 'object';
 }
 
 // Mark for future development

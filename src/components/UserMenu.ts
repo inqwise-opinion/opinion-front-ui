@@ -344,9 +344,9 @@ export class UserMenu {
 
     // Subscribe to user-menu-request events (commands from external components)
     this.layoutContext.subscribe("user-menu-request", (event) => {
-      const eventData = event.data;
-      const requestedAction = eventData.requestedAction;
-      const trigger = eventData.trigger;
+      const eventData = event && typeof event === 'object' && event !== null ? (event as any).data : null;
+      const requestedAction = eventData && typeof eventData === 'object' && eventData !== null ? (eventData as any).requestedAction : null;
+      const trigger = eventData && typeof eventData === 'object' && eventData !== null ? (eventData as any).trigger : null;
       
       console.log(`UserMenu - Received request: ${requestedAction} (from ${trigger})`);
       

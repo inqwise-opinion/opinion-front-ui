@@ -3,18 +3,11 @@ import { ServiceReference, ServiceReferenceConfig } from "../ServiceReference";
 import { SelfIdentifyingService } from "../../core/ServiceIdentity";
 import { DEFAULT_NAVIGATION_ITEMS } from "../../config/navigation";
 import { LayoutContext } from "../../contexts/LayoutContext";
+import { NavigationItem, Sidebar, SidebarRef } from "../../components/Sidebar";
 import {
-  NavigationItem,
-  Sidebar,
-  SidebarComponent,
-  SidebarRef,
-} from "../../components/Sidebar";
-import {
-  SERVICE_ID,
   NavigationService,
   NavigationServiceConfig,
 } from "./NavigationService";
-import { ComponentReference } from "@/components/ComponentReference";
 import { ActivePage, ActivePageConsumer } from "../../interfaces/ActivePage";
 
 /**
@@ -75,11 +68,9 @@ export class NavigationServiceImpl
     // Ensure valid state by running sync
     this.syncState();
 
-    // Register with EventBus for navigation events
-    const eventBus = this.getEventBus();
-
     // Register as active page consumer to receive page change notifications
-    this.activePageConsumerUnsubscriber = this.getContext().registerActivePageConsumer(this);
+    this.activePageConsumerUnsubscriber =
+      this.getContext().registerActivePageConsumer(this);
     this.log("✅", "Registered as active page consumer");
 
     // Check if there's already an active page and update navigation accordingly
@@ -109,7 +100,7 @@ export class NavigationServiceImpl
 
   protected async onDestroy(): Promise<void> {
     this.log("👋", "Destroying NavigationService");
-    
+
     // Unregister from active page consumer
     if (this.activePageConsumerUnsubscriber) {
       this.activePageConsumerUnsubscriber();
@@ -133,13 +124,15 @@ export class NavigationServiceImpl
   setActiveItem(id: string): void {
     const validItem = this.findItemById(id);
     if (!validItem) {
-      throw new Error(`NavigationService.setActiveItem: Item with id '${id}' not found in navigation items. Available items: ${this.items.map(i => i.id).join(', ')}`);
+      throw new Error(
+        `NavigationService.setActiveItem: Item with id '${id}' not found in navigation items. Available items: ${this.items.map((i) => i.id).join(", ")}`,
+      );
     }
-    
+
     this.log("🎯", `Setting active item: ${id}`);
     this.activeId = id;
     this.syncState();
-    
+
     // Immediately sync with sidebar when active item changes - synchronously for UI responsiveness
     try {
       const sidebarRef = SidebarRef.getRegisteredReference(this.getContext(), {
@@ -147,17 +140,24 @@ export class NavigationServiceImpl
         retryInterval: 0,
         timeout: 0,
       });
-      
+
       // Try to get sidebar synchronously first
-      sidebarRef.get().then(sidebar => {
-        if (sidebar) {
-          this.syncWithSidebar(sidebar);
-        }
-      }).catch(error => {
-        this.log("⚠️", "Failed to sync with sidebar immediately:", error);
-      });
+      sidebarRef
+        .get()
+        .then((sidebar) => {
+          if (sidebar) {
+            this.syncWithSidebar(sidebar);
+          }
+        })
+        .catch((error) => {
+          this.log("⚠️", "Failed to sync with sidebar immediately:", error);
+        });
     } catch (error) {
-      this.log("⚠️", "Failed to get sidebar reference for immediate sync:", error);
+      this.log(
+        "⚠️",
+        "Failed to get sidebar reference for immediate sync:",
+        error,
+      );
     }
   }
 
@@ -198,23 +198,27 @@ export class NavigationServiceImpl
 
   public syncWithSidebar(sidebar: Sidebar): void {
     if (!this.isReady()) {
-      throw new Error("NavigationService.syncWithSidebar: Service is not ready. Call init() first.");
-    }
-    
-    if (!sidebar) {
-      throw new Error("NavigationService.syncWithSidebar: Sidebar parameter is null or undefined");
+      throw new Error(
+        "NavigationService.syncWithSidebar: Service is not ready. Call init() first.",
+      );
     }
 
-    this.log("🔄", "Syncing with sidebar...", { 
-      activeId: this.activeId, 
+    if (!sidebar) {
+      throw new Error(
+        "NavigationService.syncWithSidebar: Sidebar parameter is null or undefined",
+      );
+    }
+
+    this.log("🔄", "Syncing with sidebar...", {
+      activeId: this.activeId,
       itemsCount: this.items.length,
-      expandedCount: this.expandedIds.size 
+      expandedCount: this.expandedIds.size,
     });
 
     // Update navigation structure based on sidebar state
     const structure = this.getSidebarStructure();
     sidebar.updateNavigation(structure);
-    
+
     // Also explicitly set the active page on the sidebar
     if (this.activeId) {
       sidebar.setActivePage(this.activeId);
@@ -223,9 +227,11 @@ export class NavigationServiceImpl
       this.log("⚠️", "No active ID to set on sidebar");
     }
 
-    this.log("✅", "Synchronized state with sidebar", { activeId: this.activeId });
+    this.log("✅", "Synchronized state with sidebar", {
+      activeId: this.activeId,
+    });
   }
-  
+
   private async syncWithSidebarAsync(): Promise<void> {
     try {
       const sidebarRef = SidebarRef.getRegisteredReference(this.getContext(), {
@@ -258,14 +264,17 @@ export class NavigationServiceImpl
 
     return null;
   }
-  
+
   // ActivePageConsumer implementation
-  public onActivePageChanged(activePage: ActivePage | null, previousPage: ActivePage | null): void {
+  public onActivePageChanged(
+    activePage: ActivePage | null,
+    previousPage: ActivePage | null,
+  ): void {
     this.log("🔄", "Active page changed:", {
-      current: activePage?.getPageId() || 'none',
-      previous: previousPage?.getPageId() || 'none'
+      current: activePage?.getPageId() || "none",
+      previous: previousPage?.getPageId() || "none",
     });
-    
+
     if (!activePage) {
       // No active page - clear active navigation item
       this.activeId = null;
@@ -274,22 +283,25 @@ export class NavigationServiceImpl
       // Map active page to navigation item
       const pageId = activePage.getPageId();
       const navigationItemId = this.mapPageIdToNavigationItem(pageId);
-      
+
       if (navigationItemId && this.findItemById(navigationItemId)) {
         this.activeId = navigationItemId;
-        this.log("📍", `Mapped active page '${pageId}' to navigation item '${navigationItemId}'`);
+        this.log(
+          "📍",
+          `Mapped active page '${pageId}' to navigation item '${navigationItemId}'`,
+        );
       } else {
         // No matching navigation item found
         this.activeId = null;
         this.log("⚠️", `No navigation item found for active page '${pageId}'`);
       }
     }
-    
+
     // Sync state and update sidebar
     this.syncState();
     this.syncWithSidebarAsync();
   }
-  
+
   /**
    * Map a page ID to a navigation item ID
    * This method handles the mapping between page identifiers and navigation menu items
@@ -297,37 +309,41 @@ export class NavigationServiceImpl
   private mapPageIdToNavigationItem(pageId: string): string | null {
     // Direct mapping for known page types
     const pageToNavMap: Record<string, string> = {
-      'DashboardPage': 'dashboard',
-      'SurveyListPage': 'surveys',
-      'SurveyDetailPage': 'surveys',
-      'AccountRootPage': 'account',
-      'AccountSettingsPage': 'account',
-      'LoginPage': 'auth',
-      'DebugPage': 'debug',
-      'ErrorPage': 'debug', // Error pages typically fall under debug/troubleshooting
+      DashboardPage: "dashboard",
+      SurveyListPage: "surveys",
+      SurveyDetailPage: "surveys",
+      AccountRootPage: "account",
+      AccountSettingsPage: "account",
+      LoginPage: "auth",
+      DebugPage: "debug",
+      ErrorPage: "debug", // Error pages typically fall under debug/troubleshooting
     };
-    
+
     // Try direct mapping first
     if (pageToNavMap[pageId]) {
       return pageToNavMap[pageId];
     }
-    
+
     // Try partial matching for pages that might have dynamic suffixes
     for (const [pageName, navId] of Object.entries(pageToNavMap)) {
-      if (pageId.toLowerCase().includes(pageName.toLowerCase().replace('page', ''))) {
+      if (
+        pageId
+          .toLowerCase()
+          .includes(pageName.toLowerCase().replace("page", ""))
+      ) {
         return navId;
       }
     }
-    
+
     // Fallback: check if pageId directly matches any navigation item ID
     if (this.findItemById(pageId)) {
       return pageId;
     }
-    
+
     // No mapping found
     return null;
   }
-  
+
   private syncState(): void {
     // Ensure active ID exists somewhere in the tree (root or children)
     if (this.activeId && !this.findItemById(this.activeId)) {

@@ -422,9 +422,9 @@ export class MockSessionAuthProvider implements SessionAuthProvider, SelfIdentif
   ): Promise<unknown> { // ServiceReference<MockSessionAuthProvider> - avoiding import cycle
     const { ServiceReference } = await import('../services/ServiceReference');
     return new ServiceReference(
-      context,
+      context as any,
       'mock-session-auth-provider', // Standard service key
-      config
+      config as any
     );
   }
 }

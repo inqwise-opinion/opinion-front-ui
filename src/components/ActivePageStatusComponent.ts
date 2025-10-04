@@ -154,8 +154,9 @@ export class ActivePageStatusComponent implements ActivePageConsumer {
     this.eventBusConsumers.push(pageInfoConsumer);
 
     // Handle requests to check if page is active
-    const isActiveConsumer = globalEventBus.consume('page:is-active', (data: { pageId: string }) => {
-      return this.currentStatus.pageId === data.pageId;
+    const isActiveConsumer = globalEventBus.consume('page:is-active', (data: unknown) => {
+      const typedData = data as { pageId: string };
+      return this.currentStatus.pageId === typedData.pageId;
     });
     this.eventBusConsumers.push(isActiveConsumer);
 

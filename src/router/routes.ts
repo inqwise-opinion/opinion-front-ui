@@ -1,4 +1,4 @@
-import { RouteDefinition, RouteResult, PageProvider } from "./types";
+import { RouteDefinition, PageProvider } from './types';
 import DashboardPage from "../pages/DashboardPage";
 import DebugPage from "../pages/DebugPage";
 import AccountRootPage from "../pages/account/AccountRootPage";

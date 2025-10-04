@@ -6,7 +6,7 @@
  */
 
 import { BaseService } from '../services/BaseService';
-import { SERVICE_IDS, ServiceIdentityRegistry, type ServiceId } from './ServiceIdentity';
+import { ServiceIdentityRegistry, type ServiceId } from './ServiceIdentity';
 import type { LayoutContext } from '../contexts/LayoutContext';
 import type { Service, ServiceConfig } from '../interfaces/Service';
 
@@ -99,7 +99,6 @@ export class ServiceRegistrar {
       throw new Error(`Cannot register service '${serviceId}' - not found in ServiceIdentityRegistry`);
     }
     
-    const identity = ServiceIdentityRegistry.get(serviceId)!;
     console.log(`📝 Registering service: ${serviceId}`);
     
     context.registerService(serviceId, service);

@@ -1,9 +1,8 @@
-import UniversalRouter, { Route, RouteContext as UniversalRouteContext, Routes } from 'universal-router';
+import UniversalRouter, { RouteContext as UniversalRouteContext } from 'universal-router';
 import { LayoutContext } from '../contexts/LayoutContext';
 import { EventBus } from '../lib/EventBus';
-import { MainContent } from '../components/MainContent';
 import { Service } from '../interfaces/Service';
-import { RouteContext, RouteDefinition, RouteResult } from './types';
+import { RouteDefinition, RouteResult } from './types';
 import { RouteContextImpl } from './RouteContextImpl';
 import { PageContextImpl } from '../contexts/PageContextImpl';
 import { authMiddleware } from './middleware/auth';
@@ -14,12 +13,6 @@ import type { PageProvider } from './types';
 /**
  * Internal router types
  */
-interface ErrorPageParams extends Record<string, string> {
-  code: string;
-  message: string;
-  details: string;
-}
-
 interface ProcessedRoute {
   path: string;
   action: (context: UniversalRouteContext, params: Record<string, string | string[]>) => Promise<RouteResult>;
@@ -153,7 +146,7 @@ export class RouterService implements Service {
         throw new Error('MainContent not available from LayoutContext');
       }
       // Cast to MainContentImpl since PageProvider expects concrete implementation
-      const newPage = result.pageProvider(mainContent as MainContent, pageContext);
+      const newPage = result.pageProvider(mainContent as any, pageContext);
 
       // Associate page with context (one-time association)
       pageContext.setPage(newPage);

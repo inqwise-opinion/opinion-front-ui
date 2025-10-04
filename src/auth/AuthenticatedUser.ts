@@ -102,10 +102,11 @@ export class AuthenticatedUser {
    */
   static isAuthenticatedUser(obj: unknown): obj is AuthenticatedUser {
     return obj instanceof AuthenticatedUser ||
-           (obj && 
-            typeof obj.id === 'number' &&
-            typeof obj.username === 'string' &&
-            typeof obj.email === 'string' &&
-            obj.authenticatedAt instanceof Date);
+           (obj !== null && 
+            typeof obj === 'object' &&
+            typeof (obj as any).id === 'number' &&
+            typeof (obj as any).username === 'string' &&
+            typeof (obj as any).email === 'string' &&
+            (obj as any).authenticatedAt instanceof Date);
   }
 }

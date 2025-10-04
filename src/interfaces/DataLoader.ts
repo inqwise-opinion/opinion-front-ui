@@ -8,6 +8,16 @@
 import DataLoader from 'dataloader';
 
 /**
+ * Cache map interface compatible with DataLoader
+ */
+export interface CacheMap<K, V> {
+  get(key: K): V | void;
+  set(key: K, value: V): void;
+  delete(key: K): boolean;
+  clear(): void;
+}
+
+/**
  * Configuration options for DataLoader services
  */
 export interface DataLoaderConfig {
@@ -19,12 +29,12 @@ export interface DataLoaderConfig {
   /**
    * Cache key function for custom cache keys
    */
-  cacheKeyFn?: <K>(key: K) => string;
+  cacheKeyFn?: <K>(key: K) => K;
 
   /**
    * Cache map implementation (default: Map)
    */
-  cacheMap?: Map<string, unknown>;
+  cacheMap?: CacheMap<unknown, unknown> | null;
 
   /**
    * Whether to enable caching (default: true)
@@ -99,7 +109,7 @@ export class DataLoaderServiceImpl<K, V> implements DataLoaderService<K, V> {
     this.loader = new DataLoader<K, V>(config.batchLoadFn, {
       maxBatchSize: config.maxBatchSize,
       cacheKeyFn: config.cacheKeyFn,
-      cacheMap: config.cacheMap,
+      cacheMap: config.cacheMap as any,
       cache: config.cache,
     });
   }

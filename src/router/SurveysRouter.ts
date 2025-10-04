@@ -1,5 +1,5 @@
 import { EntityRouter } from './EntityRouter';
-import { RouteDefinition, PageProvider } from './types';
+import { PageProvider } from './types';
 import { LayoutContext } from '../contexts/LayoutContext';
 import SurveyListPage from '../pages/surveys/SurveyListPage';
 import SurveyDetailPage from '../pages/surveys/SurveyDetailPage';

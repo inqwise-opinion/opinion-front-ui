@@ -1,4 +1,4 @@
-import { RouteContext, RouteResult } from '../types';
+import { RouteResult } from '../types';
 import { PUBLIC_ROUTES } from '../routes';
 
 /**

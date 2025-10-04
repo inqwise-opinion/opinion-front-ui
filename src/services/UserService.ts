@@ -25,7 +25,7 @@ import { AuthenticationError } from '../auth/exceptions/AuthenticationExceptions
 import { ServiceReference, ServiceReferenceConfig } from './ServiceReference';
 import type { LayoutContext } from '../contexts/LayoutContext';
 import type { ServiceConfig } from '../interfaces/Service';
-import { SelfIdentifyingService, ServiceIdentity, validateServiceIdentity } from '../core/ServiceIdentity';
+import { SelfIdentifyingService, validateServiceIdentity } from '../core/ServiceIdentity';
 
 /**
  * User service configuration

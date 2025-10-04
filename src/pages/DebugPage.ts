@@ -4,14 +4,8 @@
  * Provides testing controls and development utilities
  */
 
-import { Sidebar } from "../components/Sidebar";
-import SidebarComponent from "../components/SidebarComponent";
-import type { AppHeader } from "../components/AppHeader";
-import type { BreadcrumbsComponent } from "../components/BreadcrumbsComponent";
 import type { BreadcrumbItem } from "../interfaces/BreadcrumbItem";
 import MainContentImpl from "../components/MainContentImpl";
-import Layout from "../components/Layout";
-import { getLayoutContext } from "../contexts/index";
 import type {
   LayoutContext,
   LayoutModeType,
@@ -900,8 +894,8 @@ export class DebugPage extends PageComponent {
     // Subscribe to layout mode changes
     layoutContext.subscribe("layout-mode-change", (event: LayoutEvent) => {
       console.log("event:", event);
-      const viewport = event.data.viewport as LayoutViewPort;
-      const type = event.data.modeType as LayoutModeType;
+      const viewport = (event.data as any)?.viewport as LayoutViewPort;
+      const type = (event.data as any)?.modeType as LayoutModeType;
       const sidebar = layoutContext.getSidebar();
       const isSidebarCompact = sidebar?.isCompactMode();
       const isSidebarVisible = sidebar?.isVisible();
@@ -943,7 +937,6 @@ export class DebugPage extends PageComponent {
       const sidebarDimensions = sidebar?.getDimensions();
       const isMobile = ctx.isLayoutMobile();
       const isTablet = type === 'tablet';
-      const isDesktop = type === 'desktop';
       const isCompact = sidebar?.isCompactMode() ?? false;
 
       // Breakpoint indicators
@@ -2008,7 +2001,7 @@ export class DebugPage extends PageComponent {
   /**
    * Handle debug-specific ESC key behavior
    */
-  private handleDebugPageEscape(ctx: HotkeyExecutionContext): boolean {
+  private handleDebugPageEscape(_ctx: HotkeyExecutionContext): boolean {
     let handled = false;
     
     // If event monitoring is active, stop it on ESC
@@ -2147,7 +2140,7 @@ export class DebugPage extends PageComponent {
     const hotkeys = this.getChainHotkeys();
     if (hotkeys) {
       this.logToConsole(`🗺️ Registered hotkeys (${hotkeys.size}):`);
-      for (const [key, handler] of hotkeys) {
+      for (const [key, handler] of Array.from(hotkeys)) {
         this.logToConsole(`  - ${key}: ${handler.description}`);
       }
     } else {
@@ -2660,18 +2653,18 @@ export class DebugPage extends PageComponent {
       }
       
       if (status.eventListeners) {
-        this.logToConsole(`  Event Listeners: ${status.eventListeners.count || 0} (${status.eventListeners.types?.join(', ') || 'none'})`);
+        this.logToConsole(`  Event Listeners: ${(status.eventListeners as any)?.count || 0} (${(status.eventListeners as any)?.types?.join?.(', ') || 'none'})`);
       }
       if (status.configuration) {
-        this.logToConsole(`  Has LayoutContext: ${status.configuration.hasLayoutContext}`);
+        this.logToConsole(`  Has LayoutContext: ${(status.configuration as any)?.hasLayoutContext}`);
       }
       if (status.currentState) {
-        this.logToConsole(`  Current Breadcrumbs: ${status.currentState.breadcrumbsCount || 0}`);
+        this.logToConsole(`  Current Breadcrumbs: ${(status.currentState as any)?.breadcrumbsCount || 0}`);
       }
       
-      if (status.currentState?.breadcrumbs?.length > 0) {
+      if ((status.currentState as any)?.breadcrumbs?.length > 0) {
         this.logToConsole('  Breadcrumb Details:');
-        status.currentState?.breadcrumbs?.forEach((breadcrumb: { id: string; text: string; hasHref: boolean; hasClickHandler: boolean }) => {
+        ((status.currentState as any)?.breadcrumbs as any)?.forEach?.((breadcrumb: { id: string; text: string; hasHref: boolean; hasClickHandler: boolean }) => {
           this.logToConsole(`    - ${breadcrumb.id}: "${breadcrumb.text}" (href: ${breadcrumb.hasHref}, action: ${breadcrumb.hasClickHandler})`);
         });
       }

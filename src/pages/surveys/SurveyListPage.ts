@@ -2,8 +2,6 @@ import { PageComponent } from '../../components/PageComponent';
 import type { BreadcrumbItem } from '../../interfaces/BreadcrumbItem';
 import MainContentImpl from '../../components/MainContentImpl';
 import type { PageContext } from '../../interfaces/PageContext';
-import { LoggerFactory } from '../../logging/LoggerFactory';
-import { Logger } from '../../logging/Logger';
 
 export default class SurveyListPage extends PageComponent {
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {

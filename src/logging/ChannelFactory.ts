@@ -2,6 +2,19 @@ import { LogChannel, RawLogChannel } from 'typescript-logging';
 import { ChannelConfig, ChannelType, CustomLogChannel, CustomRawLogChannel, MultiChannelConfig, AsyncConsumerChannelConfig, LogFormat, LogFormatPresets, LogMessage } from './ChannelTypes';
 
 /**
+ * Internal type for raw log messages from typescript-logging
+ */
+interface InternalLogMessage {
+  level?: { toString(): string };
+  timeInMillis?: number;
+  logNames?: string | string[];
+  message?: string;
+  exception?: unknown;
+  args?: unknown[];
+  error?: string; // Additional field for error handling
+}
+
+/**
  * Factory for creating logging channels
  * @internal - For internal use only
  */
@@ -26,7 +39,6 @@ export class ChannelFactory {
                 return this.createAsyncConsumerChannel(config);
                 
             default: {
-                const _exhaustive: never = config;
                 throw new Error(`Unknown channel type: ${(config as { type: string }).type}`);
             }
         }
@@ -36,7 +48,7 @@ export class ChannelFactory {
      * Format a log message according to the specified format
      * @internal
      */
-    private static formatLogMessage(logMessage: unknown, format?: LogFormat | LogFormatPresets): string {
+    private static formatLogMessage(logMessage: InternalLogMessage, format?: LogFormat | LogFormatPresets): string {
         // Default format if none specified
         if (!format) {
             format = LogFormatPresets.SIMPLE;
@@ -73,7 +85,7 @@ export class ChannelFactory {
                 timeInMillis: logMessage.timeInMillis || Date.now(),
                 logName: Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown'),
                 message: logMessage.message || '',
-                exception: logMessage.exception,
+                exception: logMessage.exception as Error | undefined,
                 args: logMessage.args
             };
             return format(logMsg);
@@ -112,7 +124,7 @@ export class ChannelFactory {
     public static getDefaultConsoleChannel(format?: LogFormat | LogFormatPresets): LogChannel {
         return {
             type: 'LogChannel',
-            write: (logMessage: unknown) => {
+            write: (logMessage: InternalLogMessage) => {
                 // Use format processing if available, otherwise fall back to parsing pre-formatted messages
                 let formattedOutput: string;
                 
@@ -200,7 +212,7 @@ export class ChannelFactory {
             // Simple mapping - let 3rd party library handle the details
             const logChannel: LogChannel = {
                 type: 'LogChannel',
-                write: (libMsg: any) => {
+                write: (libMsg: InternalLogMessage) => {
                     // Parse the pre-formatted message to extract components
                     let level: string;
                     let loggerName: string;
@@ -238,7 +250,7 @@ export class ChannelFactory {
                             exception = new Error(errorMatch[1]);
                         }
                     } else if (libMsg.exception) {
-                        exception = libMsg.exception;
+                        exception = libMsg.exception as Error | undefined;
                     }
                     
                     // Create our LogMessage interface
@@ -296,7 +308,7 @@ export class ChannelFactory {
                             exception = new Error(errorMatch[1]);
                         }
                     } else if (libMsg.exception) {
-                        exception = libMsg.exception;
+                        exception = libMsg.exception as Error | undefined;
                     }
                     
                     // Create our LogMessage interface
@@ -319,20 +331,12 @@ export class ChannelFactory {
      * Create an async consumer channel that routes to LoggerFactory's consumer system
      * @internal
      */
-    private static createAsyncConsumerChannel(config: AsyncConsumerChannelConfig): LogChannel {
+    private static createAsyncConsumerChannel(_config: AsyncConsumerChannelConfig): LogChannel {
         return {
             type: 'LogChannel',
-            write: (logMessage: any) => {
+            write: (_logMessage: InternalLogMessage) => {
                 // This is a placeholder - the actual routing to consumers
                 // will be handled by LoggerFactory when it overrides this method
-                const ourMsg = {
-                    level: logMessage.level?.toString() || 'INFO',
-                    timeInMillis: logMessage.timeInMillis || Date.now(),
-                    logName: Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown'),
-                    message: logMessage.message || '',
-                    exception: logMessage.exception,
-                    args: logMessage.args
-                };
                 
                 // The LoggerFactory will override this channel's write method
                 // to route messages to the appropriate async consumers
@@ -361,12 +365,12 @@ export class ChannelFactory {
         // Return a LogChannel that writes to all channels
         return {
             type: 'LogChannel',
-            write: (logMessage: any) => {
+            write: (logMessage: InternalLogMessage) => {
                 // Write to all channels
                 channels.forEach(channel => {
                     try {
                         if (channel.type === 'LogChannel') {
-                            channel.write(logMessage);
+                            (channel as any).write(logMessage);
                         } else {
                             // For RawLogChannel, we need to simulate the formatArg function
                             const formatArg = (arg: unknown) => {
@@ -388,7 +392,7 @@ export class ChannelFactory {
                                 args: logMessage.args || []
                             };
                             
-                            channel.write(rawMessage, formatArg);
+                            (channel as any).write(rawMessage, formatArg);
                         }
                     } catch (error) {
                         // Don't let one channel failure break others

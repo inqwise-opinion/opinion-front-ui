@@ -85,11 +85,13 @@ export interface AuthProvider {
  * Type guard to check if an object implements AuthProvider interface
  */
 export function isAuthProvider(obj: unknown): obj is AuthProvider {
-  return obj &&
-    typeof obj.getCurrentUser === 'function' &&
-    typeof obj.isAuthenticated === 'function' &&
-    typeof obj.login === 'function' &&
-    typeof obj.logout === 'function';
+  return obj !== null &&
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof (obj as any).getCurrentUser === 'function' &&
+    typeof (obj as any).isAuthenticated === 'function' &&
+    typeof (obj as any).login === 'function' &&
+    typeof (obj as any).logout === 'function';
 }
 
 // Re-export exception for convenience

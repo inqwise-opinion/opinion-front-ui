@@ -94,9 +94,10 @@ export class EventBusTestService implements Service {
     // Consumer for broadcast events (PUBLISH pattern)
     const broadcastConsumer = this.layoutContext.consume(
       'test:broadcast',
-      (data: EventBusTestData) => {
-        console.log(`📢 EventBusTestService ${this.serviceId} - Received broadcast:`, data);
-        this.recordReceivedEvent('test:broadcast', data);
+      (data: unknown) => {
+        const typedData = data as EventBusTestData;
+        console.log(`📢 EventBusTestService ${this.serviceId} - Received broadcast:`, typedData);
+        this.recordReceivedEvent('test:broadcast', typedData);
       },
       this.serviceId
     );
@@ -105,9 +106,10 @@ export class EventBusTestService implements Service {
     // Consumer for direct messages (SEND pattern)
     const directConsumer = this.layoutContext.consume(
       'test:direct-message',
-      (data: EventBusTestData) => {
-        console.log(`📤 EventBusTestService ${this.serviceId} - Received direct message:`, data);
-        this.recordReceivedEvent('test:direct-message', data);
+      (data: unknown) => {
+        const typedData = data as EventBusTestData;
+        console.log(`📤 EventBusTestService ${this.serviceId} - Received direct message:`, typedData);
+        this.recordReceivedEvent('test:direct-message', typedData);
       },
       this.serviceId
     );
@@ -116,17 +118,18 @@ export class EventBusTestService implements Service {
     // Consumer for request-response pattern (REQUEST pattern)
     const requestConsumer = this.layoutContext.consume(
       'test:request',
-      (data: EventBusRequestData): EventBusResponseData => {
-        console.log(`📬 EventBusTestService ${this.serviceId} - Processing request:`, data);
-        this.recordReceivedEvent('test:request', data);
+      (data: unknown) => {
+        const typedData = data as EventBusRequestData;
+        console.log(`📬 EventBusTestService ${this.serviceId} - Processing request:`, typedData);
+        this.recordReceivedEvent('test:request', typedData);
 
         const response: EventBusResponseData = {
           success: true,
           data: {
-            operation: data.operation,
+            operation: typedData.operation,
             result: `Processed by ${this.serviceId}`,
             timestamp: Date.now(),
-            echo: data.params
+            echo: typedData.params
           }
         };
 
@@ -142,9 +145,10 @@ export class EventBusTestService implements Service {
     // Consumer for async request-response pattern
     const asyncRequestConsumer = this.layoutContext.consume(
       'test:async-request',
-      async (data: EventBusRequestData): Promise<EventBusResponseData> => {
-        console.log(`📬 EventBusTestService ${this.serviceId} - Processing async request:`, data);
-        this.recordReceivedEvent('test:async-request', data);
+      async (data: unknown) => {
+        const typedData = data as EventBusRequestData;
+        console.log(`📬 EventBusTestService ${this.serviceId} - Processing async request:`, typedData);
+        this.recordReceivedEvent('test:async-request', typedData);
 
         // Simulate async processing
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -152,10 +156,10 @@ export class EventBusTestService implements Service {
         const response: EventBusResponseData = {
           success: true,
           data: {
-            operation: data.operation,
+            operation: typedData.operation,
             result: `Async processed by ${this.serviceId}`,
             timestamp: Date.now(),
-            echo: data.params,
+            echo: typedData.params,
             processingDelay: 100
           }
         };
@@ -225,7 +229,7 @@ export class EventBusTestService implements Service {
     try {
       const response = await this.layoutContext.request('test:request', data);
       console.log(`📬 EventBusTestService ${this.serviceId} - Received response:`, response);
-      return response;
+      return response as EventBusResponseData;
     } catch (error) {
       console.error(`📬 EventBusTestService ${this.serviceId} - Request failed:`, error);
       throw error;
@@ -249,7 +253,7 @@ export class EventBusTestService implements Service {
     try {
       const response = await this.layoutContext.request('test:async-request', data);
       console.log(`📬 EventBusTestService ${this.serviceId} - Received async response:`, response);
-      return response;
+      return response as EventBusResponseData;
     } catch (error) {
       console.error(`📬 EventBusTestService ${this.serviceId} - Async request failed:`, error);
       throw error;

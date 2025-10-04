@@ -30,12 +30,12 @@ export class EventBus {
     }
     
     const eventSet = this.events.get(eventName)!;
-    eventSet.add(callback);
+    eventSet.add(callback as EventCallback<unknown>);
     
     // Return unsubscribe function
     return {
       unsubscribe: () => {
-        eventSet.delete(callback);
+        eventSet.delete(callback as EventCallback<unknown>);
         // Clean up empty event sets
         if (eventSet.size === 0) {
           this.events.delete(eventName);

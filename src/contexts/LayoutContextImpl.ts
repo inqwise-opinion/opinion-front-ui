@@ -98,7 +98,6 @@ export class LayoutContextImpl implements LayoutContext {
   private identifyModeType(viewport: LayoutViewPort): LayoutModeType {
     const isMobile = viewport.width <= 768;
     const isTablet = viewport.width > 768 && viewport.width <= 1024;
-    const _isDesktop = viewport.width > 1024;
 
     // Determine layout mode type
     let layoutModeType: LayoutModeType;
@@ -129,7 +128,7 @@ export class LayoutContextImpl implements LayoutContext {
   private setupViewportObserver(): void {
     // Use ResizeObserver for better performance if available
     if (window.ResizeObserver) {
-      this.resizeObserver = new ResizeObserver((entries) => {
+      this.resizeObserver = new ResizeObserver((_entries) => {
         this.handleViewportChange();
       });
       this.resizeObserver.observe(document.body);
@@ -150,7 +149,6 @@ export class LayoutContextImpl implements LayoutContext {
    * Handle viewport changes - Pure event-driven approach
    */
   private handleViewportChange(): void {
-    const _oldViewport = this.viewport;
     const oldModeType = this.modeType;
 
     const newViewPort = this.calculateViewPort();
@@ -292,7 +290,6 @@ export class LayoutContextImpl implements LayoutContext {
     this.logger.debug(`Coordinating components for ${newModeType} mode...`);
 
     const isMobile = newModeType === "mobile";
-    const _wasNonMobile = !isMobile;
 
     // Coordinate sidebar behavior during layout mode transitions
     if (this.sidebarInstance) {
@@ -1323,10 +1320,8 @@ export class LayoutContextImpl implements LayoutContext {
     
     this.logger.info("Hotkey system cleanup complete");
 
-    // Cleanup PageContexts
-    this.logger.info("Cleaning up PageContexts...");
-    this.pageContexts.clear();
-    this.logger.info("PageContext cleanup complete");
+    // PageContexts cleanup - now handled by RouterService (no longer needed)
+    this.logger.info("PageContext cleanup - handled by RouterService");
 
     // Reset ready state
     this.isLayoutReady = false;

@@ -4,7 +4,7 @@
  */
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { ApiResponse, User, Opinion } from '../types';
+import { User, Opinion } from '../types';
 import { LoggerFactory } from '../logging/LoggerFactory';
 import { Logger } from '../logging/Logger';
 

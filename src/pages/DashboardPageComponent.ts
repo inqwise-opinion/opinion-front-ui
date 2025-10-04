@@ -416,7 +416,7 @@ export class DashboardPageComponent extends PageComponent {
   /**
    * Handle data-action events
    */
-  protected handleFeedback(element: Element, event: Event): void {
+  protected handleFeedback(_element: Element, _event: Event): void {
     const message = 'Thank you for your interest in providing feedback!\n\n' +
                    'This would typically open a feedback form or modal dialog ' +
                    'where you could submit your comments and suggestions.';
@@ -586,7 +586,7 @@ export class DashboardPageComponent extends PageComponent {
   /**
    * Enhanced dashboard ESC handler with chain context
    */
-  private handleDashboardEscapeChain(ctx: HotkeyExecutionContext): boolean {
+  private handleDashboardEscapeChain(_ctx: HotkeyExecutionContext): boolean {
     let handled = false;
     
     // Close user menu if open
@@ -666,21 +666,17 @@ export class DashboardPageComponent extends PageComponent {
   /**
    * Legacy ESC handler for backward compatibility
    */
-  private handleDashboardEscapeLegacy(event: KeyboardEvent): void {
-    let handled = false;
-    
+  private handleDashboardEscapeLegacy(_event: KeyboardEvent): void {
     // Close user menu if open
     if (this.userMenuDropdown?.style.display === 'block') {
       console.log('📱 Dashboard (Legacy): Closing user menu on ESC');
       this.closeUserMenu();
-      handled = true;
     }
     
     // Close sidebar on mobile if open
     if (this.isMobileView && !document.body.classList.contains('sidebar-closed')) {
       console.log('📱 Dashboard (Legacy): Closing mobile sidebar on ESC');
       this.closeSidebarOverlay();
-      handled = true;
     }
   }
   
