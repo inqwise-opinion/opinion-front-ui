@@ -538,34 +538,45 @@ jobs:
         id: discord
         if: env.SUCCESS_CONDITION == 'true'
         run: |
-          # Create base message
+          # Store variables to avoid shell interpretation issues
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          EVENT="${{ github.event_name }}"
+          COMMIT_SHA="${{ github.sha }}"
+          ACTOR="${{ github.actor }}"
+          
+          # Create base message without backticks that could be interpreted by shell
           MESSAGE="✅ **CI Pipeline Success**\n\n"
-          MESSAGE+="**Repository:** ${{ github.repository }}\n"
-          MESSAGE+="**Branch:** ${{ github.ref_name }}\n"
-          MESSAGE+="**Event:** ${{ github.event_name }}\n"
-          MESSAGE+="**Commit:** [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})\n\n"
-
+          MESSAGE+="**Repository:** $REPO\n"
+          MESSAGE+="**Branch:** $BRANCH\n"
+          MESSAGE+="**Event:** $EVENT\n"
+          MESSAGE+="**Commit:** [$COMMIT_SHA](https://github.com/$REPO/commit/$COMMIT_SHA)\n\n"
+          
           MESSAGE+="🔍 **Quality:** ✅ Passed\n"
           MESSAGE+="🧪 **Tests:** ✅ Passed\n"
           MESSAGE+="🏗️ **Build:** ✅ Passed\n"
-
+          
           # Add preview URL if it's a PR with successful preview
-          if [[ "${{ github.event_name }}" == "pull_request" && "${{ steps.notification.outputs.preview_status }}" == "success" ]]; then
+          if [[ "$EVENT" == "pull_request" && "${{ steps.notification.outputs.preview_status }}" == "success" ]]; then
             PREVIEW_URL="${{ steps.notification.outputs.preview_url }}"
             MESSAGE+="🚀 **Preview:** [✅ Available]($PREVIEW_URL)\n"
           fi
-
+          
           # Add production deploy info if it's main branch
           if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ steps.notification.outputs.deploy_status }}" == "success" ]]; then
             MESSAGE+="🌍 **Production:** 🚀 Deployed\n"
           fi
-
-          MESSAGE+="\n• Triggered by **${{ github.actor }}**"
-
-          # Save message (escape for JSON)
-          echo "message<<EOF" >> $GITHUB_OUTPUT
+          
+          MESSAGE+="\n• Triggered by **$ACTOR**"
+          
+          # Save message using heredoc
+          cat >> $GITHUB_OUTPUT << 'EOF'
+          message<<MESSAGE_EOF
+          EOF
           echo "$MESSAGE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          cat >> $GITHUB_OUTPUT << 'EOF'
+          MESSAGE_EOF
+          EOF
 
       - name: 🎮 Send Discord Notification
         if: env.SUCCESS_CONDITION == 'true'
