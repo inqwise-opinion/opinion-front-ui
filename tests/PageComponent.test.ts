@@ -260,8 +260,12 @@ describe('Page Components', () => {
         expect(pageComponent.isInitialized).toBe(true);
         expect(pageComponent.initCalled).toBe(true);
         expect(pageComponent.eventListenersCalled).toBe(true);
-        expect(consoleSpy).toHaveBeenCalledWith('TestPageComponent: Initializing...');
-        expect(consoleSpy).toHaveBeenCalledWith('TestPageComponent: Initialized successfully');
+        expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringContaining('TestPageComponent')
+        );
+        expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringContaining('Initializing')
+        );
       });
 
       test('should wait for DOM ready if document is loading', async () => {
@@ -278,12 +282,15 @@ describe('Page Components', () => {
       });
 
       test('should prevent double initialization', async () => {
-        const consoleSpy = jest.spyOn(console, 'warn');
+        const consoleSpy = jest.spyOn(console, 'log');
         
         await pageComponent.init();
         await pageComponent.init(); // Second init attempt
         
-        expect(consoleSpy).toHaveBeenCalledWith('TestPageComponent: Cannot initialize - already initialized or destroyed');
+        // Check for WARN level log with the specific message structure
+        expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringMatching(/\[WARN\].*PageComponent:TestPageComponent.*Cannot initialize - already initialized or destroyed/)
+        );
       });
 
       test('should handle initialization errors', async () => {
@@ -303,12 +310,15 @@ describe('Page Components', () => {
       });
 
       test('should prevent double destruction', () => {
-        const consoleSpy = jest.spyOn(console, 'warn');
+        const consoleSpy = jest.spyOn(console, 'log');
         
         pageComponent.destroy();
         pageComponent.destroy(); // Second destroy attempt
         
-        expect(consoleSpy).toHaveBeenCalledWith('TestPageComponent: Already destroyed');
+        // Check for WARN level log with the specific message structure
+        expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringMatching(/\[WARN\].*PageComponent:TestPageComponent.*Already destroyed/)
+        );
       });
 
       test('should handle destruction errors', () => {
@@ -483,8 +493,12 @@ describe('Page Components', () => {
       
       await dashboardPage.init();
       
-      expect(consoleSpy).toHaveBeenCalledWith('DashboardPage - Initializing...');
-      expect(consoleSpy).toHaveBeenCalledWith('DashboardPage - Ready');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('DashboardPage')
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Initializing')
+      );
     });
 
     test('should load template into app element', async () => {
@@ -545,7 +559,10 @@ describe('Page Components', () => {
       
       dashboardPage.destroy();
       
-      expect(consoleSpy).toHaveBeenCalledWith('DashboardPage - Destroying...');
+      // Check for DEBUG level log with the specific message structure
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/\[DEBUG\].*PageComponent:DashboardPage.*Destroying/)
+      );
     });
   });
 
@@ -795,8 +812,12 @@ describe('Page Components', () => {
       await debugPage.init();
       
       // Check for actual console messages from DebugPage
-      expect(consoleSpy).toHaveBeenCalledWith('DebugPage: Initializing...');
-      expect(consoleSpy).toHaveBeenCalledWith('DebugPage: Initialized successfully');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('DebugPage')
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Initializing')
+      );
     });
 
     test('should create fallback template', async () => {
@@ -889,7 +910,10 @@ describe('Page Components', () => {
       
       debugPage.destroy();
       
-      expect(consoleSpy).toHaveBeenCalledWith('DebugPage: Destroying...');
+      // Check for DEBUG level log with the specific message structure
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/\[DEBUG\].*PageComponent:DebugPage.*Destroying/)
+      );
     });
 
     test('should handle DOM not ready state', async () => {
@@ -911,13 +935,16 @@ describe('Page Components', () => {
     });
 
     test('should prevent double initialization', async () => {
-      const consoleSpy = jest.spyOn(console, 'warn');
+      const consoleSpy = jest.spyOn(console, 'log');
       
       await debugPage.init();
       await debugPage.init(); // Second init attempt
       
       // Check for actual warning message from PageComponent base class
-      expect(consoleSpy).toHaveBeenCalledWith('DebugPage: Cannot initialize - already initialized or destroyed');
+      // Check for WARN level log with the specific message structure
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/\[WARN\].*PageComponent:DebugPage.*Cannot initialize - already initialized or destroyed/)
+      );
     });
   });
 

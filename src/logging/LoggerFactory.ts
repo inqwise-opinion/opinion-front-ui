@@ -65,9 +65,10 @@ function mapLogLevel(level: LogLevel): LibLogLevel {
       return LibLogLevel.Fatal;
     case LogLevel.Off:
       return LibLogLevel.Off;
-    default:
+    default: {
       const _exhaustive: never = level;
       throw new Error(`Unknown log level: ${level}`);
+    }
   }
 }
 
@@ -758,8 +759,19 @@ export class LoggerFactory {
         actualMessage = formattedMessage.message || '';
       }
       
+      // Extract log level from pre-formatted message if available
+      let logLevel = formattedMessage.level?.toString();
+      
+      if (!logLevel && formattedMessage.message && typeof formattedMessage.message === 'string') {
+        // Try to extract level from pre-formatted typescript-logging messages
+        const preFormattedMatch = formattedMessage.message.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/);
+        if (preFormattedMatch) {
+          logLevel = preFormattedMatch[1]; // Extract the log level from the formatted string
+        }
+      }
+      
       const ourLogMessage: LogMessage = {
-        level: formattedMessage.level?.toString() || 'INFO',
+        level: logLevel || 'INFO',
         timeInMillis: formattedMessage.timeInMillis || Date.now(),
         logName: loggerName,
         message: actualMessage,
