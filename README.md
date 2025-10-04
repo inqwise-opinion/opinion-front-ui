@@ -149,6 +149,31 @@ The application uses emoji-prefixed console logging:
 - **Viewport constraints**: 100vh grid prevents body overflow
 - **Component lifecycle**: Proper cleanup prevents memory leaks
 
+## 🚀 Preview Deployments
+
+**GitHub Pages Integration**: Every pull request automatically gets a preview deployment!
+
+### How it works
+- **Automatic**: When you create or update a PR, GitHub Actions builds and deploys a preview
+- **Unique URLs**: Each PR gets its own subdirectory: `https://inqwise-opinion.github.io/opinion-front-ui/pr-123/`
+- **PR Comments**: A bot comments on your PR with the preview link and deployment details
+- **Auto Cleanup**: Previews are automatically removed when PRs are closed/merged
+
+### Preview URLs
+- **Preview Index**: [https://inqwise-opinion.github.io/opinion-front-ui/](https://inqwise-opinion.github.io/opinion-front-ui/) - Lists all active previews
+- **PR Preview Example**: `https://inqwise-opinion.github.io/opinion-front-ui/pr-42/` - Individual PR preview
+
+### For Reviewers
+1. Check the PR comment for the preview link
+2. Test the preview deployment before approving
+3. Verify responsive behavior and functionality
+4. Check browser console for any errors
+
+### For Contributors
+- Preview deployments happen automatically - no action needed
+- Preview is updated every time you push to your PR branch
+- Use the preview to validate your changes before requesting review
+
 ## Contributing
 
 1. Follow TypeScript best practices
@@ -157,6 +182,7 @@ The application uses emoji-prefixed console logging:
 4. Update documentation as needed
 5. Use semantic commit messages
 6. Test responsive behavior across breakpoints
+7. **Check the preview deployment** before requesting review
 
 ## License
 
