@@ -1,7 +1,7 @@
-import { NavigationServiceImpl } from '../NavigationServiceImpl';
-import { LayoutContext } from '../../../contexts/LayoutContext';
-import { NavigationItem } from '../../../components/Sidebar';
-import { SelfIdentifyingService } from '../../../core/ServiceIdentity';
+import { NavigationServiceImpl } from '../../../src/services/navigation/NavigationServiceImpl';
+import { LayoutContext } from '../../../src/contexts/LayoutContext';
+import { NavigationItem } from '../../../src/components/Sidebar';
+import { SelfIdentifyingService } from '../../../src/core/ServiceIdentity';
 
 describe('NavigationServiceImpl', () => {
   let mockLayoutContext: jest.Mocked<LayoutContext>;

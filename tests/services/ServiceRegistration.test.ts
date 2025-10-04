@@ -1,8 +1,8 @@
-import { BaseService } from '../BaseService';
-import { ServiceHelper } from '../BaseService';
-import { LayoutContext } from '../../contexts/LayoutContext';
-import { ServiceConfig } from '../../interfaces/Service';
-import { ServiceReference } from '../ServiceReference';
+import { BaseService } from '../../src/services/BaseService';
+import { ServiceHelper } from '../../src/services/BaseService';
+import { LayoutContext } from '../../src/contexts/LayoutContext';
+import { ServiceConfig } from '../../src/interfaces/Service';
+import { ServiceReference } from '../../src/services/ServiceReference';
 
 // Basic test service for both patterns
 class TestService extends BaseService {

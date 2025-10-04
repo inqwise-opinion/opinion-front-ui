@@ -283,11 +283,11 @@ export class LayoutEventFactory {
 
     // Type-specific validation
     switch (event.type) {
-      case "layout-ready":
+      case "layout-ready": {
         const readyData = event.data as LayoutReadyEventData;
         return !!(readyData.context && typeof readyData.timestamp === "number");
-
-      case "layout-mode-change":
+      }
+      case "layout-mode-change": {
         const modeData = event.data as LayoutModeChangeEventData;
         return !!(
           modeData.context &&
@@ -296,50 +296,51 @@ export class LayoutEventFactory {
           typeof modeData.viewport.width === "number" &&
           typeof modeData.viewport.height === "number"
         );
-
-      case "sidebar-compact-mode-change":
+      }
+      case "sidebar-compact-mode-change": {
         const sidebarData = event.data as SidebarCompactModeChangeEventData;
         return (
           typeof sidebarData.compactMode === "boolean" &&
           typeof sidebarData.previousCompactMode === "boolean"
         );
-
-      case "mobile-menu-request":
+      }
+      case "mobile-menu-request": {
         const mobileMenuRequestData = event.data as MobileMenuRequestEventData;
         return (
           ["show", "hide", "toggle"].includes(mobileMenuRequestData.requestedAction) &&
           ["menu-button", "programmatic"].includes(mobileMenuRequestData.trigger)
         );
-
-      case "sidebar-compact-request":
+      }
+      case "sidebar-compact-request": {
         const sidebarRequestData = event.data as SidebarCompactRequestEventData;
         return (
           ["show", "hide", "toggle"].includes(sidebarRequestData.requestedAction) &&
           ["debug-page", "keyboard", "programmatic"].includes(sidebarRequestData.trigger)
         );
-
-      case "mobile-menu-mode-change":
+      }
+      case "mobile-menu-mode-change": {
         const mobileMenuData = event.data as MobileMenuModeChangeEventData;
         return (
           typeof mobileMenuData.isVisible === "boolean" &&
           typeof mobileMenuData.previousVisibility === "boolean" &&
           ["close-button", "backdrop", "menu-button", "programmatic"].includes(mobileMenuData.trigger)
         );
-
-      case "user-menu-request":
+      }
+      case "user-menu-request": {
         const userMenuRequestData = event.data as UserMenuRequestEventData;
         return (
           ["show", "hide", "toggle"].includes(userMenuRequestData.requestedAction) &&
           ["debug-page", "keyboard", "programmatic"].includes(userMenuRequestData.trigger)
         );
-
-      case "user-menu-mode-change":
+      }
+      case "user-menu-mode-change": {
         const userMenuData = event.data as UserMenuModeChangeEventData;
         return (
           typeof userMenuData.isVisible === "boolean" &&
           typeof userMenuData.previousVisibility === "boolean" &&
           ["click", "keyboard", "programmatic"].includes(userMenuData.trigger)
         );
+      }
 
       default:
         return true; // Generic events are always valid
@@ -354,15 +355,15 @@ export class LayoutEventFactory {
       case "layout-ready":
         return "→ Layout initialization complete";
 
-      case "layout-mode-change":
+      case "layout-mode-change": {
         const modeData = event.data as LayoutModeChangeEventData;
         const mobileNote = modeData.modeType === "mobile" ? " (compact mode disabled)" : "";
         const previousNote = modeData.previousModeType 
           ? ` (from ${modeData.previousModeType})`
           : "";
         return `→ modeType=${modeData.modeType}${mobileNote}, viewport=${modeData.viewport?.width}x${modeData.viewport?.height}${previousNote}`;
-
-      case "sidebar-compact-mode-change":
+      }
+      case "sidebar-compact-mode-change": {
         const sidebarData = event.data as SidebarCompactModeChangeEventData;
         const blockedNote = sidebarData.blockedReason 
           ? ` (blocked: ${sidebarData.blockedReason})` 
@@ -371,21 +372,22 @@ export class LayoutEventFactory {
           ? ` (was ${sidebarData.previousCompactMode})`
           : "";
         return `→ compactMode=${sidebarData.compactMode}${blockedNote}${changeNote}`;
+      }
 
-      case "mobile-menu-request":
+      case "mobile-menu-request": {
         const mobileMenuRequestData = event.data as MobileMenuRequestEventData;
         const requestIcon = mobileMenuRequestData.requestedAction === "show" ? "📢" : 
                            mobileMenuRequestData.requestedAction === "hide" ? "🔄" : "⚙️";
         const requestTriggerNote = ` (via ${mobileMenuRequestData.trigger})`;
         return `${requestIcon} request ${mobileMenuRequestData.requestedAction} mobile menu${requestTriggerNote}`;
-
-      case "sidebar-compact-request":
+      }
+      case "sidebar-compact-request": {
         const sidebarRequestData = event.data as SidebarCompactRequestEventData;
         const sidebarRequestIcon = sidebarRequestData.requestedAction === "show" ? "📢" : 
                                   sidebarRequestData.requestedAction === "hide" ? "🔄" : "⚙️";
         return `${sidebarRequestIcon} request ${sidebarRequestData.requestedAction} sidebar compact (via ${sidebarRequestData.trigger})`;
-
-      case "mobile-menu-mode-change":
+      }
+      case "mobile-menu-mode-change": {
         const mobileMenuData = event.data as MobileMenuModeChangeEventData;
         const actionIcon = mobileMenuData.isVisible ? "📱" : "❌";
         const toggleTriggerNote = ` (via ${mobileMenuData.trigger})`;
@@ -393,14 +395,14 @@ export class LayoutEventFactory {
           ? ` ${mobileMenuData.previousVisibility} → ${mobileMenuData.isVisible}`
           : "";
         return `${actionIcon} mobile menu${stateChange}${toggleTriggerNote}`;
-
-      case "user-menu-request":
+      }
+      case "user-menu-request": {
         const userMenuRequestData = event.data as UserMenuRequestEventData;
         const userRequestIcon = userMenuRequestData.requestedAction === "show" ? "📢" : 
                                userMenuRequestData.requestedAction === "hide" ? "🔄" : "⚙️";
         return `${userRequestIcon} request ${userMenuRequestData.requestedAction} user menu (via ${userMenuRequestData.trigger})`;
-
-      case "user-menu-mode-change":
+      }
+      case "user-menu-mode-change": {
         const userMenuData = event.data as UserMenuModeChangeEventData;
         const userActionIcon = userMenuData.isVisible ? "👤" : "❌";
         const userTriggerNote = ` (via ${userMenuData.trigger})`;
@@ -408,6 +410,7 @@ export class LayoutEventFactory {
           ? ` ${userMenuData.previousVisibility} → ${userMenuData.isVisible}`
           : "";
         return `${userActionIcon} user menu${userStateChange}${userTriggerNote}`;
+      }
 
       default:
         try {

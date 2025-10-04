@@ -1026,7 +1026,7 @@ export class Layout {
     const { handler, config } = registration;
     const startTime = Date.now();
     
-    let result: HandlerResult = {
+    const result: HandlerResult = {
       success: false,
       executionTime: 0,
     };

@@ -2,9 +2,9 @@
  * Tests for MessagesLogAdapter to verify message handling and unknown logger processing
  */
 
-import { MessagesLogAdapter } from './MessagesLogAdapter';
-import { Messages, MessageType } from '../interfaces/Messages';
-import { LogMessage } from '../logging/ChannelTypes';
+import { MessagesLogAdapter } from '../../src/adapters/MessagesLogAdapter';
+import { Messages, MessageType } from '../../src/interfaces/Messages';
+import { LogMessage } from '../../src/logging/ChannelTypes';
 
 // Mock Messages interface
 class MockMessages implements Messages {

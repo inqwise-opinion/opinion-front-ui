@@ -12,8 +12,8 @@ import {
   ChainHotkeyHandler, 
   HotkeyExecutionContext,
   HotkeyChainAction 
-} from '../HotkeyChainSystem';
-import { ChainHotkeyManagerImpl } from '../ChainHotkeyManagerImpl';
+} from '../../src/hotkeys/HotkeyChainSystem';
+import { ChainHotkeyManagerImpl } from '../../src/hotkeys/ChainHotkeyManagerImpl';
 
 /**
  * Mock Mobile Sidebar Provider - High priority, mobile-specific

@@ -6,12 +6,12 @@
  * registered multiple times, triggering "already registered, replacing" warnings.
  */
 
-import { ChainHotkeyManagerImpl } from '../ChainHotkeyManagerImpl';
-import { LegacyHotkeyAdapter, HotkeyHandler } from '../LegacyHotkeyAdapter';
+import { ChainHotkeyManagerImpl } from '../../src/hotkeys/ChainHotkeyManagerImpl';
+import { LegacyHotkeyAdapter, HotkeyHandler } from '../../src/hotkeys/LegacyHotkeyAdapter';
 
-// Mock console to capture warnings
-const mockConsoleWarn = jest.fn();
-const originalWarn = console.warn;
+// Mock console to capture structured logs that contain warnings
+const mockConsoleLog = jest.fn();
+const originalLog = console.log;
 
 describe('Duplicate Provider Registration', () => {
   let chainManager: ChainHotkeyManagerImpl;
@@ -28,15 +28,15 @@ describe('Duplicate Provider Registration', () => {
     };
     (global as any).document = mockDocument;
     
-    // Replace console.warn to capture warnings
-    console.warn = mockConsoleWarn;
-    mockConsoleWarn.mockClear();
+    // Replace console.log to capture structured warnings
+    console.log = mockConsoleLog;
+    mockConsoleLog.mockClear();
   });
 
   afterEach(() => {
     chainManager.destroy?.();
     legacyAdapter.destroy();
-    console.warn = originalWarn;
+    console.log = originalLog;
   });
 
   test('should reproduce duplicate registration warning with legacy adapter', () => {
@@ -73,8 +73,8 @@ describe('Duplicate Provider Registration', () => {
       unregisterFunctions.push(unregister);
     });
 
-    // Check if warning was logged
-    expect(mockConsoleWarn).toHaveBeenCalledWith(
+    // Check if warning was logged through structured logging
+    expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining("already registered, replacing")
     );
 
@@ -157,8 +157,8 @@ describe('Duplicate Provider Registration', () => {
     const unregister1 = mockLayoutContext.registerHotkey(hotkey1);
     const unregister2 = mockLayoutContext.registerHotkey(hotkey2);
 
-    // Check if warning was logged
-    expect(mockConsoleWarn).toHaveBeenCalledWith(
+    // Check if warning was logged through structured logging
+    expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining("already registered, replacing")
     );
 
@@ -199,13 +199,13 @@ describe('Duplicate Provider Registration', () => {
 
     await Promise.all(registrationPromises);
 
-    // Should have generated multiple warnings
-    expect(mockConsoleWarn).toHaveBeenCalledWith(
+    // Should have generated multiple warnings through structured logging
+    expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining("already registered, replacing")
     );
 
     // The call count should be >= 4 (first registration doesn't warn, subsequent ones do)
-    const warnCalls = mockConsoleWarn.mock.calls.filter(call => 
+    const warnCalls = mockConsoleLog.mock.calls.filter(call => 
       call[0] && call[0].includes("already registered, replacing")
     );
     expect(warnCalls.length).toBeGreaterThanOrEqual(4);

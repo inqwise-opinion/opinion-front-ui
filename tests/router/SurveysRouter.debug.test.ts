@@ -4,8 +4,8 @@
  * that's causing the "Missing parameter name at 10" error
  */
 
-import { SurveysRouter } from '../SurveysRouter';
-import { LayoutContextImpl } from '../../contexts/LayoutContextImpl';
+import { SurveysRouter } from '../../src/router/SurveysRouter';
+import { LayoutContextImpl } from '../../src/contexts/LayoutContextImpl';
 
 describe('SurveysRouter Path Generation Debug', () => {
   let surveysRouter: SurveysRouter;

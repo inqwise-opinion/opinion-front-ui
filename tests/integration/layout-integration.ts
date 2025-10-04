@@ -166,6 +166,3 @@ export async function demoCleanLayout(): Promise<void> {
   console.log('🎉 Clean Layout Demo - Ready!');
 }
 
-// Ensure Jest doesn't fail due to no tests in this helper module
-// This creates a skipped placeholder test.
-test.skip('layout-integration helper module', () => {});

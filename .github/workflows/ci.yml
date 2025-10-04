@@ -31,13 +31,58 @@ jobs:
         run: npm ci
 
       - name: 🎯 ESLint check
-        run: npm run lint
+        run: |
+          echo "## 🎯 ESLint Code Quality Check" >> $GITHUB_STEP_SUMMARY
+          echo "Running ESLint analysis..." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if npm run lint; then
+            echo "✅ **ESLint**: No linting errors found" >> $GITHUB_STEP_SUMMARY
+            echo "- **Configuration**: ESLint 9+ flat config" >> $GITHUB_STEP_SUMMARY
+            echo "- **Rules**: TypeScript recommended + custom rules" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **ESLint**: Linting errors detected" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔧 Quick Fixes" >> $GITHUB_STEP_SUMMARY
+            echo "- Run \`npm run lint:fix\` to auto-fix issues" >> $GITHUB_STEP_SUMMARY
+            echo "- Check [ESLint docs](https://eslint.org/docs/rules/) for rule details" >> $GITHUB_STEP_SUMMARY
+            echo "- Review unused variables and \`any\` types" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
 
       - name: 📊 TypeScript compilation check
-        run: npx tsc --noEmit
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 TypeScript Compilation" >> $GITHUB_STEP_SUMMARY
+          echo "Checking TypeScript compilation..." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if npx tsc --noEmit; then
+            echo "✅ **TypeScript**: Compilation successful" >> $GITHUB_STEP_SUMMARY
+            echo "- **Target**: ES2020" >> $GITHUB_STEP_SUMMARY
+            echo "- **Strict mode**: Enabled" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **TypeScript**: Compilation errors detected" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔧 Troubleshooting" >> $GITHUB_STEP_SUMMARY
+            echo "- Check type definitions and imports" >> $GITHUB_STEP_SUMMARY
+            echo "- Verify tsconfig.json configuration" >> $GITHUB_STEP_SUMMARY
+            echo "- Run \`npx tsc --noEmit\` locally for details" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
 
       - name: 🔐 Security audit
-        run: npm audit --audit-level=moderate
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔐 Security Audit" >> $GITHUB_STEP_SUMMARY
+          
+          if npm audit --audit-level=moderate; then
+            echo "✅ **Security**: No moderate or high vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Security**: Vulnerabilities detected" >> $GITHUB_STEP_SUMMARY
+            echo "- Run \`npm audit fix\` to address issues" >> $GITHUB_STEP_SUMMARY
+            echo "- Review [npm audit docs](https://docs.npmjs.com/cli/v7/commands/npm-audit)" >> $GITHUB_STEP_SUMMARY
+          fi
         continue-on-error: true
 
   # Job 2: Tests
@@ -63,7 +108,31 @@ jobs:
         run: npm ci
 
       - name: 🧪 Run tests
-        run: npm test -- --coverage --watchAll=false --maxWorkers=2
+        run: |
+          echo "## 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "Running client-side tests with coverage..." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if npm test -- --coverage --watchAll=false --maxWorkers=2; then
+            echo "✅ **Tests**: All tests passed successfully!" >> $GITHUB_STEP_SUMMARY
+            echo "- **Environment**: Client-side JavaScript/TypeScript" >> $GITHUB_STEP_SUMMARY
+            echo "- **Test Runner**: Jest with JSDOM" >> $GITHUB_STEP_SUMMARY
+            echo "- **Coverage**: Generated and uploaded to Codecov" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Tests**: Some tests failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔧 Common Issues & Fixes" >> $GITHUB_STEP_SUMMARY
+            echo "- **LoggerFactory Migration**: Test assertions may need updates for new logging format" >> $GITHUB_STEP_SUMMARY
+            echo "- **Expected**: \`TestComponent: Message\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Actual**: \`2025-XX-XX [DEBUG] ComponentName: Message\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🛠️ Troubleshooting Steps" >> $GITHUB_STEP_SUMMARY
+            echo "1. Run \`npm test\` locally to see detailed test output" >> $GITHUB_STEP_SUMMARY
+            echo "2. Update test assertions to match new LoggerFactory format" >> $GITHUB_STEP_SUMMARY
+            echo "3. Check for async timing issues in component tests" >> $GITHUB_STEP_SUMMARY
+            echo "4. Verify mock setups are compatible with structured logging" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
 
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v5

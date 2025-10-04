@@ -38,6 +38,10 @@ export default [
         NodeList: 'readonly',
         NodeListOf: 'readonly',
         
+        // Browser APIs and Types
+        Window: 'readonly',
+        Document: 'readonly',
+        
         // Events
         Event: 'readonly',
         KeyboardEvent: 'readonly',
@@ -100,6 +104,8 @@ export default [
       'prefer-const': 'error',
       'no-var': 'error',
       'no-unused-vars': 'off', // Use TypeScript version instead
+      'no-dupe-class-members': 'off', // Allow method overloads
+      'no-case-declarations': 'error', // Enforce block scoping in switch cases
     },
   },
   

@@ -25,9 +25,10 @@ export class ChannelFactory {
             case ChannelType.ASYNC_CONSUMER:
                 return this.createAsyncConsumerChannel(config);
                 
-            default:
+            default: {
                 const _exhaustive: never = config;
                 throw new Error(`Unknown channel type: ${(_exhaustive as any).type}`);
+            }
         }
     }
     

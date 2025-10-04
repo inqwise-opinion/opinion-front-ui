@@ -1,7 +1,7 @@
-import { ServiceHelper } from '../BaseService';
-import { LayoutContext } from '../../contexts/LayoutContext';
-import { Service, ServiceConfig } from '../../interfaces/Service';
-import { BaseService } from '../BaseService';
+import { ServiceHelper } from '../../src/services/BaseService';
+import { LayoutContext } from '../../src/contexts/LayoutContext';
+import { Service, ServiceConfig } from '../../src/interfaces/Service';
+import { BaseService } from '../../src/services/BaseService';
 
 // Mock test service implementation
 class TestService extends BaseService {

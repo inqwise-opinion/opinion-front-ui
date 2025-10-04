@@ -76,6 +76,7 @@ debug/
 
 # Editor/IDE configuration
 .cursor/
+.zed/
 
 # MCP configuration
 .mcp.json

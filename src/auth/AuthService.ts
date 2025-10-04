@@ -31,7 +31,6 @@ import type { LayoutContext } from "../contexts/LayoutContext";
 import type { ServiceConfig } from "../interfaces/Service";
 import {
   SelfIdentifyingService,
-  ServiceIdentity,
   validateServiceIdentity,
 } from "../core/ServiceIdentity";
 // Import dependencies for type-safe references

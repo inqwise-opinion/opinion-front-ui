@@ -12,14 +12,9 @@ import { AuthService, MockSessionAuthProvider } from "./auth";
 import { AppHeaderBinderService } from "./services/AppHeaderBinderService";
 import { UserService } from "./services/UserService";
 import { registerService } from "./core/ServiceIdentity";
-import type { ContextHandler } from "./components/Layout";
 import type { LayoutContext } from "./contexts/LayoutContext";
 import { RouterService } from "./router/RouterService";
 import { SurveysRouter } from "./router/SurveysRouter";
-import {
-  SERVICE_ID,
-  type NavigationService,
-} from "./services/navigation/NavigationService";
 import { NavigationServiceImpl } from "./services/navigation/NavigationServiceImpl";
 import { LoggerFactory } from "./logging/LoggerFactory";
 import { MessagesLogAdapter } from "./adapters/MessagesLogAdapter";
@@ -289,7 +284,7 @@ export class OpinionApp {
       return;
     }
 
-    const { type, title, description, source } = messageData;
+    const { type, title, description } = messageData;
 
     // Use the layout's error message system via onContextReady pattern (legacy for test messages)
     this.layout.onContextReady((ctx) => {
