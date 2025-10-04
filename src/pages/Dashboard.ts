@@ -4,7 +4,7 @@
  */
 
 import { MockApiService, ChartData, AuthenticationInfo } from '../services/MockApiService';
-import { Opinion, Survey, User } from '../types';
+import { Survey, User } from '../types';
 import Layout from '../components/Layout';
 import { DashboardPageComponent } from './DashboardPageComponent';
 import { RouteContextImpl } from '../router/RouteContextImpl';

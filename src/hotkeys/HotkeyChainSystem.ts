@@ -324,7 +324,7 @@ export namespace HotkeyChainExamples {
       // Close user menu logic
     }
     
-    private setEscEnabled(enabled: boolean) {
+    private setEscEnabled(_enabled: boolean) {
       // Dynamic enable/disable logic
     }
   }

@@ -169,7 +169,7 @@ export class LegacyHotkeyProvider implements ChainHotkeyProvider {
       // Reconstruct legacy handler structure for compatibility
       legacyHandlers.push({
         key,
-        handler: (event: KeyboardEvent) => {
+        handler: (_event: KeyboardEvent) => {
           // This is a simplified handler for inspection purposes only
           console.log(`Legacy handler simulation for ${key}`);
         },

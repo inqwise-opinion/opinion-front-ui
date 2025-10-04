@@ -68,8 +68,8 @@ export class LayoutContextImpl implements LayoutContext {
   private eventBus!: EventBus; // Initialized in setupEventBus() called from constructor
   private eventBusConsumers: Map<string, Consumer[]> = new Map(); // Track consumers by component
 
-  // PageContext Management
-  private pageContexts: Map<string, PageContext> = new Map();
+  // PageContext Management (deprecated - now handled by RouterService)
+  // private pageContexts: Map<string, PageContext> = new Map();
 
   // Failure Tracking
   private failureError: Error | null = null;
