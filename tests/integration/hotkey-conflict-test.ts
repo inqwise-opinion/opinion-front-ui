@@ -93,7 +93,7 @@ export async function testESCKeyConflict() {
     console.log('\n⌨️ Simulating ESC key press with chain system...');
     const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
     
-    let handlersExecuted = 0;
+    const handlersExecuted = 0;
     // New chain system handles execution automatically
     // const originalHandlers = escapeHandlers.map(h => h.handler);
 

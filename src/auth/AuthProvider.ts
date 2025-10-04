@@ -29,7 +29,6 @@
  */
 
 import { User } from '../types';
-import { AuthenticationError } from './exceptions/AuthenticationExceptions';
 
 /**
  * Core authentication provider interface

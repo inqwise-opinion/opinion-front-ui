@@ -1504,7 +1504,9 @@ export class DebugPage extends PageComponent {
     if (!this.eventMonitoringActive) return;
 
     this.layoutEventUnsubscribers.forEach((fn) => {
-      try { fn(); } catch {}
+      try { fn(); } catch {
+        // Ignore unsubscriber errors - they may have been cleaned up already
+      }
     });
     this.layoutEventUnsubscribers = [];
     this.eventMonitoringActive = false;

@@ -59,7 +59,7 @@ describe('Duplicate Provider Registration', () => {
     
     // Simulate multiple rapid calls to register the same providers
     // This mimics what happens in updateLegacyProvidersInChain()
-    let unregisterFunctions: Array<() => void> = [];
+    const unregisterFunctions: Array<() => void> = [];
 
     // First registration
     providers.forEach(provider => {

@@ -1,4 +1,3 @@
-import { LifecycleHandler } from '../interfaces/LifecycleHandler';
 import { LoggerFactory } from '../logging/LoggerFactory';
 import { Logger } from '../logging/Logger';
 

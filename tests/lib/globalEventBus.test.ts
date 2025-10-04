@@ -80,7 +80,7 @@ describe('Global EventBus', () => {
     });
 
     it('should allow cross-module communication', async () => {
-      let responseReceived = false;
+      const responseReceived = false;
 
       // Module A: Set up request handler
       const consumer = globalEventBus.consume('cross-module-test', (data) => {

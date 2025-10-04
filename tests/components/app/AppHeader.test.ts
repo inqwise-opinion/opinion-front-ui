@@ -10,13 +10,10 @@ import { ComponentReference } from '../../../src/components/ComponentReference';
 import LayoutContextImpl from '../../../src/contexts/LayoutContextImpl';
 import { getLayoutContext } from '../../../src/contexts/index';
 
-// Need to access the singleton instance to clear it
-const { getLayoutContext } = require('../../../src/contexts/index');
-
 describe('AppHeader LayoutContext Integration', () => {
   beforeEach(() => {
     // Clear any existing singleton instance by overwriting the module's variable
-const contextModule = require('../../../src/contexts/index');
+    const contextModule = require('../../../src/contexts/index');
     contextModule.layoutContextInstance = null;
     
     // Mock DOM elements
