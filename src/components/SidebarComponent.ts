@@ -562,7 +562,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     if (this.compactMode !== compact) {
       // Log the dimension change start
-      const previousDimensions = this.getCurrentDimensions();
+      const _previousDimensions = this.getCurrentDimensions();
       console.log(
         `🔄 Sidebar - Compact mode changing: ${this.compactMode ? "compact" : "expanded"} → ${compact ? "compact" : "expanded"}`,
       );
@@ -1120,7 +1120,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     // Subscribe to layout mode changes only (not viewport changes)
     // Sidebar only cares about mode transitions (mobile ↔ tablet ↔ desktop), not pixel-level viewport changes
-    const layoutModeUnsubscribe = this.layoutContext.subscribe(
+    const _layoutModeUnsubscribe = this.layoutContext.subscribe(
       "layout-mode-change",
       (event) => {
         this.handleLayoutModeChange(event.data);
@@ -1128,7 +1128,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     );
 
     // Subscribe to mobile menu requests from other components (e.g., header)
-    const mobileMenuRequestUnsubscribe = this.layoutContext.subscribe(
+    const _mobileMenuRequestUnsubscribe = this.layoutContext.subscribe(
       "mobile-menu-request",
       (event) => {
         this.handleMobileMenuRequest(event.data);
@@ -1136,7 +1136,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     );
 
     // Subscribe to sidebar compact mode requests from other components (e.g., debug page)
-    const sidebarCompactRequestUnsubscribe = this.layoutContext.subscribe(
+    const _sidebarCompactRequestUnsubscribe = this.layoutContext.subscribe(
       "sidebar-compact-request",
       (event) => {
         this.handleSidebarCompactRequest(event.data);
@@ -1207,7 +1207,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
   private handleSidebarCompactRequest(requestData: any): void {
     console.log(`Sidebar - Sidebar compact request received:`, requestData);
     
-    const { requestedAction, trigger } = requestData;
+    const { requestedAction, trigger: _trigger } = requestData;
     
     switch (requestedAction) {
       case "show":

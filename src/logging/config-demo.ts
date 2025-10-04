@@ -50,7 +50,7 @@ export function demoAutomaticMessagesAppender() {
             // Simulate async processing
             await new Promise(resolve => setTimeout(resolve, 10));
         },
-        onError(error: Error, message: LogMessage): void {
+        onError(error: Error, _message: LogMessage): void {
             console.error('Message processor failed:', error);
         }
     };

@@ -917,7 +917,7 @@ export class Layout {
    * @param priority - Execution priority (optional)
    * @returns Layout instance for method chaining
    */
-  public addHandler(handler: ContextHandler, priority?: number): Layout {
+  public addHandler(handler: ContextHandler, _priority?: number): Layout {
     return this.setContextHandler(handler, {
       enableLogging: false,
       continueOnError: true, 
@@ -942,7 +942,7 @@ export class Layout {
       id: id || 'service-registration',
       priority,
       onContextReady: (context) => {
-        services.forEach(({ name, factory, dependencies = [] }) => {
+        services.forEach(({ name, factory, dependencies: _dependencies = [] }) => {
           const service = factory(context);
           context.registerService(name, service);
         });

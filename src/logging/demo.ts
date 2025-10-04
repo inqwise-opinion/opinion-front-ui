@@ -3,14 +3,9 @@ import {
     runBasicLoggerExamples,
     runAsyncConsumerExamples,
     basicConsoleLoggingExample,
-    configuredConsoleLoggingExample,
     customLogChannelExample,
-    customRawChannelExample,
     basicMessagesConsumerExample,
-    multipleConsumersExample,
     errorTrackingExample,
-    analyticsConsumerExample,
-    consumerManagementExample,
     realWorldUsageExample
 } from './examples';
 

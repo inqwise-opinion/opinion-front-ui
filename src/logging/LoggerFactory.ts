@@ -6,7 +6,6 @@ import {
 import {
   LogLevel as LibLogLevel,
   LogChannel,
-  RawLogChannel,
 } from "typescript-logging";
 import { Logger } from "./Logger";
 import { Constructor, LogLevel } from "./types";

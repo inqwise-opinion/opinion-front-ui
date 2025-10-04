@@ -98,7 +98,7 @@ export class LayoutContextImpl implements LayoutContext {
   private identifyModeType(viewport: LayoutViewPort): LayoutModeType {
     const isMobile = viewport.width <= 768;
     const isTablet = viewport.width > 768 && viewport.width <= 1024;
-    const isDesktop = viewport.width > 1024;
+    const _isDesktop = viewport.width > 1024;
 
     // Determine layout mode type
     let layoutModeType: LayoutModeType;
@@ -150,7 +150,7 @@ export class LayoutContextImpl implements LayoutContext {
    * Handle viewport changes - Pure event-driven approach
    */
   private handleViewportChange(): void {
-    const oldViewport = this.viewport;
+    const _oldViewport = this.viewport;
     const oldModeType = this.modeType;
 
     const newViewPort = this.calculateViewPort();
@@ -292,7 +292,7 @@ export class LayoutContextImpl implements LayoutContext {
     this.logger.debug(`Coordinating components for ${newModeType} mode...`);
 
     const isMobile = newModeType === "mobile";
-    const wasNonMobile = !isMobile;
+    const _wasNonMobile = !isMobile;
 
     // Coordinate sidebar behavior during layout mode transitions
     if (this.sidebarInstance) {
@@ -647,7 +647,7 @@ export class LayoutContextImpl implements LayoutContext {
   /**
    * REQUEST - Send to FIRST consumer and await response (non-blocking Promise)
    */
-  public request(event: string, data: unknown, timeout?: number): Promise<unknown> {
+  public request(event: string, data: unknown, _timeout?: number): Promise<unknown> {
     this.logger.debug(`Requesting response for event: ${event}`);
     return this.eventBus.request(event, data);
   }
@@ -853,7 +853,7 @@ export class LayoutContextImpl implements LayoutContext {
    */
   private updateHotkeysForActivePage(
     activePage: ActivePage | null,
-    previousPage: ActivePage | null,
+    _previousPage: ActivePage | null,
   ): void {
     // Currently the hotkey system uses HotkeyProvider interface
     // This method provides a hook for future integration between

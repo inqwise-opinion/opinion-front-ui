@@ -3,7 +3,6 @@ import {
     ChannelType, 
     LogLevel,
     type AsyncLogConsumer,
-    type LoggerFactoryConfig,
     type LogMessage,
     type CustomLogChannel,
     type CustomRawLogChannel
