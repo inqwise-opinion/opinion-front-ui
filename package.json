@@ -1,6 +1,7 @@
 {
   "name": "opinion-front-ui",
   "version": "1.0.0",
+  "type": "module",
   "description": "Opinion front-end UI - TypeScript migration from servlet-based application",
   "main": "dist/index.js",
   "scripts": {
@@ -10,8 +11,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:hotkeys": "node scripts/test-hotkeys.js",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint src --ext ts,tsx --fix"
+    "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint src --fix"
   },
   "keywords": [
     "opinion",
