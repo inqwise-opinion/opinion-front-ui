@@ -371,7 +371,7 @@ export class LoggerFactory {
         // Logger configuration loaded from logger.json
         return config;
       }
-    } catch (_error) {
+    } catch {
       // Failed to load logger.json configuration - using defaults
     }
     

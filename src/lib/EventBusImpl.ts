@@ -150,7 +150,7 @@ export class EventBusImpl implements EventBus {
                 clearTimeout(timeoutId);
                 resolve(response);
               })
-              .catch(_error => {
+              .catch(() => {
                 clearTimeout(timeoutId);
                 reject(new EventBusError(
                   `Consumer error for request event: ${event}`,
@@ -162,7 +162,7 @@ export class EventBusImpl implements EventBus {
             clearTimeout(timeoutId);
             resolve(result);
           }
-        } catch (_error) {
+        } catch {
           clearTimeout(timeoutId);
           reject(new EventBusError(
             `Consumer error for request event: ${event}`,
