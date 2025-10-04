@@ -162,7 +162,7 @@ export class EventBusImpl implements EventBus {
             clearTimeout(timeoutId);
             resolve(result);
           }
-        } catch (error) {
+        } catch (_error) {
           clearTimeout(timeoutId);
           reject(new EventBusError(
             `Consumer error for request event: ${event}`,

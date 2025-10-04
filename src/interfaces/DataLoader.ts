@@ -20,7 +20,7 @@ export interface CacheMap<K, V> {
 /**
  * Configuration options for DataLoader services
  */
-export interface DataLoaderConfig {
+export interface DataLoaderConfig<K = unknown, V = unknown> {
   /**
    * Maximum batch size (default: Infinity)
    */
@@ -29,12 +29,12 @@ export interface DataLoaderConfig {
   /**
    * Cache key function for custom cache keys
    */
-  cacheKeyFn?: <K>(key: K) => K;
+  cacheKeyFn?: (key: K) => K;
 
   /**
    * Cache map implementation (default: Map)
    */
-  cacheMap?: CacheMap<unknown, unknown> | null;
+  cacheMap?: CacheMap<K, Promise<V>> | null;
 
   /**
    * Whether to enable caching (default: true)
@@ -44,7 +44,7 @@ export interface DataLoaderConfig {
   /**
    * Batch function - how to batch load keys
    */
-  batchLoadFn: <K, V>(keys: readonly K[]) => Promise<V[]>;
+  batchLoadFn: (keys: readonly K[]) => Promise<V[]>;
 }
 
 /**
@@ -96,7 +96,7 @@ export interface DataLoaderFactory {
    * Create a new DataLoader service
    * @param config - DataLoader configuration
    */
-  createLoader<K, V>(config: DataLoaderConfig): DataLoaderService<K, V>;
+  createLoader<K, V>(config: DataLoaderConfig<K, V>): DataLoaderService<K, V>;
 }
 
 /**
@@ -105,7 +105,7 @@ export interface DataLoaderFactory {
 export class DataLoaderServiceImpl<K, V> implements DataLoaderService<K, V> {
   private loader: DataLoader<K, V>;
 
-  constructor(config: DataLoaderConfig) {
+  constructor(config: DataLoaderConfig<K, V>) {
     this.loader = new DataLoader<K, V>(config.batchLoadFn, {
       maxBatchSize: config.maxBatchSize,
       cacheKeyFn: config.cacheKeyFn,
@@ -146,7 +146,7 @@ export class DataLoaderServiceImpl<K, V> implements DataLoaderService<K, V> {
  * DataLoader factory implementation
  */
 export class DataLoaderFactoryImpl implements DataLoaderFactory {
-  createLoader<K, V>(config: DataLoaderConfig): DataLoaderService<K, V> {
+  createLoader<K, V>(config: DataLoaderConfig<K, V>): DataLoaderService<K, V> {
     return new DataLoaderServiceImpl<K, V>(config);
   }
 }

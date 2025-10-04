@@ -998,7 +998,7 @@ export class DebugPage extends PageComponent {
         } else {
           chainManagerStatus = '❌ Not Found';
         }
-      } catch (e) {
+      } catch (_e) {
         chainManagerStatus = 'Error';
       }
       
@@ -1056,7 +1056,7 @@ export class DebugPage extends PageComponent {
           subscriberCount = debugInfo.totalConsumers.toString();
           eventBusEventCount = debugInfo.eventCount.toString();
         }
-      } catch (e) {
+      } catch (_e) {
         subscriberCount = 'Error';
         eventBusEventCount = 'Error';
       }
@@ -1105,7 +1105,7 @@ export class DebugPage extends PageComponent {
         } else {
           eventBusStatus = 'Not Found';
         }
-      } catch (e) {
+      } catch (_e) {
         eventBusStatus = 'Error';
       }
 
@@ -1597,7 +1597,7 @@ export class DebugPage extends PageComponent {
       // Emit a synthetic layout-ready event to verify pipeline
       ctx.emit("layout-ready", { source: "DebugPage", at: Date.now() });
       this.logToConsole("🔄 Triggered synthetic 'layout-ready' event");
-    } catch (e) {
+    } catch (_e) {
       this.logToConsole("❌ Failed to trigger test event");
     }
   }
