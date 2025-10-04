@@ -5,7 +5,7 @@ import {
   EventBusOptions 
 } from './EventBus';
 
-type EventHandler = (data: any) => any | Promise<any>;
+type EventHandler<T = unknown> = (data: T) => unknown | Promise<unknown>;
 
 interface ConsumerImpl extends Consumer {
   handler: EventHandler;
@@ -35,7 +35,7 @@ export class EventBusImpl implements EventBus {
   /**
    * PUBLISH - Broadcast to ALL consumers (non-blocking)
    */
-  publish(event: string, data: any): void {
+  publish(event: string, data: unknown): void {
     if (this.options.debug) {
       console.log(`📢 EventBus PUBLISH: ${event}`, data);
     }
@@ -65,7 +65,7 @@ export class EventBusImpl implements EventBus {
   /**
    * SEND - Deliver to FIRST consumer only (non-blocking)
    */
-  send(event: string, data: any): void {
+  send(event: string, data: unknown): void {
     if (this.options.debug) {
       console.log(`📤 EventBus SEND: ${event}`, data);
     }
@@ -100,7 +100,7 @@ export class EventBusImpl implements EventBus {
   /**
    * REQUEST - Send to FIRST consumer and await response (non-blocking Promise)
    */
-  request(event: string, data: any, timeout?: number): Promise<any> {
+  request(event: string, data: unknown, timeout?: number): Promise<unknown> {
     if (this.options.debug) {
       console.log(`📬 EventBus REQUEST: ${event}`, data);
     }

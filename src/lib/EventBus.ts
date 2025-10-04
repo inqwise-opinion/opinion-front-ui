@@ -30,25 +30,25 @@ export interface EventBus {
    * PUBLISH - Broadcast to ALL consumers (non-blocking)
    * All registered consumers will receive the event
    */
-  publish(event: string, data: any): void;
+  publish(event: string, data: unknown): void;
   
   /**
    * SEND - Deliver to FIRST consumer only (non-blocking)
    * Only the first registered consumer receives the event
    */
-  send(event: string, data: any): void;
+  send(event: string, data: unknown): void;
   
   /**
    * REQUEST - Send to FIRST consumer, expect response (non-blocking Promise)
    * Only the first registered consumer receives and can respond
    */
-  request(event: string, data: any): Promise<any>;
+  request(event: string, data: unknown): Promise<unknown>;
   
   /**
    * CONSUME - Subscribe to events, returns Consumer object
    * Handler function receives the event data and can optionally return a response
    */
-  consume(event: string, handler: (data: any) => any): Consumer;
+  consume(event: string, handler: (data: unknown) => unknown): Consumer;
   
   /**
    * Check if there are any consumers for an event

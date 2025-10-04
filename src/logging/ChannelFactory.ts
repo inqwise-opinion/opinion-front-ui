@@ -27,7 +27,7 @@ export class ChannelFactory {
                 
             default: {
                 const _exhaustive: never = config;
-                throw new Error(`Unknown channel type: ${(_exhaustive as any).type}`);
+                throw new Error(`Unknown channel type: ${(config as { type: string }).type}`);
             }
         }
     }
@@ -36,7 +36,7 @@ export class ChannelFactory {
      * Format a log message according to the specified format
      * @internal
      */
-    private static formatLogMessage(logMessage: any, format?: LogFormat | LogFormatPresets): string {
+    private static formatLogMessage(logMessage: unknown, format?: LogFormat | LogFormatPresets): string {
         // Default format if none specified
         if (!format) {
             format = LogFormatPresets.SIMPLE;
@@ -86,7 +86,7 @@ export class ChannelFactory {
             const logger = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
             const message = logMessage.message || '';
             const args = logMessage.args && logMessage.args.length > 0 
-                ? ' [' + logMessage.args.map((arg: any) => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(', ') + ']'
+                ? ' [' + logMessage.args.map((arg: unknown) => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(', ') + ']'
                 : '';
             
             return format
@@ -112,7 +112,7 @@ export class ChannelFactory {
     public static getDefaultConsoleChannel(format?: LogFormat | LogFormatPresets): LogChannel {
         return {
             type: 'LogChannel',
-            write: (logMessage: any) => {
+            write: (logMessage: unknown) => {
                 // Use format processing if available, otherwise fall back to parsing pre-formatted messages
                 let formattedOutput: string;
                 
@@ -174,7 +174,7 @@ export class ChannelFactory {
      * Get the appropriate console method for the log level
      * @internal
      */
-    private static getConsoleMethod(level: string): (...args: any[]) => void {
+    private static getConsoleMethod(level: string): (...args: unknown[]) => void {
         const levelUpper = level.toUpperCase();
         switch (levelUpper) {
             case 'ERROR':

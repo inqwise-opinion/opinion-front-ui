@@ -50,7 +50,7 @@ export type LayoutModeType = "mobile" | "tablet" | "desktop";
 
 export interface LayoutEvent {
   type: LayoutEventType;
-  data: any;
+  data: unknown;
   timestamp: number;
 }
 
@@ -74,16 +74,16 @@ export interface LayoutContext extends ActivePageProvider, ServiceRegistry {
     eventType: LayoutEventType,
     listener: LayoutEventListener,
   ): () => void;
-  emit(eventType: LayoutEventType, data: any): void;
+  emit(eventType: LayoutEventType, data: unknown): void;
 
   // EventBus - Cross-component Communication
   getEventBus(): EventBus;
-  publish(event: string, data: any): void;
-  send(event: string, data: any): void;
-  request(event: string, data: any, timeout?: number): Promise<any>;
+  publish(event: string, data: unknown): void;
+  send(event: string, data: unknown): void;
+  request(event: string, data: unknown, timeout?: number): Promise<unknown>;
   consume(
     event: string,
-    handler: (data: any) => any,
+    handler: (data: unknown) => unknown,
     component?: string,
   ): Consumer;
 

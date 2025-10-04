@@ -79,7 +79,7 @@ export default [
     rules: {
       // TypeScript-specific rules
       '@typescript-eslint/no-unused-vars': 'error',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error', // Enforce strong typing
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-inferrable-types': 'off',
@@ -169,7 +169,7 @@ export default [
     rules: {
       // Relaxed rules for tests
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn', // Warn in tests but allow for mocking
       'no-empty': ['error', { allowEmptyCatch: true }],
       'prefer-const': 'error',
     },
@@ -254,7 +254,7 @@ export default [
     },
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error', // Enforce strong typing
       'prefer-const': 'error',
     },
   },

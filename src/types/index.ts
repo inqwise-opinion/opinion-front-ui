@@ -4,7 +4,7 @@
  */
 
 // Base API response structure
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -69,7 +69,7 @@ export interface AppState {
 // Event types for application events
 export interface AppEvent {
   type: string;
-  payload?: any;
+  payload?: unknown;
   timestamp: Date;
 }
 
