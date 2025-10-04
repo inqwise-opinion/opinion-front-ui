@@ -505,42 +505,44 @@ jobs:
             echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
           fi
 
-      - name: 🎮 Discord Success Notification
+      - name: 🎮 Generate Discord Message Content
+        id: discord
+        run: |
+          # Create base message
+          MESSAGE="✅ **CI Pipeline Success**\n\n"
+          MESSAGE+="**Repository:** ${{ github.repository }}\n"
+          MESSAGE+="**Branch:** ${{ github.ref_name }}\n"
+          MESSAGE+="**Event:** ${{ github.event_name }}\n"
+          MESSAGE+="**Commit:** [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})\n\n"
+          
+          MESSAGE+="🔍 **Quality:** ✅ Passed\n"
+          MESSAGE+="🧪 **Tests:** ✅ Passed\n"
+          MESSAGE+="🏗️ **Build:** ✅ Passed\n"
+          
+          # Add preview URL if it's a PR with successful preview
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ steps.notification.outputs.preview_status }}" == "success" ]]; then
+            PREVIEW_URL="${{ steps.notification.outputs.preview_url }}"
+            MESSAGE+="🚀 **Preview:** [✅ Available]($PREVIEW_URL)\n"
+          fi
+          
+          # Add production deploy info if it's main branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ steps.notification.outputs.deploy_status }}" == "success" ]]; then
+            MESSAGE+="🌍 **Production:** 🚀 Deployed\n"
+          fi
+          
+          MESSAGE+="\n• Triggered by **${{ github.actor }}**"
+          
+          # Save message (escape for JSON)
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$MESSAGE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: 🎮 Send Discord Notification
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: |
-            {
-              "embeds": [{
-                "title": "${{ steps.notification.outputs.overall_status }} - CI Pipeline",
-                "description": "**Repository:** ${{ github.repository }}\n**Branch:** ${{ github.ref_name }}\n**Event:** ${{ github.event_name }}\n**Commit:** [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})",
-                "color": ${{ steps.notification.outputs.embed_color }},
-                "fields": [
-                  {
-                    "name": "🔍 Quality Check",
-                    "value": "${{ steps.notification.outputs.quality_status == 'success' && '✅ Passed' || '❌ Failed' }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "🧪 Tests",
-                    "value": "${{ steps.notification.outputs.test_status == 'success' && '✅ Passed' || '❌ Failed' }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "🏗️ Build",
-                    "value": "${{ steps.notification.outputs.build_status == 'success' && '✅ Passed' || '❌ Failed' }}",
-                    "inline": true
-                  }${{ github.event_name == 'pull_request' && ',\n                  {\n                    "name": "🚀 Preview",\n                    "value": "' || '' }}${{ github.event_name == 'pull_request' && (steps.notification.outputs.preview_status == 'success' && '[✅ Available](' || '[❌ Failed](') || '' }}${{ github.event_name == 'pull_request' && steps.notification.outputs.preview_url || '' }}${{ github.event_name == 'pull_request' && ')',\n                    "inline": true\n                  }' || '' }}${{ github.ref == 'refs/heads/main' && ',\n                  {\n                    "name": "🌍 Production",\n                    "value": "' || '' }}${{ github.ref == 'refs/heads/main' && (steps.notification.outputs.deploy_status == 'success' && '🚀 Deployed' || '❌ Failed') || '' }}${{ github.ref == 'refs/heads/main' && '",\n                    "inline": true\n                  }' || '' }}
-                ],
-                "footer": {
-                  "text": "Triggered by ${{ github.actor }}",
-                  "icon_url": "https://github.com/${{ github.actor }}.png"
-                },
-                "timestamp": "${{ github.event.head_commit.timestamp }}",
-                "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-              }]
-            }
+          args: '${{ steps.discord.outputs.message }}'
 
 
       - name: 📊 Success Summary
