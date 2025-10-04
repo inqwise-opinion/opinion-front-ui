@@ -47,7 +47,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: ['16', '18', '20']
+        node-version: ['18', '20']
     
     steps:
       - name: 📥 Checkout repository
@@ -63,7 +63,7 @@ jobs:
         run: npm ci
 
       - name: 🧪 Run tests
-        run: npm test -- --coverage --watchAll=false
+        run: npm test -- --coverage --watchAll=false --maxWorkers=2
 
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v5

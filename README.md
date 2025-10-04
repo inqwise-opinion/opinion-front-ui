@@ -1,9 +1,9 @@
 # Opinion Front UI
 
-[![CI Pipeline](https://github.com/inqwise/opinion-front-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/inqwise/opinion-front-ui/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/inqwise/opinion-front-ui/actions/workflows/codeql.yml/badge.svg)](https://github.com/inqwise/opinion-front-ui/actions/workflows/codeql.yml)
-[![Release](https://github.com/inqwise/opinion-front-ui/actions/workflows/release.yml/badge.svg)](https://github.com/inqwise/opinion-front-ui/actions/workflows/release.yml)
-[![GitHub release](https://img.shields.io/github/v/release/inqwise/opinion-front-ui?include_prereleases&sort=semver)](https://github.com/inqwise/opinion-front-ui/releases)
+[![CI Pipeline](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/codeql.yml/badge.svg)](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/codeql.yml)
+[![Release](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/release.yml/badge.svg)](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/release.yml)
+[![GitHub release](https://img.shields.io/github/v/release/inqwise-opinion/opinion-front-ui?include_prereleases&sort=semver)](https://github.com/inqwise-opinion/opinion-front-ui/releases)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-blue.svg)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-7.1.3-646CFF.svg)](https://vitejs.dev/)
@@ -13,14 +13,14 @@
 
 ## 📊 Project Status
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/inqwise/opinion-front-ui/ci.yml?branch=main&label=build)](https://github.com/inqwise/opinion-front-ui/actions/workflows/ci.yml)
-[![Test Coverage](https://img.shields.io/codecov/c/github/inqwise/opinion-front-ui?label=coverage)](https://codecov.io/gh/inqwise/opinion-front-ui)
-[![Dependencies](https://img.shields.io/librariesio/github/inqwise/opinion-front-ui?label=dependencies)](https://libraries.io/github/inqwise/opinion-front-ui)
-[![Security](https://img.shields.io/github/actions/workflow/status/inqwise/opinion-front-ui/codeql.yml?branch=main&label=security)](https://github.com/inqwise/opinion-front-ui/security)
-[![Issues](https://img.shields.io/github/issues/inqwise/opinion-front-ui)](https://github.com/inqwise/opinion-front-ui/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/inqwise/opinion-front-ui)](https://github.com/inqwise/opinion-front-ui/pulls)
-[![Last Commit](https://img.shields.io/github/last-commit/inqwise/opinion-front-ui)](https://github.com/inqwise/opinion-front-ui/commits/main)
-[![Stars](https://img.shields.io/github/stars/inqwise/opinion-front-ui)](https://github.com/inqwise/opinion-front-ui/stargazers)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/inqwise-opinion/opinion-front-ui/ci.yml?branch=main&label=build)](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/ci.yml)
+[![Test Coverage](https://img.shields.io/codecov/c/github/inqwise-opinion/opinion-front-ui?label=coverage)](https://codecov.io/gh/inqwise-opinion/opinion-front-ui)
+[![Dependencies](https://img.shields.io/librariesio/github/inqwise-opinion/opinion-front-ui?label=dependencies)](https://libraries.io/github/inqwise-opinion/opinion-front-ui)
+[![Security](https://img.shields.io/github/actions/workflow/status/inqwise-opinion/opinion-front-ui/codeql.yml?branch=main&label=security)](https://github.com/inqwise-opinion/opinion-front-ui/security)
+[![Issues](https://img.shields.io/github/issues/inqwise-opinion/opinion-front-ui)](https://github.com/inqwise-opinion/opinion-front-ui/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/inqwise-opinion/opinion-front-ui)](https://github.com/inqwise-opinion/opinion-front-ui/pulls)
+[![Last Commit](https://img.shields.io/github/last-commit/inqwise-opinion/opinion-front-ui)](https://github.com/inqwise-opinion/opinion-front-ui/commits/main)
+[![Stars](https://img.shields.io/github/stars/inqwise-opinion/opinion-front-ui)](https://github.com/inqwise-opinion/opinion-front-ui/stargazers)
 
 ## Project Overview
 

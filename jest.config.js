@@ -18,5 +18,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
   },
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts']
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  // Fix os.availableParallelism() issues on older Node.js versions
+  maxWorkers: process.env.CI ? 2 : '50%'
 };
