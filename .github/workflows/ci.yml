@@ -244,45 +244,8 @@ jobs:
           # Copy build files to PR directory
           cp -r ../dist/* $PR_DIR/
 
-          # Create global 404.html at root for SPA routing (works for all PRs)
-          cat > 404.html << 'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Opinion - Single Page App</title>
-  <script type="text/javascript">
-    // Single Page Apps for GitHub Pages - Global handler for all PR previews
-    // This handles URLs like /opinion-front-ui/pr-16/surveys
-    var l = window.location;
-    var pathSegments = l.pathname.split('/').filter(Boolean);
-    
-    // Check if this is a PR preview URL (opinion-front-ui/pr-XX/route)
-    if (pathSegments.length >= 3 && pathSegments[0] === 'opinion-front-ui' && pathSegments[1].startsWith('pr-')) {
-      // Keep first 2 segments (opinion-front-ui/pr-XX), redirect remaining as SPA route
-      var prBasePath = '/' + pathSegments.slice(0, 2).join('/');
-      var spaRoute = '/' + pathSegments.slice(2).join('/');
-      
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        prBasePath + '/?/' + spaRoute.substring(1) +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
-    } else {
-      // Fallback for non-PR URLs, redirect to main index
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        '/' + pathSegments[0] + '/'
-      );
-    }
-  </script>
-</head>
-<body>
-  <p>Redirecting to SPA...</p>
-</body>
-</html>
-EOF
+          # Copy global 404.html from repository root to gh-pages root
+          cp ../404.html ./404.html
 
           # Create or update index.html for PR listing if it doesn't exist
           if [ ! -f "index.html" ]; then
