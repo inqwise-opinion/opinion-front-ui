@@ -15,25 +15,15 @@ export interface AppConfig {
  */
 function getBaseUrl(): string {
   // Use Vite's native environment variable access (build-time injection)
-  const envBaseUrl = import.meta.env.VITE_BASE_URL;
+  const envBaseUrl = import.meta.env.VITE_BASE_URL as string | undefined;
   
-  // Debug logging to understand what's happening
-  console.log('🔍 Environment variable debug - BASE_URL:');
-  console.log('   import.meta.env.VITE_BASE_URL:', JSON.stringify(envBaseUrl));
-  console.log('   typeof:', typeof envBaseUrl);
-  console.log('   is undefined?:', envBaseUrl === undefined);
-  console.log('   is string "undefined"?:', envBaseUrl === 'undefined');
-  console.log('   truthy?:', !!envBaseUrl);
-  
-  if (envBaseUrl && envBaseUrl !== 'undefined') {
+  // Handle undefined, null, or string 'undefined'
+  if (envBaseUrl && envBaseUrl !== 'undefined' && envBaseUrl.trim() !== '') {
     // Ensure it starts with / and doesn't end with / (unless it's just '/')
     const normalized = envBaseUrl.startsWith('/') ? envBaseUrl : '/' + envBaseUrl;
-    const result = normalized === '/' ? '' : normalized.replace(/\/$/, '');
-    console.log('   normalized result:', JSON.stringify(result));
-    return result;
+    return normalized === '/' ? '' : normalized.replace(/\/$/, '');
   }
 
-  console.log('   using default (empty string)');
   // Default: no base URL (root domain)
   return '';
 }
@@ -68,33 +58,17 @@ function getEnvironmentMode(): AppConfig['environment'] {
  * This enables GitHub Pages SPA routing mode where routes are encoded as query parameters
  */
 function getSpaRoutingFlag(): boolean {
-  const envFlag = import.meta.env.VITE_ENABLE_SPA_ROUTING;
+  const envFlag = import.meta.env.VITE_ENABLE_SPA_ROUTING as string | boolean | undefined;
   
-  console.log('🔍 Environment variable debug - SPA_ROUTING:');
-  console.log('   import.meta.env.VITE_ENABLE_SPA_ROUTING:', JSON.stringify(envFlag));
-  console.log('   typeof:', typeof envFlag);
-  console.log('   === "true"?:', envFlag === 'true');
-  console.log('   === true?:', envFlag === true);
-  
-  const result = envFlag === 'true' || envFlag === true;
-  console.log('   final result:', result);
-  
-  return result;
+  // Handle various truthy representations
+  return envFlag === 'true' || envFlag === true || envFlag === '1';
 }
-
-// Debug: Log complete environment before creating config
-console.log('🌍 Complete import.meta.env at config creation:');
-console.log(import.meta.env);
 
 export const appConfig: AppConfig = {
   baseUrl: getBaseUrl(),
   environment: getEnvironmentMode(),
   enableSpaRouting: getSpaRoutingFlag()
 };
-
-// Debug: Log final config
-console.log('🏠 Final appConfig:');
-console.log(JSON.stringify(appConfig, null, 2));
 
 /**
  * Get the full URL path with base URL prepended
