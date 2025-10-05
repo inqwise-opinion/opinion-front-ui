@@ -571,7 +571,7 @@ jobs:
         if: env.SUCCESS_CONDITION == 'true'
         uses: Ilshidur/action-discord@master
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_WEBHOOK: ${{ vars.WEBHOOK_URL }}
         with:
           args: '${{ steps.discord.outputs.message }}'
 
