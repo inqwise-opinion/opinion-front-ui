@@ -9,7 +9,20 @@ export default defineConfig(({ mode }) => ({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true,
-    target: 'es2020'
+    target: 'es2020',
+    rollupOptions: {
+      output: {
+        // Prevent inlining of assets - always generate separate files
+        inlineDynamicImports: false,
+        manualChunks: undefined,
+        // Ensure proper file extensions for web serving
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      }
+    },
+    // Ensure JS files are never inlined as data URLs
+    assetsInlineLimit: 0
   },
   server: {
     port: 3000,

@@ -150,10 +150,7 @@
     // Initialize app after critical CSS is loaded
     async function initializeApp() {
       await waitForCriticalCSS();
-      // Small additional delay to ensure layout stability
-      setTimeout(() => {
-        import('/src/main.ts');
-      }, 50);
+      // App will be initialized by the main script
     }
     
     // Start initialization when DOM is ready
@@ -163,5 +160,8 @@
       initializeApp();
     }
   </script>
+  
+  <!-- Main application script - Vite will process this -->
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
