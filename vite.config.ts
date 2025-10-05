@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-export default defineConfig(({ mode }) => ({
-  // Use relative paths only for production GitHub Pages deployment  
-  // For development, always use root '/' and let our app handle base paths
-  base: mode === 'production' ? './' : '/',
+export default defineConfig(({ mode }) => {
+  // Use VITE_BASE_URL from environment if available, otherwise fallback to defaults
+  const baseUrl = process.env.VITE_BASE_URL || (mode === 'production' ? './' : '/');
+  
+  return {
+  base: baseUrl,
   publicDir: 'public',
   
   // Vite automatically handles import.meta.env.VITE_* variables
@@ -56,4 +58,5 @@ export default defineConfig(({ mode }) => ({
   esbuild: {
     target: 'es2020'
   }
-}));
+};
+});
