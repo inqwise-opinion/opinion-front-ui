@@ -7,15 +7,8 @@ export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? './' : '/',
   publicDir: 'public',
   
-  // Define environment variables for browser access
-  define: {
-    // Make process.env available in browser with Vite environment variables
-    'process.env': JSON.stringify({
-      VITE_BASE_URL: process.env.VITE_BASE_URL || '',
-      NODE_ENV: process.env.NODE_ENV || mode || 'development',
-      MODE: mode || 'development'
-    })
-  },
+  // Vite automatically handles import.meta.env.VITE_* variables
+  // No need to manually define them
   build: {
     outDir: 'dist',
     emptyOutDir: true,
