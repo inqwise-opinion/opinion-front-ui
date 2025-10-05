@@ -213,9 +213,11 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: 🌍 Deploy to GitHub Pages Preview
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Clone the current repository into a temporary directory
-          git clone https://github.com/${{ github.repository }}.git temp-repo
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
           cd temp-repo
 
           # Switch to or create gh-pages branch
@@ -401,9 +403,11 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: 🧹 Remove PR preview
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Clone repository and switch to gh-pages
-          git clone https://github.com/${{ github.repository }}.git temp-repo
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
           cd temp-repo
 
           if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
