@@ -534,57 +534,38 @@ jobs:
             echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
           fi
 
-      - name: 🎮 Generate Discord Message Content
-        id: discord
+      - name: 🎮 Generate preview URL if applicable
+        id: preview_info
         if: env.SUCCESS_CONDITION == 'true'
         run: |
-          # Store variables to avoid shell interpretation issues
-          REPO="${{ github.repository }}"
-          BRANCH="${{ github.ref_name }}"
-          EVENT="${{ github.event_name }}"
-          COMMIT_SHA="${{ github.sha }}"
-          ACTOR="${{ github.actor }}"
-          
-          # Create base message without backticks that could be interpreted by shell
-          MESSAGE="✅ **CI Pipeline Success**\n\n"
-          MESSAGE+="**Repository:** $REPO\n"
-          MESSAGE+="**Branch:** $BRANCH\n"
-          MESSAGE+="**Event:** $EVENT\n"
-          MESSAGE+="**Commit:** [$COMMIT_SHA](https://github.com/$REPO/commit/$COMMIT_SHA)\n\n"
-          
-          MESSAGE+="🔍 **Quality:** ✅ Passed\n"
-          MESSAGE+="🧪 **Tests:** ✅ Passed\n"
-          MESSAGE+="🏗️ **Build:** ✅ Passed\n"
-          
-          # Add preview URL if it's a PR with successful preview
-          if [[ "$EVENT" == "pull_request" && "${{ steps.notification.outputs.preview_status }}" == "success" ]]; then
-            PREVIEW_URL="${{ steps.notification.outputs.preview_url }}"
-            MESSAGE+="🚀 **Preview:** [✅ Available]($PREVIEW_URL)\n"
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ steps.notification.outputs.preview_status }}" == "success" ]]; then
+            PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.number }}"
+            echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+            echo "has_preview=true" >> $GITHUB_OUTPUT
+            echo "description=CI Pipeline completed successfully with preview deployment" >> $GITHUB_OUTPUT
+            echo "title=🚀 Success with Preview - PR #${{ github.event.number }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" && "${{ steps.notification.outputs.deploy_status }}" == "success" ]]; then
+            echo "has_preview=false" >> $GITHUB_OUTPUT
+            echo "description=CI Pipeline completed successfully with production deployment" >> $GITHUB_OUTPUT
+            echo "title=🚀 Success with Production Deploy" >> $GITHUB_OUTPUT
+          else
+            echo "has_preview=false" >> $GITHUB_OUTPUT
+            echo "description=All CI checks passed successfully: Quality ✅ Tests ✅ Build ✅" >> $GITHUB_OUTPUT
+            echo "title=✅ CI Pipeline Success" >> $GITHUB_OUTPUT
           fi
-          
-          # Add production deploy info if it's main branch
-          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ steps.notification.outputs.deploy_status }}" == "success" ]]; then
-            MESSAGE+="🌍 **Production:** 🚀 Deployed\n"
-          fi
-          
-          MESSAGE+="\n• Triggered by **$ACTOR**"
-          
-          # Save message using heredoc
-          cat >> $GITHUB_OUTPUT << 'EOF'
-          message<<MESSAGE_EOF
-          EOF
-          echo "$MESSAGE" >> $GITHUB_OUTPUT
-          cat >> $GITHUB_OUTPUT << 'EOF'
-          MESSAGE_EOF
-          EOF
 
-      - name: 🎮 Send Discord Notification
-        if: env.SUCCESS_CONDITION == 'true'
-        uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ vars.WEBHOOK_URL }}
+      - name: 🎮 Discord Success Notification
+        if: env.SUCCESS_CONDITION == 'true' && vars.WEBHOOK_URL != ''
+        uses: sarisia/actions-status-discord@v1
         with:
-          args: '${{ steps.discord.outputs.message }}'
+          nodetail: true
+          webhook: "${{ vars.WEBHOOK_URL }}"
+          avatar_url: "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+          username: "Opinion Front UI CI"
+          content: "${{ steps.preview_info.outputs.has_preview == 'true' && format('Preview available: {0}', steps.preview_info.outputs.preview_url) || format('Success on {0}', github.ref_name) }}"
+          description: "${{ steps.preview_info.outputs.description }}"
+          title: "${{ steps.preview_info.outputs.title }}"
+          color: 5763719
 
       - name: 📊 Success Summary
         if: env.SUCCESS_CONDITION == 'true'
