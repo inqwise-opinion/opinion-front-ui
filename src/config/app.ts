@@ -10,7 +10,7 @@ export interface AppConfig {
 
 /**
  * Get base URL from environment variables
- * Compatible with both Vite (import.meta.env) and Jest (process.env)
+ * This is used for GitHub Pages PR previews and other deployment scenarios
  */
 function getBaseUrl(): string {
   // Check for explicit environment variable
@@ -20,9 +20,6 @@ function getBaseUrl(): string {
   if (typeof process !== 'undefined' && process.env) {
     envBaseUrl = process.env.VITE_BASE_URL;
   }
-  
-  // For browser environment, Vite will inject process.env at build time
-  // so we don't need import.meta.env at all
   
   if (envBaseUrl) {
     // Ensure it starts with / and doesn't end with / (unless it's just '/')

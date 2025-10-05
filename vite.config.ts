@@ -2,7 +2,8 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => ({
-  // Use relative paths for GitHub Pages deployment  
+  // Use relative paths only for production GitHub Pages deployment  
+  // For development, always use root '/' and let our app handle base paths
   base: mode === 'production' ? './' : '/',
   publicDir: 'public',
   

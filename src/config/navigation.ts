@@ -1,15 +1,15 @@
 import { NavigationItem } from '../components/Sidebar';
-import { getFullPath } from './app';
 
 /**
  * Default navigation structure for the application
+ * Note: href values are route paths, not full URLs. The SidebarComponent will apply getFullPath() when rendering.
  */
 export const DEFAULT_NAVIGATION_ITEMS: NavigationItem[] = [
     {
         id: "dashboard",
         text: "Dashboard",
         icon: "dashboard",
-        href: getFullPath("/dashboard"),
+        href: "/dashboard",
         caption: "View analytics, reports and key metrics",
         active: false,
     },
@@ -17,7 +17,7 @@ export const DEFAULT_NAVIGATION_ITEMS: NavigationItem[] = [
         id: "surveys",
         text: "Surveys",
         icon: "poll",
-        href: getFullPath("/surveys"),
+        href: "/surveys",
         caption: "Create and manage survey questionnaires",
         active: false,
     },
@@ -25,7 +25,7 @@ export const DEFAULT_NAVIGATION_ITEMS: NavigationItem[] = [
         id: "debug",
         text: "Debug",
         icon: "bug_report",
-        href: getFullPath("/"),
+        href: "/",
         caption: "Development tools and troubleshooting",
         active: false,
     },

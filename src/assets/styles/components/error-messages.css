@@ -11,8 +11,10 @@
   background: transparent;
   width: 100%;
   margin: 0;
-  position: relative;
-  z-index: 100;
+  /* Use static positioning to not create a stacking context that interferes with dropdowns */
+  position: static;
+  /* Remove z-index since we don't want to create a stacking context */
+  /* z-index: 100; */
 }
 
 .app-error-messages:not(:empty) {
@@ -46,7 +48,8 @@
   width: 100%;
   max-width: none;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  position: relative;
+  /* Remove relative positioning to avoid creating stacking contexts */
+  position: static;
   transition: all 0.2s ease;
   animation: messageSlideIn 0.3s ease-out;
   direction: ltr;
