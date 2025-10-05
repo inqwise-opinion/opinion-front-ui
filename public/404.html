@@ -21,7 +21,9 @@
     // This way the code will only replace the route part and not the real folder.
     // For example, if your repository is 'username/repo-name', then set pathSegmentsToKeep
     // to 1, so '/repo-name/one/two' becomes '/?/one/two' instead of '/?/repo-name/one/two'.
-    var pathSegmentsToKeep = 1;
+    // For PR previews like /opinion-front-ui/pr-16/, we need pathSegmentsToKeep = 2
+    // so '/opinion-front-ui/pr-16/surveys' becomes '/opinion-front-ui/pr-16/?/surveys'
+    var pathSegmentsToKeep = 2;
 
     var l = window.location;
     l.replace(
