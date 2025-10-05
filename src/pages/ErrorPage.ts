@@ -1,6 +1,7 @@
 import { PageComponent } from '../components/PageComponent';
 import MainContentImpl from '../components/MainContentImpl';
 import { PageContext } from '../interfaces/PageContext';
+import { getFullPath } from '../config/app';
 
 interface ErrorPageParams {
   code?: string;
@@ -79,7 +80,7 @@ export default class ErrorPage extends PageComponent {
           <h2 class="error-message">${this.error.message}</h2>
           <p class="error-details">${this.error.details}</p>
           <div class="error-actions">
-            <a href="/" class="button-primary">Go to Homepage</a>
+            <a href="${getFullPath('/')}" class="button-primary">Go to Homepage</a>
             <button onclick="window.history.back()" class="button-secondary">Go Back</button>
           </div>
         </div>

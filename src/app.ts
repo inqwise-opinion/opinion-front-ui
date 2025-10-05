@@ -16,6 +16,7 @@ import type { LayoutContext } from "./contexts/LayoutContext";
 import { RouterService } from "./router/RouterService";
 import { SurveysRouter } from "./router/SurveysRouter";
 import { NavigationServiceImpl } from "./services/navigation/NavigationServiceImpl";
+import { LinkInterceptionService } from "./services/LinkInterceptionService";
 import { LoggerFactory } from "./logging/LoggerFactory";
 import { MessagesLogAdapter } from "./adapters/MessagesLogAdapter";
 import { Logger } from "./logging/Logger";
@@ -193,6 +194,10 @@ export class OpinionApp {
     // Register SurveysRouter as a service
     const surveysRouter = new SurveysRouter(context, 'surveys');
     registerService(context, SurveysRouter, surveysRouter);
+    
+    // Register LinkInterceptionService
+    const linkInterceptionService = new LinkInterceptionService(context);
+    registerService(context, LinkInterceptionService, linkInterceptionService);
 
     // Initialize services in dependency order (dependencies first)
     await mockAuthProvider.init();
@@ -205,6 +210,9 @@ export class OpinionApp {
     // Instantiate and initialize RouterService as part of service registration
     this.routerService = new RouterService(context);
     await this.routerService.init();
+    
+    // Initialize LinkInterceptionService after RouterService (depends on router)
+    await linkInterceptionService.init();
   }
 
   /**

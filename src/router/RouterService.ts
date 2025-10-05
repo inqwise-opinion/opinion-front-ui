@@ -253,6 +253,28 @@ export class RouterService implements Service {
   }
   
   /**
+   * Navigate to a route from a full URL (handles base URL extraction)
+   */
+  public async navigateToUrl(url: string | URL): Promise<void> {
+    const urlObj = typeof url === 'string' ? new URL(url) : url;
+    const routePath = getRoutePath(urlObj.pathname);
+    await this.push(routePath);
+  }
+  
+  /**
+   * Check if a URL should be handled by SPA routing (internal links)
+   */
+  public isInternalUrl(url: string | URL): boolean {
+    try {
+      const urlObj = typeof url === 'string' ? new URL(url) : url;
+      return urlObj.origin === window.location.origin;
+    } catch {
+      // Invalid URL
+      return false;
+    }
+  }
+  
+  /**
    * Replace current route (replaces current state in history)
    */
   public async replace(path: string): Promise<void> {

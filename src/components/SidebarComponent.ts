@@ -7,6 +7,8 @@
 import "../assets/styles/components/sidebar.css";
 // Import layout context
 import { getLayoutContext, type LayoutContext } from "../contexts/index";
+// Import app config for base URL handling
+import { getFullPath } from "../config/app";
 // Import sidebar interfaces and types
 import { Dimensions, NavigationItem, Sidebar, SidebarConfig } from "./Sidebar";
 // Import layout event factory for typed events
@@ -191,7 +193,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     if (sidebarHeader) {
       sidebarHeader.innerHTML = `
         <div class="sidebar-brand">
-          <a href="/dashboard" class="brand-title-link">
+          <a href="${getFullPath('/dashboard')}" class="brand-title-link">
             <h1 class="brand-title">Opinion</h1>
           </a>
         </div>
@@ -271,7 +273,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
                   return `
                   <li class="nav-subitem">
                     <a class="nav-sublink ${child.active ? "nav-sublink-active" : ""}"
-                       href="${child.href}"
+                       href="${getFullPath(child.href)}"
                        data-nav-id="${child.id}"
                        role="menuitem"
                        ${child.active ? 'aria-current="page"' : ""}>
@@ -293,7 +295,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
           return `
           <li class="nav-item">
             <a class="nav-link ${isActive}"
-               href="${item.href}"
+               href="${getFullPath(item.href)}"
                data-nav-id="${item.id}"
                role="menuitem"
                ${ariaCurrent}
@@ -373,14 +375,16 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       }
     });
 
-    // Handle navigation clicks for SPA routing
+    // Navigation clicks are now handled globally by LinkInterceptionService
+    // Just update active state when navigation occurs
     this.sidebar.addEventListener("click", (event) => {
       const target = event.target as HTMLElement;
       const navLink = target.closest("a[href]") as HTMLAnchorElement;
 
       if (navLink && navLink.href.startsWith(window.location.origin)) {
-        // This is an internal link - could be handled by SPA router
-        console.log("Sidebar - Navigation clicked:", navLink.href);
+        // LinkInterceptionService will handle the navigation
+        // We just need to update the active state
+        console.log("Sidebar - Navigation link clicked:", navLink.href);
         this.setActiveItem(navLink.getAttribute("data-nav-id") || "");
       }
     });

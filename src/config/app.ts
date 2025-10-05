@@ -10,10 +10,20 @@ export interface AppConfig {
 
 /**
  * Get base URL from environment variables
+ * Compatible with both Vite (import.meta.env) and Jest (process.env)
  */
 function getBaseUrl(): string {
   // Check for explicit environment variable
-  const envBaseUrl = import.meta.env.VITE_BASE_URL;
+  let envBaseUrl: string | undefined;
+  
+  // Always check process.env first (available in both Node.js and Vite)
+  if (typeof process !== 'undefined' && process.env) {
+    envBaseUrl = process.env.VITE_BASE_URL;
+  }
+  
+  // For browser environment, Vite will inject process.env at build time
+  // so we don't need import.meta.env at all
+  
   if (envBaseUrl) {
     // Ensure it starts with / and doesn't end with / (unless it's just '/')
     const normalized = envBaseUrl.startsWith('/') ? envBaseUrl : '/' + envBaseUrl;
@@ -27,9 +37,31 @@ function getBaseUrl(): string {
 /**
  * Application configuration instance
  */
+
+/**
+ * Get environment mode compatible with both Vite and Jest
+ */
+function getEnvironmentMode(): AppConfig['environment'] {
+  // Check process.env (available in both Node.js and Vite after build)
+  if (typeof process !== 'undefined' && process.env) {
+    // Try NODE_ENV first (standard)
+    if (process.env.NODE_ENV) {
+      return (process.env.NODE_ENV as AppConfig['environment']) || 'development';
+    }
+    
+    // Try MODE (Vite-specific)
+    if (process.env.MODE) {
+      return (process.env.MODE as AppConfig['environment']) || 'development';
+    }
+  }
+  
+  // Default fallback
+  return 'development';
+}
+
 export const appConfig: AppConfig = {
   baseUrl: getBaseUrl(),
-  environment: (import.meta.env.MODE as AppConfig['environment']) || 'development'
+  environment: getEnvironmentMode()
 };
 
 /**
