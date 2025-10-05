@@ -13,7 +13,7 @@ export interface AppConfig {
  * This is used for GitHub Pages PR previews and other deployment scenarios
  */
 function getBaseUrl(): string {
-  // Check for explicit environment variable
+  // Strategy 1: Check for explicit environment variable (for development)
   let envBaseUrl: string | undefined;
   
   // Always check process.env first (available in both Node.js and Vite)
@@ -22,11 +22,28 @@ function getBaseUrl(): string {
   }
   
   if (envBaseUrl) {
+    console.log('📦 Using environment-provided base URL:', envBaseUrl);
     // Ensure it starts with / and doesn't end with / (unless it's just '/')
     const normalized = envBaseUrl.startsWith('/') ? envBaseUrl : '/' + envBaseUrl;
     return normalized === '/' ? '' : normalized.replace(/\/$/, '');
   }
 
+  // Strategy 2: Runtime detection from current URL (for GitHub Pages)
+  if (typeof window !== 'undefined') {
+    const pathname = window.location.pathname;
+    console.log('🔍 Detecting base URL from pathname:', pathname);
+    
+    // Check if we're in a GitHub Pages project path pattern
+    // Pattern: /owner-repo/pr-number/ or /repo-name/
+    const match = pathname.match(/^(\/[^/]+(?:\/pr-\d+)?)(?:\/|$)/);
+    if (match) {
+      const detectedBase = match[1];
+      console.log('✅ Detected base URL:', detectedBase);
+      return detectedBase;
+    }
+  }
+
+  console.log('🏠 Using default base URL (root)');
   // Default: no base URL (root domain)
   return '';
 }
