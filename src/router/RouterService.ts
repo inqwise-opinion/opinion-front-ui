@@ -7,7 +7,7 @@ import { RouteContextImpl } from './RouteContextImpl';
 import { PageContextImpl } from '../contexts/PageContextImpl';
 import { authMiddleware } from './middleware/auth';
 import { ALL_ROUTES } from './routes';
-import { getFullPath, getRoutePath, appConfig } from '../config/app';
+import { getFullPath, getRoutePath } from '../config/app';
 import type { ActivePage } from '../interfaces/ActivePage';
 import type { PageProvider } from './types';
 
