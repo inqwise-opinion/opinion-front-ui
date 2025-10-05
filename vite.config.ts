@@ -10,9 +10,11 @@ export default defineConfig(({ mode }) => ({
   // Define environment variables for browser access
   define: {
     // Make process.env available in browser with Vite environment variables
-    'process.env.VITE_BASE_URL': JSON.stringify(process.env.VITE_BASE_URL || ''),
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || mode || 'development'),
-    'process.env.MODE': JSON.stringify(mode || 'development')
+    'process.env': JSON.stringify({
+      VITE_BASE_URL: process.env.VITE_BASE_URL || '',
+      NODE_ENV: process.env.NODE_ENV || mode || 'development',
+      MODE: mode || 'development'
+    })
   },
   build: {
     outDir: 'dist',
