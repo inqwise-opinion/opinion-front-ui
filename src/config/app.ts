@@ -18,16 +18,18 @@ function getBaseUrl(): string {
   const envBaseUrl = import.meta.env.VITE_BASE_URL;
   
   // Debug logging to understand what's happening
-  console.log('🔍 Environment variable debug:');
-  console.log('   import.meta.env.VITE_BASE_URL:', envBaseUrl);
+  console.log('🔍 Environment variable debug - BASE_URL:');
+  console.log('   import.meta.env.VITE_BASE_URL:', JSON.stringify(envBaseUrl));
   console.log('   typeof:', typeof envBaseUrl);
-  console.log('   import.meta.env:', import.meta.env);
+  console.log('   is undefined?:', envBaseUrl === undefined);
+  console.log('   is string "undefined"?:', envBaseUrl === 'undefined');
+  console.log('   truthy?:', !!envBaseUrl);
   
   if (envBaseUrl && envBaseUrl !== 'undefined') {
     // Ensure it starts with / and doesn't end with / (unless it's just '/')
     const normalized = envBaseUrl.startsWith('/') ? envBaseUrl : '/' + envBaseUrl;
     const result = normalized === '/' ? '' : normalized.replace(/\/$/, '');
-    console.log('   normalized result:', result);
+    console.log('   normalized result:', JSON.stringify(result));
     return result;
   }
 
@@ -67,14 +69,32 @@ function getEnvironmentMode(): AppConfig['environment'] {
  */
 function getSpaRoutingFlag(): boolean {
   const envFlag = import.meta.env.VITE_ENABLE_SPA_ROUTING;
-  return envFlag === 'true' || envFlag === true;
+  
+  console.log('🔍 Environment variable debug - SPA_ROUTING:');
+  console.log('   import.meta.env.VITE_ENABLE_SPA_ROUTING:', JSON.stringify(envFlag));
+  console.log('   typeof:', typeof envFlag);
+  console.log('   === "true"?:', envFlag === 'true');
+  console.log('   === true?:', envFlag === true);
+  
+  const result = envFlag === 'true' || envFlag === true;
+  console.log('   final result:', result);
+  
+  return result;
 }
+
+// Debug: Log complete environment before creating config
+console.log('🌍 Complete import.meta.env at config creation:');
+console.log(import.meta.env);
 
 export const appConfig: AppConfig = {
   baseUrl: getBaseUrl(),
   environment: getEnvironmentMode(),
   enableSpaRouting: getSpaRoutingFlag()
 };
+
+// Debug: Log final config
+console.log('🏠 Final appConfig:');
+console.log(JSON.stringify(appConfig, null, 2));
 
 /**
  * Get the full URL path with base URL prepended

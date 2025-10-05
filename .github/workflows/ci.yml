@@ -211,11 +211,29 @@ jobs:
         run: npm ci
 
       - name: 🏧 Build application with base URL
-        run: npm run build
+        run: |
+          echo "🔍 CI Environment Variables Debug:"
+          echo "VITE_BASE_URL: $VITE_BASE_URL"
+          echo "VITE_ENABLE_SPA_ROUTING: $VITE_ENABLE_SPA_ROUTING"
+          echo "NODE_ENV: $NODE_ENV"
+          echo "🏗️ Starting build..."
+          npm run build
         env:
           SASS_SILENCE_DEPRECATIONS: legacy-js-api
           VITE_BASE_URL: /${{ github.event.repository.name }}/pr-${{ github.event.number }}
           VITE_ENABLE_SPA_ROUTING: true
+
+      - name: 🔍 Verify environment variables in built files
+        run: |
+          echo "📦 Checking if environment variables were injected into build:"
+          echo "Looking for VITE_BASE_URL in JS files:"
+          grep -r "VITE_BASE_URL" dist/ || echo "❌ VITE_BASE_URL not found in build"
+          echo "Looking for VITE_ENABLE_SPA_ROUTING in JS files:"
+          grep -r "VITE_ENABLE_SPA_ROUTING" dist/ || echo "❌ VITE_ENABLE_SPA_ROUTING not found in build"
+          echo "Looking for base URL path in JS files:"
+          grep -r "opinion-front-ui/pr-" dist/ || echo "❌ Base URL path not found in build"
+          echo "Checking index.html for base URL:"
+          grep "opinion-front-ui/pr-" dist/index.html || echo "❌ Base URL not found in index.html"
 
       - name: 🔧 Setup Git for deployment
         run: |
