@@ -2,6 +2,7 @@ import { NavigationItem } from '../components/Sidebar';
 
 /**
  * Default navigation structure for the application
+ * Note: href values are route paths, not full URLs. The SidebarComponent will apply getFullPath() when rendering.
  */
 export const DEFAULT_NAVIGATION_ITEMS: NavigationItem[] = [
     {

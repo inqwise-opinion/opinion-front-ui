@@ -209,6 +209,7 @@ export default [
     files: [
       'src/logging/LoggerFactory.ts',
       'src/router/RouterService.ts',
+      'src/config/app.ts', // Uses process.env for environment variables
       'tests/**/*.test.ts',
       'tests/**/jest.config.js'
     ],

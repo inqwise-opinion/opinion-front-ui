@@ -7,6 +7,7 @@ import { RouteContextImpl } from './RouteContextImpl';
 import { PageContextImpl } from '../contexts/PageContextImpl';
 import { authMiddleware } from './middleware/auth';
 import { ALL_ROUTES } from './routes';
+import { getFullPath, getRoutePath } from '../config/app';
 import type { ActivePage } from '../interfaces/ActivePage';
 import type { PageProvider } from './types';
 
@@ -46,7 +47,7 @@ export class RouterService implements Service {
 
     // Handle initial route (skip during tests to avoid JSDOM URL issues)
     if (process.env.NODE_ENV !== 'test') {
-      const currentPath = window.location.pathname;
+      const currentPath = getRoutePath(window.location.pathname);
       await this.handleRoute(currentPath);
     }
 
@@ -63,7 +64,8 @@ export class RouterService implements Service {
   }
 
   private handlePopState = (): void => {
-    this.handleRoute(window.location.pathname);
+    const routePath = getRoutePath(window.location.pathname);
+    this.handleRoute(routePath);
   };
 
   private initializeRouter(routes: RouteDefinition[]): void {
@@ -188,8 +190,9 @@ export class RouterService implements Service {
         const resolveResult = await this.router.resolve(normalizedPath);
         const result = resolveResult as RouteResult;
 
-        // Update browser history and current path
-        window.history.pushState(null, '', normalizedPath);
+        // Update browser history with full path and current path with route path
+        const fullPath = getFullPath(normalizedPath);
+        window.history.pushState(null, '', fullPath);
         this.navigationState.currentPath = normalizedPath;
 
         // Notify about successful navigation
@@ -250,12 +253,36 @@ export class RouterService implements Service {
   }
   
   /**
+   * Navigate to a route from a full URL (handles base URL extraction)
+   */
+  public async navigateToUrl(url: string | URL): Promise<void> {
+    const urlObj = typeof url === 'string' ? new URL(url) : url;
+    const routePath = getRoutePath(urlObj.pathname);
+    await this.push(routePath);
+  }
+  
+  /**
+   * Check if a URL should be handled by SPA routing (internal links)
+   */
+  public isInternalUrl(url: string | URL): boolean {
+    try {
+      const urlObj = typeof url === 'string' ? new URL(url) : url;
+      return urlObj.origin === window.location.origin;
+    } catch {
+      // Invalid URL
+      return false;
+    }
+  }
+  
+  /**
    * Replace current route (replaces current state in history)
    */
   public async replace(path: string): Promise<void> {
     // Temporarily disable history push in navigate()
     const originalPush = window.history.pushState;
-    window.history.pushState = window.history.replaceState;
+    window.history.pushState = (state: any, title: string, url?: string | URL | null) => {
+      return window.history.replaceState(state, title, url);
+    };
     
     try {
       await this.handleRoute(path);

@@ -1,13 +1,37 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // Use relative paths only for production GitHub Pages deployment  
+  // For development, always use root '/' and let our app handle base paths
+  base: mode === 'production' ? './' : '/',
   publicDir: 'public',
+  
+  // Define environment variables for browser access
+  define: {
+    // Make process.env available in browser with Vite environment variables
+    'process.env.VITE_BASE_URL': JSON.stringify(process.env.VITE_BASE_URL || ''),
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || mode || 'development'),
+    'process.env.MODE': JSON.stringify(mode || 'development')
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true,
-    target: 'es2020'
+    target: 'es2020',
+    rollupOptions: {
+      output: {
+        // Prevent inlining of assets - always generate separate files
+        inlineDynamicImports: false,
+        manualChunks: undefined,
+        // Ensure proper file extensions for web serving
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      }
+    },
+    // Ensure JS files are never inlined as data URLs
+    assetsInlineLimit: 0
   },
   server: {
     port: 3000,
@@ -37,4 +61,4 @@ export default defineConfig({
   esbuild: {
     target: 'es2020'
   }
-});
+}));

@@ -102,6 +102,9 @@
           <div class="loader-container">
             <div class="loader"></div>
             <p class="loading-text">Getting your Opinion ready...</p>
+            <p class="loading-text" style="font-size: 14px; color: #28a745; margin-top: 10px;">
+              🚀 Preview Deployment Test - PR Branch
+            </p>
           </div>
         </main>
         
@@ -147,10 +150,7 @@
     // Initialize app after critical CSS is loaded
     async function initializeApp() {
       await waitForCriticalCSS();
-      // Small additional delay to ensure layout stability
-      setTimeout(() => {
-        import('/src/main.ts');
-      }, 50);
+      // App will be initialized by the main script
     }
     
     // Start initialization when DOM is ready
@@ -160,5 +160,8 @@
       initializeApp();
     }
   </script>
+  
+  <!-- Main application script - Vite will process this -->
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

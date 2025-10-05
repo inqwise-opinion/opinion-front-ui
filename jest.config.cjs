@@ -16,7 +16,8 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^../config/app$': '<rootDir>/tests/__mocks__/src/config/app.ts'
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   // Fix os.availableParallelism() issues on older Node.js versions

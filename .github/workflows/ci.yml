@@ -201,11 +201,20 @@ jobs:
       - name: 📥 Checkout repository
         uses: actions/checkout@v5
 
-      - name: 📦 Download build artifacts
-        uses: actions/download-artifact@v5
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v5
         with:
-          name: build-files
-          path: dist/
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build application with base URL
+        run: npm run build
+        env:
+          SASS_SILENCE_DEPRECATIONS: legacy-js-api
+          VITE_BASE_URL: /${{ github.event.repository.name }}/pr-${{ github.event.number }}
 
       - name: 🔧 Setup Git for deployment
         run: |
@@ -213,9 +222,11 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: 🌍 Deploy to GitHub Pages Preview
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Clone the current repository into a temporary directory
-          git clone https://github.com/${{ github.repository }}.git temp-repo
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
           cd temp-repo
 
           # Switch to or create gh-pages branch
@@ -401,9 +412,11 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: 🧹 Remove PR preview
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Clone repository and switch to gh-pages
-          git clone https://github.com/${{ github.repository }}.git temp-repo
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
           cd temp-repo
 
           if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
@@ -534,46 +547,38 @@ jobs:
             echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
           fi
 
-      - name: 🎮 Generate Discord Message Content
-        id: discord
+      - name: 🎮 Generate preview URL if applicable
+        id: preview_info
         if: env.SUCCESS_CONDITION == 'true'
         run: |
-          # Create base message
-          MESSAGE="✅ **CI Pipeline Success**\n\n"
-          MESSAGE+="**Repository:** ${{ github.repository }}\n"
-          MESSAGE+="**Branch:** ${{ github.ref_name }}\n"
-          MESSAGE+="**Event:** ${{ github.event_name }}\n"
-          MESSAGE+="**Commit:** [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})\n\n"
-
-          MESSAGE+="🔍 **Quality:** ✅ Passed\n"
-          MESSAGE+="🧪 **Tests:** ✅ Passed\n"
-          MESSAGE+="🏗️ **Build:** ✅ Passed\n"
-
-          # Add preview URL if it's a PR with successful preview
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ steps.notification.outputs.preview_status }}" == "success" ]]; then
-            PREVIEW_URL="${{ steps.notification.outputs.preview_url }}"
-            MESSAGE+="🚀 **Preview:** [✅ Available]($PREVIEW_URL)\n"
+            PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.number }}"
+            echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+            echo "has_preview=true" >> $GITHUB_OUTPUT
+            echo "description=CI Pipeline completed successfully with preview deployment" >> $GITHUB_OUTPUT
+            echo "title=🚀 Success with Preview - PR #${{ github.event.number }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" && "${{ steps.notification.outputs.deploy_status }}" == "success" ]]; then
+            echo "has_preview=false" >> $GITHUB_OUTPUT
+            echo "description=CI Pipeline completed successfully with production deployment" >> $GITHUB_OUTPUT
+            echo "title=🚀 Success with Production Deploy" >> $GITHUB_OUTPUT
+          else
+            echo "has_preview=false" >> $GITHUB_OUTPUT
+            echo "description=All CI checks passed successfully: Quality ✅ Tests ✅ Build ✅" >> $GITHUB_OUTPUT
+            echo "title=✅ CI Pipeline Success" >> $GITHUB_OUTPUT
           fi
 
-          # Add production deploy info if it's main branch
-          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ steps.notification.outputs.deploy_status }}" == "success" ]]; then
-            MESSAGE+="🌍 **Production:** 🚀 Deployed\n"
-          fi
-
-          MESSAGE+="\n• Triggered by **${{ github.actor }}**"
-
-          # Save message (escape for JSON)
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "$MESSAGE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: 🎮 Send Discord Notification
-        if: env.SUCCESS_CONDITION == 'true'
-        uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: 🎮 Discord Success Notification
+        if: env.SUCCESS_CONDITION == 'true' && vars.WEBHOOK_URL != ''
+        uses: sarisia/actions-status-discord@v1
         with:
-          args: '${{ steps.discord.outputs.message }}'
+          nodetail: true
+          webhook: "${{ vars.WEBHOOK_URL }}"
+          avatar_url: "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+          username: "Opinion Front UI CI"
+          content: "${{ steps.preview_info.outputs.has_preview == 'true' && format('Preview available: {0}', steps.preview_info.outputs.preview_url) || format('Success on {0}', github.ref_name) }}"
+          description: "${{ steps.preview_info.outputs.description }}"
+          title: "${{ steps.preview_info.outputs.title }}"
+          color: 5763719
 
       - name: 📊 Success Summary
         if: env.SUCCESS_CONDITION == 'true'
