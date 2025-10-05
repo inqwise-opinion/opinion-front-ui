@@ -6,6 +6,7 @@
 export interface AppConfig {
   baseUrl: string;
   environment: 'development' | 'production' | 'test';
+  enableSpaRouting: boolean;
 }
 
 /**
@@ -60,9 +61,19 @@ function getEnvironmentMode(): AppConfig['environment'] {
   return 'development';
 }
 
+/**
+ * Get SPA routing flag from environment variables
+ * This enables GitHub Pages SPA routing mode where routes are encoded as query parameters
+ */
+function getSpaRoutingFlag(): boolean {
+  const envFlag = import.meta.env.VITE_ENABLE_SPA_ROUTING;
+  return envFlag === 'true' || envFlag === true;
+}
+
 export const appConfig: AppConfig = {
   baseUrl: getBaseUrl(),
-  environment: getEnvironmentMode()
+  environment: getEnvironmentMode(),
+  enableSpaRouting: getSpaRoutingFlag()
 };
 
 /**
