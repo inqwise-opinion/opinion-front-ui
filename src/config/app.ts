@@ -16,12 +16,21 @@ function getBaseUrl(): string {
   // Use Vite's native environment variable access (build-time injection)
   const envBaseUrl = import.meta.env.VITE_BASE_URL;
   
-  if (envBaseUrl) {
+  // Debug logging to understand what's happening
+  console.log('🔍 Environment variable debug:');
+  console.log('   import.meta.env.VITE_BASE_URL:', envBaseUrl);
+  console.log('   typeof:', typeof envBaseUrl);
+  console.log('   import.meta.env:', import.meta.env);
+  
+  if (envBaseUrl && envBaseUrl !== 'undefined') {
     // Ensure it starts with / and doesn't end with / (unless it's just '/')
     const normalized = envBaseUrl.startsWith('/') ? envBaseUrl : '/' + envBaseUrl;
-    return normalized === '/' ? '' : normalized.replace(/\/$/, '');
+    const result = normalized === '/' ? '' : normalized.replace(/\/$/, '');
+    console.log('   normalized result:', result);
+    return result;
   }
 
+  console.log('   using default (empty string)');
   // Default: no base URL (root domain)
   return '';
 }
