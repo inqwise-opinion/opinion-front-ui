@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // Use relative paths for GitHub Pages deployment
+  base: mode === 'production' ? './' : '/',
   publicDir: 'public',
   build: {
     outDir: 'dist',
@@ -37,4 +39,4 @@ export default defineConfig({
   esbuild: {
     target: 'es2020'
   }
-});
+}));
