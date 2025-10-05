@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Opinion Front UI - Preview Deployments</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 40px; }
+    .header { color: #0366d6; margin-bottom: 30px; }
+    .pr-list { list-style: none; padding: 0; }
+    .pr-item { background: #f6f8fa; margin: 10px 0; padding: 15px; border-radius: 6px; border: 1px solid #d1d5da; }
+    .pr-link { text-decoration: none; color: #0366d6; font-weight: 600; }
+    .pr-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1 class="header">🚀 Opinion Front UI - PR Previews</h1>
+  <p>Available preview deployments:</p>
+  <ul class="pr-list" id="pr-list">
+    <!-- PR links will be added here by deployment script -->
+  </ul>
+  <script>
+    // Auto-discover PR directories
+    fetch('.').then(r => r.text()).then(html => {
+      const dirs = html.match(/href="pr-\\d+\\//g) || [];
+      const list = document.getElementById('pr-list');
+      dirs.forEach(dir => {
+        const prNum = dir.match(/pr-(\\d+)/)[1];
+        const li = document.createElement('li');
+        li.className = 'pr-item';
+        li.innerHTML = `<a href="pr-${prNum}/" class="pr-link">PR #${prNum} Preview</a>`;
+        list.appendChild(li);
+      });
+    });
+  </script>
+</body>
+</html>
