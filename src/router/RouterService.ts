@@ -48,7 +48,20 @@ export class RouterService implements Service {
     // Handle initial route (skip during tests to avoid JSDOM URL issues)
     if (process.env.NODE_ENV !== 'test') {
       const currentPath = getRoutePath(window.location.pathname);
-      await this.handleRoute(currentPath);
+      console.log('🚀 RouterService - Initial route setup:');
+      console.log('   window.location.pathname:', window.location.pathname);
+      console.log('   appConfig.baseUrl:', JSON.stringify((globalThis as any).appConfig?.baseUrl || 'undefined'));
+      console.log('   extracted currentPath:', currentPath);
+      console.log('   will route to:', currentPath);
+      
+      try {
+        await this.handleRoute(currentPath);
+        console.log('✅ RouterService - Initial route handled successfully');
+      } catch (error) {
+        console.error('❌ RouterService - Initial route failed:', error);
+        console.error('   This will cause the app to show a 404 or error page');
+        throw error;
+      }
     }
 
     // Observe URL changes
@@ -187,8 +200,14 @@ export class RouterService implements Service {
 
       try {
         // Resolve the route
+        console.log('🔍 RouterService - Resolving route:', normalizedPath);
         const resolveResult = await this.router.resolve(normalizedPath);
         const result = resolveResult as RouteResult;
+        console.log('✅ RouterService - Route resolved successfully:', {
+          path: normalizedPath,
+          hasPageProvider: !!result?.pageProvider,
+          routeInfo: result?.routeInfo
+        });
 
         // Update browser history with full path and current path with route path
         const fullPath = getFullPath(normalizedPath);
