@@ -51,6 +51,8 @@ jobs:
       - name: 🏗️ Build application
         run: npm run build
         env:
+          BUILD_CONFIG: production
+          RUNTIME_BASE_URL: /
           SASS_SILENCE_DEPRECATIONS: legacy-js-api
 
       - name: 🏷️ Generate tag (if workflow_dispatch)
@@ -119,35 +121,38 @@ jobs:
           zip -r opinion-front-ui-${{ env.NEW_VERSION }}.zip dist/
 
       - name: 🎉 Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.NEW_VERSION }}
-          release_name: Opinion Front UI ${{ env.NEW_VERSION }}
+          name: Opinion Front UI ${{ env.NEW_VERSION }}
           body_path: CHANGELOG.md
           draft: false
           prerelease: false
-
-      - name: 📎 Upload Release Assets
-        uses: actions/upload-release-asset@v1
+          files: |
+            opinion-front-ui-${{ env.NEW_VERSION }}.tar.gz
+            opinion-front-ui-${{ env.NEW_VERSION }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./opinion-front-ui-${{ env.NEW_VERSION }}.tar.gz
-          asset_name: opinion-front-ui-${{ env.NEW_VERSION }}.tar.gz
-          asset_content_type: application/gzip
 
-      - name: 📎 Upload Release Assets (ZIP)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./opinion-front-ui-${{ env.NEW_VERSION }}.zip
-          asset_name: opinion-front-ui-${{ env.NEW_VERSION }}.zip
-          asset_content_type: application/zip
+      - name: 🔍 Verify build output
+        run: |
+          echo "Verifying build output..."
+          ls -la dist/
+          echo "Build configuration used: production"
+          echo "Runtime base URL: /"
+          
+          # Check if main files exist
+          if [ ! -f "dist/index.html" ]; then
+            echo "ERROR: index.html not found in dist/"
+            exit 1
+          fi
+          
+          # Check if build includes the production config
+          if grep -q "__BUILD_CONFIG__" dist/assets/*.js; then
+            echo "✅ Build configuration properly embedded"
+          else
+            echo "⚠️ Warning: Build configuration not found in bundle"
+          fi
 
       - name: 📢 Release Summary
         run: |
@@ -155,6 +160,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📊 Release Details:" >> $GITHUB_STEP_SUMMARY
           echo "- **Version**: ${{ env.NEW_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Config**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Base URL**: /" >> $GITHUB_STEP_SUMMARY
           echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/${{ env.NEW_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Build Status**: ✅ Successful" >> $GITHUB_STEP_SUMMARY
           echo "- **Assets**: Archive files uploaded" >> $GITHUB_STEP_SUMMARY
