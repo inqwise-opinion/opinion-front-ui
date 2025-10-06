@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Dashboard - Opinion</title>
+    <meta name="description" content="Opinion - Modern survey management platform">
+    <meta name="keywords" content="surveys, opinion, feedback, analytics">
+    <meta property="og:title" content="Opinion">
+    <meta property="og:description" content="Modern survey management platform - fast, easy and powerful.">
+    <meta http-equiv="content-language" content="en">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <!-- Styles are imported via Vite in main.ts -->
+    <!-- JavaScript moved to bottom for proper loading order -->
+    <style>
+        /* Basic reset and foundation */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+    </style>
+</head>
+<body id="top">
+    <!-- Main Header positioned after sidebar -->
+    <header class="app-header" id="app_header">
+        <div class="header-container">
+            <!-- Breadcrumb-style Page Title -->
+            <nav class="header-breadcrumbs" aria-label="Breadcrumb">
+                <ol class="breadcrumb-list">
+                    <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+                        <span class="breadcrumb-text" id="current_page_title">Dashboard</span>
+                    </li>
+                </ol>
+            </nav>
+            
+            <!-- User Menu -->
+            <div class="user-menu-container">
+                <div class="user-menu-trigger" id="user_menu_trigger">
+                    <div class="user-avatar">
+                        <i class="user-icon">👤</i>
+                    </div>
+                    <div class="user-info">
+                        <span class="username" id="label_username">Loading...</span>
+                        <i class="dropdown-arrow">▼</i>
+                    </div>
+                </div>
+                <div class="user-menu-dropdown" id="user_menu_dropdown" style="display: none;">
+                    <div class="user-menu-header">
+                        <div class="user-menu-avatar">
+                            <i class="user-icon-large">👤</i>
+                        </div>
+                        <div class="user-menu-details">
+                            <div class="user-menu-name" id="user_menu_name">Loading...</div>
+                            <div class="user-menu-email">demo@example.com</div>
+                        </div>
+                    </div>
+                    <div class="user-menu-divider"></div>
+                    <ul class="user-menu-items">
+                        <li>
+                            <a href="/account" class="user-menu-item">
+                                <i class="menu-icon">⚙️</i>
+                                <span>Account Settings</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript:;" class="user-menu-item" data-action="feedback">
+                                <i class="menu-icon">💬</i>
+                                <span>Send Feedback</span>
+                            </a>
+                        </li>
+                        <li class="user-menu-divider"></li>
+                        <li>
+                            <a href="/logout" class="user-menu-item user-menu-signout">
+                                <i class="menu-icon">🚪</i>
+                                <span>Sign Out</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- App Layout Container -->
+    <div class="app-layout">
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebar_overlay"></div>
+        
+        <!-- Connected Left Sidebar -->
+        <aside class="app-sidebar" id="app_sidebar" role="navigation" aria-label="Main navigation">
+            <div class="sidebar-wrapper">
+                <!-- Sidebar Header -->
+                <div class="sidebar-header">
+                    <div class="sidebar-brand">
+                        <h1 class="brand-title">Opinion</h1>
+                    </div>
+                    <div class="sidebar-controls">
+                        <button class="sidebar-compact-toggle" id="sidebar_compact_toggle" type="button" aria-label="Toggle Compact Mode" title="Toggle Compact Mode">
+                            ⟷
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Sidebar Navigation ---->
+                <nav class="sidebar-navigation" role="navigation">
+                    <div class="nav-section">
+                        <ul class="nav-list" role="menubar">
+                            <!-- Dashboard -->
+                            <li class="nav-item" role="none">
+                                <a href="/dashboard" class="nav-link nav-link-active" role="menuitem" aria-current="page" data-title="Dashboard">
+                                    <span class="nav-icon" aria-hidden="true">📊</span>
+                                    <span class="nav-text">Dashboard</span>
+                                </a>
+                            </li>
+                            
+                            <!-- Surveys -->
+                            <li class="nav-item" role="none">
+                                <a href="/surveys" class="nav-link" role="menuitem" data-title="Surveys">
+                                    <span class="nav-icon" aria-hidden="true">📋</span>
+                                    <span class="nav-text">Surveys</span>
+                                    <span class="nav-badge" id="sidebar_surveys_count" aria-label="Total surveys">5</span>
+                                </a>
+                            </li>
+                            
+                        </ul>
+                    </div>
+                </nav>
+                
+                <!-- Sidebar Footer -->
+                <div class="sidebar-footer">
+                    <div class="footer-content">
+                        <small class="copyright-text">© 2024 Inqwise Ltd</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="layout-content">
+            <!-- Main Content -->
+            <div class="main-content" id="main_content">
+                <div class="content-container XcO">
+                                <div class="main-content-inner">
+                                    <!-- Dashboard Header -->
+                                    <table class="placeholder-header">
+                                        <tbody>
+                                            <tr>
+                                                <td class="cell-left">
+                                                    <h1>Dashboard</h1>
+                                                </td>
+                                                <td class="cell-right">
+                                                    <a href="/surveys/create" title="Create Survey" class="button-green" id="button_create_survey">
+                                                        <span><i class="icon-add-white">&nbsp;</i>Create Survey</span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <!-- Welcome Message -->
+                                    <div id="container_welcome" style="display: none;">
+                                        <div style="clear: both;">
+                                            <h3 class="ui-header-light">Getting started with Opinion</h3>
+                                            <div style="padding-top: 12px;">Begin by clicking "Create Survey", which is first among the options.</div>
+                                        </div>
+                                        <div style="padding-top: 12px;">
+                                            <a href="/surveys/create" title="Create Survey" class="button-green">
+                                                <span><i class="icon-add-white">&nbsp;</i>Create Survey</span>
+                                            </a>
+                                            <span style="margin-left: 6px;">Make it easy, Create your first survey!</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Activity Section -->
+                                    <div id="container_activity" style="clear: both;">
+                                        <div>
+                                            <h3 class="ui-header-light">Responses Activity</h3>
+                                            <div style="clear: both;padding-top: 10px;">
+                                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td valign="top">
+                                                                <div class="params">
+                                                                    <div class="param-value" style="width: 200px; margin-right: 6px;">
+                                                                        <select id="select_surveys" style="width: 100%; display: none;">
+                                                                            <option value="0">All surveys</option>
+                                                                        </select>
+                                                                        <div class="chosen-container" id="select_surveys_chosen">
+                                                                            <a class="chosen-single" tabindex="-1">
+                                                                                <span>All surveys</span>
+                                                                                <div><b></b></div>
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="param-value">
+                                                                        <div id="button_status" data-value="1">
+                                                                            <div class="ui-button-dropdown">
+                                                                                <a href="javascript:;" title="Started" class="button-white">
+                                                                                    <span><b><i class="legend" style="background-color: #3b5998"></i>Started</b><i class="icon-more">&nbsp;</i></span>
+                                                                                </a>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="param-value" style="margin-left: 6px; margin-right: 6px;">vs</div>
+                                                                    <div class="param-value">
+                                                                        <div id="button_comparison_status" data-value="0">
+                                                                            <div class="ui-button-dropdown">
+                                                                                <a href="javascript:;" title="None" class="button-white">
+                                                                                    <span><b>None</b><i class="icon-more">&nbsp;</i></span>
+                                                                                </a>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td valign="top">
+                                                                <div style="float: right; position: relative; text-align: left" id="daterange">
+                                                                    <div class="datepicker-text" id="datepicker_text">
+                                                                        <div class="datepicker-date-range-container">
+                                                                            <span id="datepicker_date_range_description">Today: </span>
+                                                                            <span id="datepicker_date_range_value"></span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <!-- Statistics -->
+                                            <ul class="insights-statistics">
+                                                <li>
+                                                    <div>
+                                                        <div>Responses</div>
+                                                        <div class="insights-statistics-figure label-started">0</div>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div>
+                                                        <div>Completed</div>
+                                                        <div class="insights-statistics-figure label-completed">0</div>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div>
+                                                        <div>Completion Rate</div>
+                                                        <div class="insights-statistics-figure label-completion-rate">0.00%</div>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div>
+                                                        <div>Partial</div>
+                                                        <div class="insights-statistics-figure label-partial">0</div>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div>
+                                                        <div>Disqualified</div>
+                                                        <div class="insights-statistics-figure label-disqualified">0</div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+
+                                            <!-- Chart -->
+                                            <div id="chart" style="min-width: 450px; height: 140px; margin: 0 auto;"></div>
+                                        </div>
+
+                                        <!-- Recent Surveys -->
+                                        <div style="clear: both; padding-top: 20px;">
+                                            <h3 class="ui-header-light">Recent Surveys</h3>
+                                            <div style="padding-top: 12px;">
+                                                Below is a list of the 5 recently modified surveys ordered by modify date.
+                                            </div>
+                                            <div style="padding-top: 12px; clear: both; display: block;">
+                                                <div id="table_recent_surveys" class="data-table">
+                                                    <div class="data-table-body">
+                                                        <table id="table_recent_surveys_table_view" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th class="first-item sortable" style="width: 46px; text-align: right;">#</th>
+                                                                    <th style="width: 12px;"></th>
+                                                                    <th class="sortable">Name</th>
+                                                                    <th style="text-align: right;" class="sortable">Responses</th>
+                                                                    <th style="text-align: right;" class="sortable">Completed</th>
+                                                                    <th style="text-align: right;" class="sortable">Completion Rate</th>
+                                                                    <th style="text-align: right;" class="sortable">Partial</th>
+                                                                    <th style="text-align: right;" class="sortable">Disqualified</th>
+                                                                    <th style="text-align: right;">Avg. Time Taken</th>
+                                                                    <th class="sortable">Last Response Date</th>
+                                                                    <th class="last-item sortable">Modify Date</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="survey_table_body">
+                                                                <!-- Survey rows will be inserted here -->
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="clear: both; padding-top: 20px;">
+                                    &nbsp;
+                                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer will be created by AppFooter component -->
+    <!-- JavaScript functionality now handled by TypeScript components -->
+</body>
+</html>
