@@ -114,19 +114,94 @@ jobs:
           
           echo "📝 Version file created for staging tracking"
           
-      - name: 📢 Deployment Summary
+      - name: 📢 Enhanced Deployment Summary
+        id: summary
         run: |
-          echo "## 🟡 Staging Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          # Generate deployment summary with full process overview
+          DEPLOY_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          BUILD_SIZE=$(du -sh dist/ 2>/dev/null | cut -f1 || echo "Unknown")
+          FILE_COUNT=$(find dist/ -type f 2>/dev/null | wc -l | tr -d ' ' || echo "Unknown")
+          
+          echo "## 🟡 Staging Deployment Process Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 Deployment Details:" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ steps.release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: Staging" >> $GITHUB_STEP_SUMMARY
-          echo "- **Deployed At**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Triggered By**: ${{ steps.release.outputs.source }} (${{ github.actor }})" >> $GITHUB_STEP_SUMMARY
-          echo "- **Release URL**: [View Release](https://github.com/${{ github.repository }}/releases/tag/${{ steps.release.outputs.tag }})" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Deployment Overview" >> $GITHUB_STEP_SUMMARY
+          echo "| Phase | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔍 Release Validation | ✅ **Success** | Release ${{ steps.release.outputs.tag }} validated |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 Asset Download | ✅ **Success** | Build artifacts retrieved |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔒 Build Verification | ✅ **Success** | $FILE_COUNT files, $BUILD_SIZE total |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🚀 Staging Deploy | ✅ **Success** | Deployed to staging environment |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔍 Health Check | ✅ **Success** | Post-deployment validation passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📝 Version Tracking | ✅ **Success** | Staging version updated |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 **Staging URL**: https://staging.your-domain.com" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Deployment Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **🏷️ Version**: ${{ steps.release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **🌍 Environment**: Staging" >> $GITHUB_STEP_SUMMARY
+          echo "- **⏰ Deployed At**: $DEPLOY_TIME" >> $GITHUB_STEP_SUMMARY
+          echo "- **👤 Triggered By**: ${{ steps.release.outputs.source }} (${{ github.actor }})" >> $GITHUB_STEP_SUMMARY
+          echo "- **📦 Build Size**: $BUILD_SIZE" >> $GITHUB_STEP_SUMMARY
+          echo "- **📄 File Count**: $FILE_COUNT files" >> $GITHUB_STEP_SUMMARY
+          echo "- **🔗 Release URL**: [View Release](https://github.com/${{ github.repository }}/releases/tag/${{ steps.release.outputs.tag }})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 Next Steps:" >> $GITHUB_STEP_SUMMARY
-          echo "1. QA team can begin testing on staging" >> $GITHUB_STEP_SUMMARY
-          echo "2. Once approved, schedule production deployment via 'Production Deployment' workflow" >> $GITHUB_STEP_SUMMARY
+          echo "### 🌐 Environment Access" >> $GITHUB_STEP_SUMMARY
+          echo "- **🔗 Staging URL**: [https://staging.your-domain.com](https://staging.your-domain.com)" >> $GITHUB_STEP_SUMMARY
+          echo "- **📊 Version Endpoint**: [/version.json](https://staging.your-domain.com/version.json)" >> $GITHUB_STEP_SUMMARY
+          echo "- **🔍 Health Check**: [/health](https://staging.your-domain.com/health)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. **QA Testing**: Team can begin comprehensive testing" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Feature Validation**: Verify all new features work correctly" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Performance Testing**: Check application performance under load" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Production Scheduling**: Once approved, schedule production deployment:" >> $GITHUB_STEP_SUMMARY
+          echo "   - Via GitHub UI: Actions → 'Production Deployment' → Run workflow" >> $GITHUB_STEP_SUMMARY
+          echo "   - Via External Scheduler: \`node scripts/external-scheduler.js --release ${{ steps.release.outputs.tag }} --environment production\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📈 Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment Duration**: $SECONDS seconds" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow Run**: [View Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit SHA**: [\`${{ github.sha }}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
+          
+          # Set outputs for potential notification systems
+          echo "deployment_status=success" >> $GITHUB_OUTPUT
+          echo "deployment_time=$DEPLOY_TIME" >> $GITHUB_OUTPUT
+          echo "build_size=$BUILD_SIZE" >> $GITHUB_OUTPUT
+          echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
+
+      - name: 🎮 Discord/Slack Notification (if configured)
+        if: vars.STAGING_WEBHOOK_URL != ''
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: "${{ vars.STAGING_WEBHOOK_URL }}"
+          title: "🟡 Staging Deployment Successful"
+          description: "Version ${{ steps.release.outputs.tag }} deployed to staging environment"
+          color: 0xffa500
+          username: "Opinion Front UI - Staging"
+          avatar_url: "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+          fields: |
+            [
+              {
+                "name": "Version",
+                "value": "${{ steps.release.outputs.tag }}",
+                "inline": true
+              },
+              {
+                "name": "Environment",
+                "value": "Staging",
+                "inline": true
+              },
+              {
+                "name": "Triggered By",
+                "value": "${{ github.actor }}",
+                "inline": true
+              },
+              {
+                "name": "Build Size",
+                "value": "${{ steps.summary.outputs.build_size }}",
+                "inline": true
+              },
+              {
+                "name": "Staging URL",
+                "value": "[Visit Staging](https://staging.your-domain.com)",
+                "inline": false
+              }
+            ]
