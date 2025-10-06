@@ -137,7 +137,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
         icon: "bug_report",
         href: "/",
         caption: "Development tools and troubleshooting",
-        active: true, // Debug is active since root path shows DebugPage
+        active: false, // Will be set active by router when on root path
       },
     ];
   }

@@ -7,7 +7,7 @@ import { RouteContextImpl } from './RouteContextImpl';
 import { PageContextImpl } from '../contexts/PageContextImpl';
 import { authMiddleware } from './middleware/auth';
 import { ALL_ROUTES } from './routes';
-import { getFullPath, getRoutePath } from '../config/app';
+import { getFullPath, getRoutePath, appConfig } from '../config/app';
 import type { ActivePage } from '../interfaces/ActivePage';
 import type { PageProvider } from './types';
 
@@ -47,8 +47,28 @@ export class RouterService implements Service {
 
     // Handle initial route (skip during tests to avoid JSDOM URL issues)
     if (process.env.NODE_ENV !== 'test') {
-      const currentPath = getRoutePath(window.location.pathname);
-      await this.handleRoute(currentPath);
+      let currentPath = getRoutePath(window.location.pathname);
+      
+      // Handle SPA routing encoded as query parameter (e.g., ?/surveys) if enabled
+      if (appConfig.enableSpaRouting && window.location.search.startsWith('?/')) {
+        // Extract the route from query parameter and clean up URL
+        const encodedRoute = window.location.search.slice(2); // Remove '?/'
+        const decodedRoute = '/' + encodedRoute.replace(/~and~/g, '&');
+        currentPath = decodedRoute;
+        
+        // Clean up the URL by replacing it with the proper route
+        const fullPath = getFullPath(currentPath);
+        window.history.replaceState(null, '', fullPath);
+        
+      }
+      
+      
+      try {
+        await this.handleRoute(currentPath);
+      } catch (error) {
+        console.error('RouterService - Initial route failed:', error);
+        throw error;
+      }
     }
 
     // Observe URL changes

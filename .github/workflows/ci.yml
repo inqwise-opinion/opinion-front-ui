@@ -163,10 +163,11 @@ jobs:
       - name: 🔧 Install dependencies
         run: npm ci
 
-      - name: 🏗️ Build application
+      - name: 🏧 Build application
         run: npm run build
         env:
           SASS_SILENCE_DEPRECATIONS: legacy-js-api
+          BUILD_CONFIG: production
 
       - name: 📦 Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -210,11 +211,12 @@ jobs:
       - name: 🔧 Install dependencies
         run: npm ci
 
-      - name: 🏗️ Build application with base URL
+      - name: 🏧 Build application for PR preview
         run: npm run build
         env:
           SASS_SILENCE_DEPRECATIONS: legacy-js-api
-          VITE_BASE_URL: /${{ github.event.repository.name }}/pr-${{ github.event.number }}
+          BUILD_CONFIG: github-pages-pr
+          RUNTIME_BASE_URL: /${{ github.event.repository.name }}/pr-${{ github.event.number }}
 
       - name: 🔧 Setup Git for deployment
         run: |
@@ -243,6 +245,9 @@ jobs:
 
           # Copy build files to PR directory
           cp -r ../dist/* $PR_DIR/
+
+          # Copy global 404.html from .github folder to gh-pages root
+          cp ../.github/404.html ./404.html
 
           # Create or update index.html for PR listing if it doesn't exist
           if [ ! -f "index.html" ]; then

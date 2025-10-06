@@ -1,19 +1,58 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-export default defineConfig(({ mode }) => ({
-  // Use relative paths only for production GitHub Pages deployment  
-  // For development, always use root '/' and let our app handle base paths
-  base: mode === 'production' ? './' : '/',
+// Import build configuration
+function getBuildConfigForVite() {
+  const configName = process.env.BUILD_CONFIG || 'development';
+  const runtimeBaseUrl = process.env.RUNTIME_BASE_URL;
+  
+  // Simple config mapping for Vite (without importing the full build config to avoid circular deps)
+  const configs: Record<string, { baseUrl: string }> = {
+    development: { baseUrl: '/' },
+    production: { baseUrl: './' },
+    'github-pages-pr': { baseUrl: runtimeBaseUrl || './' },
+    'github-pages-main': { baseUrl: '/opinion-front-ui/' },
+    test: { baseUrl: '/' }
+  };
+  
+  return configs[configName] || configs.development;
+}
+
+export default defineConfig(({ mode }) => {
+  const buildConfig = getBuildConfigForVite();
+  const configName = process.env.BUILD_CONFIG || 'development';
+  const runtimeBaseUrl = process.env.RUNTIME_BASE_URL;
+  
+  // Determine final configuration
+  let finalConfig;
+  if (configName === 'github-pages-pr' && runtimeBaseUrl) {
+    finalConfig = {
+      baseUrl: runtimeBaseUrl,
+      enableSpaRouting: true,
+      environment: 'production',
+      enableDebugLogging: false
+    };
+  } else {
+    const configs = {
+      development: { baseUrl: '', enableSpaRouting: false, environment: 'development', enableDebugLogging: true },
+      production: { baseUrl: '', enableSpaRouting: false, environment: 'production', enableDebugLogging: false },
+      'github-pages-main': { baseUrl: '/opinion-front-ui', enableSpaRouting: true, environment: 'production', enableDebugLogging: false },
+      test: { baseUrl: '', enableSpaRouting: false, environment: 'test', enableDebugLogging: false }
+    };
+    finalConfig = configs[configName] || configs.development;
+  }
+  
+  
+  return {
+  base: buildConfig.baseUrl,
+  define: {
+    // Inject build configuration as compile-time constants
+    __BUILD_CONFIG__: JSON.stringify(finalConfig)
+  },
   publicDir: 'public',
   
-  // Define environment variables for browser access
-  define: {
-    // Make process.env available in browser with Vite environment variables
-    'process.env.VITE_BASE_URL': JSON.stringify(process.env.VITE_BASE_URL || ''),
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || mode || 'development'),
-    'process.env.MODE': JSON.stringify(mode || 'development')
-  },
+  // Vite automatically handles import.meta.env.VITE_* variables
+  // No need to manually define them
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -61,4 +100,5 @@ export default defineConfig(({ mode }) => ({
   esbuild: {
     target: 'es2020'
   }
-}));
+};
+});
