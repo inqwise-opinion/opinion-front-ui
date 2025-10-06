@@ -94,25 +94,78 @@ jobs:
       - name: 📝 Generate changelog
         id: changelog
         run: |
-          # Get previous tag
+          # Get previous tag for fallback
           PREV_TAG=$(git describe --abbrev=0 --tags $(git describe --abbrev=0 --tags)^ 2>/dev/null || echo "")
           
-          if [ -z "$PREV_TAG" ]; then
-            echo "## 🎉 Initial Release" > CHANGELOG.md
-            echo "" >> CHANGELOG.md
-            echo "This is the first release of Opinion Front UI!" >> CHANGELOG.md
-          else
-            echo "## 🚀 Changes from $PREV_TAG to ${{ env.NEW_VERSION }}" > CHANGELOG.md
-            echo "" >> CHANGELOG.md
+          # Try to get accumulated changeset first
+          CHANGESET_BRANCH="changeset-accumulator"
+          CHANGESET_FILE="PENDING_CHANGELOG.md"
+          USED_ACCUMULATED_CHANGESET=false
+          
+          if git show-ref --verify --quiet refs/remotes/origin/$CHANGESET_BRANCH; then
+            echo "📝 Found accumulated changeset, using it for release notes"
             
-            # Generate changelog from commits
-            git log $PREV_TAG..HEAD --oneline --pretty=format:"- %s" >> CHANGELOG.md
+            # Fetch and checkout changeset branch
+            git fetch origin $CHANGESET_BRANCH
+            git checkout $CHANGESET_BRANCH
+            
+            if [ -f "$CHANGESET_FILE" ]; then
+              echo "## 🚀 Release ${{ env.NEW_VERSION }}" > CHANGELOG.md
+              echo "" >> CHANGELOG.md
+              echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG.md
+              echo "" >> CHANGELOG.md
+              
+              # Extract the changes section from accumulated changeset
+              sed -n '/## 📝 Changes by Category/,/^---$/p' "$CHANGESET_FILE" | head -n -1 >> CHANGELOG.md
+              
+              # Add release metadata
+              echo "" >> CHANGELOG.md
+              echo "---" >> CHANGELOG.md
+              echo "" >> CHANGELOG.md
+              echo "## 📊 Release Information" >> CHANGELOG.md
+              echo "- **Version**: ${{ env.NEW_VERSION }}" >> CHANGELOG.md
+              echo "- **Previous Version**: ${PREV_TAG:-"Initial Release"}" >> CHANGELOG.md
+              echo "- **Release Date**: $(date -u '+%Y-%m-%d')" >> CHANGELOG.md
+              echo "- **Build Configuration**: Production" >> CHANGELOG.md
+              echo "" >> CHANGELOG.md
+              echo "## 📦 Assets" >> CHANGELOG.md
+              echo "- **Build artifacts**: Available in the release assets" >> CHANGELOG.md
+              echo "- **Source code**: Available as zip and tar.gz" >> CHANGELOG.md
+              
+              USED_ACCUMULATED_CHANGESET=true
+              echo "✅ Successfully used accumulated changeset for release notes"
+            else
+              echo "⚠️ Changeset file not found, falling back to git log"
+            fi
+            
+            # Return to main branch
+            git checkout main
+          else
+            echo "📋 No accumulated changeset found, using git log fallback"
           fi
           
-          echo "" >> CHANGELOG.md
-          echo "## 📦 Assets" >> CHANGELOG.md
-          echo "- **Build artifacts**: Available in the release assets" >> CHANGELOG.md
-          echo "- **Source code**: Available as zip and tar.gz" >> CHANGELOG.md
+          # Fallback to git log if no accumulated changeset
+          if [ "$USED_ACCUMULATED_CHANGESET" = "false" ]; then
+            if [ -z "$PREV_TAG" ]; then
+              echo "## 🎉 Initial Release ${{ env.NEW_VERSION }}" > CHANGELOG.md
+              echo "" >> CHANGELOG.md
+              echo "This is the first release of Opinion Front UI!" >> CHANGELOG.md
+            else
+              echo "## 🚀 Changes from $PREV_TAG to ${{ env.NEW_VERSION }}" > CHANGELOG.md
+              echo "" >> CHANGELOG.md
+              
+              # Generate changelog from commits
+              git log $PREV_TAG..HEAD --oneline --pretty=format:"- %s" >> CHANGELOG.md
+            fi
+            
+            echo "" >> CHANGELOG.md
+            echo "## 📦 Assets" >> CHANGELOG.md
+            echo "- **Build artifacts**: Available in the release assets" >> CHANGELOG.md
+            echo "- **Source code**: Available as zip and tar.gz" >> CHANGELOG.md
+          fi
+          
+          # Store whether we used accumulated changeset for cleanup step
+          echo "used_accumulated_changeset=$USED_ACCUMULATED_CHANGESET" >> $GITHUB_OUTPUT
 
       - name: 📦 Create release archive
         run: |
@@ -154,6 +207,56 @@ jobs:
             echo "⚠️ Warning: Build configuration not found in bundle"
           fi
 
+      - name: 🧹 Cleanup Changeset (after successful release)
+        if: steps.changelog.outputs.used_accumulated_changeset == 'true'
+        run: |
+          echo "🧹 Cleaning up accumulated changeset after successful release"
+          
+          CHANGESET_BRANCH="changeset-accumulator"
+          CHANGESET_FILE="PENDING_CHANGELOG.md"
+          
+          # Setup git configuration
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Checkout changeset branch
+          git fetch origin $CHANGESET_BRANCH
+          git checkout $CHANGESET_BRANCH
+          
+          # Reset the changeset file
+          cat > $CHANGESET_FILE << 'EOF'
+          # 📋 Pending Release Changelog
+          
+          This file accumulates changes that will be included in the next release.
+          It is automatically maintained by the Changeset Accumulator workflow.
+          
+          ## 📊 Summary
+          - **Total Commits**: 0
+          - **Last Updated**: Never
+          - **Next Release**: TBD
+          - **Previous Release**: ${{ env.NEW_VERSION }}
+          
+          ---
+          
+          ## 📝 Changes by Category
+          
+          _No changes yet._
+          
+          ---
+          
+          ⚠️ **Note**: This file is automatically generated. Do not edit manually.
+          EOF
+          
+          # Commit and push the reset changeset
+          git add $CHANGESET_FILE
+          git commit -m "🧹 Reset changeset after release ${{ env.NEW_VERSION }}"
+          git push origin $CHANGESET_BRANCH
+          
+          echo "✅ Changeset cleared for next release cycle"
+          
+          # Return to main branch
+          git checkout main
+
       - name: 📢 Release Summary
         run: |
           echo "## 🎉 Release ${{ env.NEW_VERSION }} Created Successfully!" >> $GITHUB_STEP_SUMMARY
@@ -165,3 +268,4 @@ jobs:
           echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/${{ env.NEW_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Build Status**: ✅ Successful" >> $GITHUB_STEP_SUMMARY
           echo "- **Assets**: Archive files uploaded" >> $GITHUB_STEP_SUMMARY
+          echo "- **Changeset**: ${{ steps.changelog.outputs.used_accumulated_changeset == 'true' && '✅ Used accumulated changeset and cleared it' || '📋 Used git log fallback' }}" >> $GITHUB_STEP_SUMMARY

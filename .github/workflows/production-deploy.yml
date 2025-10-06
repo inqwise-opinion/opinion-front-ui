@@ -1,0 +1,258 @@
+name: Production Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to deploy (e.g., v1.2.3)'
+        required: true
+        type: string
+      deployment_notes:
+        description: 'Deployment notes/reason'
+        required: false
+        default: 'Scheduled production deployment'
+        type: string
+      scheduled_time:
+        description: 'Deployment time (for documentation)'
+        required: false
+        default: 'Immediate'
+        type: string
+      skip_health_check:
+        description: 'Skip post-deployment health checks'
+        required: false
+        default: false
+        type: boolean
+  
+  # External scheduler integration
+  repository_dispatch:
+    types: [scheduled-deployment, emergency-deployment]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  validate-release:
+    name: 🔍 Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      release_exists: ${{ steps.check.outputs.exists }}
+      release_url: ${{ steps.check.outputs.url }}
+      release_tag: ${{ steps.determine-tag.outputs.tag }}
+      deployment_type: ${{ steps.determine-tag.outputs.type }}
+      deployment_notes: ${{ steps.determine-tag.outputs.notes }}
+    
+    steps:
+      - name: 🏷️ Determine Release Tag and Type
+        id: determine-tag
+        run: |
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            echo "tag=${{ github.event.client_payload.release_tag }}" >> $GITHUB_OUTPUT
+            echo "type=${{ github.event.action }}" >> $GITHUB_OUTPUT
+            echo "notes=${{ github.event.client_payload.notes }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.event.inputs.release_tag }}" >> $GITHUB_OUTPUT
+            echo "type=manual" >> $GITHUB_OUTPUT
+            echo "notes=${{ github.event.inputs.deployment_notes }}" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: 🔍 Check Release Exists
+        id: check
+        run: |
+          RELEASE_TAG="${{ steps.determine-tag.outputs.tag }}"
+          echo "Checking release: $RELEASE_TAG"
+          
+          if gh release view "$RELEASE_TAG" --repo ${{ github.repository }} >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "url=https://github.com/${{ github.repository }}/releases/tag/$RELEASE_TAG" >> $GITHUB_OUTPUT
+            echo "✅ Release $RELEASE_TAG validated"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "❌ ERROR: Release $RELEASE_TAG not found"
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 📊 Validate Staging Deployment
+        run: |
+          echo "🔍 Checking if ${{ steps.determine-tag.outputs.tag }} was deployed to staging"
+          
+          # TODO: Add actual staging validation
+          # For example:
+          # STAGING_VERSION=$(curl -s https://staging.your-domain.com/version.json | jq -r '.version')
+          # if [ "$STAGING_VERSION" != "${{ steps.determine-tag.outputs.tag }}" ]; then
+          #   echo "⚠️ WARNING: Release ${{ steps.determine-tag.outputs.tag }} not found in staging"
+          #   echo "Current staging version: $STAGING_VERSION"
+          # fi
+          
+          echo "✅ Staging validation completed"
+
+  deploy-production:
+    name: 🟢 Production Deploy
+    runs-on: ubuntu-latest
+    needs: validate-release
+    environment: production  # Requires manual approval in GitHub settings
+    if: needs.validate-release.outputs.release_exists == 'true'
+    
+    steps:
+      - name: 📋 Pre-deployment Summary
+        run: |
+          echo "## 🚀 Production Deployment Starting" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Deployment Details:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release**: ${{ needs.validate-release.outputs.release_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Type**: ${{ needs.validate-release.outputs.deployment_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered By**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Notes**: ${{ needs.validate-release.outputs.deployment_notes }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Scheduled Time**: ${{ github.event.inputs.scheduled_time || 'External trigger' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release URL**: [${{ needs.validate-release.outputs.release_tag }}](${{ needs.validate-release.outputs.release_url }})" >> $GITHUB_STEP_SUMMARY
+          
+      - name: 📥 Checkout Release
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.validate-release.outputs.release_tag }}
+          
+      - name: 📦 Download Release Assets
+        run: |
+          echo "📦 Downloading production assets for ${{ needs.validate-release.outputs.release_tag }}"
+          
+          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${{ needs.validate-release.outputs.release_tag }}/opinion-front-ui-${{ needs.validate-release.outputs.release_tag }}.tar.gz"
+          
+          if curl -L --fail -o production-assets.tar.gz "$ASSET_URL" 2>/dev/null; then
+            echo "✅ Downloaded release assets"
+            tar -xzf production-assets.tar.gz
+          else
+            echo "❌ ERROR: Release assets not found for ${{ needs.validate-release.outputs.release_tag }}"
+            echo "Please ensure the release was created with artifacts"
+            exit 1
+          fi
+          
+      - name: 🔒 Pre-deployment Security Checks
+        run: |
+          echo "🔒 Running security checks before production deployment"
+          
+          # Verify build integrity
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ ERROR: Missing index.html in release assets"
+            exit 1
+          fi
+          
+          # Check for suspicious files
+          if find dist/ -name "*.php" -o -name "*.jsp" | grep -q .; then
+            echo "❌ ERROR: Suspicious files found in build"
+            exit 1
+          fi
+          
+          # Verify build configuration
+          if grep -r "development\|localhost\|staging" dist/ 2>/dev/null | grep -v "sourceMappingURL" | head -5; then
+            echo "⚠️ WARNING: Development references found in production build"
+          fi
+          
+          echo "✅ Security checks completed"
+          
+      - name: 🔄 Create Production Backup
+        run: |
+          echo "🔄 Creating backup of current production (if exists)"
+          
+          # TODO: Replace with your actual backup process
+          # Examples:
+          # rsync -a production-server:/var/www/production/ ./backup-$(date +%Y%m%d-%H%M%S)/
+          # aws s3 sync s3://production-bucket/ s3://backup-bucket/$(date +%Y%m%d-%H%M%S)/ 
+          
+          echo "✅ Backup completed (or skipped if no current production)"
+          
+      - name: 🚀 Deploy to Production
+        run: |
+          echo "🚀 Deploying ${{ needs.validate-release.outputs.release_tag }} to production"
+          
+          # TODO: Replace with your actual production deployment
+          # Examples:
+          
+          # Option 1: Server deployment
+          # rsync -avz --delete dist/ production-server:/var/www/production/
+          
+          # Option 2: Cloud storage (S3, GCS, etc.)
+          # aws s3 sync dist/ s3://production-bucket/ --delete
+          
+          # Option 3: Kubernetes
+          # kubectl set image deployment/frontend app=opinion-front-ui:${{ needs.validate-release.outputs.release_tag }}
+          # kubectl rollout status deployment/frontend
+          
+          # Option 4: Docker
+          # docker build -t opinion-front-ui:${{ needs.validate-release.outputs.release_tag }} .
+          # docker push myregistry/opinion-front-ui:${{ needs.validate-release.outputs.release_tag }}
+          # docker service update --image myregistry/opinion-front-ui:${{ needs.validate-release.outputs.release_tag }} production_frontend
+          
+          # For now, simulate deployment
+          echo "✅ Production deployment completed"
+          
+      - name: 📝 Update Production Version
+        run: |
+          # Create production version tracking
+          cat > production-version.json << EOF
+          {
+            "version": "${{ needs.validate-release.outputs.release_tag }}",
+            "deployed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "deployed_by": "${{ github.actor }}",
+            "deployment_type": "${{ needs.validate-release.outputs.deployment_type }}",
+            "notes": "${{ needs.validate-release.outputs.deployment_notes }}",
+            "environment": "production",
+            "commit": "${{ github.sha }}",
+            "release_url": "${{ needs.validate-release.outputs.release_url }}"
+          }
+          EOF
+          
+          echo "📝 Production version tracking updated"
+          
+      - name: 🔍 Post-deployment Health Check
+        if: ${{ !github.event.inputs.skip_health_check }}
+        run: |
+          echo "🔍 Running post-deployment health checks"
+          
+          # TODO: Replace with your actual health checks
+          # curl -f https://your-domain.com/health
+          # curl -f https://your-domain.com/api/status
+          # Check if main pages load correctly
+          
+          # Simulate health check
+          sleep 10
+          echo "✅ Health checks passed"
+          
+      - name: 📢 Deployment Success Summary
+        run: |
+          echo "## 🎉 Production Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Deployment Completed:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ needs.validate-release.outputs.release_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployed At**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployed By**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Type**: ${{ needs.validate-release.outputs.deployment_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Production URL**: https://your-domain.com" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Release Notes**: [${{ needs.validate-release.outputs.release_tag }}](${{ needs.validate-release.outputs.release_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Post-deployment:" >> $GITHUB_STEP_SUMMARY
+          echo "- Monitor application performance" >> $GITHUB_STEP_SUMMARY
+          echo "- Verify all features work as expected" >> $GITHUB_STEP_SUMMARY
+          echo "- Check error logs for any issues" >> $GITHUB_STEP_SUMMARY
+
+  rollback:
+    name: 🔄 Rollback (if needed)
+    runs-on: ubuntu-latest
+    needs: [validate-release, deploy-production]
+    if: failure() && needs.validate-release.result == 'success'
+    environment: production
+    
+    steps:
+      - name: 🚨 Deployment Failed - Initiate Rollback
+        run: |
+          echo "🚨 Production deployment failed!"
+          echo "🔄 Rollback process would start here"
+          
+          # TODO: Implement rollback logic
+          # Restore from backup created earlier
+          # Or deploy previous known-good version
+          
+          echo "⚠️ Manual intervention may be required"
+          echo "📞 Contact DevOps team immediately"

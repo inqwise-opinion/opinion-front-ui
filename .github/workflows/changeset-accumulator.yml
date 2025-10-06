@@ -1,0 +1,271 @@
+name: Changeset Accumulator
+
+on:
+  push:
+    branches: [main]
+
+env:
+  CHANGESET_BRANCH: 'changeset-accumulator'
+  CHANGESET_FILE: 'PENDING_CHANGELOG.md'
+
+jobs:
+  accumulate-changeset:
+    name: 📝 Accumulate Changeset
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Full history for better change analysis
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 🔍 Analyze Push Changes
+        id: changes
+        run: |
+          # Get commit details for this push
+          if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            # Normal push - get commits between before and after
+            COMMITS=$(git rev-list --reverse ${{ github.event.before }}..${{ github.sha }})
+          else
+            # First push to branch - get just the latest commit
+            COMMITS="${{ github.sha }}"
+          fi
+          
+          echo "Analyzing commits: $COMMITS"
+          
+          # Extract commit information
+          CHANGE_SUMMARY=""
+          COMMIT_COUNT=0
+          
+          for commit in $COMMITS; do
+            COMMIT_COUNT=$((COMMIT_COUNT + 1))
+            COMMIT_MSG=$(git log --format="%s" -n 1 $commit)
+            COMMIT_AUTHOR=$(git log --format="%an" -n 1 $commit)
+            COMMIT_DATE=$(git log --format="%ad" --date=short -n 1 $commit)
+            
+            # Categorize commit type based on conventional commits
+            if [[ "$COMMIT_MSG" =~ ^feat(\(.*\))?!?: ]]; then
+              CATEGORY="🚀 Features"
+              COMMIT_TYPE="feature"
+            elif [[ "$COMMIT_MSG" =~ ^fix(\(.*\))?!?: ]]; then
+              CATEGORY="🐛 Bug Fixes"
+              COMMIT_TYPE="fix"
+            elif [[ "$COMMIT_MSG" =~ ^docs(\(.*\))?!?: ]]; then
+              CATEGORY="📚 Documentation"
+              COMMIT_TYPE="docs"
+            elif [[ "$COMMIT_MSG" =~ ^style(\(.*\))?!?: ]]; then
+              CATEGORY="💄 Styling"
+              COMMIT_TYPE="style"
+            elif [[ "$COMMIT_MSG" =~ ^refactor(\(.*\))?!?: ]]; then
+              CATEGORY="♻️ Refactoring"
+              COMMIT_TYPE="refactor"
+            elif [[ "$COMMIT_MSG" =~ ^perf(\(.*\))?!?: ]]; then
+              CATEGORY="⚡ Performance"
+              COMMIT_TYPE="performance"
+            elif [[ "$COMMIT_MSG" =~ ^test(\(.*\))?!?: ]]; then
+              CATEGORY="🧪 Testing"
+              COMMIT_TYPE="test"
+            elif [[ "$COMMIT_MSG" =~ ^chore(\(.*\))?!?: ]]; then
+              CATEGORY="🔧 Maintenance"
+              COMMIT_TYPE="chore"
+            elif [[ "$COMMIT_MSG" =~ ^ci(\(.*\))?!?: ]]; then
+              CATEGORY="👷 CI/CD"
+              COMMIT_TYPE="ci"
+            else
+              CATEGORY="📦 Changes"
+              COMMIT_TYPE="other"
+            fi
+            
+            # Check if it's a breaking change
+            BREAKING=""
+            if [[ "$COMMIT_MSG" =~ !: ]] || git log --format="%B" -n 1 $commit | grep -q "BREAKING CHANGE"; then
+              BREAKING=" ⚠️ **BREAKING**"
+            fi
+            
+            # Format change entry
+            CHANGE_ENTRY="- $COMMIT_MSG$BREAKING ([$commit](https://github.com/${{ github.repository }}/commit/$commit)) - _${COMMIT_AUTHOR}_"
+            
+            # Accumulate changes by category
+            CHANGE_SUMMARY="$CHANGE_SUMMARY|$CATEGORY|$CHANGE_ENTRY"
+          done
+          
+          echo "change_summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGE_SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+          echo "push_author=${{ github.actor }}" >> $GITHUB_OUTPUT
+          echo "push_date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
+          
+      - name: 🔍 Setup Git Configuration
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+      - name: 📂 Setup Changeset Branch
+        run: |
+          # Check if changeset branch exists
+          if git show-ref --verify --quiet refs/remotes/origin/${{ env.CHANGESET_BRANCH }}; then
+            echo "Changeset branch exists, checking it out"
+            git checkout ${{ env.CHANGESET_BRANCH }}
+          else
+            echo "Creating new changeset branch"
+            git checkout --orphan ${{ env.CHANGESET_BRANCH }}
+            git rm -rf .
+            
+            # Create initial changeset file
+            cat > ${{ env.CHANGESET_FILE }} << 'EOF'
+          # 📋 Pending Release Changelog
+          
+          This file accumulates changes that will be included in the next release.
+          It is automatically maintained by the Changeset Accumulator workflow.
+          
+          ## 📊 Summary
+          - **Total Commits**: 0
+          - **Last Updated**: Never
+          - **Next Release**: TBD
+          
+          ---
+          
+          ## 📝 Changes by Category
+          
+          _No changes yet._
+          
+          ---
+          
+          ⚠️ **Note**: This file is automatically generated. Do not edit manually.
+          EOF
+            
+            git add ${{ env.CHANGESET_FILE }}
+            git commit -m "Initialize changeset accumulator"
+            git push origin ${{ env.CHANGESET_BRANCH }}
+          fi
+          
+      - name: 📝 Update Changeset File
+        id: update
+        run: |
+          # Parse the change summary from previous step
+          CHANGE_SUMMARY="${{ steps.changes.outputs.change_summary }}"
+          COMMIT_COUNT="${{ steps.changes.outputs.commit_count }}"
+          PUSH_AUTHOR="${{ steps.changes.outputs.push_author }}"
+          PUSH_DATE="${{ steps.changes.outputs.push_date }}"
+          
+          if [ ! -f "${{ env.CHANGESET_FILE }}" ]; then
+            echo "Changeset file not found, creating initial version"
+            cat > ${{ env.CHANGESET_FILE }} << 'EOF'
+          # 📋 Pending Release Changelog
+          
+          This file accumulates changes that will be included in the next release.
+          
+          ## 📊 Summary
+          - **Total Commits**: 0
+          - **Last Updated**: Never
+          
+          ---
+          
+          ## 📝 Changes by Category
+          
+          _No changes yet._
+          EOF
+          fi
+          
+          # Create temporary file for new content
+          cp ${{ env.CHANGESET_FILE }} changeset_temp.md
+          
+          # Get current statistics
+          CURRENT_COMMITS=$(grep "Total Commits" changeset_temp.md | grep -o '[0-9]\+' || echo "0")
+          NEW_TOTAL_COMMITS=$((CURRENT_COMMITS + COMMIT_COUNT))
+          
+          # Update header with new statistics
+          sed -i "s/- \*\*Total Commits\*\*: [0-9]\+/- **Total Commits**: $NEW_TOTAL_COMMITS/" changeset_temp.md
+          sed -i "s/- \*\*Last Updated\*\*: .*/- **Last Updated**: $PUSH_DATE by $PUSH_AUTHOR/" changeset_temp.md
+          
+          # Process changes by category
+          declare -A CATEGORIES
+          IFS='|' read -ra CHANGES <<< "$CHANGE_SUMMARY"
+          
+          for i in "${!CHANGES[@]}"; do
+            if [ $((i % 2)) -eq 1 ]; then  # Odd indices are categories
+              CATEGORY="${CHANGES[$i]}"
+              CHANGE_ENTRY="${CHANGES[$((i+1))]}"
+              
+              if [ -n "$CATEGORY" ] && [ -n "$CHANGE_ENTRY" ]; then
+                if [[ -v "CATEGORIES[$CATEGORY]" ]]; then
+                  CATEGORIES[$CATEGORY]="${CATEGORIES[$CATEGORY]}
+          $CHANGE_ENTRY"
+                else
+                  CATEGORIES[$CATEGORY]="$CHANGE_ENTRY"
+                fi
+              fi
+            fi
+          done
+          
+          # Build new changes section
+          NEW_CHANGES_SECTION=""
+          if [ ${#CATEGORIES[@]} -gt 0 ]; then
+            for category in "${!CATEGORIES[@]}"; do
+              NEW_CHANGES_SECTION="$NEW_CHANGES_SECTION
+          ### $category
+          
+          ${CATEGORIES[$category]}
+          "
+            done
+          fi
+          
+          # Check if we need to add new categories or append to existing ones
+          if grep -q "## 📝 Changes by Category" changeset_temp.md; then
+            # Find where to insert new changes
+            if [ -n "$NEW_CHANGES_SECTION" ]; then
+              # Add timestamp separator
+              TIMESTAMP_SEPARATOR="
+          
+          ---
+          **Push on $PUSH_DATE by $PUSH_AUTHOR**
+          $NEW_CHANGES_SECTION"
+              
+              # Insert after "## 📝 Changes by Category" line
+              sed -i "/## 📝 Changes by Category/a\\$TIMESTAMP_SEPARATOR" changeset_temp.md
+              
+              # Remove the "_No changes yet._" line if it exists
+              sed -i '/_No changes yet\._/d' changeset_temp.md
+            fi
+          fi
+          
+          # Replace original file
+          mv changeset_temp.md ${{ env.CHANGESET_FILE }}
+          
+          echo "Updated changeset file with $COMMIT_COUNT new commits"
+          
+      - name: 💾 Commit and Push Changeset
+        run: |
+          git add ${{ env.CHANGESET_FILE }}
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "📝 Add changeset for push to main (${{ steps.changes.outputs.commit_count }} commits)"
+            git push origin ${{ env.CHANGESET_BRANCH }}
+            echo "Changeset updated and pushed"
+          fi
+          
+      - name: 📊 Summary
+        run: |
+          echo "## 📝 Changeset Accumulator Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 This Push:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commits Analyzed**: ${{ steps.changes.outputs.commit_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Push Author**: ${{ steps.changes.outputs.push_author }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Push Date**: ${{ steps.changes.outputs.push_date }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Changeset Status:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Changeset Branch**: \`${{ env.CHANGESET_BRANCH }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Changeset File**: \`${{ env.CHANGESET_FILE }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **View Changeset**: [Click here](https://github.com/${{ github.repository }}/blob/${{ env.CHANGESET_BRANCH }}/${{ env.CHANGESET_FILE }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "- Changes have been accumulated for the next release" >> $GITHUB_STEP_SUMMARY
+          echo "- When ready, create a release to use these changes automatically" >> $GITHUB_STEP_SUMMARY
+          echo "- The changeset will be cleared after release creation" >> $GITHUB_STEP_SUMMARY
