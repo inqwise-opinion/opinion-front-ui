@@ -85,32 +85,25 @@ const BUILD_CONFIGS: Record<string, BuildConfig> = {
   }
 };
 
+// Declare the Vite-injected build configuration constant
+declare global {
+  const __BUILD_CONFIG__: BuildConfig;
+}
+
 /**
- * Get build configuration based on BUILD_CONFIG environment variable
- * Falls back to development if not specified
+ * Get build configuration from Vite-injected constants
+ * This is set at build time via Vite's define option
  */
 function getBuildConfig(): BuildConfig {
-  // Safe access to process.env (available in Node.js/build time only)
-  // eslint-disable-next-line no-undef
-  const configName = (typeof process !== 'undefined' && process.env?.BUILD_CONFIG) || 'development';
-  const baseConfig = BUILD_CONFIGS[configName];
-  
-  if (!baseConfig) {
-    console.warn(`Unknown build config '${configName}', falling back to development`);
-    return BUILD_CONFIGS.development;
+  // Use Vite-injected configuration if available, otherwise fallback to development
+  if (typeof __BUILD_CONFIG__ !== 'undefined') {
+    console.log('🔧 Using Vite-injected build config:', JSON.stringify(__BUILD_CONFIG__, null, 2));
+    return __BUILD_CONFIG__;
   }
   
-  // Allow runtime override of baseUrl for dynamic scenarios (like PR previews)
-  // eslint-disable-next-line no-undef
-  const runtimeBaseUrl = typeof process !== 'undefined' ? process.env?.RUNTIME_BASE_URL : undefined;
-  if (runtimeBaseUrl) {
-    return {
-      ...baseConfig,
-      baseUrl: runtimeBaseUrl
-    };
-  }
-  
-  return baseConfig;
+  // Fallback for development/testing when Vite define is not available
+  console.log('🔧 Using fallback development config (Vite define not available)');
+  return BUILD_CONFIGS.development;
 }
 
 /**

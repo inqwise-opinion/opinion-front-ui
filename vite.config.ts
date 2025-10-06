@@ -20,9 +20,39 @@ function getBuildConfigForVite() {
 
 export default defineConfig(({ mode }) => {
   const buildConfig = getBuildConfigForVite();
+  const configName = process.env.BUILD_CONFIG || 'development';
+  const runtimeBaseUrl = process.env.RUNTIME_BASE_URL;
+  
+  // Determine final configuration
+  let finalConfig;
+  if (configName === 'github-pages-pr' && runtimeBaseUrl) {
+    finalConfig = {
+      baseUrl: runtimeBaseUrl,
+      enableSpaRouting: true,
+      environment: 'production',
+      enableDebugLogging: false
+    };
+  } else {
+    const configs = {
+      development: { baseUrl: '', enableSpaRouting: false, environment: 'development', enableDebugLogging: true },
+      production: { baseUrl: '', enableSpaRouting: false, environment: 'production', enableDebugLogging: false },
+      'github-pages-main': { baseUrl: '/opinion-front-ui', enableSpaRouting: true, environment: 'production', enableDebugLogging: false },
+      test: { baseUrl: '', enableSpaRouting: false, environment: 'test', enableDebugLogging: false }
+    };
+    finalConfig = configs[configName] || configs.development;
+  }
+  
+  console.log('🔧 Vite Build Config Debug:');
+  console.log('   BUILD_CONFIG:', configName);
+  console.log('   RUNTIME_BASE_URL:', runtimeBaseUrl);
+  console.log('   Final config:', JSON.stringify(finalConfig, null, 2));
   
   return {
   base: buildConfig.baseUrl,
+  define: {
+    // Inject build configuration as compile-time constants
+    __BUILD_CONFIG__: JSON.stringify(finalConfig)
+  },
   publicDir: 'public',
   
   // Vite automatically handles import.meta.env.VITE_* variables
