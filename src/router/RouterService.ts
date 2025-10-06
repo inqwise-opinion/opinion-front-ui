@@ -60,27 +60,13 @@ export class RouterService implements Service {
         const fullPath = getFullPath(currentPath);
         window.history.replaceState(null, '', fullPath);
         
-        console.log('🔄 Decoded SPA route from query parameter:');
-        console.log('   original search:', window.location.search);
-        console.log('   decoded route:', currentPath);
-        console.log('   cleaned URL:', fullPath);
       }
       
-      console.log('🚀 RouterService - Initial route setup:');
-      console.log('   window.location.pathname:', window.location.pathname);
-      console.log('   window.location.search:', window.location.search);
-      console.log('   appConfig.baseUrl:', JSON.stringify(appConfig.baseUrl));
-      console.log('   appConfig.enableSpaRouting:', appConfig.enableSpaRouting);
-      console.log('   appConfig.environment:', appConfig.environment);
-      console.log('   extracted currentPath:', currentPath);
-      console.log('   will route to:', currentPath);
       
       try {
         await this.handleRoute(currentPath);
-        console.log('✅ RouterService - Initial route handled successfully');
       } catch (error) {
-        console.error('❌ RouterService - Initial route failed:', error);
-        console.error('   This will cause the app to show a 404 or error page');
+        console.error('RouterService - Initial route failed:', error);
         throw error;
       }
     }
@@ -221,14 +207,8 @@ export class RouterService implements Service {
 
       try {
         // Resolve the route
-        console.log('🔍 RouterService - Resolving route:', normalizedPath);
         const resolveResult = await this.router.resolve(normalizedPath);
         const result = resolveResult as RouteResult;
-        console.log('✅ RouterService - Route resolved successfully:', {
-          path: normalizedPath,
-          hasPageProvider: !!result?.pageProvider,
-          routeInfo: result?.routeInfo
-        });
 
         // Update browser history with full path and current path with route path
         const fullPath = getFullPath(normalizedPath);

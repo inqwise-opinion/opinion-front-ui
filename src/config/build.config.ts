@@ -98,12 +98,10 @@ declare global {
 function getBuildConfig(): BuildConfig {
   // Use Vite-injected configuration if available, otherwise fallback to development
   if (typeof __BUILD_CONFIG__ !== 'undefined') {
-    console.log('🔧 Using Vite-injected build config:', JSON.stringify(__BUILD_CONFIG__, null, 2));
     return __BUILD_CONFIG__;
   }
   
   // Fallback for development/testing when Vite define is not available
-  console.log('🔧 Using fallback development config (Vite define not available)');
   return BUILD_CONFIGS.development;
 }
 /* eslint-enable no-undef */

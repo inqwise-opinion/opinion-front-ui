@@ -42,10 +42,6 @@ export default defineConfig(({ mode }) => {
     finalConfig = configs[configName] || configs.development;
   }
   
-  console.log('🔧 Vite Build Config Debug:');
-  console.log('   BUILD_CONFIG:', configName);
-  console.log('   RUNTIME_BASE_URL:', runtimeBaseUrl);
-  console.log('   Final config:', JSON.stringify(finalConfig, null, 2));
   
   return {
   base: buildConfig.baseUrl,
