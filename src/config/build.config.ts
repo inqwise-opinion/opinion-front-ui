@@ -4,7 +4,12 @@
  * This file contains build-time configuration for different deployment scenarios.
  * Instead of relying on environment variables, we define explicit configurations
  * that can be selected at build time.
+ * 
+ * Note: This file accesses process.env at build time and is safe for both
+ * Node.js (build) and browser (runtime) environments.
  */
+
+/* eslint-env node */
 
 export interface BuildConfig {
   /**
@@ -85,7 +90,9 @@ const BUILD_CONFIGS: Record<string, BuildConfig> = {
  * Falls back to development if not specified
  */
 function getBuildConfig(): BuildConfig {
-  const configName = process.env.BUILD_CONFIG || 'development';
+  // Safe access to process.env (available in Node.js/build time only)
+  // eslint-disable-next-line no-undef
+  const configName = (typeof process !== 'undefined' && process.env?.BUILD_CONFIG) || 'development';
   const baseConfig = BUILD_CONFIGS[configName];
   
   if (!baseConfig) {
@@ -94,7 +101,8 @@ function getBuildConfig(): BuildConfig {
   }
   
   // Allow runtime override of baseUrl for dynamic scenarios (like PR previews)
-  const runtimeBaseUrl = process.env.RUNTIME_BASE_URL;
+  // eslint-disable-next-line no-undef
+  const runtimeBaseUrl = typeof process !== 'undefined' ? process.env?.RUNTIME_BASE_URL : undefined;
   if (runtimeBaseUrl) {
     return {
       ...baseConfig,
