@@ -33,19 +33,24 @@ beforeAll(() => {
       return;
     }
     // Sanitize all string arguments and Error.message properties for log safety
+    const sanitizeObjectStrings = obj => {
+      if (!obj || typeof obj !== 'object') return obj;
+      const cloned = Object.assign(
+        Object.create(Object.getPrototypeOf(obj)),
+        obj
+      );
+      for (const key in cloned) {
+        if (typeof cloned[key] === 'string') {
+          cloned[key] = cloned[key].replace(/[\r\n]+/g, ' ');
+        }
+      }
+      return cloned;
+    };
     const sanitizedArgs = args.map(arg => {
       if (typeof arg === 'string') {
         return arg.replace(/[\r\n]+/g, ' ');
-      } else if (arg && typeof arg === 'object' && typeof arg.message === 'string') {
-        // Clone if Error, with sanitized message
-        const safeMessage = arg.message.replace(/[\r\n]+/g, ' ');
-        // Try to preserve stack if present
-        const cloned = Object.assign(
-          Object.create(Object.getPrototypeOf(arg)),
-          arg
-        );
-        cloned.message = safeMessage;
-        return cloned;
+      } else if (arg && typeof arg === 'object') {
+        return sanitizeObjectStrings(arg);
       }
       return arg;
     });
