@@ -32,7 +32,24 @@ beforeAll(() => {
     if (args[0] && args[0].message && args[0].message.includes('Not implemented: navigation')) {
       return;
     }
-    originalConsoleError.call(console, ...args);
+    // Sanitize all string arguments and Error.message properties for log safety
+    const sanitizedArgs = args.map(arg => {
+      if (typeof arg === 'string') {
+        return arg.replace(/[\r\n]+/g, ' ');
+      } else if (arg && typeof arg === 'object' && typeof arg.message === 'string') {
+        // Clone if Error, with sanitized message
+        const safeMessage = arg.message.replace(/[\r\n]+/g, ' ');
+        // Try to preserve stack if present
+        const cloned = Object.assign(
+          Object.create(Object.getPrototypeOf(arg)),
+          arg
+        );
+        cloned.message = safeMessage;
+        return cloned;
+      }
+      return arg;
+    });
+    originalConsoleError.call(console, ...sanitizedArgs);
   };
 });
 
