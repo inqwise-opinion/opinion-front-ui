@@ -72,8 +72,6 @@ export class RouterService implements Service {
       console.log('   appConfig.baseUrl:', JSON.stringify(appConfig.baseUrl));
       console.log('   appConfig.enableSpaRouting:', appConfig.enableSpaRouting);
       console.log('   appConfig.environment:', appConfig.environment);
-      console.log('   import.meta.env.VITE_BASE_URL:', JSON.stringify(import.meta.env.VITE_BASE_URL));
-      console.log('   import.meta.env.VITE_ENABLE_SPA_ROUTING:', JSON.stringify(import.meta.env.VITE_ENABLE_SPA_ROUTING));
       console.log('   extracted currentPath:', currentPath);
       console.log('   will route to:', currentPath);
       

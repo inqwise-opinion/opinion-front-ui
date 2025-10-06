@@ -1,12 +1,28 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
+// Import build configuration
+function getBuildConfigForVite() {
+  const configName = process.env.BUILD_CONFIG || 'development';
+  const runtimeBaseUrl = process.env.RUNTIME_BASE_URL;
+  
+  // Simple config mapping for Vite (without importing the full build config to avoid circular deps)
+  const configs: Record<string, { baseUrl: string }> = {
+    development: { baseUrl: '/' },
+    production: { baseUrl: './' },
+    'github-pages-pr': { baseUrl: runtimeBaseUrl || './' },
+    'github-pages-main': { baseUrl: '/opinion-front-ui/' },
+    test: { baseUrl: '/' }
+  };
+  
+  return configs[configName] || configs.development;
+}
+
 export default defineConfig(({ mode }) => {
-  // Use VITE_BASE_URL from environment if available, otherwise fallback to defaults
-  const baseUrl = process.env.VITE_BASE_URL || (mode === 'production' ? './' : '/');
+  const buildConfig = getBuildConfigForVite();
   
   return {
-  base: baseUrl,
+  base: buildConfig.baseUrl,
   publicDir: 'public',
   
   // Vite automatically handles import.meta.env.VITE_* variables
