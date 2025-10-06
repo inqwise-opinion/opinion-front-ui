@@ -16,7 +16,7 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/inqwise-opinion/opinion-front-ui/ci.yml?branch=main&label=build)](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/ci.yml)
 [![Test Coverage](https://img.shields.io/codecov/c/github/inqwise-opinion/opinion-front-ui?label=coverage)](https://codecov.io/gh/inqwise-opinion/opinion-front-ui)
 [![Dependencies](https://img.shields.io/librariesio/github/inqwise-opinion/opinion-front-ui?label=dependencies)](https://libraries.io/github/inqwise-opinion/opinion-front-ui)
-[![Dependency Status](https://img.shields.io/david/inqwise-opinion/opinion-front-ui?label=deps)](https://david-dm.org/inqwise-opinion/opinion-front-ui)
+[![Package Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)](https://shields.io/category/dependencies)
 [![Security](https://img.shields.io/github/actions/workflow/status/inqwise-opinion/opinion-front-ui/codeql.yml?branch=main&label=security)](https://github.com/inqwise-opinion/opinion-front-ui/security)
 [![Known Vulnerabilities](https://snyk.io/test/github/inqwise-opinion/opinion-front-ui/badge.svg)](https://snyk.io/test/github/inqwise-opinion/opinion-front-ui)
 [![Issues](https://img.shields.io/github/issues/inqwise-opinion/opinion-front-ui)](https://github.com/inqwise-opinion/opinion-front-ui/issues)
@@ -180,7 +180,7 @@ The application uses emoji-prefixed console logging:
 
 ### Dependency Tracking
 - **[Libraries.io](https://libraries.io/github/inqwise-opinion/opinion-front-ui)**: Comprehensive dependency monitoring and alerts
-- **[David DM](https://david-dm.org/inqwise-opinion/opinion-front-ui)**: Real-time dependency status tracking
+- **[Shields.io Dependencies](https://shields.io/category/dependencies)**: Real-time dependency status badges
 - **[Snyk](https://snyk.io/test/github/inqwise-opinion/opinion-front-ui)**: Security vulnerability scanning
 
 ### Security Monitoring
