@@ -251,21 +251,28 @@ jobs:
             echo "Changeset updated and pushed"
           fi
           
-      - name: 📊 Summary
+      - name: 📊 Changeset Update Summary
         run: |
-          echo "## 📝 Changeset Accumulator Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Changeset Successfully Updated" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 This Push:" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commits Analyzed**: ${{ steps.changes.outputs.commit_count }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Push Author**: ${{ steps.changes.outputs.push_author }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Push Date**: ${{ steps.changes.outputs.push_date }}" >> $GITHUB_STEP_SUMMARY
+          echo "Your recent commits have been automatically analyzed and added to the pending release changelog." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 Changeset Status:" >> $GITHUB_STEP_SUMMARY
-          echo "- **Changeset Branch**: \`${{ env.CHANGESET_BRANCH }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Changeset File**: \`${{ env.CHANGESET_FILE }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **View Changeset**: [Click here](https://github.com/${{ github.repository }}/blob/${{ env.CHANGESET_BRANCH }}/${{ env.CHANGESET_FILE }})" >> $GITHUB_STEP_SUMMARY
+          echo "### 📈 Change Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Commits Processed | **${{ steps.changes.outputs.commit_count }}** |" >> $GITHUB_STEP_SUMMARY
+          echo "| Author | **${{ steps.changes.outputs.push_author }}** |" >> $GITHUB_STEP_SUMMARY
+          echo "| Date | **${{ steps.changes.outputs.push_date }}** |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | **✅ Successfully accumulated** |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🚀 Next Steps:" >> $GITHUB_STEP_SUMMARY
-          echo "- Changes have been accumulated for the next release" >> $GITHUB_STEP_SUMMARY
-          echo "- When ready, create a release to use these changes automatically" >> $GITHUB_STEP_SUMMARY
-          echo "- The changeset will be cleared after release creation" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Pending Changelog" >> $GITHUB_STEP_SUMMARY
+          echo "All changes from this push have been categorized and stored for your next release." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **[View Accumulated Changes](https://github.com/${{ github.repository }}/blob/${{ env.CHANGESET_BRANCH }}/${{ env.CHANGESET_FILE }})**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 What Happens Next?" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Continue Development**: Keep pushing changes - they'll be automatically tracked" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Create Release**: When ready, create a release to generate rich release notes" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Automatic Deployment**: Release creation will trigger staging deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "💡 **Tip**: Use conventional commit messages (\`feat:\`, \`fix:\`, etc.) for better categorization!" >> $GITHUB_STEP_SUMMARY
