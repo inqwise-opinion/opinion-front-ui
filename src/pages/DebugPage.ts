@@ -1095,7 +1095,7 @@ export class DebugPage extends PageComponent {
       ) : false;
       
       // EventBus status
-      let eventBusStatus = 'Unknown';
+      let eventBusStatus;
       try {
         const ctx = this.layoutContext as any;
         if (ctx.getEventBus && typeof ctx.getEventBus === 'function') {
