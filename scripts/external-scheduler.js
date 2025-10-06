@@ -15,6 +15,12 @@
 const https = require('https');
 const { execSync } = require('child_process');
 
+// Sanitize user input before logging to prevent log injection
+function sanitizeLogInput(input) {
+  if (typeof input !== 'string') return input;
+  return input.replace(/[\r\n]/g, '');
+}
+
 // Configuration
 const config = {
   owner: 'inqwise-opinion',  // Your GitHub org/username
@@ -80,7 +86,8 @@ async function validateRelease(releaseTag) {
       if (res.statusCode === 200) {
         resolve(true);
       } else if (res.statusCode === 404) {
-        reject(new Error(`Release ${releaseTag} not found`));
+        const sanitizedTag = sanitizeLogInput(releaseTag);
+        reject(new Error(`Release ${sanitizedTag} not found`));
       } else {
         reject(new Error(`GitHub API error: ${res.statusCode}`));
       }
@@ -227,7 +234,7 @@ async function main() {
     console.log(`   https://github.com/${config.owner}/${config.repo}/actions`);
     
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error('❌ Error:', sanitizeLogInput(error.message));
     console.error('');
     console.error('Usage: node external-scheduler.js --release <version> --environment <env> [options]');
     console.error('');
