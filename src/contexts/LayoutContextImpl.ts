@@ -128,7 +128,7 @@ export class LayoutContextImpl implements LayoutContext {
   private setupViewportObserver(): void {
     // Use ResizeObserver for better performance if available
     if (window.ResizeObserver) {
-      this.resizeObserver = new ResizeObserver((_entries) => {
+      this.resizeObserver = new ResizeObserver(() => {
         this.handleViewportChange();
       });
       this.resizeObserver.observe(document.body);
