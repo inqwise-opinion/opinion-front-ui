@@ -215,23 +215,19 @@ jobs:
             done
           fi
           
-          # Check if we need to add new categories or append to existing ones
-          if grep -q "## 📝 Changes by Category" changeset_temp.md; then
-            # Find where to insert new changes
-            if [ -n "$NEW_CHANGES_SECTION" ]; then
-              # Add timestamp separator
-              TIMESTAMP_SEPARATOR="
-          
-          ---
-          **Push on $PUSH_DATE by $PUSH_AUTHOR**
-          $NEW_CHANGES_SECTION"
-              
-              # Insert after "## 📝 Changes by Category" line
-              sed -i "/## 📝 Changes by Category/a\\$TIMESTAMP_SEPARATOR" changeset_temp.md
-              
-              # Remove the "_No changes yet._" line if it exists
-              sed -i '/_No changes yet\._/d' changeset_temp.md
-            fi
+          # Add new changes to the changeset file
+          if [ -n "$NEW_CHANGES_SECTION" ]; then
+            # Remove the "_No changes yet._" line if it exists
+            sed -i '/_No changes yet\._/d' changeset_temp.md
+            
+            # Append new changes at the end of the file
+            {
+              echo ""
+              echo "---"
+              echo "**Push on $PUSH_DATE by $PUSH_AUTHOR**"
+              echo ""
+              echo "$NEW_CHANGES_SECTION"
+            } >> changeset_temp.md
           fi
           
           # Replace original file
