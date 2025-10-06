@@ -179,7 +179,7 @@ export class RouterService implements Service {
       this.navigationState.currentPage = newPage;
       this.navigationState.currentPath = routeContext.getPath();
     } catch (error) {
-      console.error(`Failed to load page for route ${path}:`, error);
+      console.error('Failed to load page for route: %s', path, error);
       
       // Reset navigation state on error
       this.navigationState.isNavigating = false;
