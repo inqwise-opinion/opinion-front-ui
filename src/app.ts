@@ -22,6 +22,12 @@ import { MessagesLogAdapter } from "./adapters/MessagesLogAdapter";
 import { Logger } from "./logging/Logger";
 
 export class OpinionApp {
+  // Trusted origins for postMessage, adjust as needed
+  private static readonly TRUSTED_MESSAGE_ORIGINS: string[] = [
+    'http://localhost:3000', // Add your development URL(s)
+    'https://your-production-domain.com' // Add production URL(s)
+  ];
+
   private initialized: boolean = false;
   private apiService: MockApiService;
   private routerService: RouterService | null = null;
@@ -74,6 +80,11 @@ export class OpinionApp {
   private setupEventListeners(): void {
     // Handle postMessage events for testing (e.g., from test-positioning.html iframe)
     window.addEventListener("message", (event) => {
+      // Verify the origin of the message
+      if (!OpinionApp.TRUSTED_MESSAGE_ORIGINS.includes(event.origin)) {
+        this.logger.warn('Blocked postMessage from untrusted origin:', event.origin);
+        return;
+      }
 
       if (event.data && event.data.action) {
         switch (event.data.action) {
