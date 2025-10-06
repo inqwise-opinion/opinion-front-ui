@@ -96,7 +96,7 @@ async function validateRelease(releaseTag) {
 
 // Trigger deployment via repository dispatch
 async function triggerDeployment(params) {
-  const eventType = params.environment === 'staging' ? 'staging-deployment' : 'scheduled-deployment';
+  let eventType = params.environment === 'staging' ? 'staging-deployment' : 'scheduled-deployment';
   
   // For emergency deployments, use different event type
   if (params.type === 'emergency') {
