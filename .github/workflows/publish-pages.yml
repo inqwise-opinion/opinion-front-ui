@@ -340,8 +340,14 @@ jobs:
             }
 
       - name: 📢 Send Discord notification
-        if: inputs.discord_webhook && secrets.DISCORD_WEBHOOK_URL
+        if: inputs.discord_webhook == true
         run: |
+          # Check if Discord webhook URL is available
+          if [ -z "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "Discord webhook requested but DISCORD_WEBHOOK_URL secret not set. Skipping notification."
+            exit 0
+          fi
+          
           # Determine emoji and color based on deployment type
           case "${{ inputs.deployment_type }}" in
             "preview")

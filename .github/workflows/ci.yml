@@ -198,7 +198,7 @@ jobs:
       pr_number: ${{ github.event.number }}
       base_url: "/${{ github.event.repository.name }}/pr-${{ github.event.number }}"
       build_config: "github-pages-pr"
-      node_version: ${{ env.NODE_VERSION }}
+      node_version: "20"
       discord_webhook: false
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
