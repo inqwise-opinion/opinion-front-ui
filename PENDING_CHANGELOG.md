@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 18
+- **Total Commits**: 19
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -135,4 +135,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: Remove invalid 'secrets: inherit' from reusable workflow definition ([c44fc0995bf101702e5e29c0f54d072024a5489a](https://github.com/inqwise-opinion/opinion-front-ui/commit/c44fc0995bf101702e5e29c0f54d072024a5489a)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 📦 Changes
+
+- Fix MessagesComponent auto-hide issues and add unique ID generation ([5a12b7885bdbc6613929076cfa6ee2ee835059e3](https://github.com/inqwise-opinion/opinion-front-ui/commit/5a12b7885bdbc6613929076cfa6ee2ee835059e3)) - _glassfox_
 
