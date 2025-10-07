@@ -39,8 +39,9 @@ beforeAll(() => {
         Object.create(Object.getPrototypeOf(obj)),
         obj
       );
+      // Only iterate over own properties to prevent prototype pollution
       for (const key in cloned) {
-        if (typeof cloned[key] === 'string') {
+        if (Object.prototype.hasOwnProperty.call(cloned, key) && typeof cloned[key] === 'string') {
           cloned[key] = cloned[key].replace(/[\r\n]+/g, ' ');
         }
       }
