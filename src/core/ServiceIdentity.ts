@@ -14,7 +14,6 @@
  */
 
 import { LoggerFactory } from '../logging/LoggerFactory';
-import type { Logger } from '../logging/Logger';
 
 /**
  * Base interface for services that declare their own identity
