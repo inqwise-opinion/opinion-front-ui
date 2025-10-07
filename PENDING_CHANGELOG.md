@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 15
+- **Total Commits**: 16
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -108,4 +108,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: Resolve GitHub Actions workflow syntax errors ([fed08f82fe9773c760006b574dffd6241e60fb15](https://github.com/inqwise-opinion/opinion-front-ui/commit/fed08f82fe9773c760006b574dffd6241e60fb15)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 🚀 Features
+
+- feat: Use repository variables instead of secrets for Discord webhook ([352c87a36cb69cf01027e9a99cc9e4753195a00b](https://github.com/inqwise-opinion/opinion-front-ui/commit/352c87a36cb69cf01027e9a99cc9e4753195a00b)) - _glassfox_
 
