@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 16
+- **Total Commits**: 17
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -117,4 +117,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🚀 Features
 
 - feat: Use repository variables instead of secrets for Discord webhook ([352c87a36cb69cf01027e9a99cc9e4753195a00b](https://github.com/inqwise-opinion/opinion-front-ui/commit/352c87a36cb69cf01027e9a99cc9e4753195a00b)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: Use 'secrets: inherit' for reusable workflows ([bdffa422900c4d6e54517ecf826d45e95e72651a](https://github.com/inqwise-opinion/opinion-front-ui/commit/bdffa422900c4d6e54517ecf826d45e95e72651a)) - _glassfox_
 
