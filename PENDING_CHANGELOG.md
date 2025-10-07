@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 4
+- **Total Commits**: 5
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -51,4 +51,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: Add Git configuration to cleanup workflow temp repo ([96be9fc46c9ae6717d48e92a70966a7ebb2aaa1a](https://github.com/inqwise-opinion/opinion-front-ui/commit/96be9fc46c9ae6717d48e92a70966a7ebb2aaa1a)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 📦 Changes
+
+- security: Fix remote property injection vulnerability in test setup ([e3b6b45632e503cb5bc3996fc5db659fd40f89d8](https://github.com/inqwise-opinion/opinion-front-ui/commit/e3b6b45632e503cb5bc3996fc5db659fd40f89d8)) - _glassfox_
 
