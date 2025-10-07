@@ -192,7 +192,7 @@ jobs:
     name: 🚀 Preview Deploy
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
 
     permissions:
       contents: write
@@ -481,7 +481,8 @@ jobs:
     name: 🎮 Discord Success Notifications
     runs-on: ubuntu-latest
     needs: [quality, test, build, preview, deploy]
-    # Always run to debug - we'll check success condition inside
+    # Always run to debug - we'll check success condition inside  
+    # Note: preview and deploy might be skipped based on conditions
     if: always()
     
     steps:
