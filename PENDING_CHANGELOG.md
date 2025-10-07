@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 21
+- **Total Commits**: 22
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -162,4 +162,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - debug: Disable preview deployment to test CI workflow ([0229ff40b9ca5bd6c3c3be5f471c6e26ecafe16d](https://github.com/inqwise-opinion/opinion-front-ui/commit/0229ff40b9ca5bd6c3c3be5f471c6e26ecafe16d)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: Remove unused Logger import and fix Codecov action config ([a23dbc1b2169d10323fe7b2830ca12f973ef4d25](https://github.com/inqwise-opinion/opinion-front-ui/commit/a23dbc1b2169d10323fe7b2830ca12f973ef4d25)) - _glassfox_
 
