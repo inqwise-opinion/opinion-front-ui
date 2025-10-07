@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 23
+- **Total Commits**: 24
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -180,4 +180,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: Restore CI workflow to full functionality ([9f665b303bfc8f51604edb00c8fe6d3a10791ba8](https://github.com/inqwise-opinion/opinion-front-ui/commit/9f665b303bfc8f51604edb00c8fe6d3a10791ba8)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: Replace reusable workflow with inline preview for debugging ([fe414d21c6e17693fad02e1f074e67af71fe81fa](https://github.com/inqwise-opinion/opinion-front-ui/commit/fe414d21c6e17693fad02e1f074e67af71fe81fa)) - _glassfox_
 
