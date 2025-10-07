@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 1
-- **Last Updated**: 2025-10-06 by alex-inqwise
+- **Total Commits**: 2
+- **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
 ---
@@ -24,4 +24,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: resolve changeset accumulator sed command parsing issue ([417f7de7a11eb292164c09f893ca417b617b57d4](https://github.com/inqwise-opinion/opinion-front-ui/commit/417f7de7a11eb292164c09f893ca417b617b57d4)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 🚀 Features
+
+- feat: Add comprehensive PR preview cleanup workflow ([f9f6ba560c3f2d47fdfaa17328e1f96faaf172e8](https://github.com/inqwise-opinion/opinion-front-ui/commit/f9f6ba560c3f2d47fdfaa17328e1f96faaf172e8)) - _glassfox_
 
