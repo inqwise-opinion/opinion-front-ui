@@ -386,8 +386,9 @@ describe('Page Components', () => {
         
         pageComponent.testHandleAction('unknownAction', button, new Event('click'));
         
+        // PageComponent now uses structured logging, so expect formatted output
         expect(consoleSpy).toHaveBeenCalledWith(
-          'TestPageComponent: No handler found for action \'unknownAction\' (handleUnknownAction)'
+          expect.stringMatching(/\[WARN\].*PageComponent:TestPageComponent.*No handler found for action "unknownAction"/)
         );
       });
 
@@ -430,10 +431,15 @@ describe('Page Components', () => {
         const consoleSpy = jest.spyOn(console, 'log');
         
         pageComponent.testShowLoading('Custom loading...');
-        expect(consoleSpy).toHaveBeenCalledWith('TestPageComponent: Custom loading...');
+        // PageComponent now uses structured logging, so expect formatted output  
+        expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringMatching(/\[INFO\].*PageComponent:TestPageComponent.*Custom loading/)
+        );
         
         pageComponent.testHideLoading();
-        expect(consoleSpy).toHaveBeenCalledWith('TestPageComponent: Loading complete');
+        expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringMatching(/\[INFO\].*PageComponent:TestPageComponent.*Loading complete/)
+        );
       });
 
       test('should show error messages', () => {
@@ -442,7 +448,10 @@ describe('Page Components', () => {
         
         pageComponent.testShowError('Something went wrong', error);
         
-        expect(consoleSpy).toHaveBeenCalledWith('TestPageComponent: Something went wrong', error);
+        // PageComponent now uses structured logging, so expect formatted output
+        expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringMatching(/\[ERROR\].*PageComponent:TestPageComponent.*Something went wrong/), error
+        );
       });
 
       test('should get elements with error handling', () => {
@@ -462,8 +471,9 @@ describe('Page Components', () => {
         
         pageComponent.testGetElement('.nonexistent', true);
         
+        // PageComponent now uses structured logging, so expect formatted output
         expect(consoleSpy).toHaveBeenCalledWith(
-          'TestPageComponent: Required element not found: .nonexistent'
+          expect.stringMatching(/\[ERROR\].*PageComponent:TestPageComponent.*Required element not found: \.nonexistent/)
         );
       });
     });
@@ -788,7 +798,10 @@ describe('Page Components', () => {
       dashboardPageComponent.destroy();
       
       expect(mockLayout.destroy).toHaveBeenCalled();
-      expect(consoleSpy).toHaveBeenCalledWith('DashboardPageComponent: Destroyed');
+      // DashboardPageComponent probably uses structured logging now
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/\[INFO\].*DashboardPageComponent.*Destroyed/)
+      );
       expect(document.body.classList.contains('sidebar-open')).toBe(false);
     });
   });
@@ -910,9 +923,9 @@ describe('Page Components', () => {
       
       debugPage.destroy();
       
-      // Check for DEBUG level log with the specific message structure
+      // DebugPage uses its own logger ("DebugPage"), not "PageComponent:DebugPage"
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/\[DEBUG\].*PageComponent:DebugPage.*Destroying/)
+        expect.stringMatching(/\[DEBUG\].*DebugPage.*Destroying/)
       );
     });
 
@@ -941,7 +954,7 @@ describe('Page Components', () => {
       await debugPage.init(); // Second init attempt
       
       // Check for actual warning message from PageComponent base class
-      // Check for WARN level log with the specific message structure
+      // Check for WARN level log with the specific message structure  
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringMatching(/\[WARN\].*PageComponent:DebugPage.*Cannot initialize - already initialized or destroyed/)
       );

@@ -102,8 +102,10 @@ describe('AppFooter', () => {
       appFooter = new AppFooterImpl();
       appFooter.init();
       
-      expect(consoleSpy).toHaveBeenCalledWith('AppFooter - Initializing...');
-      // AppFooter doesn't log "AppFooter - Ready" anymore, it logs "AppFooter - Content populated successfully"
+      // AppFooterImpl now uses structured logging, so expect formatted output
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/\[INFO\].*AppFooterImpl.*AppFooter - Initializing/)
+      );
     });
   });
 
@@ -275,7 +277,10 @@ describe('AppFooter', () => {
       const consoleSpy = jest.spyOn(console, 'log');
       appFooter.destroy();
       
-      expect(consoleSpy).toHaveBeenCalledWith('AppFooter - Destroying...');
+      // AppFooterImpl now uses structured logging, so expect formatted output
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/\[INFO\].*AppFooterImpl.*AppFooter - Destroying/)
+      );
       expect(document.querySelector('.app-footer')).toBeNull();
       expect(appFooter.getContainer()).toBeNull();
     });

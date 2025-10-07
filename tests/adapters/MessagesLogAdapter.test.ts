@@ -123,13 +123,6 @@ describe('MessagesLogAdapter', () => {
                     expectedTitlePrefix: 'Info:',
                     expectedAutoHide: true,
                     expectedPersistent: false
-                },
-                {
-                    level: 'DEBUG',
-                    expectedType: 'info',
-                    expectedTitlePrefix: 'Debug:',
-                    expectedAutoHide: true,
-                    expectedPersistent: false
                 }
             ];
 
@@ -152,6 +145,30 @@ describe('MessagesLogAdapter', () => {
                 expect(mockMessages.messages[0].options.autoHide).toBe(testCase.expectedAutoHide);
                 expect(mockMessages.messages[0].options.persistent).toBe(testCase.expectedPersistent);
             }
+        });
+
+        it('should filter out DEBUG and TRACE messages', async () => {
+            const debugMessage: LogMessage = {
+                level: 'DEBUG',
+                timeInMillis: Date.now(),
+                logName: 'TestLogger',
+                message: 'Debug message should be filtered',
+                args: []
+            };
+
+            const traceMessage: LogMessage = {
+                level: 'TRACE',
+                timeInMillis: Date.now(),
+                logName: 'TestLogger',
+                message: 'Trace message should be filtered',
+                args: []
+            };
+
+            await adapter.consume(debugMessage);
+            await adapter.consume(traceMessage);
+
+            // Neither message should appear since they're filtered out
+            expect(mockMessages.messages).toHaveLength(0);
         });
 
         it('should handle messages with args and exceptions', async () => {
@@ -297,7 +314,7 @@ describe('MessagesLogAdapter', () => {
             expect(warnMsg?.options.dismissible).toBe(true);
         });
 
-        it('should not mark INFO and DEBUG messages as persistent', async () => {
+        it('should not mark INFO messages as persistent', async () => {
             const infoMessage: LogMessage = {
                 level: 'INFO',
                 timeInMillis: Date.now(),
@@ -306,25 +323,16 @@ describe('MessagesLogAdapter', () => {
                 args: []
             };
 
-            const debugMessage: LogMessage = {
-                level: 'DEBUG',
-                timeInMillis: Date.now(),
-                logName: 'TestService',
-                message: 'Debug information',
-                args: []
-            };
-
+            // DEBUG messages are filtered out, so don't test them here
             await adapter.consume(infoMessage);
-            await adapter.consume(debugMessage);
 
-            expect(mockMessages.messages).toHaveLength(2);
+            expect(mockMessages.messages).toHaveLength(1);
             
-            // Both messages should not be persistent
-            mockMessages.messages.forEach(message => {
-                expect(message.options.persistent).toBe(false);
-                expect(message.options.autoHide).toBe(true);
-                expect(message.options.dismissible).toBe(true);
-            });
+            // INFO message should not be persistent
+            const infoMsg = mockMessages.messages[0];
+            expect(infoMsg.options.persistent).toBe(false);
+            expect(infoMsg.options.autoHide).toBe(true);
+            expect(infoMsg.options.dismissible).toBe(true);
         });
     });
 });

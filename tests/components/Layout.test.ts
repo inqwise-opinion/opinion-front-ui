@@ -327,8 +327,9 @@ describe('Layout', () => {
       expect(mockNavigationService.setActiveItem).toHaveBeenCalledWith('home');
       
       // Since we're testing the deprecated method, we expect a warning
+      // Layout now uses structured logging, so expect formatted output
       expect(console.warn).toHaveBeenCalledWith(
-        "Layout.setActiveNavigationItem is deprecated. Use NavigationService.setActiveItem('home') instead."
+        expect.stringMatching(/\[WARN\].*Layout.*Layout\.setActiveNavigationItem is deprecated\. Use NavigationService\.setActiveItem\('home'\) instead\./)
       );
     });
   });
