@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 14
+- **Total Commits**: 15
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -99,4 +99,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🚀 Features
 
 - feat: Centralize GitHub Pages publishing logic ([f534a7cd8be4590b2280e9ac1e608274a1915c26](https://github.com/inqwise-opinion/opinion-front-ui/commit/f534a7cd8be4590b2280e9ac1e608274a1915c26)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: Resolve GitHub Actions workflow syntax errors ([fed08f82fe9773c760006b574dffd6241e60fb15](https://github.com/inqwise-opinion/opinion-front-ui/commit/fed08f82fe9773c760006b574dffd6241e60fb15)) - _glassfox_
 
