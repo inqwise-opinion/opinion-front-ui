@@ -156,6 +156,10 @@ jobs:
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
           cd temp-repo
           
+          # Configure git for commits in the temp repo
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          
           # Switch to gh-pages branch
           if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
             git checkout gh-pages
