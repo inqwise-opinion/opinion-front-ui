@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 22
+- **Total Commits**: 23
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -171,4 +171,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: Remove unused Logger import and fix Codecov action config ([a23dbc1b2169d10323fe7b2830ca12f973ef4d25](https://github.com/inqwise-opinion/opinion-front-ui/commit/a23dbc1b2169d10323fe7b2830ca12f973ef4d25)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: Restore CI workflow to full functionality ([9f665b303bfc8f51604edb00c8fe6d3a10791ba8](https://github.com/inqwise-opinion/opinion-front-ui/commit/9f665b303bfc8f51604edb00c8fe6d3a10791ba8)) - _glassfox_
 
