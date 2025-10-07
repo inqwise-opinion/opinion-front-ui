@@ -33,10 +33,20 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
   private lastActionTime: number | null = null;
   private closeButtonClickCount: number = 0;
   private logger: Logger;
+  private idCounter: number = 0; // Counter to ensure unique IDs
 
   constructor(layoutContext: LayoutContext) {
     this.layoutContext = layoutContext;
     this.logger = LoggerFactory.getInstance().getLogger('MessagesComponent');
+  }
+
+  /**
+   * Generate unique message ID to prevent collisions
+   */
+  private generateUniqueId(prefix: string): string {
+    const timestamp = Date.now();
+    const counter = ++this.idCounter;
+    return `${prefix}-${timestamp}-${counter}`;
   }
 
   /**
@@ -92,8 +102,11 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     if (messageWithDefaults.autoHide && messageWithDefaults.autoHideDelay) {
       const timer = setTimeout(
         () => {
-          this.autoHideTriggeredCount++;
-          this.removeMessage(message.id);
+          // Check if message still exists before trying to remove it
+          if (this.messages.has(message.id)) {
+            this.autoHideTriggeredCount++;
+            this.removeMessage(message.id);
+          }
         },
         messageWithDefaults.autoHideDelay,
       );
@@ -109,6 +122,12 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
   public removeMessage(id: string): void {
     if (!this.container) return;
 
+    // Check if message still exists to prevent double removal
+    if (!this.messages.has(id)) {
+      this.logger.debug(`Message ${id} already removed or doesn't exist`);
+      return;
+    }
+
     // Clear auto-hide timer if exists
     const timer = this.autoHideTimers.get(id);
     if (timer) {
@@ -116,18 +135,27 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
       this.autoHideTimers.delete(id);
     }
 
-    // Remove from messages map
+    // Find the DOM element before removing from messages map
+    const messageElement = this.container.querySelector(
+      `[data-message-id="${id}"]`,
+    ) as HTMLElement;
+    
+    // Remove from messages map immediately to prevent race conditions
     this.messages.delete(id);
     
     // Track message removal
     this.messageRemoveCount++;
     this.lastActionTime = Date.now();
 
-    // Add fade-out animation before removing from DOM
-    const messageElement = this.container.querySelector(
-      `[data-message-id="${id}"]`,
-    ) as HTMLElement;
+    // Handle DOM removal with animation
     if (messageElement) {
+      // Prevent multiple animations on the same element
+      if (messageElement.getAttribute('data-removing') === 'true') {
+        this.logger.debug(`Message element ${id} already being removed`);
+        return;
+      }
+      
+      messageElement.setAttribute('data-removing', 'true');
       messageElement.style.animation = "messageFadeOut 0.3s ease-in forwards";
 
       // Remove after animation completes
@@ -155,7 +183,19 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
       }
     });
 
+    // Clear all auto-hide timers first
+    messagesToRemove.forEach((id) => {
+      const timer = this.autoHideTimers.get(id);
+      if (timer) {
+        clearTimeout(timer);
+        this.autoHideTimers.delete(id);
+      }
+    });
+
     messagesToRemove.forEach((id) => this.removeMessage(id));
+
+    // Cleanup any remaining orphaned elements after batch removal
+    setTimeout(() => this.cleanupOrphanedMessages(), 400);
 
     this.logger.info(`Cleared ${messagesToRemove.length} messages`);
   }
@@ -207,10 +247,10 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     messageEl.className = `error-message ${message.type}`;
     messageEl.setAttribute("data-message-id", message.id);
 
-    // Simple structure with close button
+    // Simple structure with close button and debug ID in title
     messageEl.innerHTML = `
       <div class="error-content">
-        <div class="error-title">${this.escapeHtml(message.title)}</div>
+        <div class="error-title">${this.escapeHtml(message.title)} <span style="font-size: 8px; opacity: 0.3; font-family: monospace; font-weight: normal; user-select: text;">[${this.escapeHtml(message.id)}]</span></div>
         ${message.description ? `<div class="error-description">${this.escapeHtml(message.description)}</div>` : ""}
       </div>
       ${message.dismissible ? `<button type="button" class="error-close">×</button>` : ""}
@@ -251,7 +291,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     options?: MessageOptions,
   ): void {
     this.addMessage({
-      id: options?.id || `error-${Date.now()}`,
+      id: options?.id || this.generateUniqueId('error'),
       type: "error",
       title,
       description,
@@ -266,7 +306,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     options?: MessageOptions,
   ): void {
     this.addMessage({
-      id: options?.id || `warning-${Date.now()}`,
+      id: options?.id || this.generateUniqueId('warning'),
       type: "warning",
       title,
       description,
@@ -281,7 +321,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     options?: MessageOptions,
   ): void {
     this.addMessage({
-      id: options?.id || `info-${Date.now()}`,
+      id: options?.id || this.generateUniqueId('info'),
       type: "info",
       title,
       description,
@@ -296,7 +336,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     options?: MessageOptions,
   ): void {
     this.addMessage({
-      id: options?.id || `success-${Date.now()}`,
+      id: options?.id || this.generateUniqueId('success'),
       type: "success",
       title,
       description,
@@ -310,6 +350,59 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
    */
   public isReady(): boolean {
     return this.container !== null;
+  }
+
+  /**
+   * Clean up orphaned DOM elements that might be stuck
+   */
+  public cleanupOrphanedMessages(): void {
+    if (!this.container) return;
+
+    const domMessages = this.container.querySelectorAll('[data-message-id]');
+    let cleanedCount = 0;
+
+    domMessages.forEach((element) => {
+      const messageId = element.getAttribute('data-message-id');
+      if (messageId && !this.messages.has(messageId)) {
+        // This is an orphaned message in DOM but not in our tracking
+        element.remove();
+        cleanedCount++;
+        this.logger.debug(`Cleaned up orphaned message element: ${messageId}`);
+      }
+    });
+
+    if (cleanedCount > 0) {
+      this.logger.info(`Cleaned up ${cleanedCount} orphaned message elements`);
+    }
+  }
+
+  /**
+   * Force remove a message immediately without animation (for debugging)
+   */
+  public forceRemoveMessage(id: string): void {
+    if (!this.container) return;
+
+    // Clear timer
+    const timer = this.autoHideTimers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      this.autoHideTimers.delete(id);
+    }
+
+    // Remove from tracking
+    this.messages.delete(id);
+
+    // Remove from DOM immediately
+    const messageElement = this.container.querySelector(
+      `[data-message-id="${id}"]`,
+    ) as HTMLElement;
+    if (messageElement) {
+      messageElement.remove();
+    }
+
+    this.messageRemoveCount++;
+    this.lastActionTime = Date.now();
+    this.logger.info(`Force removed message: ${id}`);
   }
 
   /**
