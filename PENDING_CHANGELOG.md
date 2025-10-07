@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 20
+- **Total Commits**: 21
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -153,4 +153,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - Add test CI workflow to debug issues ([602338e129a641922b01a870357c61ebdaedf564](https://github.com/inqwise-opinion/opinion-front-ui/commit/602338e129a641922b01a870357c61ebdaedf564)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 📦 Changes
+
+- debug: Disable preview deployment to test CI workflow ([0229ff40b9ca5bd6c3c3be5f471c6e26ecafe16d](https://github.com/inqwise-opinion/opinion-front-ui/commit/0229ff40b9ca5bd6c3c3be5f471c6e26ecafe16d)) - _glassfox_
 
