@@ -1,8 +1,12 @@
 import { PageComponent } from '../../components/PageComponent';
 import MainContentImpl from '../../components/MainContentImpl';
 import { PageContext } from '../../interfaces/PageContext';
+import { LoggerFactory } from '../../logging/LoggerFactory';
+import type { Logger } from '../../logging/Logger';
 
 export default class AccountRootPage extends PageComponent {
+  protected readonly logger: Logger = LoggerFactory.getInstance().getLogger(AccountRootPage);
+  
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
     super(mainContent, pageContext, {
       pageTitle: 'Account',
@@ -28,7 +32,7 @@ export default class AccountRootPage extends PageComponent {
 
       // Breadcrumbs are now managed automatically by RouterService
     } catch (error) {
-      console.error('❌ AccountRootPage - Initialization failed:', error);
+      this.logger.error('❌ AccountRootPage - Initialization failed:', error);
       throw error;
     }
   }
@@ -108,7 +112,7 @@ export default class AccountRootPage extends PageComponent {
         this.loadTeamMembers()
       ]);
     } catch (error) {
-      console.error('Failed to load account data:', error);
+      this.logger.error('Failed to load account data:', error);
       // TODO: Show error message to user
     }
   }

@@ -17,6 +17,8 @@ import type {
   MessageType,
 } from "../interfaces/Messages";
 import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
+import { LoggerFactory } from "../logging/LoggerFactory";
+import { Logger } from "../logging/Logger";
 
 export class MessagesComponent implements Messages, ComponentWithStatus {
   private container: HTMLElement | null = null;
@@ -30,9 +32,11 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
   private autoHideTriggeredCount: number = 0;
   private lastActionTime: number | null = null;
   private closeButtonClickCount: number = 0;
+  private logger: Logger;
 
   constructor(layoutContext: LayoutContext) {
     this.layoutContext = layoutContext;
+    this.logger = LoggerFactory.getInstance().getLogger('MessagesComponent');
   }
 
   /**
@@ -42,7 +46,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     this.container = document.getElementById("app-error-messages");
 
     if (!this.container) {
-      console.error("ErrorMessages - Container #app-error-messages not found");
+      this.logger.error("Container #app-error-messages not found");
       return;
     }
 
@@ -51,7 +55,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     this.initTime = Date.now();
     this.isInitialized = true;
 
-    console.log("ErrorMessages - Ready \u2705");
+    this.logger.info("Ready \u2705");
   }
 
   /**
@@ -59,7 +63,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
    */
   public addMessage(message: Message): void {
     if (!this.container) {
-      console.warn("ErrorMessages - Container not available");
+      this.logger.warn("Container not available");
       return;
     }
 
@@ -96,7 +100,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
       this.autoHideTimers.set(message.id, timer);
     }
 
-    console.log(`ErrorMessages - Added ${message.type}: ${message.title}`);
+    this.logger.info(`Added ${message.type}: ${message.title}`);
   }
 
   /**
@@ -134,7 +138,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
       }, 300);
     }
 
-    console.log(`ErrorMessages - Removed message:`, id);
+    this.logger.info(`Removed message:`, id);
   }
 
   /**
@@ -153,7 +157,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
 
     messagesToRemove.forEach((id) => this.removeMessage(id));
 
-    console.log(`ErrorMessages - Cleared ${messagesToRemove.length} messages`);
+    this.logger.info(`Cleared ${messagesToRemove.length} messages`);
   }
 
   /**
@@ -170,8 +174,8 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
 
     messagesToRemove.forEach((id) => this.removeMessage(id));
 
-    console.log(
-      `ErrorMessages - Cleared ${messagesToRemove.length} ${type} messages`,
+    this.logger.info(
+      `Cleared ${messagesToRemove.length} ${type} messages`,
     );
   }
 
@@ -435,7 +439,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
    * Destroy the component
    */
   public destroy(): void {
-    console.log("ErrorMessages - Destroying...");
+    this.logger.info("Destroying...");
 
     // Clear all auto-hide timers
     this.autoHideTimers.forEach((timer) => clearTimeout(timer));
@@ -448,7 +452,7 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     this.messages.clear();
     this.container = null;
 
-    console.log("ErrorMessages - Destroyed");
+    this.logger.info("Destroyed");
   }
 }
 

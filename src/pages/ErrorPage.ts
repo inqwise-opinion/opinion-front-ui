@@ -64,7 +64,7 @@ export default class ErrorPage extends PageComponent {
 
       // Breadcrumbs are now managed automatically by RouterService
     } catch (error) {
-      console.error('❌ ErrorPage - Initialization failed:', error);
+      this.logger.error('❌ ErrorPage - Initialization failed:', error);
       throw error;
     }
   }

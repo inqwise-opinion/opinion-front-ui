@@ -10,6 +10,8 @@ import { ALL_ROUTES } from './routes';
 import { getFullPath, getRoutePath, appConfig } from '../config/app';
 import type { ActivePage } from '../interfaces/ActivePage';
 import type { PageProvider } from './types';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 /**
  * Internal router types
@@ -30,6 +32,7 @@ export class RouterService implements Service {
   private router: UniversalRouter<RouteResult> | null = null;
   private serviceId: string;
   private eventBus: EventBus;
+  private logger: Logger;
   private navigationState: NavigationState = {
     currentPath: '/',
     currentPage: null,
@@ -39,6 +42,7 @@ export class RouterService implements Service {
   constructor(private layoutContext: LayoutContext) {
     this.serviceId = RouterService.SERVICE_ID;
     this.eventBus = layoutContext.getEventBus();
+    this.logger = LoggerFactory.getInstance().getLogger('RouterService');
   }
 
   async init(): Promise<void> {
@@ -66,7 +70,7 @@ export class RouterService implements Service {
       try {
         await this.handleRoute(currentPath);
       } catch (error) {
-        console.error('RouterService - Initial route failed:', error);
+        this.logger.error('RouterService - Initial route failed:', error);
         throw error;
       }
     }
@@ -179,7 +183,7 @@ export class RouterService implements Service {
       this.navigationState.currentPage = newPage;
       this.navigationState.currentPath = routeContext.getPath();
     } catch (error) {
-      console.error('Failed to load page for route: %s', path, error);
+      this.logger.error('Failed to load page for route: ' + path, error);
       
       // Reset navigation state on error
       this.navigationState.isNavigating = false;

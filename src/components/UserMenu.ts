@@ -6,6 +6,8 @@
 import type { UserMenuItem } from "./Layout";
 import type { LayoutContext } from "../contexts/LayoutContext";
 import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
+import { LoggerFactory } from "../logging/LoggerFactory";
+import { Logger } from "../logging/Logger";
 
 export interface User {
   username: string;
@@ -25,24 +27,26 @@ export class UserMenu {
   } = {};
   private isOpen: boolean = false;
   private layoutContext?: LayoutContext;
+  private logger: Logger;
 
   constructor(private parentContainer: HTMLElement, layoutContext?: LayoutContext) {
     this.container = parentContainer;
     this.layoutContext = layoutContext;
+    this.logger = LoggerFactory.getInstance().getLogger('UserMenu');
   }
 
   /**
    * Initialize the user menu
    */
   async init(): Promise<void> {
-    console.log("UserMenu - Initializing...");
+    this.logger.info("Initializing...");
     this.injectResponsiveCSS();
     this.createUserMenu();
     this.cacheElements();
     this.setupEventListeners();
     this.setupLayoutEventSubscriptions();
     this.initializeWithDefaultUser();
-    console.log("UserMenu - Ready");
+    this.logger.info("Ready");
   }
 
   /**
@@ -141,7 +145,7 @@ export class UserMenu {
     `;
 
     document.head.appendChild(style);
-    console.log("UserMenu - Responsive CSS injected");
+    this.logger.info("Responsive CSS injected");
   }
 
   /**
@@ -324,7 +328,7 @@ export class UserMenu {
       userMenuEmail: document.getElementById("user_menu_email") as HTMLElement,
     };
 
-    console.log("UserMenu - Cached elements:", {
+    this.logger.info("Cached elements:", {
       trigger: !!this.elements.trigger,
       dropdown: !!this.elements.dropdown,
       username: !!this.elements.username,
@@ -338,7 +342,7 @@ export class UserMenu {
    */
   private setupLayoutEventSubscriptions(): void {
     if (!this.layoutContext) {
-      console.log("UserMenu - No layout context available, skipping event subscriptions");
+      this.logger.info("No layout context available, skipping event subscriptions");
       return;
     }
 
@@ -348,32 +352,32 @@ export class UserMenu {
       const requestedAction = eventData && typeof eventData === 'object' && eventData !== null ? (eventData as any).requestedAction : null;
       const trigger = eventData && typeof eventData === 'object' && eventData !== null ? (eventData as any).trigger : null;
       
-      console.log(`UserMenu - Received request: ${requestedAction} (from ${trigger})`);
+      this.logger.info(`Received request: ${requestedAction} (from ${trigger})`);
       
       switch (requestedAction) {
         case "show":
           if (!this.isOpen) {
             this.open();
           } else {
-            console.warn("UserMenu - Request to show but menu is already open");
+            this.logger.warn("Request to show but menu is already open");
           }
           break;
         case "hide":
           if (this.isOpen) {
             this.close();
           } else {
-            console.warn("UserMenu - Request to hide but menu is already closed");
+            this.logger.warn("Request to hide but menu is already closed");
           }
           break;
         case "toggle":
           this.toggle();
           break;
         default:
-          console.warn(`UserMenu - Unknown requested action: ${requestedAction}`);
+          this.logger.warn(`Unknown requested action: ${requestedAction}`);
       }
     });
     
-    console.log("UserMenu - Layout event subscriptions setup complete");
+    this.logger.info("Layout event subscriptions setup complete");
   }
 
   /**
@@ -384,7 +388,7 @@ export class UserMenu {
       this.elements.trigger.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("UserMenu - Trigger clicked");
+        this.logger.info("Trigger clicked");
         this.toggle();
       });
 
@@ -421,7 +425,7 @@ export class UserMenu {
       closeButton.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("UserMenu - Close button clicked");
+        this.logger.info("Close button clicked");
         this.handleCloseButtonClick();
       });
     }
@@ -452,11 +456,11 @@ export class UserMenu {
    */
   open(): void {
     if (!this.elements.dropdown || !this.elements.trigger) {
-      console.warn("UserMenu - Cannot open: missing elements");
+      this.logger.warn("Cannot open: missing elements");
       return;
     }
 
-    console.log("UserMenu - Opening dropdown (public API)");
+    this.logger.info("Opening dropdown (public API)");
     this.isOpen = true;
 
     // Check if mobile mode
@@ -496,7 +500,7 @@ export class UserMenu {
       return;
     }
 
-    console.log("UserMenu - Closing dropdown (public API)");
+    this.logger.info("Closing dropdown (public API)");
     this.isOpen = false;
 
     // Hide desktop dropdown
@@ -523,7 +527,7 @@ export class UserMenu {
     const mobileDropdown = document.querySelector(".user-menu-mobile-dropdown");
     if (mobileDropdown) {
       mobileDropdown.remove();
-      console.log("📱 UserMenu - Removed mobile dropdown");
+      this.logger.info("📱 Removed mobile dropdown");
     }
 
     // Remove mobile backdrop and restore body scroll
@@ -543,7 +547,7 @@ export class UserMenu {
    * Handle toggle click (internal - change state and emit event)
    */
   private handleToggleClick(): void {
-    console.log("UserMenu - Toggle click");
+    this.logger.info("Toggle click");
     const wasOpen = this.isOpen;
     const targetState = !wasOpen;
     
@@ -562,9 +566,9 @@ export class UserMenu {
    * Handle close button click (internal - close and emit event if needed)
    */
   private handleCloseButtonClick(): void {
-    console.log("UserMenu - Close button click");
+    this.logger.info("Close button click");
     if (!this.isOpen) {
-      console.warn("UserMenu - Close button clicked but menu is already closed");
+      this.logger.warn("Close button clicked but menu is already closed");
       return;
     }
     const wasOpen = this.isOpen;
@@ -576,9 +580,9 @@ export class UserMenu {
    * Handle click outside (internal - close and emit event if needed)
    */
   private handleClickOutside(): void {
-    console.log("UserMenu - Click outside");
+    this.logger.info("Click outside");
     if (!this.isOpen) {
-      console.warn("UserMenu - Click outside detected but menu is already closed");
+      this.logger.warn("Click outside detected but menu is already closed");
       return;
     }
     const wasOpen = this.isOpen;
@@ -590,9 +594,9 @@ export class UserMenu {
    * Handle mobile close button click (internal - close and emit event if needed)
    */
   private handleMobileCloseButtonClick(): void {
-    console.log("UserMenu - Mobile close button click");
+    this.logger.info("Mobile close button click");
     if (!this.isOpen) {
-      console.warn("UserMenu - Mobile close button clicked but menu is already closed");
+      this.logger.warn("Mobile close button clicked but menu is already closed");
       return;
     }
     const wasOpen = this.isOpen;
@@ -604,9 +608,9 @@ export class UserMenu {
    * Handle backdrop click (internal - close and emit event if needed)
    */
   private handleBackdropClick(): void {
-    console.log("UserMenu - Backdrop click");
+    this.logger.info("Backdrop click");
     if (!this.isOpen) {
-      console.warn("UserMenu - Backdrop clicked but menu is already closed");
+      this.logger.warn("Backdrop clicked but menu is already closed");
       return;
     }
     const wasOpen = this.isOpen;
@@ -618,7 +622,7 @@ export class UserMenu {
    * Update user data
    */
   updateUser(user: User): void {
-    console.log("UserMenu - Updating user:", user);
+    this.logger.info("Updating user:", user);
     this.user = user;
 
     if (this.elements.username) {
@@ -645,7 +649,7 @@ export class UserMenu {
    * Create a fresh mobile dropdown to avoid CSS conflicts
    */
   private createMobileDropdown(): void {
-    console.log("📱 UserMenu - Creating fresh mobile dropdown...");
+    this.logger.info("📱 Creating fresh mobile dropdown...");
 
     // Remove any existing mobile dropdown to avoid duplicates
     const existingMobileDropdown = document.querySelector(
@@ -653,7 +657,7 @@ export class UserMenu {
     );
     if (existingMobileDropdown) {
       existingMobileDropdown.remove();
-      console.log("📱 UserMenu - Removed existing mobile dropdown");
+      this.logger.info("📱 Removed existing mobile dropdown");
     }
 
     // Create completely new dropdown element for mobile
@@ -845,8 +849,8 @@ export class UserMenu {
 
       // Add click handling for menu items
       item.addEventListener("click", (e) => {
-        console.log(
-          "📱 UserMenu - Mobile menu item clicked:",
+        this.logger.info(
+          "📱 Mobile menu item clicked:",
           (e.currentTarget as HTMLElement).textContent?.trim(),
         );
       });
@@ -858,7 +862,7 @@ export class UserMenu {
       closeButton.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("📱 UserMenu - Mobile close button clicked");
+        this.logger.info("📱 Mobile close button clicked");
         this.handleMobileCloseButtonClick();
       });
 
@@ -891,8 +895,8 @@ export class UserMenu {
 
     // Log detailed computed styles for debugging
     const computedStyles = window.getComputedStyle(mobileDropdown);
-    console.log(
-      "📱 UserMenu - Fresh mobile dropdown created and added to body",
+    this.logger.info(
+      "📱 Fresh mobile dropdown created and added to body",
       {
         position: computedStyles.position,
         top: computedStyles.top,
@@ -939,7 +943,7 @@ export class UserMenu {
       this.handleBackdropClick();
     });
 
-    console.log("📱 UserMenu - Mobile backdrop created with blur effects");
+    this.logger.info("📱 Mobile backdrop created with blur effects");
   }
 
   /**
@@ -959,8 +963,8 @@ export class UserMenu {
       }, 300);
     }
 
-    console.log(
-      "📱 UserMenu - Mobile backdrop removed with blur effects cleanup",
+    this.logger.info(
+      "📱 Mobile backdrop removed with blur effects cleanup",
     );
   }
 
@@ -968,7 +972,7 @@ export class UserMenu {
    * Initialize with loading state - authentication service will update user data
    */
   private initializeWithDefaultUser(): void {
-    console.log("UserMenu - Initializing with loading state, waiting for authentication service...");
+    this.logger.info("Initializing with loading state, waiting for authentication service...");
     // Keep "Loading..." text to indicate authentication is in progress
     // AppHeaderBinderService will call updateUser() once authentication completes
   }
@@ -977,13 +981,13 @@ export class UserMenu {
    * Update user menu items from Layout configuration
    */
   public updateMenuItems(items: UserMenuItem[]): void {
-    console.log("UserMenu - Updating menu items:", items.length, "items");
+    this.logger.info("Updating menu items:", items.length, "items");
 
     // Find the menu items container
     const menuItemsContainer =
       this.elements.dropdown?.querySelector(".user-menu-items");
     if (!menuItemsContainer) {
-      console.warn("UserMenu - Menu items container not found");
+      this.logger.warn("Menu items container not found");
       return;
     }
 
@@ -998,7 +1002,7 @@ export class UserMenu {
     // Re-setup hover effects for new items
     this.setupMenuItemHoverEffects();
 
-    console.log("UserMenu - Menu items updated successfully");
+    this.logger.info("Menu items updated successfully");
   }
 
   /**
@@ -1086,8 +1090,8 @@ export class UserMenu {
     // Emit the event through the LayoutContext
     this.layoutContext.emit("user-menu-mode-change", event.data);
 
-    console.log(
-      `📡 UserMenu - Emitted mode change event: ${previousVisibility} → ${isVisible} (via ${trigger})`,
+    this.logger.info(
+      `📡 Emitted mode change event: ${previousVisibility} → ${isVisible} (via ${trigger})`,
     );
   }
 
@@ -1095,7 +1099,7 @@ export class UserMenu {
    * Destroy the component
    */
   destroy(): void {
-    console.log("UserMenu - Destroying...");
+    this.logger.info("Destroying...");
 
     // Clean up backdrop and body scroll
     this.removeMobileBackdrop();

@@ -20,8 +20,11 @@ import {
   HotkeyExecutionContext,
 } from "../hotkeys/HotkeyChainSystem";
 import { PageContext } from "../interfaces/PageContext";
+import { LoggerFactory } from "../logging/LoggerFactory";
+import type { Logger } from "../logging/Logger";
 
 export class DebugPage extends PageComponent {
+  protected readonly logger: Logger = LoggerFactory.getInstance().getLogger(DebugPage);
   private responsiveModeUnsubscribe: (() => void) | null = null;
   
   // Layout Events Monitoring
@@ -62,7 +65,7 @@ export class DebugPage extends PageComponent {
       // Set browser tab title
       document.title = "Debug - Opinion";
     } catch (error) {
-      console.error("❌ DEBUGPAGE - Initialization failed:", error);
+      this.logger.error("❌ DEBUGPAGE - Initialization failed:", error);
       throw error;
     }
   }
@@ -357,7 +360,7 @@ export class DebugPage extends PageComponent {
         targetElement.innerHTML = content;
       }
     } else {
-      console.error("DebugPage - No target element found for content");
+      this.logger.error("DebugPage - No target element found for content");
     }
   }
 
@@ -717,7 +720,7 @@ export class DebugPage extends PageComponent {
             this.logToConsole("❌ Unable to access Messages component");
           }
         } catch (error: unknown) {
-          console.error("🎯 DEBUGPAGE - Error in auto-hide message handler:", error);
+          this.logger.error("🎯 DEBUGPAGE - Error in auto-hide message handler:", error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           this.logToConsole("❌ Error in message handling: " + errorMessage);
         }
@@ -732,7 +735,7 @@ export class DebugPage extends PageComponent {
           this.showMessageSequence();
           this.logToConsole("🎬 Message sequence started");
         } catch (error: unknown) {
-          console.error("🎯 DEBUGPAGE - Error in sequence handler:", error);
+          this.logger.error("🎯 DEBUGPAGE - Error in sequence handler:", error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           this.logToConsole("❌ Error in message sequence: " + errorMessage);
         }
@@ -764,7 +767,7 @@ export class DebugPage extends PageComponent {
             this.logToConsole("❌ clearAll method not available");
           }
         } catch (error: unknown) {
-          console.error("🎯 DEBUGPAGE - Error in clear all handler:", error);
+          this.logger.error("🎯 DEBUGPAGE - Error in clear all handler:", error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           this.logToConsole("❌ Error in message clearing: " + errorMessage);
         }
@@ -789,7 +792,7 @@ export class DebugPage extends PageComponent {
             this.logToConsole("❌ clearByType method not available");
           }
         } catch (error: unknown) {
-          console.error("🎯 DEBUGPAGE - Error in clear errors handler:", error);
+          this.logger.error("🎯 DEBUGPAGE - Error in clear errors handler:", error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           this.logToConsole("❌ Error in message clearing: " + errorMessage);
         }
@@ -816,7 +819,7 @@ export class DebugPage extends PageComponent {
             this.logToConsole("❌ clearAll method not available");
           }
         } catch (error: unknown) {
-          console.error("🎯 DEBUGPAGE - Error in clear persistent handler:", error);
+          this.logger.error("🎯 DEBUGPAGE - Error in clear persistent handler:", error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           this.logToConsole("❌ Error in message clearing: " + errorMessage);
         }
@@ -885,7 +888,7 @@ export class DebugPage extends PageComponent {
    * Setup responsive behavior handlers
    */
   private setupResponsiveHandlers(): void {
-    console.log("🎯 DebugPage - Setting up responsive mode subscriptions...");
+    this.logger.debug("🎯 DebugPage - Setting up responsive mode subscriptions...");
 
     // Note: 'responsive-mode-change' is not available in the current LayoutContext
     // We'll rely on 'layout-mode-change' instead
@@ -893,7 +896,7 @@ export class DebugPage extends PageComponent {
     const layoutContext = this.mainContent.getLayoutContext();
     // Subscribe to layout mode changes
     layoutContext.subscribe("layout-mode-change", (event: LayoutEvent) => {
-      console.log("event:", event);
+      this.logger.debug("event:", event);
       const viewport = (event.data as any)?.viewport as LayoutViewPort;
       const type = (event.data as any)?.modeType as LayoutModeType;
       const sidebar = layoutContext.getSidebar();
@@ -1412,7 +1415,7 @@ export class DebugPage extends PageComponent {
       testConsole.appendChild(logElement);
       testConsole.scrollTop = testConsole.scrollHeight;
     }
-    console.log("DebugPage:", message);
+    this.logger.debug("DebugPage: {}", message);
   }
 
   // =================================================================================
@@ -1721,7 +1724,7 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Shift+! pressed - Show error message');
+        this.logger.debug('🎯 DebugPage: Shift+! pressed - Show error message');
         this.showErrorMessage();
         this.logToConsole('🎯 Hotkey: Showed error message (Shift+1/!)');
         ctx.preventDefault();
@@ -1739,7 +1742,7 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Shift+@ pressed - Show warning message');
+        this.logger.debug('🎯 DebugPage: Shift+@ pressed - Show warning message');
         this.showWarningMessage();
         this.logToConsole('🎯 Hotkey: Showed warning message (Shift+2/@)');
         ctx.preventDefault();
@@ -1757,7 +1760,7 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Shift+# pressed - Show info message');
+        this.logger.debug('🎯 DebugPage: Shift+# pressed - Show info message');
         this.showInfoMessage();
         this.logToConsole('🎯 Hotkey: Showed info message (Shift+3/#)');
         ctx.preventDefault();
@@ -1775,7 +1778,7 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Shift+$ pressed - Show success message');
+        this.logger.debug('🎯 DebugPage: Shift+$ pressed - Show success message');
         this.showSuccessMessage();
         this.logToConsole('🎯 Hotkey: Showed success message (Shift+4/$)');
         ctx.preventDefault();
@@ -1794,7 +1797,7 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Shift+Backspace pressed - Clear all messages');
+        this.logger.debug('🎯 DebugPage: Shift+Backspace pressed - Clear all messages');
         this.clearAllMessages();
         this.logToConsole('🎯 Hotkey: Cleared all messages (Shift+Backspace)');
         ctx.preventDefault();
@@ -1813,7 +1816,7 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Ctrl+Shift+L pressed - Clear test console');
+        this.logger.debug('🎯 DebugPage: Ctrl+Shift+L pressed - Clear test console');
         this.clearTestConsole();
         this.logToConsole('🎯 Hotkey: Cleared test console (Ctrl+Shift+L)');
         ctx.preventDefault();
@@ -1832,7 +1835,7 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Ctrl+Shift+H pressed - Show hotkey help');
+        this.logger.debug('🎯 DebugPage: Ctrl+Shift+H pressed - Show hotkey help');
         this.showHotkeyHelp();
         this.logToConsole('🎯 Hotkey: Showed hotkey help (Ctrl+Shift+H)');
         ctx.preventDefault();
@@ -1851,7 +1854,7 @@ export class DebugPage extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 DebugPage: Escape pressed - Debug page ESC handling');
+        this.logger.debug('🎯 DebugPage: Escape pressed - Debug page ESC handling');
         
         // Debug-specific ESC behavior
         const handled = this.handleDebugPageEscape(ctx);
@@ -1872,7 +1875,7 @@ export class DebugPage extends PageComponent {
       isEnabled: () => this.initialized && !this.destroyed
     });
     
-    console.log(`🔑 DebugPage: Registered ${hotkeys.size} chain hotkeys:`, Array.from(hotkeys.keys()));
+    this.logger.debug('🔑 DebugPage: Registered {} chain hotkeys: {}', hotkeys.size, Array.from(hotkeys.keys()));
     return hotkeys;
   }
   
@@ -2018,7 +2021,7 @@ export class DebugPage extends PageComponent {
    * Test hotkey system manually - for debugging
    */
   public testHotkeySystem(): void {
-    console.log('🧪 Manual hotkey system test started...');
+    this.logger.debug('🧪 Manual hotkey system test started...');
     this.logToConsole('🧪 Testing hotkey handlers manually...');
     
     // Test if handlers can be called directly
@@ -2064,7 +2067,7 @@ export class DebugPage extends PageComponent {
         
         this.logToConsole(`🎯 Key detected: Ctrl+Shift+${event.key}`);
         this.logToConsole(`🔄 Normalized key: "${normalizedKey}"`);
-        console.log('🎯 Key event details:', {
+        this.logger.debug('🎯 Key event details: {}', {
           key: event.key,
           code: event.code,
           ctrlKey: event.ctrlKey,
@@ -2099,7 +2102,7 @@ export class DebugPage extends PageComponent {
         const normalizedKey = modifiers.length > 0 ? `${modifiers.join('+')}+${event.key}` : event.key;
         
         this.logToConsole(`🎯 Shift-only key detected: ${normalizedKey}`);
-        console.log('🎯 Shift-only key event details:', {
+        this.logger.debug('🎯 Shift-only key event details: {}', {
           key: event.key,
           code: event.code,
           ctrlKey: event.ctrlKey,
@@ -2311,13 +2314,13 @@ export class DebugPage extends PageComponent {
   private async getBreadcrumbsManager(): Promise<import('../interfaces/BreadcrumbsManager').BreadcrumbsManager | null> {
     try {
       if (!this.hasPageContext()) {
-        console.warn('🍞 DebugPage - PageContext not available');
+        this.logger.warn('🍞 DebugPage - PageContext not available');
         return null;
       }
       const pageContext = await this.getPageContext();
       return pageContext.breadcrumbs();
     } catch (error) {
-      console.error('🍞 DebugPage - Error getting PageContext:', error);
+      this.logger.error('🍞 DebugPage - Error getting PageContext:', error);
       return null;
     }
   }
@@ -2519,12 +2522,12 @@ export class DebugPage extends PageComponent {
           { id: 'DebugPage', text: 'Debug & Testing', caption: 'Development tools' }  // ← Use proper page ID
         ];
         breadcrumbsManager.set(items);
-        console.log('🍞 DebugPage - Initial breadcrumbs set via PageContext');
+        this.logger.debug('🍞 DebugPage - Initial breadcrumbs set via PageContext');
       } else {
-        console.warn('🍞 DebugPage - BreadcrumbsManager not available for initial setup');
+        this.logger.warn('🍞 DebugPage - BreadcrumbsManager not available for initial setup');
       }
     } catch (error) {
-      console.error('🍞 DebugPage - Error setting initial breadcrumbs:', error);
+      this.logger.error('🍞 DebugPage - Error setting initial breadcrumbs:', error);
     }
   }
   
@@ -2541,7 +2544,7 @@ export class DebugPage extends PageComponent {
       const header = layoutContext.getHeader();
       return header?.getBreadcrumbsComponent() || null;
     } catch (error) {
-      console.error('🍞 DebugPage - Error getting BreadcrumbsComponent:', error);
+      this.logger.error('🍞 DebugPage - Error getting BreadcrumbsComponent:', error);
       return null;
     }
   }

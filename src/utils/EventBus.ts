@@ -4,6 +4,9 @@
  * Following Rule 3: Event-driven communication between components
  */
 
+import { LoggerFactory } from '../logging/LoggerFactory';
+import type { Logger } from '../logging/Logger';
+
 export type EventCallback<T = unknown> = (data: T) => void;
 
 export interface EventSubscription {
@@ -16,6 +19,7 @@ export interface EventSubscription {
  */
 export class EventBus {
   private events: Map<string, Set<EventCallback>> = new Map();
+  private logger: Logger = LoggerFactory.getInstance().getLogger(EventBus);
 
   /**
    * Subscribe to an event
@@ -57,7 +61,7 @@ export class EventBus {
         try {
           callback(data);
         } catch (error) {
-          console.error(`EventBus - Error in event handler for '${eventName}':`, error);
+          this.logger.error('EventBus - Error in event handler for "{}": ', eventName, error);
         }
       });
     }

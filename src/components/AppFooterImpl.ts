@@ -10,6 +10,8 @@ import { getLayoutContext } from "../contexts/index";
 import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
 import { AppFooter, FooterConfig } from "./AppFooter";
 import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
+import { LoggerFactory } from "../logging/LoggerFactory";
+import { Logger } from "../logging/Logger";
 
 export class AppFooterImpl implements AppFooter, ComponentWithStatus {
   private container: HTMLElement | null = null;
@@ -20,6 +22,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
     copyrightText?: HTMLElement;
   } = {};
   private layoutContext: LayoutContext;
+  private logger: Logger;
   private layoutUnsubscribers: Array<() => void> = [];
   private isInitialized: boolean = false;
   private initTime: number | null = null;
@@ -45,13 +48,14 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
 
     // Use provided LayoutContext or fall back to global one
     this.layoutContext = layoutContext || getLayoutContext();
+    this.logger = LoggerFactory.getInstance().getLogger('AppFooterImpl');
   }
 
   /**
    * Initialize the footer component
    */
   async init(): Promise<void> {
-    console.log("AppFooter - Initializing...");
+    this.logger.info("AppFooter - Initializing...");
 
     // Create footer if it doesn't exist
     await this.createFooter();
@@ -70,7 +74,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
 
     this.initTime = Date.now();
     this.isInitialized = true;
-    console.log("AppFooter - Ready");
+    this.logger.info("AppFooter - Ready");
   }
 
   /**
@@ -86,7 +90,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
         setTimeout(() => {
           this.container = document.getElementById("app-footer");
           if (!this.container) {
-            console.error(
+            this.logger.error(
               "AppFooter: #app-footer element not found in DOM. Available elements:",
               Array.from(document.querySelectorAll("[id]")).map((el) => el.id),
             );
@@ -103,7 +107,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
       });
     }
 
-    console.log("AppFooter - Using existing element");
+    this.logger.info("AppFooter - Using existing element");
 
     this.finalizeFooterCreation();
   }
@@ -115,7 +119,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
     // Populate the existing structure with dynamic content
     this.populateContent();
 
-    console.log("AppFooter - Content populated successfully");
+    this.logger.info("AppFooter - Content populated successfully");
   }
 
   /**
@@ -258,7 +262,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
     // Special handling for certain links
     if (href === "/create-bug-report") {
       // Could open a modal instead of navigating
-      console.log("Footer navigation: Report a Bug clicked");
+      this.logger.info("Footer navigation: Report a Bug clicked");
     }
 
     // Allow default navigation behavior
@@ -278,7 +282,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
    * Subscribe to layout context events
    */
   private subscribeToLayoutContext(): void {
-    console.log("AppFooter - Subscribing to layout context events...");
+    this.logger.info("AppFooter - Subscribing to layout context events...");
 
     // Subscribe to layout mode changes (which include sidebar state changes)
     const layoutModeChangeUnsubscribe = this.layoutContext.subscribe(
@@ -292,7 +296,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
     // Set initial layout based on current layout mode
     this.updateFooterLayout();
 
-    console.log(
+    this.logger.info(
       "AppFooter - Successfully subscribed to layout context events ✅",
     );
   }
@@ -302,7 +306,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
    */
   private handleLayoutModeChange(event: LayoutEvent): void {
     const layoutData = event.data;
-    console.log("AppFooter - Received layout mode change:", layoutData);
+    this.logger.info("AppFooter - Received layout mode change:", layoutData);
     this.updateFooterLayout();
   }
 
@@ -321,7 +325,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
     const isCompact = sidebar?.isCompactMode() || false;
     const isMobile = modeType === 'mobile';
 
-    console.log("AppFooter - Updating layout for layout mode:", {
+    this.logger.info("AppFooter - Updating layout for layout mode:", {
       type: modeType,
       isCompact,
       isMobile,
@@ -357,7 +361,7 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
     });
     document.dispatchEvent(event);
 
-    console.log("AppFooter - Layout updated:", {
+    this.logger.info("AppFooter - Layout updated:", {
       layoutMode: { type: modeType, isCompact, isMobile },
       cssClasses: Array.from(this.container.classList).filter((cls) =>
         cls.startsWith("footer-"),
@@ -491,14 +495,14 @@ export class AppFooterImpl implements AppFooter, ComponentWithStatus {
    * Cleanup when component is destroyed
    */
   destroy(): void {
-    console.log("AppFooter - Destroying...");
+    this.logger.info("AppFooter - Destroying...");
 
     // Unsubscribe from layout context events
     this.layoutUnsubscribers.forEach((unsubscribe) => {
       try {
         unsubscribe();
       } catch (error) {
-        console.error(
+        this.logger.error(
           "AppFooter - Error unsubscribing from layout context:",
           error,
         );

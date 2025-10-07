@@ -220,7 +220,7 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
         }
       });
     } else {
-      console.warn(`${this.constructor.name}: Cannot setup event delegation - MainContent container not available`);
+      this.logger.warn('{}: Cannot setup event delegation - MainContent container not available', this.constructor.name);
     }
   }
 
@@ -233,8 +233,9 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
     if (typeof (this as any)[methodName] === "function") {
       (this as any)[methodName](element, event);
     } else {
-      console.warn(
-        `${this.constructor.name}: No handler found for action '${action}' (${methodName})`,
+      this.logger.warn(
+        '{}: No handler found for action "{}" ({})',
+        this.constructor.name, action, methodName
       );
     }
   }
@@ -246,7 +247,7 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
   protected setupKeyboardShortcuts(): void {
     // Page-specific hotkeys are automatically registered via HotkeyProvider interface
     // when setActiveHotkeyProvider(this) is called in init()
-    console.log(`${this.constructor.name}: Page-specific hotkeys will be registered via HotkeyProvider interface`);
+    this.logger.debug('{}: Page-specific hotkeys will be registered via HotkeyProvider interface', this.constructor.name);
   }
 
   // Note: handleKeydown() method removed - keyboard shortcuts now handled via LayoutContext hotkey system
@@ -295,21 +296,21 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
    */
   protected showLoading(message?: string): void {
     const loadingMessage = message || 'Loading...';
-    console.log(`${this.constructor.name}: ${loadingMessage}`);
+    this.logger.info('{}: {}', this.constructor.name, loadingMessage);
   }
 
   /**
    * Hide loading state
    */
   protected hideLoading(): void {
-    console.log(`${this.constructor.name}: Loading complete`);
+    this.logger.info('{}: Loading complete', this.constructor.name);
   }
 
   /**
    * Show error message
    */
   protected showError(message: string, error?: Error): void {
-    console.error(`${this.constructor.name}: ${message}`, error);
+    this.logger.error('{}: {}', this.constructor.name, message, error);
   }
 
   /**
@@ -322,8 +323,9 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
     const element = document.querySelector(selector);
 
     if (!element && required) {
-      console.error(
-        `${this.constructor.name}: Required element not found: ${selector}`,
+      this.logger.error(
+        '{}: Required element not found: {}',
+        this.constructor.name, selector
       );
     }
 
@@ -441,7 +443,7 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log(`🔤 ${this.constructor.name} - ESC key pressed via chain system`);
+        this.logger.debug('🔤 {} - ESC key pressed via chain system', this.constructor.name);
         this.handleEscape(ctx.event);
         ctx.next(); // Allow other handlers to also process ESC
       },
@@ -469,7 +471,7 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
     if (this.chainProviderUnsubscriber) {
       this.chainProviderUnsubscriber();
       this.chainProviderUnsubscriber = null;
-      console.log(`${this.constructor.name} - Chain provider unregistered`);
+      this.logger.debug('{} - Chain provider unregistered', this.constructor.name);
     }
   }
   

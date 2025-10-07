@@ -9,6 +9,8 @@ import Layout from '../components/Layout';
 import { DashboardPageComponent } from './DashboardPageComponent';
 import { RouteContextImpl } from '../router/RouteContextImpl';
 import { PageContextImpl } from '../contexts/PageContextImpl';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export interface DashboardState {
   user?: User;
@@ -35,6 +37,7 @@ export class Dashboard {
   private apiService: MockApiService;
   private layout: Layout;
   private pageComponent!: DashboardPageComponent; // Initialized in init()
+  private logger: Logger;
 
   constructor(apiService: MockApiService) {
     this.apiService = apiService;
@@ -64,6 +67,7 @@ export class Dashboard {
       comparisonFilter: 0 // None
     };
 
+    this.logger = LoggerFactory.getInstance().getLogger('Dashboard');
     this.initializeLoader();
   }
 
@@ -71,7 +75,7 @@ export class Dashboard {
    * Initialize dashboard
    */
   async init(): Promise<void> {
-    console.log('Dashboard - Initializing...');
+    this.logger.info('Initializing...');
     
     try {
       // Show loader
@@ -79,7 +83,7 @@ export class Dashboard {
 
       // Initialize layout (which includes header, sidebar, and footer)
       await this.layout.init();
-      console.log('Dashboard - Layout initialized, footer should be visible');
+      this.logger.info('Layout initialized, footer should be visible');
       
       // Initialize page component with PageContext
       const mainContent = this.layout.getMainContent();
@@ -87,7 +91,7 @@ export class Dashboard {
       const pageContext = new PageContextImpl(routeContext, this.layout.getLayoutContext());
       this.pageComponent = new DashboardPageComponent(mainContent, pageContext, { layout: this.layout });
       await this.pageComponent.init();
-      console.log('Dashboard - Page component initialized');
+      this.logger.info('Page component initialized');
 
       // Authenticate user
       const auth = await this.authenticateUser();
@@ -117,9 +121,9 @@ export class Dashboard {
       // Final check: Ensure footer still exists after all data loading
       this.ensureFooterExists();
 
-      console.log('Dashboard - Ready');
+      this.logger.info('Ready');
     } catch (error) {
-      console.error('Dashboard initialization failed:', error);
+      this.logger.error('Dashboard initialization failed:', error);
       this.handleError(error);
     } finally {
       this.hideLoader();
@@ -176,7 +180,7 @@ export class Dashboard {
       this.updateSurveysList();
       this.updateRecentSurveysTable();
     } catch (error) {
-      console.error('Failed to load surveys:', error);
+      this.logger.error('Failed to load surveys:', error);
       this.state.surveys = [];
     }
   }
@@ -199,7 +203,7 @@ export class Dashboard {
       this.buildChart(chartData);
       this.updateStatistics(chartData);
     } catch (error) {
-      console.error('Failed to load chart data:', error);
+      this.logger.error('Failed to load chart data:', error);
     }
   }
 
@@ -254,7 +258,7 @@ export class Dashboard {
   private createChart(config: ChartConfig): void {
     // This would use Highcharts or another charting library
     // For now, just log the config
-    console.log('Creating chart with config:', config);
+    this.logger.debug('Creating chart with config:', config);
     
     // Placeholder for actual Highcharts implementation
     const chartElement = document.getElementById('chart');
@@ -460,7 +464,7 @@ export class Dashboard {
   }
 
   private handleError(error: any): void {
-    console.error('Dashboard error:', error);
+    this.logger.error('Dashboard error:', error);
     // Show error message to user
     alert('An error occurred while loading the dashboard. Please try again.');
   }
@@ -469,11 +473,11 @@ export class Dashboard {
     // Initialize loader component - simpler implementation since template loading handles initial loader
     this.loader = {
       show: () => {
-        console.log('Showing dashboard loader...');
+        this.logger.debug('Showing dashboard loader...');
         // Could show a dashboard-specific loader here if needed
       },
       hide: () => {
-        console.log('Hiding dashboard loader...');
+        this.logger.debug('Hiding dashboard loader...');
         // Dashboard is ready, all data loaded
       }
     };
@@ -542,14 +546,14 @@ export class Dashboard {
   private ensureFooterExists(): void {
     const existingFooter = document.querySelector('.app-footer');
     if (!existingFooter) {
-      console.log('Dashboard - Footer missing after data load, recreating...');
+      this.logger.info('Footer missing after data load, recreating...');
       const footer = this.layout.getFooter();
       if (footer) {
         footer.init(); // Reinitialize the footer
-        console.log('Dashboard - Footer recreated successfully');
+        this.logger.info('Footer recreated successfully');
       }
     } else {
-      console.log('Dashboard - Footer exists and is visible');
+      this.logger.debug('Footer exists and is visible');
     }
   }
 }
@@ -560,6 +564,7 @@ declare global {
 }
 
 window.feedback = function(): void {
+  // Using console.log here since this is a global function without access to the logger instance
   console.log('Feedback function called - implement modal');
 };
 

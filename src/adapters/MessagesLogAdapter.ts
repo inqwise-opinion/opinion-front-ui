@@ -9,10 +9,9 @@ import { Messages, MessageType } from '../interfaces/Messages';
 export class MessagesLogAdapter implements AsyncLogConsumer {
     private messages: Messages;
     private readonly levelMapping: { [key: string]: MessageType } = {
-        'TRACE': 'info',
-        'DEBUG': 'info', 
+        // DEBUG and TRACE are filtered out before this mapping is used
         'INFO': 'info',
-        'WARN': 'warning',
+        'WARN': 'warning', 
         'ERROR': 'error',
         'FATAL': 'error'
     };
@@ -25,6 +24,27 @@ export class MessagesLogAdapter implements AsyncLogConsumer {
      * Process a log message and convert it to a user message
      */
     async consume(logMessage: LogMessage): Promise<void> {
+        
+        // IMPORTANT: Filter out logs from messaging/logging components to prevent circular dependency
+        // If these components log something, and we try to show it as a message,
+        // it creates an infinite loop/deadlock
+        const excludedComponents = [
+            'MessagesComponent',
+            'MessagesLogAdapter', 
+            'LoggerFactory',
+            'AsyncConsumerLogChannel',
+            'ChannelFactory'
+        ];
+        
+        if (excludedComponents.includes(logMessage.logName)) {
+            return; // Skip processing logs from messaging/logging infrastructure
+        }
+        
+        // Filter out DEBUG and TRACE messages - these are for developers, not end users
+        const debugLevels = ['DEBUG', 'TRACE'];
+        if (debugLevels.includes(logMessage.level.toUpperCase())) {
+            return; // Skip debug messages - don't show to users
+        }
         
         // Map log level to message type
         const messageType = this.levelMapping[logMessage.level.toUpperCase()] || 'info';
@@ -95,9 +115,7 @@ export class MessagesLogAdapter implements AsyncLogConsumer {
                 return `Warning from ${cleanName}`;
             case 'INFO':
                 return `Info: ${cleanName}`;
-            case 'DEBUG':
-            case 'TRACE':
-                return `Debug: ${cleanName}`;
+            // DEBUG and TRACE are filtered out, so no cases needed
             default:
                 return `${cleanName}: ${levelUpper}`;
         }
@@ -164,14 +182,7 @@ export class MessagesLogAdapter implements AsyncLogConsumer {
                     autoHideDelay: 5000,
                     persistent: false
                 };
-            case 'DEBUG':
-            case 'TRACE':
-                return {
-                    dismissible: true,
-                    autoHide: true,
-                    autoHideDelay: 3000, // Debug messages disappear faster
-                    persistent: false
-                };
+            // DEBUG and TRACE are filtered out, so no cases needed
             default:
                 return {
                     dismissible: true,
