@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 5
-- **Last Updated**: 2025-10-07 by alex-inqwise
+- **Total Commits**: 7
+- **Last Updated**: 2025-10-07 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -60,4 +60,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - security: Fix remote property injection vulnerability in test setup ([e3b6b45632e503cb5bc3996fc5db659fd40f89d8](https://github.com/inqwise-opinion/opinion-front-ui/commit/e3b6b45632e503cb5bc3996fc5db659fd40f89d8)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by glassfox**
+
+
+### 📦 Changes
+
+- Potential fix for code scanning alert no. 172: Log injection ([3a5758366f6d08d778d4419a7ffe1432895ea5fd](https://github.com/inqwise-opinion/opinion-front-ui/commit/3a5758366f6d08d778d4419a7ffe1432895ea5fd)) - _glassfox_
+- Merge pull request #30 from inqwise-opinion/alert-autofix-172 ([667d61aa2a6001431348a4faf0194a3a5ee53023](https://github.com/inqwise-opinion/opinion-front-ui/commit/667d61aa2a6001431348a4faf0194a3a5ee53023)) - _glassfox_
 
