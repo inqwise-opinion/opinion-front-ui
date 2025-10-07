@@ -202,7 +202,6 @@ jobs:
       discord_webhook: false
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
   # Job 5: Production Deployment (DISABLED - Use release-driven deployment)
   deploy:

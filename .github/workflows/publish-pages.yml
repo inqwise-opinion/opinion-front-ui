@@ -34,8 +34,6 @@ on:
     secrets:
       GITHUB_TOKEN:
         required: true
-      DISCORD_WEBHOOK_URL:
-        required: false
     outputs:
       deployment_url:
         description: 'The URL where the deployment is available'
@@ -343,8 +341,8 @@ jobs:
         if: inputs.discord_webhook == true
         run: |
           # Check if Discord webhook URL is available
-          if [ -z "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
-            echo "Discord webhook requested but DISCORD_WEBHOOK_URL secret not set. Skipping notification."
+          if [ -z "${{ vars.WEBHOOK_URL }}" ]; then
+            echo "Discord webhook requested but WEBHOOK_URL variable not set. Skipping notification."
             exit 0
           fi
           
@@ -413,4 +411,4 @@ jobs:
           # Send to Discord
           curl -H "Content-Type: application/json" \
                -d "$DISCORD_PAYLOAD" \
-               "${{ secrets.DISCORD_WEBHOOK_URL }}"
+               "${{ vars.WEBHOOK_URL }}"

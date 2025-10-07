@@ -55,7 +55,6 @@ jobs:
       discord_webhook: ${{ github.event_name == 'workflow_dispatch' && inputs.discord_notification || github.event_name == 'push' }}
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
   # Post-deployment validation
   validate-deployment:
