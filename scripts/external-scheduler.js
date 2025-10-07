@@ -18,7 +18,8 @@ const { execSync } = require('child_process');
 // Sanitize user input before logging to prevent log injection
 function sanitizeLogInput(input) {
   if (typeof input !== 'string') return input;
-  return input.replace(/[\r\n]/g, '');
+  // Remove all ASCII control characters (except tab and space) for robust log injection prevention
+  return input.replace(/[\r\n\v\f\b\0\u0001-\u001F\u007F]/g, '');
 }
 
 // Configuration
@@ -234,7 +235,7 @@ async function main() {
     console.log(`   https://github.com/${config.owner}/${config.repo}/actions`);
     
   } catch (error) {
-    console.error('❌ Error:', sanitizeLogInput(error.message));
+    console.error('❌ Error: [USER-CONTROLLED]', '"' + sanitizeLogInput(error.message) + '"');
     console.error('');
     console.error('Usage: node external-scheduler.js --release <version> --environment <env> [options]');
     console.error('');
