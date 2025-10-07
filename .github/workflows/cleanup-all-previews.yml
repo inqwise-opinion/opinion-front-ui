@@ -1,0 +1,248 @@
+name: Cleanup All PR Previews
+
+on:
+  workflow_dispatch:
+    inputs:
+      cleanup_mode:
+        description: 'Cleanup mode'
+        required: true
+        default: 'closed_prs_only'
+        type: choice
+        options:
+          - closed_prs_only
+          - all_previews
+          - specific_pr
+      specific_pr_number:
+        description: 'Specific PR number to cleanup (only if cleanup_mode is specific_pr)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  cleanup-previews:
+    name: 🧹 Cleanup Preview Deployments
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 🔧 Setup Git Configuration
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+      - name: 🔍 Get Current PR Previews
+        id: get_previews
+        run: |
+          echo "🔍 Fetching current preview directories from gh-pages branch..."
+          
+          # Get list of PR preview directories
+          PR_DIRS=$(gh api repos/${{ github.repository }}/contents --jq '.[] | select(.name | startswith("pr-")) | .name' -H "Accept: application/vnd.github.v3+json" --method GET --field ref=gh-pages || echo "")
+          
+          if [ -z "$PR_DIRS" ]; then
+            echo "No preview directories found"
+            echo "preview_dirs=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Found preview directories:"
+          echo "$PR_DIRS"
+          
+          # Convert to array for processing
+          echo "preview_dirs<<EOF" >> $GITHUB_OUTPUT
+          echo "$PR_DIRS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 🔍 Determine Cleanup Targets
+        id: determine_targets
+        run: |
+          CLEANUP_MODE="${{ github.event.inputs.cleanup_mode }}"
+          SPECIFIC_PR="${{ github.event.inputs.specific_pr_number }}"
+          
+          echo "Cleanup mode: $CLEANUP_MODE"
+          echo "Specific PR: $SPECIFIC_PR"
+          
+          PREVIEW_DIRS="${{ steps.get_previews.outputs.preview_dirs }}"
+          
+          if [ -z "$PREVIEW_DIRS" ]; then
+            echo "No preview directories to process"
+            echo "cleanup_targets=" >> $GITHUB_OUTPUT
+            echo "cleanup_count=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          CLEANUP_TARGETS=""
+          CLEANUP_COUNT=0
+          
+          case "$CLEANUP_MODE" in
+            "all_previews")
+              echo "Mode: Cleaning up ALL preview directories"
+              CLEANUP_TARGETS="$PREVIEW_DIRS"
+              CLEANUP_COUNT=$(echo "$PREVIEW_DIRS" | wc -l)
+              ;;
+              
+            "specific_pr")
+              if [ -n "$SPECIFIC_PR" ]; then
+                echo "Mode: Cleaning up specific PR #$SPECIFIC_PR"
+                TARGET_DIR="pr-$SPECIFIC_PR"
+                if echo "$PREVIEW_DIRS" | grep -q "^$TARGET_DIR$"; then
+                  CLEANUP_TARGETS="$TARGET_DIR"
+                  CLEANUP_COUNT=1
+                else
+                  echo "PR #$SPECIFIC_PR preview directory not found"
+                  CLEANUP_COUNT=0
+                fi
+              else
+                echo "Error: Specific PR number required for specific_pr mode"
+                exit 1
+              fi
+              ;;
+              
+            "closed_prs_only"|*)
+              echo "Mode: Cleaning up closed PRs only"
+              
+              # Get all closed PR numbers
+              CLOSED_PRS=$(gh pr list --state closed --limit 100 --json number --jq '.[].number')
+              
+              echo "Checking which preview directories correspond to closed PRs..."
+              
+              for pr_dir in $PREVIEW_DIRS; do
+                if [[ "$pr_dir" =~ ^pr-([0-9]+)$ ]]; then
+                  PR_NUM="${BASH_REMATCH[1]}"
+                  
+                  # Check if this PR is closed
+                  if echo "$CLOSED_PRS" | grep -q "^$PR_NUM$"; then
+                    echo "- $pr_dir (PR #$PR_NUM is closed)"
+                    CLEANUP_TARGETS="$CLEANUP_TARGETS$pr_dir\n"
+                    CLEANUP_COUNT=$((CLEANUP_COUNT + 1))
+                  else
+                    echo "- $pr_dir (PR #$PR_NUM is still open, skipping)"
+                  fi
+                fi
+              done
+              
+              # Clean up the trailing newline
+              CLEANUP_TARGETS=$(echo -e "$CLEANUP_TARGETS" | head -n -1)
+              ;;
+          esac
+          
+          echo "cleanup_targets<<EOF" >> $GITHUB_OUTPUT
+          echo "$CLEANUP_TARGETS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "cleanup_count=$CLEANUP_COUNT" >> $GITHUB_OUTPUT
+          
+          echo "📊 Summary: $CLEANUP_COUNT directories to clean up"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 🧹 Cleanup Preview Directories  
+        if: steps.determine_targets.outputs.cleanup_count > 0
+        run: |
+          CLEANUP_TARGETS="${{ steps.determine_targets.outputs.cleanup_targets }}"
+          CLEANUP_COUNT="${{ steps.determine_targets.outputs.cleanup_count }}"
+          
+          echo "🧹 Starting cleanup of $CLEANUP_COUNT preview directories..."
+          
+          # Clone the repository to access gh-pages branch
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
+          cd temp-repo
+          
+          # Switch to gh-pages branch
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git checkout gh-pages
+            echo "✅ Switched to gh-pages branch"
+          else
+            echo "❌ No gh-pages branch found"
+            cd ..
+            rm -rf temp-repo
+            exit 1
+          fi
+          
+          # Remove each target directory
+          REMOVED_COUNT=0
+          SKIPPED_COUNT=0
+          
+          while IFS= read -r pr_dir; do
+            if [ -n "$pr_dir" ] && [ -d "$pr_dir" ]; then
+              echo "🗑️ Removing directory: $pr_dir"
+              rm -rf "$pr_dir"
+              REMOVED_COUNT=$((REMOVED_COUNT + 1))
+            else
+              echo "⚠️ Directory not found or empty: $pr_dir"
+              SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+            fi
+          done <<< "$CLEANUP_TARGETS"
+          
+          # Commit changes if any directories were removed
+          if [ $REMOVED_COUNT -gt 0 ]; then
+            git add .
+            git commit -m "🧹 Cleanup $REMOVED_COUNT preview directories (${{ github.event.inputs.cleanup_mode }} mode)" || echo "No changes to commit"
+            git push origin gh-pages
+            echo "✅ Successfully cleaned up $REMOVED_COUNT preview directories"
+          else
+            echo "ℹ️ No directories were removed"
+          fi
+          
+          # Cleanup
+          cd ..
+          rm -rf temp-repo
+          
+          # Set outputs for summary
+          echo "removed_count=$REMOVED_COUNT" >> $GITHUB_OUTPUT
+          echo "skipped_count=$SKIPPED_COUNT" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 📊 Cleanup Summary
+        run: |
+          CLEANUP_COUNT="${{ steps.determine_targets.outputs.cleanup_count }}"
+          REMOVED_COUNT="${{ steps.cleanup.outputs.removed_count || 0 }}"
+          SKIPPED_COUNT="${{ steps.cleanup.outputs.skipped_count || 0 }}"
+          
+          echo "## 🧹 Preview Cleanup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Cleanup Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Mode** | ${{ github.event.inputs.cleanup_mode }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Directories Found** | $CLEANUP_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Successfully Removed** | $REMOVED_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Skipped/Not Found** | $SKIPPED_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "$CLEANUP_COUNT" -gt 0 ]; then
+            echo "### 🎯 Cleanup Targets" >> $GITHUB_STEP_SUMMARY
+            echo "The following preview directories were processed:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.determine_targets.outputs.cleanup_targets }}" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ℹ️ No Action Required" >> $GITHUB_STEP_SUMMARY
+            echo "No preview directories found that match the cleanup criteria." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- **Preview Index**: [View remaining previews](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/)" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Pages**: [View gh-pages branch](https://github.com/${{ github.repository }}/tree/gh-pages)" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "$REMOVED_COUNT" -gt 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Success**: Cleaned up $REMOVED_COUNT preview directories" >> $GITHUB_STEP_SUMMARY
+          elif [ "$CLEANUP_COUNT" -eq 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "ℹ️ **Info**: No preview directories found to clean up" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Warning**: Found $CLEANUP_COUNT directories but none were removed" >> $GITHUB_STEP_SUMMARY
+          fi
