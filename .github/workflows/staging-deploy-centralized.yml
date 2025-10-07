@@ -53,8 +53,7 @@ jobs:
       build_config: "github-pages-staging" 
       node_version: "20"
       discord_webhook: ${{ github.event_name == 'workflow_dispatch' && inputs.discord_notification || github.event_name == 'push' }}
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    secrets: inherit
 
   # Post-deployment validation
   validate-deployment:

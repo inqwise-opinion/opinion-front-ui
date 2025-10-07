@@ -32,8 +32,7 @@ on:
         type: boolean
         default: false
     secrets:
-      GITHUB_TOKEN:
-        required: true
+      inherit
     outputs:
       deployment_url:
         description: 'The URL where the deployment is available'

@@ -200,8 +200,7 @@ jobs:
       build_config: "github-pages-pr"
       node_version: "20"
       discord_webhook: false
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    secrets: inherit
 
   # Job 5: Production Deployment (DISABLED - Use release-driven deployment)
   deploy:
