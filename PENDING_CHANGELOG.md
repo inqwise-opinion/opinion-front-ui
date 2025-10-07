@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 3
+- **Total Commits**: 4
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -42,4 +42,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: Resolve PR preview cleanup race condition ([8b98a1a6b8fa981a20c812ea81e3d88ad06e51de](https://github.com/inqwise-opinion/opinion-front-ui/commit/8b98a1a6b8fa981a20c812ea81e3d88ad06e51de)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: Add Git configuration to cleanup workflow temp repo ([96be9fc46c9ae6717d48e92a70966a7ebb2aaa1a](https://github.com/inqwise-opinion/opinion-front-ui/commit/96be9fc46c9ae6717d48e92a70966a7ebb2aaa1a)) - _glassfox_
 
