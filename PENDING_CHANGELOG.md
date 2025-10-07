@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 8
-- **Last Updated**: 2025-10-07 by glassfox
+- **Total Commits**: 14
+- **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
 ---
@@ -79,4 +79,24 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🚀 Features
 
 - feat: Console-to-Logger migration with centralized GitHub Pages publishing ([45113ffd4222af519c382079f850b039b5befae1](https://github.com/inqwise-opinion/opinion-front-ui/commit/45113ffd4222af519c382079f850b039b5befae1)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 📦 Changes
+
+- Migrate console usage to structured Logger system ([d4cda9a1d5463563a7ea4dd7f33126a13e832f2d](https://github.com/inqwise-opinion/opinion-front-ui/commit/d4cda9a1d5463563a7ea4dd7f33126a13e832f2d)) - _glassfox_
+- Fix failing tests after console to Logger migration ([5c756682c6ce8107d9cd5ec3ff9e2def9e7091ef](https://github.com/inqwise-opinion/opinion-front-ui/commit/5c756682c6ce8107d9cd5ec3ff9e2def9e7091ef)) - _glassfox_
+- Fix logging-related test failures ([e2a820ca0aeb20ae4e57bc03282d57acf61796a4](https://github.com/inqwise-opinion/opinion-front-ui/commit/e2a820ca0aeb20ae4e57bc03282d57acf61796a4)) - _glassfox_
+- Merge branch 'main' into feature/replace-console-with-logger ([96c57b8c284cc47b93bfbe72b34c8ce08e0c537c](https://github.com/inqwise-opinion/opinion-front-ui/commit/96c57b8c284cc47b93bfbe72b34c8ce08e0c537c)) - _glassfox_
+
+### 🐛 Bug Fixes
+
+- fix: Correct NODE_VERSION variable reference in CI workflow ([539538b0194e7eb54b33def64f8e11cb5147a3ce](https://github.com/inqwise-opinion/opinion-front-ui/commit/539538b0194e7eb54b33def64f8e11cb5147a3ce)) - _glassfox_
+
+### 🚀 Features
+
+- feat: Centralize GitHub Pages publishing logic ([f534a7cd8be4590b2280e9ac1e608274a1915c26](https://github.com/inqwise-opinion/opinion-front-ui/commit/f534a7cd8be4590b2280e9ac1e608274a1915c26)) - _glassfox_
 
