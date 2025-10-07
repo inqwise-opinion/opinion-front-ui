@@ -9,6 +9,8 @@
 import { globalEventBus, Consumer } from '../lib';
 import { ActivePageStatus } from '../components/ActivePageStatusComponent';
 import { PageInfo } from '../interfaces/ActivePage';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export interface PageTrackerInfo {
   hasActivePage: boolean;
@@ -25,9 +27,11 @@ export class PageTracker {
   private consumers: Consumer[] = [];
   private eventHistory: Array<{ event: string; data: any; timestamp: number }> = [];
   private maxHistorySize: number = 20;
+  private logger: Logger;
 
   constructor() {
-    console.log('📊 PageTracker - Initialized');
+    this.logger = LoggerFactory.getInstance().getLogger('PageTracker');
+    this.logger.info('📊 PageTracker - Initialized');
     this.setupEventListeners();
   }
 
@@ -51,7 +55,7 @@ export class PageTracker {
         }
       };
     } catch (error) {
-      console.error('📊 PageTracker - Error getting info:', error);
+      this.logger.error('📊 PageTracker - Error getting info:', error);
       return {
         hasActivePage: false,
         currentPageId: null,
@@ -72,7 +76,7 @@ export class PageTracker {
     try {
       return await globalEventBus.request('page:get-current-info', {}) as PageInfo | null;
     } catch (error) {
-      console.error('📊 PageTracker - Error getting current page info:', error);
+      this.logger.error('📊 PageTracker - Error getting current page info:', error);
       return null;
     }
   }
@@ -84,7 +88,7 @@ export class PageTracker {
     try {
       return await globalEventBus.request('page:is-active', { pageId }) as boolean;
     } catch (error) {
-      console.error('📊 PageTracker - Error checking if page is active:', error);
+      this.logger.error('📊 PageTracker - Error checking if page is active:', error);
       return false;
     }
   }
@@ -110,7 +114,7 @@ export class PageTracker {
    * Test EventBus by publishing a test message
    */
   public testEventBus(message: string = 'Hello from PageTracker!'): void {
-    console.log('📊 PageTracker - Publishing test event...');
+    this.logger.info('📊 PageTracker - Publishing test event...');
     globalEventBus.publish('test:page-tracker', {
       message,
       timestamp: Date.now(),
@@ -204,11 +208,11 @@ export class PageTracker {
     // Listen to test events
     const testConsumer = globalEventBus.consume('test:page-tracker', (data) => {
       this.addEventToHistory('test:page-tracker', data);
-      console.log('📊 PageTracker - Received test event:', data);
+      this.logger.info('📊 PageTracker - Received test event:', data);
     });
     this.consumers.push(testConsumer);
 
-    console.log('📊 PageTracker - Event listeners setup complete');
+    this.logger.info('📊 PageTracker - Event listeners setup complete');
   }
 
   /**
@@ -246,7 +250,7 @@ export class PageTracker {
     this.consumers.forEach(consumer => consumer.unregister());
     this.consumers = [];
     this.eventHistory = [];
-    console.log('📊 PageTracker - Destroyed');
+    this.logger.info('📊 PageTracker - Destroyed');
   }
 }
 

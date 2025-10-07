@@ -20,6 +20,8 @@ import {
   HotkeyExecutionContext,
 } from "../hotkeys/HotkeyChainSystem";
 import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
+import { LoggerFactory } from "../logging/LoggerFactory";
+import { Logger } from "../logging/Logger";
 
 export class SidebarComponent implements Sidebar, ChainHotkeyProvider, ComponentWithStatus {
   private sidebar: HTMLElement | null = null;
@@ -28,6 +30,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
   private compactMode: boolean = false;
   private compactModeListeners: Array<(isCompact: boolean) => void> = [];
   private layoutContext: LayoutContext;
+  private logger: Logger;
   private toggleCompactModeHandler?: (compactMode: boolean) => void;
   private chainProviderUnsubscriber: (() => void) | null = null;
   private initTime: number | null = null;
@@ -51,7 +54,8 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       },
     };
 
-    console.log("Sidebar - Creating sidebar with config:", this.config);
+    this.logger = LoggerFactory.getInstance().getLogger('SidebarComponent');
+    this.logger.info("Sidebar - Creating sidebar with config:", this.config);
 
     // Use provided LayoutContext or fallback to singleton (for backwards compatibility)
     this.layoutContext = layoutContext || getLayoutContext();
@@ -81,10 +85,10 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    * Initialize the sidebar
    */
   async init(): Promise<void> {
-    console.log("Sidebar - Initializing...");
+    this.logger.info("Sidebar - Initializing...");
 
     if (this.isInitialized) {
-      console.warn("Sidebar - Already initialized");
+      this.logger.warn("Sidebar - Already initialized");
       return;
     }
 
@@ -108,7 +112,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     this.initTime = Date.now();
     this.isInitialized = true;
-    console.log("Sidebar - Ready ✅");
+    this.logger.info("Sidebar - Ready ✅");
   }
 
   /**
@@ -154,7 +158,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       //setTimeout(() => {
       this.sidebar = document.getElementById("app-sidebar");
       if (!this.sidebar) {
-        console.error(
+        this.logger.error(
           "Sidebar: #app-sidebar element not found in DOM. Available elements:",
           Array.from(document.querySelectorAll("[id]")).map((el) => el.id),
         );
@@ -167,7 +171,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       return;
     }
 
-    console.log("Sidebar - Using existing element");
+    this.logger.info("Sidebar - Using existing element");
 
     this.finalizeSidebarCreation();
   }
@@ -179,7 +183,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     // Populate the existing structure with dynamic content
     this.populateContent();
 
-    console.log("Sidebar - Content populated successfully");
+    this.logger.info("Sidebar - Content populated successfully");
   }
 
   /**
@@ -348,7 +352,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
         // Check if sidebar is locked in expanded mode
         if (this.isLocked() && !this.compactMode) {
-          console.log(
+          this.logger.info(
             "Sidebar - Toggle blocked: sidebar is locked in expanded mode",
           );
           return;
@@ -369,7 +373,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       if (closeButton) {
         event.preventDefault();
         event.stopPropagation();
-        console.log("📱 Sidebar - Mobile close button clicked");
+        this.logger.info("📱 Sidebar - Mobile close button clicked");
         this.hideMobileMenu("close-button");
         return;
       }
@@ -384,7 +388,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       if (navLink && navLink.href.startsWith(window.location.origin)) {
         // LinkInterceptionService will handle the navigation
         // We just need to update the active state
-        console.log("Sidebar - Navigation link clicked:", navLink.href);
+        this.logger.info("Sidebar - Navigation link clicked:", navLink.href);
         this.setActiveItem(navLink.getAttribute("data-nav-id") || "");
       }
     });
@@ -411,7 +415,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
         navItem.expanded = !isExpanded;
       }
 
-      console.log(`Sidebar - Toggled ${navId} expandable: ${!isExpanded}`);
+      this.logger.info(`Sidebar - Toggled ${navId} expandable: ${!isExpanded}`);
     }
   }
 
@@ -450,7 +454,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
         }
       });
 
-      console.log(`Sidebar - Set active item: ${navId}`);
+      this.logger.info(`Sidebar - Set active item: ${navId}`);
     }
   }
 
@@ -466,7 +470,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
         navList.innerHTML = this.renderNavigationItems(this.navigationItems);
         this.navigationUpdateCount++;
         this.lastActionTime = Date.now();
-        console.log("Sidebar - Navigation updated");
+        this.logger.info("Sidebar - Navigation updated");
       }
     }
   }
@@ -483,7 +487,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       throw new Error("SidebarComponent.setActivePage: Sidebar not initialized. Call init() first.");
     }
     
-    console.log(`📍 Sidebar - setActivePage called with: ${navId}`);
+    this.logger.info(`📍 Sidebar - setActivePage called with: ${navId}`);
     this.setActiveItem(navId);
   }
 
@@ -499,7 +503,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
       if (copyrightText && this.config.footer.showFooter) {
         copyrightText.textContent = text;
-        console.log(`Sidebar - Footer text updated to: "${text}"`);
+        this.logger.info(`Sidebar - Footer text updated to: "${text}"`);
       }
     }
   }
@@ -520,10 +524,10 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
           footerEl.innerHTML = `
             <p class="copyright-text">${this.config.footer.text}</p>
           `;
-          console.log("Sidebar - Footer shown");
+          this.logger.info("Sidebar - Footer shown");
         } else {
           footerEl.style.display = "none";
-          console.log("Sidebar - Footer hidden");
+          this.logger.info("Sidebar - Footer hidden");
         }
       }
     }
@@ -544,7 +548,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     
     // Block compact mode on mobile - mobile uses overlay mode instead
     if (this.layoutContext.isLayoutMobile()) {
-      console.log(
+      this.logger.info(
         "📱 Sidebar - Compact mode blocked on mobile (uses overlay mode instead)",
       );
       
@@ -555,7 +559,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     
     // Check if locked in expanded mode
     if (compact && this.isLocked()) {
-      console.log(
+      this.logger.info(
         "🔒 Sidebar - Compact mode blocked (sidebar is locked in expanded mode)",
       );
       
@@ -566,7 +570,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     if (this.compactMode !== compact) {
       // Log the dimension change start
-      console.log(
+      this.logger.info(
         `🔄 Sidebar - Compact mode changing: ${this.compactMode ? "compact" : "expanded"} → ${compact ? "compact" : "expanded"}`,
       );
 
@@ -602,7 +606,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       // Notify local listeners of the change
       this.notifyCompactModeChange(compact);
 
-      console.log(
+      this.logger.info(
         `✅ Sidebar - Compact mode ${compact ? "enabled" : "disabled"}`,
       );
     }
@@ -633,7 +637,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       try {
         listener(isCompact);
       } catch (error) {
-        console.error("Sidebar - Error in compact mode change handler:", error);
+        this.logger.error("Sidebar - Error in compact mode change handler:", error);
       }
     });
   }
@@ -656,7 +660,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     // Emit the event through the LayoutContext
     this.layoutContext.emit("sidebar-compact-mode-change", event.data);
 
-    console.log(
+    this.logger.info(
       `📡 Sidebar - Emitted compact mode change event: ${previousCompactMode} → ${compactMode}${blockedReason ? ` (blocked: ${blockedReason})` : ""}`,
     );
   }
@@ -678,7 +682,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     this.layoutContext.emit("mobile-menu-mode-change", event.data);
 
-    console.log(
+    this.logger.info(
       `📡 Sidebar - Emitted mobile menu mode change event: ${previousVisibility} → ${isVisible} (via ${trigger})`,
     );
   }
@@ -696,9 +700,9 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
   public expandSidebar(): void {
     if (this.compactMode) {
       this.setCompactMode(false);
-      console.log("Sidebar - Expanded to full width");
+      this.logger.info("Sidebar - Expanded to full width");
     } else {
-      console.log("Sidebar - Already expanded");
+      this.logger.info("Sidebar - Already expanded");
     }
   }
 
@@ -708,9 +712,9 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
   public compactSidebar(): void {
     if (!this.compactMode) {
       this.setCompactMode(true);
-      console.log("Sidebar - Compacted to narrow width");
+      this.logger.info("Sidebar - Compacted to narrow width");
     } else {
-      console.log("Sidebar - Already compact");
+      this.logger.info("Sidebar - Already compact");
     }
   }
 
@@ -723,7 +727,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     // Add a data attribute to indicate locked state
     if (this.sidebar) {
       this.sidebar.setAttribute("data-locked-expanded", "true");
-      console.log("Sidebar - Locked in expanded mode");
+      this.logger.info("Sidebar - Locked in expanded mode");
     }
   }
 
@@ -733,7 +737,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
   public unlockSidebar(): void {
     if (this.sidebar) {
       this.sidebar.removeAttribute("data-locked-expanded");
-      console.log("Sidebar - Unlocked, normal toggle behavior restored");
+      this.logger.info("Sidebar - Unlocked, normal toggle behavior restored");
     }
   }
 
@@ -774,7 +778,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
         ? "keyboard_double_arrow_right"
         : "keyboard_double_arrow_left";
 
-      console.log(
+      this.logger.info(
         `Sidebar - Toggle button updated for ${this.compactMode ? "compact" : "normal"} mode`,
       );
     }
@@ -798,7 +802,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       transitionProperty.includes("width") &&
       parseFloat(transitionDuration) > 0
     ) {
-      console.log(
+      this.logger.debug(
         `   ⏳ Waiting for sidebar width transition (${transitionDuration}) to complete...`,
       );
 
@@ -806,7 +810,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       const handleTransitionEnd = (event: TransitionEvent) => {
         // Only handle width transitions on the sidebar itself
         if (event.target === this.sidebar && event.propertyName === "width") {
-          console.log("   ✅ Sidebar width transition completed");
+          this.logger.debug("   ✅ Sidebar width transition completed");
           this.sidebar!.removeEventListener(
             "transitionend",
             handleTransitionEnd,
@@ -824,7 +828,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
             "transitionend",
             handleTransitionEnd,
           );
-          console.log(
+          this.logger.warn(
             "   ⚠️ Fallback: Publishing dimensions after transition timeout",
           );
         },
@@ -832,7 +836,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       ); // Add 100ms buffer
     } else {
       // No transition defined, publish immediately
-      console.log(
+      this.logger.debug(
         "   ⚡ No width transition defined, publishing dimensions immediately",
       );
     }
@@ -843,7 +847,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    */
   public showMobileMenu(trigger: "close-button" | "backdrop" | "menu-button" | "programmatic" = "programmatic"): void {
     if (!this.sidebar) {
-      console.warn(
+      this.logger.warn(
         "❌ Sidebar - Cannot show mobile menu: sidebar element not found",
       );
       return;
@@ -851,7 +855,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     const isMobile = this.layoutContext.isLayoutMobile();
     if (!isMobile) {
-      console.warn(
+      this.logger.warn(
         "⚠️ Sidebar - showMobileMenu called but not in mobile mode",
       );
       return;
@@ -859,7 +863,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     const isCurrentlyVisible = !this.sidebar.classList.contains("sidebar-hidden");
     if (isCurrentlyVisible) {
-      console.log("📱 Sidebar - Mobile menu already visible");
+      this.logger.info("📱 Sidebar - Mobile menu already visible");
       return;
     }
 
@@ -869,13 +873,13 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     this.lastActionTime = Date.now();
 
     // Show mobile sidebar overlay
-    console.log("📱 Sidebar - Showing mobile sidebar overlay");
+    this.logger.info("📱 Sidebar - Showing mobile sidebar overlay");
     this.sidebar.classList.remove("sidebar-hidden");
     this.sidebar.classList.add("sidebar-mobile-visible");
 
     // Remove inline display:none that was set by responsive mode
     this.sidebar.style.display = "";
-    console.log("📱 Sidebar - Removed inline display:none style");
+    this.logger.info("📱 Sidebar - Removed inline display:none style");
     
     // ESC key handling now provided via ChainHotkeyProvider interface
 
@@ -885,7 +889,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     // Add backdrop for mobile overlay
     this.createMobileBackdrop();
 
-    console.log("✅ Sidebar - Mobile menu shown");
+    this.logger.info("✅ Sidebar - Mobile menu shown");
   }
 
   /**
@@ -893,7 +897,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    */
   public hideMobileMenu(trigger: "close-button" | "backdrop" | "menu-button" | "programmatic" = "programmatic"): void {
     if (!this.sidebar) {
-      console.warn(
+      this.logger.warn(
         "❌ Sidebar - Cannot hide mobile menu: sidebar element not found",
       );
       return;
@@ -901,7 +905,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     const isMobile = this.layoutContext.isLayoutMobile();
     if (!isMobile) {
-      console.warn(
+      this.logger.warn(
         "⚠️ Sidebar - hideMobileMenu called but not in mobile mode",
       );
       return;
@@ -909,7 +913,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     const isCurrentlyVisible = !this.sidebar.classList.contains("sidebar-hidden");
     if (!isCurrentlyVisible) {
-      console.log("📱 Sidebar - Mobile menu already hidden");
+      this.logger.info("📱 Sidebar - Mobile menu already hidden");
       return;
     }
 
@@ -919,7 +923,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     this.lastActionTime = Date.now();
 
     // Hide mobile sidebar overlay
-    console.log("📱 Sidebar - Hiding mobile sidebar overlay");
+    this.logger.info("📱 Sidebar - Hiding mobile sidebar overlay");
     this.sidebar.classList.add("sidebar-hidden");
     this.sidebar.classList.remove("sidebar-mobile-visible");
 
@@ -935,7 +939,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     
     // ESC key handling automatically disabled when mobile menu is hidden
 
-    console.log("✅ Sidebar - Mobile menu hidden");
+    this.logger.info("✅ Sidebar - Mobile menu hidden");
   }
 
   /**
@@ -943,7 +947,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    */
   public toggleMobileVisibility(trigger: "close-button" | "backdrop" | "menu-button" | "programmatic" = "programmatic"): void {
     if (!this.sidebar) {
-      console.warn(
+      this.logger.warn(
         "❌ Sidebar - Cannot toggle mobile visibility: sidebar element not found",
       );
       return;
@@ -952,7 +956,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     // Use layout context to check if we're in mobile mode
     const isMobile = this.layoutContext.isLayoutMobile();
     if (!isMobile) {
-      console.warn(
+      this.logger.warn(
         "⚠️ Sidebar - toggleMobileVisibility called but not in mobile mode",
       );
       return;
@@ -962,10 +966,10 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       !this.sidebar.classList.contains("sidebar-hidden");
     const newVisibility = !isCurrentlyVisible;
     
-    console.log(
+    this.logger.info(
       `📱 Sidebar - Toggling mobile visibility: ${isCurrentlyVisible} → ${newVisibility}`,
     );
-    console.log(`📱 Sidebar - Current classes: ${this.sidebar.className}`);
+    this.logger.debug(`📱 Sidebar - Current classes: ${this.sidebar.className}`);
 
     // Emit mobile menu mode change event before changing state
     this.emitMobileMenuModeChangeEvent(
@@ -976,7 +980,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
     if (isCurrentlyVisible) {
       // Hide mobile sidebar overlay
-      console.log("📱 Sidebar - Hiding mobile sidebar overlay");
+      this.logger.info("📱 Sidebar - Hiding mobile sidebar overlay");
       this.sidebar.classList.add("sidebar-hidden");
       this.sidebar.classList.remove("sidebar-mobile-visible");
 
@@ -996,13 +1000,13 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       // ESC key handling automatically disabled when mobile menu is hidden
     } else {
       // Show mobile sidebar overlay
-      console.log("📱 Sidebar - Showing mobile sidebar overlay");
+      this.logger.info("📱 Sidebar - Showing mobile sidebar overlay");
       this.sidebar.classList.remove("sidebar-hidden");
       this.sidebar.classList.add("sidebar-mobile-visible");
 
       // CRITICAL: Remove inline display:none that was set by responsive mode
       this.sidebar.style.display = "";
-      console.log("📱 Sidebar - Removed inline display:none style");
+      this.logger.info("📱 Sidebar - Removed inline display:none style");
 
       // Add body class for blur effect
       document.body.classList.add("sidebar-mobile-open");
@@ -1014,18 +1018,18 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
 
       // Debug: Log the sidebar's computed styles
       const computedStyle = getComputedStyle(this.sidebar);
-      console.log("📱 Sidebar - After show - computed styles:");
-      console.log(`   display: ${computedStyle.display}`);
-      console.log(`   visibility: ${computedStyle.visibility}`);
-      console.log(`   opacity: ${computedStyle.opacity}`);
-      console.log(`   transform: ${computedStyle.transform}`);
-      console.log(`   z-index: ${computedStyle.zIndex}`);
+      this.logger.debug("📱 Sidebar - After show - computed styles:");
+      this.logger.debug(`   display: ${computedStyle.display}`);
+      this.logger.debug(`   visibility: ${computedStyle.visibility}`);
+      this.logger.debug(`   opacity: ${computedStyle.opacity}`);
+      this.logger.debug(`   transform: ${computedStyle.transform}`);
+      this.logger.debug(`   z-index: ${computedStyle.zIndex}`);
     }
 
-    console.log(
+    this.logger.info(
       `✅ Sidebar - Mobile visibility toggled to: ${newVisibility}`,
     );
-    console.log(`📱 Sidebar - Final classes: ${this.sidebar.className}`);
+    this.logger.debug(`📱 Sidebar - Final classes: ${this.sidebar.className}`);
   }
 
   /**
@@ -1055,7 +1059,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       this.hideMobileMenu("backdrop");
     });
 
-    console.log("📱 Sidebar - Mobile backdrop created with blur effects");
+    this.logger.info("📱 Sidebar - Mobile backdrop created with blur effects");
   }
 
   /**
@@ -1119,7 +1123,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    * Setup layout mode subscriptions
    */
   private setupLayoutModeSubscriptions(): void {
-    console.log("Sidebar - Setting up layout mode subscriptions...");
+    this.logger.info("Sidebar - Setting up layout mode subscriptions...");
 
     // Subscribe to layout mode changes only (not viewport changes)
     // Sidebar only cares about mode transitions (mobile ↔ tablet ↔ desktop), not pixel-level viewport changes
@@ -1146,7 +1150,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       },
     );
 
-    console.log("Sidebar - Layout mode, mobile menu, and compact mode request subscriptions setup complete");
+    this.logger.info("Sidebar - Layout mode, mobile menu, and compact mode request subscriptions setup complete");
   }
 
   /**
@@ -1155,7 +1159,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
   private initializeFromLayoutMode(): void {
     const currentModeType = this.layoutContext.getModeType();
     
-    console.log("Sidebar - Initializing from current layout mode:", currentModeType);
+    this.logger.info("Sidebar - Initializing from current layout mode:", currentModeType);
     
     this.updateSidebarForModeType(currentModeType);
   }
@@ -1164,7 +1168,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    * Handle layout mode changes
    */
   private handleLayoutModeChange(eventData: any): void {
-    console.log(`Sidebar - Layout mode changed to: ${eventData.modeType}`, eventData);
+    this.logger.info(`Sidebar - Layout mode changed to: ${eventData.modeType}`, eventData);
     
     // Clean up mobile overlay if transitioning FROM mobile mode
     if (eventData.previousModeType === 'mobile' && eventData.modeType !== 'mobile') {
@@ -1179,11 +1183,11 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    * Handle mobile menu requests from other components
    */
   private handleMobileMenuRequest(requestData: any): void {
-    console.log(`Sidebar - Mobile menu request received:`, requestData);
+    this.logger.info(`Sidebar - Mobile menu request received:`, requestData);
     
     // Only handle mobile menu requests when in mobile mode
     if (!this.layoutContext.isLayoutMobile()) {
-      console.log(`Sidebar - Ignoring mobile menu request: not in mobile mode`);
+      this.logger.info(`Sidebar - Ignoring mobile menu request: not in mobile mode`);
       return;
     }
     
@@ -1200,7 +1204,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
         this.toggleMobileVisibility(trigger);
         break;
       default:
-        console.warn(`Sidebar - Unknown mobile menu request action: ${requestedAction}`);
+        this.logger.warn(`Sidebar - Unknown mobile menu request action: ${requestedAction}`);
     }
   }
 
@@ -1208,7 +1212,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    * Handle sidebar compact mode requests from other components
    */
   private handleSidebarCompactRequest(requestData: any): void {
-    console.log(`Sidebar - Sidebar compact request received:`, requestData);
+    this.logger.info(`Sidebar - Sidebar compact request received:`, requestData);
     
     const { requestedAction } = requestData;
     
@@ -1225,7 +1229,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
         this.toggleCompactMode();
         break;
       default:
-        console.warn(`Sidebar - Unknown compact mode request action: ${requestedAction}`);
+        this.logger.warn(`Sidebar - Unknown compact mode request action: ${requestedAction}`);
     }
   }
 
@@ -1241,17 +1245,17 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     const isVisible = !isMobile; // Hide on mobile, show on tablet/desktop
     const canToggle = !isMobile; // Can toggle on tablet/desktop, not on mobile
 
-    console.log(`Sidebar - Updating for ${modeType} mode:`);
-    console.log(`  - Visible: ${isVisible}`);
-    console.log(`  - Can Toggle: ${canToggle}`);
+    this.logger.info(`Sidebar - Updating for ${modeType} mode:`);
+    this.logger.debug(`  - Visible: ${isVisible}`);
+    this.logger.debug(`  - Can Toggle: ${canToggle}`);
 
     // Update sidebar visibility
     if (isVisible) {
-      console.log("  ✅ Showing sidebar: display=flex, removing .sidebar-hidden");
+      this.logger.debug("  ✅ Showing sidebar: display=flex, removing .sidebar-hidden");
       this.sidebar.style.display = "flex";
       this.sidebar.classList.remove("sidebar-hidden");
     } else {
-      console.log("  ❌ Hiding sidebar: display=none, adding .sidebar-hidden");
+      this.logger.debug("  ❌ Hiding sidebar: display=none, adding .sidebar-hidden");
       this.sidebar.style.display = "none";
       this.sidebar.classList.add("sidebar-hidden");
     }
@@ -1283,7 +1287,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       this.sidebar.style.setProperty("--sidebar-current-width", `${currentWidth}px`);
     }
 
-    console.log(`Sidebar - Updated for ${modeType} mode complete`);
+    this.logger.info(`Sidebar - Updated for ${modeType} mode complete`);
   }
 
   /**
@@ -1292,7 +1296,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
   private cleanupMobileOverlayState(): void {
     if (!this.sidebar) return;
     
-    console.log("🧹 Sidebar - Cleaning up mobile overlay state");
+    this.logger.info("🧹 Sidebar - Cleaning up mobile overlay state");
     
     // Remove mobile overlay classes
     this.sidebar.classList.remove("sidebar-mobile-visible");
@@ -1302,13 +1306,13 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     const backdrop = document.querySelector(".mobile-sidebar-backdrop");
     if (backdrop) {
       backdrop.remove();
-      console.log("🧹 Sidebar - Removed mobile backdrop");
+      this.logger.info("🧹 Sidebar - Removed mobile backdrop");
     }
     
     // Emit cleanup event for debugging
     this.emitMobileMenuModeChangeEvent(false, true, "programmatic");
     
-    console.log("✅ Sidebar - Mobile overlay state cleaned up");
+    this.logger.info("✅ Sidebar - Mobile overlay state cleaned up");
   }
 
   // Legacy HotkeyProvider methods removed - using ChainHotkeyProvider only
@@ -1385,13 +1389,13 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    * Handle ESC key via chain system with smart cooperation
    */
   private handleEscapeKeyChain(ctx: HotkeyExecutionContext): void {
-    console.log('📱 MobileSidebar - ESC key pressed via chain system');
+    this.logger.info('📱 MobileSidebar - ESC key pressed via chain system');
     
     // Close mobile menu
     this.hideMobileMenu('programmatic');
     ctx.preventDefault();
     
-    console.log('📡 MobileSidebar - ESC handled: mobile menu closed');
+    this.logger.info('📡 MobileSidebar - ESC handled: mobile menu closed');
     
     // Smart chain control:
     // Check if user menu is also in the chain and potentially open
@@ -1411,7 +1415,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     if (this.chainProviderUnsubscriber) {
       this.chainProviderUnsubscriber();
       this.chainProviderUnsubscriber = null;
-      console.log('MobileSidebar - Chain provider unregistered');
+      this.logger.info('MobileSidebar - Chain provider unregistered');
     }
   }
 
@@ -1529,7 +1533,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
    * Destroy the sidebar and cleanup
    */
   public destroy(): void {
-    console.log("Sidebar - Destroying...");
+    this.logger.info("Sidebar - Destroying...");
     
     // Cleanup chain provider
     this.cleanupChainProvider();
@@ -1540,7 +1544,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     }
 
     this.isInitialized = false;
-    console.log("Sidebar - Destroyed");
+    this.logger.info("Sidebar - Destroyed");
   }
 }
 

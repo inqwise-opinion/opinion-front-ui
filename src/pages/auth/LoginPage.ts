@@ -26,7 +26,7 @@ export default class LoginPage extends PageComponent {
       // Set browser tab title
       document.title = 'Login - Opinion';
     } catch (error) {
-      console.error('❌ LoginPage - Initialization failed:', error);
+      this.logger.error('❌ LoginPage - Initialization failed:', error);
       throw error;
     }
   }
@@ -81,14 +81,14 @@ export default class LoginPage extends PageComponent {
 
     try {
       // TODO: Implement login logic
-      console.log('Login attempted with:', email);
+      this.logger.info('Login attempted with:', email);
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // On success, redirect to dashboard
       window.location.href = '/dashboard';
     } catch (error) {
-      console.error('Login failed:', error);
+      this.logger.error('Login failed:', error);
       // TODO: Show error message to user
     }
   }

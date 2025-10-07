@@ -1,5 +1,7 @@
 import { Service } from '../interfaces/Service';
 import { LayoutContext } from '../contexts/LayoutContext';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 /**
  * LinkInterceptionService
@@ -13,11 +15,13 @@ export class LinkInterceptionService implements Service {
   
   private serviceId: string;
   private layoutContext: LayoutContext;
+  private logger: Logger;
   private isInitialized: boolean = false;
 
   constructor(layoutContext: LayoutContext) {
     this.serviceId = LinkInterceptionService.SERVICE_ID;
     this.layoutContext = layoutContext;
+    this.logger = LoggerFactory.getInstance().getLogger('LinkInterceptionService');
   }
 
   async init(): Promise<void> {
@@ -29,7 +33,7 @@ export class LinkInterceptionService implements Service {
     document.addEventListener('click', this.handleClick, true);
     this.isInitialized = true;
     
-    console.log('LinkInterceptionService - Initialized');
+    this.logger.info('LinkInterceptionService - Initialized');
   }
 
   async destroy(): Promise<void> {
@@ -40,7 +44,7 @@ export class LinkInterceptionService implements Service {
     document.removeEventListener('click', this.handleClick, true);
     this.isInitialized = false;
     
-    console.log('LinkInterceptionService - Destroyed');
+    this.logger.info('LinkInterceptionService - Destroyed');
   }
 
   getServiceId(): string {
@@ -92,11 +96,11 @@ export class LinkInterceptionService implements Service {
     event.preventDefault();
     event.stopPropagation();
 
-    console.log('LinkInterceptionService - Intercepted navigation to:', link.href);
+    this.logger.info('LinkInterceptionService - Intercepted navigation to:', link.href);
 
     // Delegate to RouterService for SPA navigation
     routerService.navigateToUrl(link.href).catch((error: Error) => {
-      console.error('LinkInterceptionService - Navigation failed:', error);
+      this.logger.error('LinkInterceptionService - Navigation failed:', error);
       // Fallback to regular navigation
       window.location.href = link.href;
     });

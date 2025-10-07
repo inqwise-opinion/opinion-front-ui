@@ -7,6 +7,8 @@ import { PageComponent, type PageComponentConfig } from './PageComponent';
 import { Observable } from '../utils/Observable';
 import MainContentImpl from './MainContentImpl';
 import { PageContext } from '../interfaces/PageContext';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 interface DataBinding<T> {
   observable: Observable<T>;
@@ -40,9 +42,11 @@ export abstract class DataBoundComponent extends PageComponent {
   private unsubscribers: Map<string, () => void> = new Map();
   private refreshTimers: Map<string, NodeJS.Timeout> = new Map();
   private observables: Map<string, Observable<unknown>> = new Map();
+  protected logger: Logger;
 
   constructor(mainContent: MainContentImpl, pageContext: PageContext, config: PageComponentConfig = {}) {
     super(mainContent, pageContext, config);
+    this.logger = LoggerFactory.getInstance().getLogger('DataBoundComponent');
   }
 
   /**
@@ -69,7 +73,7 @@ export abstract class DataBoundComponent extends PageComponent {
     });
 
     this.unsubscribers.set(key, unsubscribe);
-    console.log(`📊 DataBoundComponent - Bound data: ${key} -> ${selector}`);
+    this.logger.info(`📊 Bound data: ${key} -> ${selector}`);
   }
 
   /**
@@ -102,10 +106,10 @@ export abstract class DataBoundComponent extends PageComponent {
       }, binding.refreshInterval);
 
       this.refreshTimers.set(key, timer);
-      console.log(`⏱️ DataBoundComponent - Auto-refresh setup: ${key} (${binding.refreshInterval}ms)`);
+      this.logger.info(`⏱️ Auto-refresh setup: ${key} (${binding.refreshInterval}ms)`);
     }
 
-    console.log(`🔄 DataBoundComponent - Bound loader: ${key} -> ${selector}`);
+    this.logger.info(`🔄 Bound loader: ${key} -> ${selector}`);
   }
 
   /**
@@ -114,7 +118,7 @@ export abstract class DataBoundComponent extends PageComponent {
   protected createObservable<T>(key: string, initialValue: T): Observable<T> {
     const observable = new Observable(initialValue);
     this.observables.set(key, observable as Observable<unknown>);
-    console.log(`📊 DataBoundComponent - Created observable: ${key}`);
+    this.logger.info(`📊 Created observable: ${key}`);
     return observable;
   }
 
@@ -132,9 +136,9 @@ export abstract class DataBoundComponent extends PageComponent {
     const observable = this.observables.get(key);
     if (observable) {
       observable.value = value;
-      console.log(`📊 DataBoundComponent - Updated data: ${key}`, value);
+      this.logger.info(`📊 Updated data: ${key}`, value);
     } else {
-      console.warn(`DataBoundComponent - Observable not found: ${key}`);
+      this.logger.warn(`Observable not found: ${key}`);
     }
   }
 
@@ -154,7 +158,7 @@ export abstract class DataBoundComponent extends PageComponent {
     if (binding) {
       binding.loader.invalidate();
       await this.loadAndBind(key, binding);
-      console.log(`🔄 DataBoundComponent - Refreshed loader: ${key}`);
+      this.logger.info(`🔄 Refreshed loader: ${key}`);
     }
   }
 
@@ -164,7 +168,7 @@ export abstract class DataBoundComponent extends PageComponent {
   private async loadAndBind<T>(key: string, binding: LoaderBinding<T>): Promise<void> {
     const element = document.querySelector(binding.selector) as HTMLElement;
     if (!element) {
-      console.warn(`DataBoundComponent - Element not found for binding: ${binding.selector}`);
+      this.logger.warn(`Element not found for binding: ${binding.selector}`);
       return;
     }
 
@@ -181,9 +185,9 @@ export abstract class DataBoundComponent extends PageComponent {
       const formattedValue = binding.formatter ? binding.formatter(data) : String(data);
       this.setElementValue(element, binding.property || 'textContent', formattedValue);
 
-      console.log(`✅ DataBoundComponent - Loaded data for: ${key}`);
+      this.logger.info(`✅ Loaded data for: ${key}`);
     } catch (error) {
-      console.error(`❌ DataBoundComponent - Failed to load data for: ${key}`, error);
+      this.logger.error(`❌ Failed to load data for: ${key}`, error);
       
       // Show error state
       const errorText = binding.errorText || 'Error loading data';
@@ -197,13 +201,13 @@ export abstract class DataBoundComponent extends PageComponent {
   private updateElement<T>(binding: DataBinding<T>, value: T): void {
     const element = document.querySelector(binding.selector) as HTMLElement;
     if (!element) {
-      console.warn(`DataBoundComponent - Element not found for binding: ${binding.selector}`);
+      this.logger.warn(`Element not found for binding: ${binding.selector}`);
       return;
     }
 
     // Run validator if provided
     if (binding.validator && !binding.validator(element, value)) {
-      console.warn('DataBoundComponent - Validation failed for binding update');
+      this.logger.warn('Validation failed for binding update');
       return;
     }
 
@@ -254,7 +258,7 @@ export abstract class DataBoundComponent extends PageComponent {
   ): void {
     const element = document.querySelector(selector) as HTMLInputElement;
     if (!element) {
-      console.warn(`DataBoundComponent - Input element not found: ${selector}`);
+      this.logger.warn(`Input element not found: ${selector}`);
       return;
     }
 
@@ -270,11 +274,11 @@ export abstract class DataBoundComponent extends PageComponent {
         const parsedValue = parser(element.value);
         observable.value = parsedValue;
       } catch (error) {
-        console.warn('DataBoundComponent - Failed to parse input value:', error);
+        this.logger.warn('Failed to parse input value:', error);
       }
     });
 
-    console.log(`🔗 DataBoundComponent - Two-way bound input: ${key} <-> ${selector}`);
+    this.logger.info(`🔗 Two-way bound input: ${key} <-> ${selector}`);
   }
 
   /**
@@ -301,7 +305,7 @@ export abstract class DataBoundComponent extends PageComponent {
     // Remove data binding
     this.bindings.delete(key);
 
-    console.log(`📊 DataBoundComponent - Unbound: ${key}`);
+    this.logger.info(`📊 Unbound: ${key}`);
   }
 
   /**
@@ -324,7 +328,7 @@ export abstract class DataBoundComponent extends PageComponent {
     this.bindings.clear();
     this.loaderBindings.clear();
 
-    console.log(`🧹 DataBoundComponent - All bindings cleaned up`);
+    this.logger.info(`🧹 All bindings cleaned up`);
     
     // Note: onDestroy is abstract in PageComponent, so no parent implementation to call
   }
@@ -350,7 +354,7 @@ export abstract class DataBoundComponent extends PageComponent {
             { property: bindProperty as keyof HTMLElement }
           );
 
-          console.log(`🤖 DataBoundComponent - Auto-bound: ${bindKey}`);
+          this.logger.info(`🤖 Auto-bound: ${bindKey}`);
         }
       }
     });

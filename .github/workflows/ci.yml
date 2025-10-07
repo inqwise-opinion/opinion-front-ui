@@ -190,188 +190,19 @@ jobs:
   # Job 4: Preview Deployment (for PRs)
   preview:
     name: 🚀 Preview Deploy
-    runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
-
-    permissions:
-      contents: write
-      pages: write
-      pull-requests: write
-
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v5
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: 🔧 Install dependencies
-        run: npm ci
-
-      - name: 🏧 Build application for PR preview
-        run: npm run build
-        env:
-          SASS_SILENCE_DEPRECATIONS: legacy-js-api
-          BUILD_CONFIG: github-pages-pr
-          RUNTIME_BASE_URL: /${{ github.event.repository.name }}/pr-${{ github.event.number }}
-
-      - name: 🔧 Setup Git for deployment
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: 🌍 Deploy to GitHub Pages Preview
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Clone the current repository into a temporary directory
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
-          cd temp-repo
-
-          # Switch to or create gh-pages branch
-          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
-            git checkout gh-pages
-          else
-            git checkout --orphan gh-pages
-            git rm -rf .
-          fi
-
-          # Create PR preview directory
-          PR_DIR="pr-${{ github.event.number }}"
-          mkdir -p $PR_DIR
-
-          # Copy build files to PR directory
-          cp -r ../dist/* $PR_DIR/
-
-          # Copy global 404.html from .github folder to gh-pages root
-          cp ../.github/404.html ./404.html
-
-          # Create or update index.html for PR listing if it doesn't exist
-          if [ ! -f "index.html" ]; then
-            cat > index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Opinion Front UI - Preview Deployments</title>
-            <style>
-              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 40px; }
-              .header { color: #0366d6; margin-bottom: 30px; }
-              .pr-list { list-style: none; padding: 0; }
-              .pr-item { background: #f6f8fa; margin: 10px 0; padding: 15px; border-radius: 6px; border: 1px solid #d1d5da; }
-              .pr-link { text-decoration: none; color: #0366d6; font-weight: 600; }
-              .pr-link:hover { text-decoration: underline; }
-            </style>
-          </head>
-          <body>
-            <h1 class="header">🚀 Opinion Front UI - PR Previews</h1>
-            <p>Available preview deployments:</p>
-            <ul class="pr-list" id="pr-list">
-              <!-- PR links will be added here by deployment script -->
-            </ul>
-            <script>
-              // Auto-discover PR directories
-              fetch('.').then(r => r.text()).then(html => {
-                const dirs = html.match(/href="pr-\\d+\\//g) || [];
-                const list = document.getElementById('pr-list');
-                dirs.forEach(dir => {
-                  const prNum = dir.match(/pr-(\\d+)/)[1];
-                  const li = document.createElement('li');
-                  li.className = 'pr-item';
-                  li.innerHTML = `<a href="pr-${prNum}/" class="pr-link">PR #${prNum} Preview</a>`;
-                  list.appendChild(li);
-                });
-              });
-            </script>
-          </body>
-          </html>
-          EOF
-          fi
-
-          # Add and commit changes
-          git add .
-          git commit -m "Deploy PR #${{ github.event.number }} preview" || echo "No changes to commit"
-
-          # Push to gh-pages branch
-          git push origin gh-pages
-
-          cd ..
-          rm -rf temp-repo
-
-          # Generate preview URL
-          REPO_NAME="${{ github.event.repository.name }}"
-          OWNER_NAME="${{ github.repository_owner }}"
-          PREVIEW_URL="https://${OWNER_NAME}.github.io/${REPO_NAME}/pr-${{ github.event.number }}"
-
-          echo "## 🚀 GitHub Pages Preview Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Preview successfully deployed to GitHub Pages!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 **Preview URL**: [$PREVIEW_URL]($PREVIEW_URL)" >> $GITHUB_STEP_SUMMARY
-          echo "⏱️ **Deployed at**: $(date)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 Preview Details" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch**: ${{ github.head_ref }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit**: [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
-          echo "- **PR**: [#${{ github.event.number }}](https://github.com/${{ github.repository }}/pull/${{ github.event.number }})" >> $GITHUB_STEP_SUMMARY
-          echo "- **All Previews**: [Preview Index](https://${OWNER_NAME}.github.io/${REPO_NAME}/)" >> $GITHUB_STEP_SUMMARY
-
-          echo "Preview deployed to: $PREVIEW_URL"
-          echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
-
-      - name: 💬 Comment on PR with preview link
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            // Check if we already commented
-            const existingComment = comments.find(comment =>
-              comment.body.includes('🚀 Preview Deployment') &&
-              comment.user.login === 'github-actions[bot]'
-            );
-
-            const previewUrl = process.env.PREVIEW_URL;
-            const commentBody = `## 🚀 Preview Deployment
-
-            ✅ **Preview is ready!** Your changes have been deployed to GitHub Pages.
-
-            🔗 **[View Preview](${previewUrl})**
-
-            ---
-            <details>
-            <summary>📋 Deployment Details</summary>
-
-            - **Branch**: \`${{ github.head_ref }}\`
-            - **Commit**: ${{ github.sha }}
-            - **Deployed at**: ${new Date().toISOString()}
-            - **All Previews**: [Preview Index](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/)
-
-            </details>`;
-
-            if (existingComment) {
-              // Update existing comment
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existingComment.id,
-                body: commentBody
-              });
-            } else {
-              // Create new comment
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: commentBody
-              });
-            }
+    uses: ./.github/workflows/publish-pages.yml
+    with:
+      deployment_type: "preview"
+      pr_number: ${{ github.event.number }}
+      base_url: "/${{ github.event.repository.name }}/pr-${{ github.event.number }}"
+      build_config: "github-pages-pr"
+      node_version: ${{ env.NODE_VERSION }}
+      discord_webhook: false
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
   # Job 5: Production Deployment (DISABLED - Use release-driven deployment)
   deploy:

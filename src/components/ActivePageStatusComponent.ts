@@ -9,6 +9,8 @@
 import { ActivePage, ActivePageConsumer } from '../interfaces/ActivePage';
 import { LayoutContext } from '../contexts/LayoutContext';
 import { globalEventBus, Consumer } from '../lib';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 /**
  * Events published by ActivePageStatusComponent
@@ -36,6 +38,7 @@ export class ActivePageStatusComponent implements ActivePageConsumer {
   private currentStatus: ActivePageStatus;
   private unregisterActivePageConsumer: (() => void) | null = null;
   private eventBusConsumers: Consumer[] = [];
+  private logger: Logger;
 
   constructor(layoutContext: LayoutContext) {
     this.layoutContext = layoutContext;
@@ -43,7 +46,8 @@ export class ActivePageStatusComponent implements ActivePageConsumer {
     // Initialize status
     this.currentStatus = this.createEmptyStatus();
     
-    console.log('🔄 ActivePageStatusComponent - Initialized');
+    this.logger = LoggerFactory.getInstance().getLogger('ActivePageStatusComponent');
+    this.logger.info('🔄 Initialized');
   }
 
   /**
@@ -62,7 +66,7 @@ export class ActivePageStatusComponent implements ActivePageConsumer {
       this.onActivePageChanged(currentPage, null);
     }
     
-    console.log('🔄 ActivePageStatusComponent - Started tracking active pages');
+    this.logger.info('🔄 Started tracking active pages');
   }
 
   /**
@@ -81,14 +85,14 @@ export class ActivePageStatusComponent implements ActivePageConsumer {
     });
     this.eventBusConsumers = [];
     
-    console.log('🔄 ActivePageStatusComponent - Destroyed');
+    this.logger.info('🔄 Destroyed');
   }
 
   /**
    * Handle active page changes (ActivePageConsumer interface)
    */
   public onActivePageChanged(activePage: ActivePage | null, previousPage: ActivePage | null): void {
-    console.log('🔄 ActivePageStatusComponent - Page changed:', {
+    this.logger.info('🔄 Page changed:', {
       current: activePage?.getPageId() || 'none',
       previous: previousPage?.getPageId() || 'none'
     });
@@ -160,7 +164,7 @@ export class ActivePageStatusComponent implements ActivePageConsumer {
     });
     this.eventBusConsumers.push(isActiveConsumer);
 
-    console.log('🔄 ActivePageStatusComponent - EventBus consumers registered');
+    this.logger.info('🔄 EventBus consumers registered');
   }
 
   /**

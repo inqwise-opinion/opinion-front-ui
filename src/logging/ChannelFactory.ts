@@ -15,6 +15,55 @@ interface InternalLogMessage {
 }
 
 /**
+ * Helper function for {} placeholder interpolation with proper Error handling
+ * @internal
+ */
+function interpolatePlaceholders(message: string, args: unknown[]): { processedMessage: string; remainingArgs: unknown[] } {
+    if (!args || args.length === 0) {
+        return { processedMessage: message, remainingArgs: [] };
+    }
+    
+    const argsArray = [...args];
+    let argIndex = 0;
+    
+    const processedMessage = message.replace(/\{\}/g, () => {
+        if (argIndex < argsArray.length) {
+            const arg = argsArray[argIndex++];
+            if (arg instanceof Error) {
+                return `${arg.name}: ${arg.message}`;
+            }
+            if (typeof arg === 'object' && arg !== null) {
+                try {
+                    return JSON.stringify(arg);
+                } catch {
+                    return String(arg);
+                }
+            }
+            return String(arg);
+        }
+        return '{}'; // Keep unmatched placeholders
+    });
+    
+    const remainingArgs = argIndex < argsArray.length ? argsArray.slice(argIndex) : [];
+    return { processedMessage, remainingArgs };
+}
+
+/**
+ * Helper function to format remaining arguments with proper Error handling
+ * @internal
+ */
+function formatRemainingArgs(remainingArgs: unknown[]): string {
+    if (remainingArgs.length === 0) return '';
+    
+    return ' [' + remainingArgs.map((arg: unknown) => {
+        if (arg instanceof Error) {
+            return `${arg.name}: ${arg.message}`;
+        }
+        return typeof arg === 'object' ? JSON.stringify(arg) : String(arg);
+    }).join(', ') + ']';
+}
+
+/**
  * Factory for creating logging channels
  * @internal - For internal use only
  */
@@ -24,10 +73,10 @@ export class ChannelFactory {
      * Create a channel from configuration
      * @internal
      */
-    public static createChannel(config: ChannelConfig): LogChannel | RawLogChannel {
+    public static createChannel(config: ChannelConfig, format?: LogFormat | LogFormatPresets): LogChannel | RawLogChannel {
         switch (config.type) {
             case ChannelType.CONSOLE:
-                return this.getDefaultConsoleChannel();
+                return this.getDefaultConsoleChannel(format || (config as any).format);
                 
             case ChannelType.CUSTOM:
                 return this.mapCustomChannelToLibrary(config.channel);
@@ -94,26 +143,62 @@ export class ChannelFactory {
         // Handle string template format
         if (typeof format === 'string') {
             const timestamp = new Date().toISOString();
-            const level = logMessage.level?.toString() || 'INFO';
-            const logger = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
-            const message = logMessage.message || '';
-            const args = logMessage.args && logMessage.args.length > 0 
-                ? ' [' + logMessage.args.map((arg: unknown) => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(', ') + ']'
-                : '';
+            const now = new Date();
+            const time = now.getHours().toString().padStart(2, '0') + ':' +
+                        now.getMinutes().toString().padStart(2, '0') + ':' +
+                        now.getSeconds().toString().padStart(2, '0') + '.' +
+                        now.getMilliseconds().toString().padStart(3, '0'); // 24-hour format with milliseconds
+            
+            // Parse pre-formatted messages from typescript-logging
+            let level: string;
+            let logger: string;
+            let message: string;
+            
+            // Check if the message is pre-formatted by typescript-logging
+            if (logMessage.message && typeof logMessage.message === 'string') {
+                // Pattern: "2025-10-07 17:18:42,139 DEBUG [PageComponent:DebugPage] Initializing..."
+                const preFormattedMatch = logMessage.message.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/);
+                
+                if (preFormattedMatch) {
+                    // Extract from pre-formatted message
+                    level = preFormattedMatch[1];
+                    logger = preFormattedMatch[2];
+                    message = preFormattedMatch[3];
+                } else {
+                    // Fallback to library-provided values
+                    level = logMessage.level?.toString() || 'INFO';
+                    logger = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
+                    message = logMessage.message;
+                }
+            } else {
+                // Fallback to library-provided values
+                level = logMessage.level?.toString() || 'INFO';
+                logger = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
+                message = logMessage.message || '';
+            }
+            // Process {} placeholders in the message if args are present
+            const { processedMessage, remainingArgs } = interpolatePlaceholders(message, logMessage.args || []);
+            const formattedArgs = formatRemainingArgs(remainingArgs);
             
             return format
                 .replace('{timestamp}', timestamp)
+                .replace('{time}', time)
                 .replace('{level}', level.toUpperCase())
                 .replace('{logger}', logger)
-                .replace('{message}', message)
-                .replace('{args}', args);
+                .replace('{message}', processedMessage)
+                .replace('{args}', formattedArgs);
         }
         
         // Fallback to default format
         const timestamp = new Date().toISOString();
         const level = logMessage.level?.toString() || 'INFO';
         const logger = Array.isArray(logMessage.logNames) ? logMessage.logNames[0] : (logMessage.logNames || 'unknown');
-        const message = logMessage.message || '';
+        let message = logMessage.message || '';
+        
+        // Process {} placeholders in fallback path too
+        const { processedMessage: interpolatedMessage } = interpolatePlaceholders(message, logMessage.args || []);
+        message = interpolatedMessage;
+        
         return `${timestamp} [${level.toUpperCase()}] ${logger}: ${message}`;
     }
 
@@ -161,6 +246,10 @@ export class ChannelFactory {
                         actualMessage = logMessage.message || '';
                     }
                     
+                    // Process {} placeholders in legacy path too
+                    const { processedMessage: interpolatedMessage } = interpolatePlaceholders(actualMessage, logMessage.args || []);
+                    actualMessage = interpolatedMessage;
+                    
                     formattedOutput = `${timestamp} [${level.toUpperCase()}] ${loggerName}: ${actualMessage}`;
                 }
                 
@@ -174,9 +263,18 @@ export class ChannelFactory {
                     console.log('  └─ Args:', ...logMessage.args);
                 }
                 
-                // Handle exceptions (only when not using custom format)
-                if (!format && logMessage.exception) {
+                // Handle exceptions - ALWAYS show exceptions regardless of format
+                if (logMessage.exception) {
                     console.error('  └─ Exception:', logMessage.exception);
+                }
+                
+                // Also check for Error objects in args and log them separately
+                if (logMessage.args && logMessage.args.length > 0) {
+                    logMessage.args.forEach((arg, index) => {
+                        if (arg instanceof Error) {
+                            console.error(`  └─ Error Arg[${index}]:`, arg);
+                        }
+                    });
                 }
             }
         };
@@ -241,6 +339,10 @@ export class ChannelFactory {
                         actualMessage = libMsg.message || '';
                     }
                     
+                    // Process {} placeholders in custom channel mapping path
+                    const { processedMessage: interpolatedMessage } = interpolatePlaceholders(actualMessage, libMsg.args || []);
+                    actualMessage = interpolatedMessage;
+                    
                     // Handle Error objects - they come in the 'error' field as strings
                     let exception: Error | undefined;
                     if (libMsg.error && typeof libMsg.error === 'string') {
@@ -298,6 +400,10 @@ export class ChannelFactory {
                         loggerName = Array.isArray(libMsg.logNames) ? libMsg.logNames[0] : (libMsg.logNames || 'unknown');
                         actualMessage = libMsg.message || '';
                     }
+                    
+                    // Process {} placeholders in raw channel mapping path
+                    const { processedMessage: interpolatedMessage } = interpolatePlaceholders(actualMessage, libMsg.args || []);
+                    actualMessage = interpolatedMessage;
                     
                     // Handle Error objects - they come in the 'error' field as strings
                     let exception: Error | undefined;

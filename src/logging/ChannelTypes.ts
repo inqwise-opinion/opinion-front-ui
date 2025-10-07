@@ -38,6 +38,18 @@ export enum ChannelType {
 
 /**
  * Log format template type
+ * 
+ * String templates support the following placeholders:
+ * - {timestamp}: Full ISO timestamp (e.g., '2025-10-07T14:05:23.000Z')
+ * - {time}: 24-hour time with milliseconds (e.g., '14:05:23.123')
+ * - {level}: Log level (INFO, ERROR, etc.)
+ * - {logger}: Logger name
+ * - {message}: The log message with {} placeholders interpolated
+ * - {args}: Formatted remaining arguments (if any)
+ * 
+ * Message interpolation:
+ * - Use {} in log messages for argument interpolation (e.g., 'User {} logged in', username)
+ * - Error objects are formatted as "ErrorName: message"
  */
 export type LogFormat = string | ((logMessage: LogMessage) => string);
 

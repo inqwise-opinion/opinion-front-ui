@@ -451,7 +451,7 @@ export class Layout {
         if (event && event.data) {
           this.handleLayoutModeChange(event);
         } else {
-          console.error(
+          this.logger.error(
             "Layout - Received invalid layout-mode-change event:",
             event,
           );
@@ -504,7 +504,7 @@ export class Layout {
     const isDesktop = ctx.isLayoutDesktop();
     const sidebarCompactMode = ctx.getSidebar()?.isCompactMode();
 
-    console.log(`Layout - Updating component CSS classes for mode: ${type}`);
+    this.logger.info(`Layout - Updating component CSS classes for mode: ${type}`);
 
     // Get all layout components
     const components = {
@@ -577,7 +577,7 @@ export class Layout {
     root.style.setProperty("--is-tablet", isTablet ? "1" : "0");
     root.style.setProperty("--is-desktop", isDesktop ? "1" : "0");
 
-    console.log("Layout - CSS classes updated:", {
+    this.logger.info("Layout - CSS classes updated:", {
       mode: type,
       addedClasses: [
         modeClasses[type],
@@ -601,7 +601,7 @@ export class Layout {
    */
   public setNavigationItems(items: NavigationItem[]): void {
     this.navigationItems = [...items];
-    console.log(
+    this.logger.info(
       "Layout - Navigation items updated:",
       this.navigationItems.length,
       "items",
@@ -611,9 +611,9 @@ export class Layout {
     const sidebar = this.layoutContext.getSidebar();
     if (sidebar) {
       sidebar.updateNavigation(this.navigationItems);
-      console.log("Layout - Navigation items applied to existing sidebar");
+      this.logger.info("Layout - Navigation items applied to existing sidebar");
     } else {
-      console.log(
+      this.logger.info(
         "Layout - Navigation items stored, will be applied when sidebar is registered",
       );
     }
@@ -646,9 +646,9 @@ export class Layout {
         sidebar.updateNavigation(this.navigationItems);
       }
 
-      console.log(`Layout - Navigation item '${id}' updated`);
+      this.logger.info(`Layout - Navigation item '${id}' updated`);
     } else {
-      console.warn(`Layout - Navigation item with id '${id}' not found`);
+      this.logger.warn(`Layout - Navigation item with id '${id}' not found`);
     }
   }
 
@@ -672,7 +672,7 @@ export class Layout {
       sidebar.updateNavigation(this.navigationItems);
     }
 
-    console.log(`Layout - Navigation item '${item.id}' added`);
+    this.logger.info(`Layout - Navigation item '${item.id}' added`);
   }
 
   /**
@@ -689,9 +689,9 @@ export class Layout {
         sidebar.updateNavigation(this.navigationItems);
       }
 
-      console.log(`Layout - Navigation item '${id}' removed`);
+      this.logger.info(`Navigation item '${id}' removed`);
     } else {
-      console.warn(`Layout - Navigation item with id '${id}' not found`);
+      this.logger.warn(`Navigation item with id '${id}' not found`);
     }
   }
 
@@ -700,7 +700,7 @@ export class Layout {
    * @deprecated Use NavigationService.setActiveItem() instead for centralized navigation state management
    */
   public setActiveNavigationItem(id: string): void {
-    console.warn(
+    this.logger.warn(
       `Layout.setActiveNavigationItem is deprecated. Use NavigationService.setActiveItem('${id}') instead.`,
     );
 
@@ -709,7 +709,7 @@ export class Layout {
     if (navService && "setActiveItem" in navService) {
       (navService as any).setActiveItem(id);
     } else {
-      console.error(
+      this.logger.error(
         "NavigationService not available. Cannot set active navigation item.",
       );
     }
@@ -720,8 +720,8 @@ export class Layout {
    */
   public setUserMenuItems(items: UserMenuItem[]): void {
     this.userMenuItems = [...items];
-    console.log(
-      "Layout - User menu items updated:",
+    this.logger.info(
+      "User menu items updated:",
       this.userMenuItems.length,
       "items",
     );
@@ -729,10 +729,10 @@ export class Layout {
     // Update header/user menu if it's available
     if (this.header) {
       this.header.updateUserMenuItems(this.userMenuItems);
-      console.log("Layout - User menu items applied to header");
+      this.logger.info("User menu items applied to header");
     } else {
-      console.log(
-        "Layout - User menu items stored, will be applied when header is available",
+      this.logger.info(
+        "User menu items stored, will be applied when header is available",
       );
     }
   }
@@ -757,9 +757,9 @@ export class Layout {
         this.header.updateUserMenuItems(this.userMenuItems);
       }
 
-      console.log(`Layout - User menu item '${id}' updated`);
+      this.logger.info(`User menu item '${id}' updated`);
     } else {
-      console.warn(`Layout - User menu item with id '${id}' not found`);
+      this.logger.warn(`User menu item with id '${id}' not found`);
     }
   }
 
@@ -782,7 +782,7 @@ export class Layout {
       this.header.updateUserMenuItems(this.userMenuItems);
     }
 
-    console.log(`Layout - User menu item '${item.id}' added`);
+    this.logger.info(`User menu item '${item.id}' added`);
   }
 
   /**
@@ -798,9 +798,9 @@ export class Layout {
         this.header.updateUserMenuItems(this.userMenuItems);
       }
 
-      console.log(`Layout - User menu item '${id}' removed`);
+      this.logger.info(`User menu item '${id}' removed`);
     } else {
-      console.warn(`Layout - User menu item with id '${id}' not found`);
+      this.logger.warn(`User menu item with id '${id}' not found`);
     }
   }
 
@@ -1065,20 +1065,20 @@ export class Layout {
     const id = handler.id || "anonymous";
 
     if (config.enableLogging) {
-      console.log(`Layout - Executing LifecycleHandler: ${id}`);
+      this.logger.debug(`Executing LifecycleHandler: ${id}`);
     }
 
     // Phase 1: Pre-init
     if (handler.onPreInit) {
       if (config.enableLogging) {
-        console.log(`Layout - Executing onPreInit for: ${id}`);
+        this.logger.debug(`Executing onPreInit for: ${id}`);
       }
       await this.executeWithTimeout(handler.onPreInit, config.timeout!);
     }
 
     // Phase 2: Main context ready
     if (config.enableLogging) {
-      console.log(`Layout - Executing onContextReady for: ${id}`);
+      this.logger.debug(`Executing onContextReady for: ${id}`);
     }
     await this.executeWithTimeout(
       () => handler.onContextReady(this.layoutContext),
@@ -1088,7 +1088,7 @@ export class Layout {
     // Phase 3: Post-init
     if (handler.onPostInit) {
       if (config.enableLogging) {
-        console.log(`Layout - Executing onPostInit for: ${id}`);
+        this.logger.debug(`Executing onPostInit for: ${id}`);
       }
       await this.executeWithTimeout(
         () => handler.onPostInit!(this.layoutContext),
@@ -1097,7 +1097,7 @@ export class Layout {
     }
 
     if (config.enableLogging) {
-      console.log(`Layout - Completed LifecycleHandler: ${id}`);
+      this.logger.debug(`Completed LifecycleHandler: ${id}`);
     }
   }
 
@@ -1110,7 +1110,7 @@ export class Layout {
     config: HandlerConfig,
   ): Promise<void> {
     if (config.enableLogging) {
-      console.log("Layout - Executing ContextHandler");
+      this.logger.debug("Executing ContextHandler");
     }
 
     await this.executeWithTimeout(

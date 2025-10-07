@@ -35,7 +35,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
 
     // Use provided LayoutContext or fallback to global one
     this.layoutContext = layoutContext || getLayoutContext();
-    console.log(
+    this.logger.info(
       "MainContent - Creating clean component with Flexbox layout...",
       layoutContext ? "(using provided LayoutContext)" : "(using global LayoutContext)"
     );
@@ -45,7 +45,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
    * Initialize the main content area
    */
   protected async onInit(): Promise<void> {
-    console.log("MainContent - Initializing...");
+    this.logger.info("MainContent - Initializing...");
 
     // Init validation now handled by BaseComponent
 
@@ -59,7 +59,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
 
     this.initTime = Date.now();
     this.isInitialized = true;
-    console.log("MainContent - Ready ✅");
+    this.logger.info("MainContent - Ready ✅");
   }
 
   /**
@@ -70,7 +70,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
     this.container = document.querySelector(".app-main");
 
     if (this.container) {
-      console.log("MainContent - Using existing app-main element");
+      this.logger.info("MainContent - Using existing app-main element");
 
       // Clear the existing content (loading spinner)
       this.container.innerHTML = "";
@@ -84,7 +84,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
       }
     } else {
       // Fallback: Create main element using semantic HTML5 main tag
-      console.log("MainContent - Creating new main element (fallback)");
+      this.logger.info("MainContent - Creating new main element (fallback)");
       this.container = document.createElement("main");
 
       // Set basic attributes
@@ -112,7 +112,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
       this.container.setAttribute("aria-label", "Main content");
     }
 
-    console.log("MainContent - Main element ready");
+    this.logger.info("MainContent - Main element ready");
   }
 
   /**
@@ -129,7 +129,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
       if (header && footer) {
         // Insert between header and footer
         appLayout.insertBefore(this.container!, footer);
-        console.log(
+        this.logger.info(
           "MainContent - Inserted between header and footer in app-layout",
         );
       } else if (header) {
@@ -139,16 +139,16 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
         } else {
           appLayout.appendChild(this.container!);
         }
-        console.log("MainContent - Inserted after header in app-layout");
+        this.logger.info("MainContent - Inserted after header in app-layout");
       } else {
         // No header found, append to app-layout
         appLayout.appendChild(this.container!);
-        console.log("MainContent - Appended to app-layout");
+        this.logger.info("MainContent - Appended to app-layout");
       }
     } else {
       // Fallback: insert into body
       document.body.appendChild(this.container!);
-      console.log(
+      this.logger.info(
         "MainContent - Fallback: Appended to body (app-layout not found)",
       );
     }
@@ -159,7 +159,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
    */
   setContent(content: string | HTMLElement): void {
     if (!this.container) {
-      console.warn("MainContent - Cannot set content: not initialized");
+      this.logger.warn("MainContent - Cannot set content: not initialized");
       return;
     }
 
@@ -172,7 +172,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
 
     this.contentUpdateCount++;
     this.lastContentUpdate = Date.now();
-    console.log("MainContent - Content updated");
+    this.logger.info("MainContent - Content updated");
   }
 
 
@@ -181,14 +181,14 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
    */
   clearContent(): void {
     if (!this.container) {
-      console.warn("MainContent - Cannot clear content: not initialized");
+      this.logger.warn("MainContent - Cannot clear content: not initialized");
       return;
     }
 
     this.container.innerHTML = "";
     this.contentUpdateCount++;
     this.lastContentUpdate = Date.now();
-    console.log("MainContent - Content cleared");
+    this.logger.info("MainContent - Content cleared");
   }
 
 
@@ -313,7 +313,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
    * Subscribe to layout context events
    */
   private subscribeToLayoutContext(): void {
-    console.log("MainContent - Subscribing to layout context events...");
+    this.logger.info("MainContent - Subscribing to layout context events...");
 
     // Subscribe to sidebar dimension changes
     const sidebarDimensionsUnsubscribe = this.layoutContext.subscribe(
@@ -328,7 +328,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
     // Set initial layout based on current layout mode
     this.updateContentLayout();
 
-    console.log(
+    this.logger.info(
       "MainContent - Successfully subscribed to layout context events ✅",
     );
   }
@@ -338,7 +338,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
    */
   private handleSidebarDimensionsChange(event: LayoutEvent): void {
     const sidebarCompactMode = event.data as Boolean;
-    console.log(
+    this.logger.info(
       "MainContent - Received sidebar dimensions change to:",
       sidebarCompactMode ? "'compact'" : "'expanded'",
     );
@@ -357,7 +357,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
     const layoutModeType = this.layoutContext.getModeType();
     const layoutMobile = this.layoutContext.isLayoutMobile();
 
-    console.log("MainContent - Updating layout:", {
+    this.logger.info("MainContent - Updating layout:", {
       sidebarCompactMode: sidebarCompactMode,
       layoutModeType: layoutModeType,
     });
@@ -378,7 +378,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
     this.container.style.width = "";
     this.container.style.marginLeft = "";
 
-    console.log("MainContent - Layout updated:", {
+    this.logger.info("MainContent - Layout updated:", {
       layoutMode: {
         type: layoutModeType,
         sidebarCompactMode: sidebarCompactMode,
@@ -478,14 +478,14 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
    * Destroy the component
    */
   protected onDestroy(): void {
-    console.log("MainContent - Destroying...");
+    this.logger.info("MainContent - Destroying...");
 
     // Unsubscribe from layout context events
     this.layoutUnsubscribers.forEach((unsubscribe) => {
       try {
         unsubscribe();
       } catch (error) {
-        console.error(
+        this.logger.error(
           "MainContent - Error unsubscribing from layout context:",
           error,
         );
@@ -502,7 +502,7 @@ export class MainContentImpl extends BaseComponent implements MainContent, Compo
     // Reset state
     this.isInitialized = false;
 
-    console.log("MainContent - Destroyed successfully");
+    this.logger.info("MainContent - Destroyed successfully");
   }
 }
 

@@ -3,15 +3,21 @@ import {
   Log4TSConfigOptional,
   Log4TSGroupConfigOptional,
 } from "typescript-logging-log4ts-style";
-import {
-  LogLevel as LibLogLevel,
-  LogChannel,
-} from "typescript-logging";
+import { LogLevel as LibLogLevel, LogChannel } from "typescript-logging";
 import { Logger } from "./Logger";
 import { Constructor, LogLevel } from "./types";
-import { ChannelConfig, ChannelType, AppenderConfig, LogMessage } from './ChannelTypes';
-import { ChannelFactory } from './ChannelFactory';
-import { AsyncConsumerLogChannel, AsyncLogConsumer, RemoveConsumerFunction } from './AsyncConsumerLogChannel';
+import {
+  ChannelConfig,
+  ChannelType,
+  AppenderConfig,
+  LogMessage,
+} from "./ChannelTypes";
+import { ChannelFactory } from "./ChannelFactory";
+import {
+  AsyncConsumerLogChannel,
+  AsyncLogConsumer,
+  RemoveConsumerFunction,
+} from "./AsyncConsumerLogChannel";
 
 /**
  * Internal type for raw log messages from typescript-logging
@@ -33,27 +39,35 @@ interface InternalLogMessage {
  */
 function parseLogLevel(level: string | number | LogLevel): LogLevel {
   // If already a LogLevel enum, return as-is
-  if (typeof level === 'number' && level in LogLevel) {
+  if (typeof level === "number" && level in LogLevel) {
     return level as LogLevel;
   }
-  
+
   // If string, parse it
-  if (typeof level === 'string') {
+  if (typeof level === "string") {
     const levelUpper = level.toUpperCase();
     switch (levelUpper) {
-      case 'TRACE': return LogLevel.Trace;
-      case 'DEBUG': return LogLevel.Debug;
-      case 'INFO': return LogLevel.Info;
-      case 'WARN': case 'WARNING': return LogLevel.Warn;
-      case 'ERROR': return LogLevel.Error;
-      case 'FATAL': return LogLevel.Fatal;
-      case 'OFF': return LogLevel.Off;
+      case "TRACE":
+        return LogLevel.Trace;
+      case "DEBUG":
+        return LogLevel.Debug;
+      case "INFO":
+        return LogLevel.Info;
+      case "WARN":
+      case "WARNING":
+        return LogLevel.Warn;
+      case "ERROR":
+        return LogLevel.Error;
+      case "FATAL":
+        return LogLevel.Fatal;
+      case "OFF":
+        return LogLevel.Off;
       default:
         // Unknown log level, defaulting to INFO
         return LogLevel.Info;
     }
   }
-  
+
   // Fallback for any other type
   return LogLevel.Info;
 }
@@ -120,47 +134,51 @@ export interface LoggerFactoryConfig {
 export class LoggerFactory {
   private static instance: LoggerFactory;
   private static readonly MessagesAppender: AppenderConfig = {
-    name: 'messages',
+    name: "messages",
     enabled: true,
-    level: LogLevel.Trace,
+    level: LogLevel.Info,
     channel: {
       type: ChannelType.ASYNC_CONSUMER,
-      channelName: 'messages'
+      channelName: "messages",
     },
-    groups: [/.+/] // Match all logger names
+    format: "{time} [{level}] {logger}: {message}",
+    groups: [/.+/], // Match all logger names
   };
-  
+
   private readonly provider: Log4TSProvider;
   private readonly loggerCache: Map<string, Logger> = new Map();
   private readonly config: LoggerFactoryConfig;
-  private readonly asyncConsumers: Map<string, Set<AsyncLogConsumer>> = new Map();
+  private readonly asyncConsumers: Map<string, Set<AsyncLogConsumer>> =
+    new Map();
   private hasMessagesAppenderBeenAdded = false;
 
   private constructor(config: LoggerFactoryConfig = {}) {
     // Try to load config file if no config provided
-    let loadedConfig = config && Object.keys(config).length > 0 ? config : this.loadConfigFile();
-    
+    let loadedConfig =
+      config && Object.keys(config).length > 0 ? config : this.loadConfigFile();
+
     // Parse string levels in loaded config
     loadedConfig = this.parseStringLevelsInConfig(loadedConfig);
-    
+
     // Determine configuration approach based on what's provided
-    const useSimpleConfig = !loadedConfig.appenders && !loadedConfig.typescriptLoggingConfig && (
-      loadedConfig.defaultChannel || loadedConfig.globalLevel
-    );
-    
+    const useSimpleConfig =
+      !loadedConfig.appenders &&
+      !loadedConfig.typescriptLoggingConfig &&
+      (loadedConfig.defaultChannel || loadedConfig.globalLevel);
+
     if (useSimpleConfig) {
       // Simple configuration approach - use defaultChannel and globalLevel
       const defaultConfig: LoggerFactoryConfig = {
         providerName: "OpinionFrontUI",
         globalLevel: LogLevel.Debug,
-        defaultChannel: { type: ChannelType.CONSOLE }
+        defaultChannel: { type: ChannelType.CONSOLE },
       };
-      
+
       this.config = {
         ...defaultConfig,
         ...loadedConfig,
       };
-      
+
       // Create provider using simple configuration
       this.provider = this.createProviderFromSimpleConfig();
     } else {
@@ -172,26 +190,27 @@ export class LoggerFactory {
         appenders: [
           // Pre-configure the console appender
           {
-            name: 'console',
+            name: "console",
             enabled: true,
-            level: LogLevel.Debug,
+            level: LogLevel.Trace,
             channel: { type: ChannelType.CONSOLE },
-            groups: [/.+/] // Match all logger names
+            groups: [/.+/], // Match all logger names
+            format: "{time} [{level}] {logger}: {message}",
           } as AppenderConfig,
           // Pre-configure the MessagesAppender to avoid dynamic addition
-          LoggerFactory.MessagesAppender
-        ]
+          LoggerFactory.MessagesAppender,
+        ],
       };
-      
+
       this.config = {
         ...defaultConfig,
         ...loadedConfig,
       };
-      
+
       // Create provider using appenders configuration
       this.provider = this.createProviderFromAppendersConfig();
     }
-    
+
     // Mark MessagesAppender as already added since it's pre-configured
     this.hasMessagesAppenderBeenAdded = true;
   }
@@ -241,12 +260,12 @@ export class LoggerFactory {
       loggerName = nameOrClass;
     } else {
       // Extract class name from constructor function
-      loggerName = nameOrClass.name || 'UnknownClass';
-      
+      loggerName = nameOrClass.name || "UnknownClass";
+
       // Validate that we got a meaningful name
-      if (!loggerName || loggerName === 'UnknownClass') {
+      if (!loggerName || loggerName === "UnknownClass") {
         // Could not determine class name, using fallback
-        loggerName = 'UnknownClass';
+        loggerName = "UnknownClass";
       }
     }
 
@@ -276,17 +295,20 @@ export class LoggerFactory {
    * @param consumer The log consumer to add
    * @returns Function to remove this consumer
    */
-  public addLogConsumer(channelName: string, consumer: AsyncLogConsumer): RemoveConsumerFunction {
+  public addLogConsumer(
+    channelName: string,
+    consumer: AsyncLogConsumer,
+  ): RemoveConsumerFunction {
     // Get or create the set of consumers for this channel name
     let consumersSet = this.asyncConsumers.get(channelName);
     if (!consumersSet) {
       consumersSet = new Set<AsyncLogConsumer>();
       this.asyncConsumers.set(channelName, consumersSet);
     }
-    
+
     // Add the consumer
     consumersSet.add(consumer);
-    
+
     // Return removal function
     return () => {
       const consumers = this.asyncConsumers.get(channelName);
@@ -314,36 +336,41 @@ export class LoggerFactory {
    * Parse string levels in configuration to LogLevel enums
    * @private
    */
-  private parseStringLevelsInConfig(config: LoggerFactoryConfig): LoggerFactoryConfig {
+  private parseStringLevelsInConfig(
+    config: LoggerFactoryConfig,
+  ): LoggerFactoryConfig {
     const parsedConfig = { ...config };
-    
+
     // Parse globalLevel if it's a string
-    if (parsedConfig.globalLevel && typeof parsedConfig.globalLevel === 'string') {
+    if (
+      parsedConfig.globalLevel &&
+      typeof parsedConfig.globalLevel === "string"
+    ) {
       parsedConfig.globalLevel = parseLogLevel(parsedConfig.globalLevel);
     }
-    
+
     // Parse appender levels if they're strings
     if (parsedConfig.appenders) {
-      parsedConfig.appenders = parsedConfig.appenders.map(appender => {
+      parsedConfig.appenders = parsedConfig.appenders.map((appender) => {
         const parsedAppender = { ...appender };
-        if (parsedAppender.level && typeof parsedAppender.level === 'string') {
+        if (parsedAppender.level && typeof parsedAppender.level === "string") {
           parsedAppender.level = parseLogLevel(parsedAppender.level);
         }
         return parsedAppender;
       });
     }
-    
+
     // Parse group levels if they're strings
     if (parsedConfig.groups) {
-      parsedConfig.groups = parsedConfig.groups.map(group => {
+      parsedConfig.groups = parsedConfig.groups.map((group) => {
         const parsedGroup = { ...group };
-        if (parsedGroup.level && typeof parsedGroup.level === 'string') {
+        if (parsedGroup.level && typeof parsedGroup.level === "string") {
           parsedGroup.level = parseLogLevel(parsedGroup.level);
         }
         return parsedGroup;
       });
     }
-    
+
     return parsedConfig;
   }
 
@@ -355,18 +382,18 @@ export class LoggerFactory {
     try {
       // In a browser environment, we can't read files from filesystem
       // This would need to be loaded via fetch or embedded in the build
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         // Browser environment - config would need to be embedded or fetched
         return {};
       }
-      
+
       // Node.js environment - try to read logger.json
-      const fs = require('fs');
-      const path = require('path');
-      const configPath = path.join(process.cwd(), 'logger.json');
-      
+      const fs = require("fs");
+      const path = require("path");
+      const configPath = path.join(process.cwd(), "logger.json");
+
       if (fs.existsSync(configPath)) {
-        const configData = fs.readFileSync(configPath, 'utf-8');
+        const configData = fs.readFileSync(configPath, "utf-8");
         const config = JSON.parse(configData) as LoggerFactoryConfig;
         // Logger configuration loaded from logger.json
         return config;
@@ -374,11 +401,9 @@ export class LoggerFactory {
     } catch {
       // Failed to load logger.json configuration - using defaults
     }
-    
+
     return {};
   }
-
-
 
   /**
    * Get all channel names that have consumers
@@ -424,21 +449,23 @@ export class LoggerFactory {
    * @returns AsyncConsumerLogChannel instance
    * @private
    */
-  private getAsyncConsumerLogChannel(channelName: string): AsyncConsumerLogChannel {
+  private getAsyncConsumerLogChannel(
+    channelName: string,
+  ): AsyncConsumerLogChannel {
     const channel = new AsyncConsumerLogChannel(channelName);
-    
+
     // Override the write method to dispatch to our managed consumers
     channel.write = (message) => {
       // Get consumers for this channel name from our map
       const consumers = this.asyncConsumers.get(channelName);
       if (consumers && consumers.size > 0) {
         // Process each consumer asynchronously
-        consumers.forEach(consumer => {
+        consumers.forEach((consumer) => {
           this.processAsyncConsumer(consumer, message);
         });
       }
     };
-    
+
     return channel;
   }
 
@@ -446,17 +473,23 @@ export class LoggerFactory {
    * Process a message with a specific async consumer
    * @private
    */
-  private async processAsyncConsumer(consumer: AsyncLogConsumer, message: LogMessage): Promise<void> {
+  private async processAsyncConsumer(
+    consumer: AsyncLogConsumer,
+    message: LogMessage,
+  ): Promise<void> {
     try {
       await consumer.consume(message);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      
+
       if (consumer.onError) {
         try {
           consumer.onError(err, message);
         } catch (onErrorErr) {
-          console.error(`LoggerFactory: Consumer onError handler failed:`, onErrorErr);
+          console.error(
+            `LoggerFactory: Consumer onError handler failed:`,
+            onErrorErr,
+          );
         }
       } else {
         console.error(`LoggerFactory: Consumer failed:`, err);
@@ -632,9 +665,10 @@ export class LoggerFactory {
               this.handleAsyncConsumerAppender(appender, logMessage);
               return;
             }
-            
+
             const appenderChannel = ChannelFactory.createChannel(
               appender.channel,
+              appender.format,
             );
 
             // Create formatted message for this appender
@@ -716,7 +750,7 @@ export class LoggerFactory {
     if (!level) {
       return LogLevel.Info;
     }
-    
+
     const levelMap: { [key: string]: number } = {
       TRACE: LogLevel.Trace,
       DEBUG: LogLevel.Debug,
@@ -732,66 +766,83 @@ export class LoggerFactory {
    * Handle ASYNC_CONSUMER appender by routing to the consumer system
    * @private
    */
-  private handleAsyncConsumerAppender(appender: AppenderConfig, logMessage: InternalLogMessage): void {
+  private handleAsyncConsumerAppender(
+    appender: AppenderConfig,
+    logMessage: InternalLogMessage,
+  ): void {
     const channelConfig = appender.channel as { channelName: string }; // AsyncConsumerChannelConfig
     const channelName = channelConfig.channelName;
-    
+
     // Get consumers for this channel name from our map
     const consumers = this.asyncConsumers.get(channelName);
     if (consumers && consumers.size > 0) {
       // Create formatted message for this appender
-      const formattedMessage = this.formatMessageForAppender(logMessage, appender);
-      
+      const formattedMessage = this.formatMessageForAppender(
+        logMessage,
+        appender,
+      );
+
       // Convert to our LogMessage interface
       // Apply same regex parsing as ChannelFactory to extract correct logger name
       let loggerName: string;
       let actualMessage: string;
-      
-      if (formattedMessage.message && typeof formattedMessage.message === 'string') {
+
+      if (
+        formattedMessage.message &&
+        typeof formattedMessage.message === "string"
+      ) {
         // Check for pre-formatted typescript-logging messages
-        const preFormattedMatch = formattedMessage.message.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/);
-        
+        const preFormattedMatch = formattedMessage.message.match(
+          /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/,
+        );
+
         if (preFormattedMatch) {
           // Extract logger name from pre-formatted message
           loggerName = preFormattedMatch[2];
           actualMessage = preFormattedMatch[3];
         } else {
           // Fallback to library-provided values
-          loggerName = Array.isArray(formattedMessage.logNames) 
-            ? formattedMessage.logNames[0] 
-            : (formattedMessage.logNames || 'unknown');
+          loggerName = Array.isArray(formattedMessage.logNames)
+            ? formattedMessage.logNames[0]
+            : formattedMessage.logNames || "unknown";
           actualMessage = formattedMessage.message;
         }
       } else {
         // Fallback to library-provided values
-        loggerName = Array.isArray(formattedMessage.logNames) 
-          ? formattedMessage.logNames[0] 
-          : (formattedMessage.logNames || 'unknown');
-        actualMessage = formattedMessage.message || '';
+        loggerName = Array.isArray(formattedMessage.logNames)
+          ? formattedMessage.logNames[0]
+          : formattedMessage.logNames || "unknown";
+        actualMessage = formattedMessage.message || "";
       }
-      
+
       // Extract log level from pre-formatted message if available
       let logLevel = formattedMessage.level?.toString();
-      
-      if (!logLevel && formattedMessage.message && typeof formattedMessage.message === 'string') {
+
+      if (
+        !logLevel &&
+        formattedMessage.message &&
+        typeof formattedMessage.message === "string"
+      ) {
         // Try to extract level from pre-formatted typescript-logging messages
-        const preFormattedMatch = formattedMessage.message.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/);
+        const preFormattedMatch = formattedMessage.message.match(
+          /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+(\w+)\s+\[([^\]]+)\]\s+(.*)$/,
+        );
         if (preFormattedMatch) {
           logLevel = preFormattedMatch[1]; // Extract the log level from the formatted string
         }
       }
-      
+
       const ourLogMessage: LogMessage = {
-        level: logLevel || 'INFO',
+        level: logLevel || "INFO",
         timeInMillis: formattedMessage.timeInMillis || Date.now(),
         logName: loggerName,
         message: actualMessage,
         exception: formattedMessage.exception as Error | undefined,
-        args: formattedMessage.args
+        args: formattedMessage.args,
       };
-      
+
       // Process each consumer asynchronously
-      consumers.forEach(consumer => {
+      consumers.forEach((consumer) => {
         this.processAsyncConsumer(consumer, ourLogMessage);
       });
     }

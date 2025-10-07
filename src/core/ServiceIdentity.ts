@@ -13,6 +13,9 @@
  * - Compile-time validation through imports
  */
 
+import { LoggerFactory } from '../logging/LoggerFactory';
+import type { Logger } from '../logging/Logger';
+
 /**
  * Base interface for services that declare their own identity
  */
@@ -57,9 +60,10 @@ export function registerService<T extends ServiceIdentity, S extends { getServic
   ServiceClass: T,
   instance: S
 ): void {
+  const logger = LoggerFactory.getInstance().getLogger('ServiceIdentity');
   const serviceId = ServiceClass.SERVICE_ID;
   context.registerService(serviceId, instance);
-  console.log(`📝 Registered service: ${serviceId}`);
+  logger.debug('📝 Registered service: {}', serviceId);
 }
 
 /**
@@ -100,14 +104,14 @@ export function validateServiceIdentity<T>(
  * Development helper to list service dependencies
  */
 export function listServiceDependencies<T extends ServiceIdentity>(ServiceClass: T): void {
-  console.group(`🔍 ${ServiceClass.SERVICE_ID} Dependencies`);
-  console.log(`Description: ${ServiceClass.SERVICE_DESCRIPTION || 'No description'}`);
+  const logger = LoggerFactory.getInstance().getLogger('ServiceIdentity');
+  logger.debug('🔍 {} Dependencies', ServiceClass.SERVICE_ID);
+  logger.debug('Description: {}', ServiceClass.SERVICE_DESCRIPTION || 'No description');
   if (ServiceClass.SERVICE_DEPENDENCIES && ServiceClass.SERVICE_DEPENDENCIES.length > 0) {
-    console.log(`Dependencies: [${ServiceClass.SERVICE_DEPENDENCIES.join(', ')}]`);
+    logger.debug('Dependencies: [{}]', ServiceClass.SERVICE_DEPENDENCIES.join(', '));
   } else {
-    console.log('Dependencies: None');
+    logger.debug('Dependencies: None');
   }
-  console.groupEnd();
 }
 
 // Legacy compatibility exports

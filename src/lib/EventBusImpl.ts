@@ -4,6 +4,8 @@ import {
   EventBusError, 
   EventBusOptions 
 } from './EventBus';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 type EventHandler<T = unknown> = (data: T) => unknown | Promise<unknown>;
 
@@ -22,6 +24,7 @@ interface ConsumerImpl extends Consumer {
 export class EventBusImpl implements EventBus {
   private listeners: Map<string, Set<ConsumerImpl>> = new Map();
   private options: EventBusOptions;
+  private logger: Logger;
 
   constructor(options: EventBusOptions = {}) {
     this.options = {
@@ -30,6 +33,7 @@ export class EventBusImpl implements EventBus {
       maxConsumersPerEvent: 0,
       ...options
     };
+    this.logger = LoggerFactory.getInstance().getLogger('EventBusImpl');
   }
 
   /**
@@ -37,13 +41,13 @@ export class EventBusImpl implements EventBus {
    */
   publish(event: string, data: unknown): void {
     if (this.options.debug) {
-      console.log(`📢 EventBus PUBLISH: ${event}`, data);
+      this.logger.debug(`📢 EventBus PUBLISH: ${event}`, data);
     }
 
     const consumers = this.listeners.get(event);
     if (!consumers || consumers.size === 0) {
       if (this.options.debug) {
-        console.log(`📢 EventBus: No consumers for event '${event}'`);
+        this.logger.debug(`📢 EventBus: No consumers for event '${event}'`);
       }
       return;
     }
@@ -55,7 +59,7 @@ export class EventBusImpl implements EventBus {
           try {
             consumer.handler(data);
           } catch (error) {
-            console.error(`EventBus PUBLISH error in handler for '${event}':`, error);
+            this.logger.error(`EventBus PUBLISH error in handler for '${event}':`, error);
           }
         }, 0);
       }
@@ -67,13 +71,13 @@ export class EventBusImpl implements EventBus {
    */
   send(event: string, data: unknown): void {
     if (this.options.debug) {
-      console.log(`📤 EventBus SEND: ${event}`, data);
+      this.logger.debug(`📤 EventBus SEND: ${event}`, data);
     }
 
     const consumers = this.listeners.get(event);
     if (!consumers || consumers.size === 0) {
       if (this.options.debug) {
-        console.log(`📤 EventBus: No consumers for SEND event '${event}'`);
+        this.logger.debug(`📤 EventBus: No consumers for SEND event '${event}'`);
       }
       return;
     }
@@ -82,7 +86,7 @@ export class EventBusImpl implements EventBus {
     const firstConsumer = Array.from(consumers).find(c => c.isActive());
     if (!firstConsumer) {
       if (this.options.debug) {
-        console.log(`📤 EventBus: No active consumers for SEND event '${event}'`);
+        this.logger.debug(`📤 EventBus: No active consumers for SEND event '${event}'`);
       }
       return;
     }
@@ -92,7 +96,7 @@ export class EventBusImpl implements EventBus {
       try {
         firstConsumer.handler(data);
       } catch (error) {
-        console.error(`EventBus SEND error in handler for '${event}':`, error);
+        this.logger.error(`EventBus SEND error in handler for '${event}':`, error);
       }
     }, 0);
   }
@@ -102,7 +106,7 @@ export class EventBusImpl implements EventBus {
    */
   request(event: string, data: unknown, timeout?: number): Promise<unknown> {
     if (this.options.debug) {
-      console.log(`📬 EventBus REQUEST: ${event}`, data);
+      this.logger.debug(`📬 EventBus REQUEST: ${event}`, data);
     }
 
     return new Promise((resolve, reject) => {
@@ -179,7 +183,7 @@ export class EventBusImpl implements EventBus {
    */
   consume(event: string, handler: EventHandler): Consumer {
     if (this.options.debug) {
-      console.log(`🎯 EventBus CONSUME: Registering handler for '${event}'`);
+      this.logger.debug(`🎯 EventBus CONSUME: Registering handler for '${event}'`);
     }
 
     if (!event || typeof event !== 'string') {
@@ -217,7 +221,7 @@ export class EventBusImpl implements EventBus {
           consumers.delete(consumer);
           active = false;
           if (this.options.debug) {
-            console.log(`🎯 EventBus: Unregistered consumer for '${event}'`);
+            this.logger.debug(`🎯 EventBus: Unregistered consumer for '${event}'`);
           }
           // Clean up empty consumer sets
           if (consumers.size === 0) {
@@ -256,12 +260,12 @@ export class EventBusImpl implements EventBus {
     if (event) {
       this.listeners.delete(event);
       if (this.options.debug) {
-        console.log(`🗑️ EventBus: Removed all consumers for '${event}'`);
+        this.logger.debug(`🗑️ EventBus: Removed all consumers for '${event}'`);
       }
     } else {
       this.listeners.clear();
       if (this.options.debug) {
-        console.log(`🗑️ EventBus: Removed all consumers for all events`);
+        this.logger.debug(`🗑️ EventBus: Removed all consumers for all events`);
       }
     }
   }

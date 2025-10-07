@@ -27,6 +27,8 @@ import {
   ChainHotkeyHandler,
   HotkeyExecutionContext,
 } from "../hotkeys/HotkeyChainSystem";
+import { LoggerFactory } from "../logging/LoggerFactory";
+import { Logger } from "../logging/Logger";
 
 export interface HeaderConfig {
   brandTitle?: string; // Header brand/logo title (default: "Opinion")
@@ -45,6 +47,7 @@ export class AppHeaderImpl
   private breadcrumbsComponent: BreadcrumbsComponent | null = null;
   private user: HeaderUser | null = null;
   private layoutContext: LayoutContext;
+  private logger: Logger;
   private layoutUnsubscribers: Array<() => void> = [];
   private config: Required<HeaderConfig>;
   private chainProviderUnsubscriber: (() => void) | null = null;
@@ -54,6 +57,9 @@ export class AppHeaderImpl
   private updateCount: number = 0;
 
   constructor(config: HeaderConfig = {}, layoutContext?: LayoutContext) {
+    // Initialize logger first
+    this.logger = LoggerFactory.getInstance().getLogger('AppHeaderImpl');
+    
     // Apply configuration with defaults
     this.config = {
       brandTitle: config.brandTitle ?? "Opinion",
@@ -63,14 +69,14 @@ export class AppHeaderImpl
       showUserMenu: config.showUserMenu ?? true,
     };
 
-    console.log(
+    this.logger.info(
       "AppHeaderImpl - Creating clean header with config:",
       this.config,
     );
 
     // Use provided LayoutContext or fallback to singleton (for backwards compatibility)
     this.layoutContext = layoutContext || getLayoutContext();
-    console.log(`AppHeaderImpl - Using LayoutContext:`, {
+    this.logger.debug(`AppHeaderImpl - Using LayoutContext:`, {
       provided: !!layoutContext,
       contextType: this.layoutContext.constructor.name,
     });
@@ -84,7 +90,7 @@ export class AppHeaderImpl
    * Initialize the header component
    */
   async init(): Promise<void> {
-    console.log("AppHeaderImpl - Initializing...");
+    this.logger.info("AppHeaderImpl - Initializing...");
 
     try {
       // Create header first - it should exist independently
@@ -93,7 +99,7 @@ export class AppHeaderImpl
       // Wait for DOM to be ready and elements to be available
       await this.waitForDOMReady();
 
-      console.log(`AppHeaderImpl - Current viewport: ${window.innerWidth}px`);
+      this.logger.debug(`AppHeaderImpl - Current viewport: ${window.innerWidth}px`);
 
       // Initialize breadcrumbs component
       await this.initBreadcrumbs();
@@ -117,9 +123,9 @@ export class AppHeaderImpl
 
       this.isInitialized = true;
       this.initTime = Date.now();
-      console.log("AppHeaderImpl - Ready");
+      this.logger.info("AppHeaderImpl - Ready");
     } catch (error) {
-      console.error("AppHeaderImpl - Initialization failed:", error);
+      this.logger.error("AppHeaderImpl - Initialization failed:", error);
       throw error;
     }
   }
@@ -150,9 +156,9 @@ export class AppHeaderImpl
         document.body.insertBefore(this.container, document.body.firstChild);
       }
 
-      console.log("AppHeaderImpl - Created new header element");
+      this.logger.info("AppHeaderImpl - Created new header element");
     } else {
-      console.log("AppHeaderImpl - Using existing element");
+      this.logger.info("AppHeaderImpl - Using existing element");
     }
 
     this.finalizeHeaderCreation();
@@ -165,7 +171,7 @@ export class AppHeaderImpl
     // Populate the existing structure with dynamic content
     this.populateContent();
 
-    console.log("AppHeaderImpl - Content populated successfully");
+    this.logger.info("AppHeaderImpl - Content populated successfully");
   }
 
   /**
@@ -234,7 +240,7 @@ export class AppHeaderImpl
    */
   private async initBreadcrumbs(): Promise<void> {
     if (!this.config.showBreadcrumbs) {
-      console.log(
+      this.logger.info(
         "AppHeaderImpl - Breadcrumbs disabled in config, skipping initialization",
       );
       return;
@@ -249,9 +255,9 @@ export class AppHeaderImpl
         this.layoutContext,
       );
       await this.breadcrumbsComponent.init();
-      console.log("AppHeaderImpl - BreadcrumbsComponent initialized");
+      this.logger.info("AppHeaderImpl - BreadcrumbsComponent initialized");
     } else {
-      console.warn("AppHeaderImpl - Breadcrumbs container not found");
+      this.logger.warn("AppHeaderImpl - Breadcrumbs container not found");
     }
   }
 
@@ -260,7 +266,7 @@ export class AppHeaderImpl
    */
   private async initUserMenu(): Promise<void> {
     if (!this.config.showUserMenu) {
-      console.log(
+      this.logger.info(
         "AppHeaderImpl - User menu disabled in config, skipping initialization",
       );
       return;
@@ -273,11 +279,11 @@ export class AppHeaderImpl
         this.userMenuHandler(this.userMenu);
       }
       await this.userMenu.init();
-      console.log(
+      this.logger.info(
         "AppHeaderImpl - UserMenu component initialized (responsive)",
       );
     } else {
-      console.warn("AppHeaderImpl - User menu container not found");
+      this.logger.warn("AppHeaderImpl - User menu container not found");
     }
   }
 
@@ -310,7 +316,7 @@ export class AppHeaderImpl
   private registerHotkeys(): void {
     // Chain provider registration is already handled in init() method
     // This method is kept for potential future hotkey-specific setup
-    console.log(
+    this.logger.info(
       "AppHeaderImpl - Hotkey setup complete (chain provider already registered in init)",
     );
   }
@@ -327,7 +333,7 @@ export class AppHeaderImpl
     );
 
     this.layoutContext.emit("user-menu-request", requestEvent.data);
-    console.log(
+    this.logger.info(
       "📡 AppHeaderImpl - ESC key: User menu close request emitted (via LayoutContext hotkey)",
     );
   }
@@ -348,7 +354,7 @@ export class AppHeaderImpl
       mobileMenuToggle.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("📱 AppHeaderImpl - Mobile menu toggle clicked");
+        this.logger.info("📱 AppHeaderImpl - Mobile menu toggle clicked");
 
         // Emit mobile menu request event instead of directly calling sidebar
         // This decouples header from sidebar and allows sidebar to handle the request when ready
@@ -358,7 +364,7 @@ export class AppHeaderImpl
         );
 
         this.layoutContext.emit("mobile-menu-request", requestEvent.data);
-        console.log("📡 AppHeaderImpl - Mobile menu request event emitted");
+        this.logger.info("📡 AppHeaderImpl - Mobile menu request event emitted");
       });
       this.domEventListeners++;
     }
@@ -378,7 +384,7 @@ export class AppHeaderImpl
         this.handleLogoutAction();
         break;
       default:
-        console.warn(`Unknown header action: ${action}`);
+        this.logger.warn(`Unknown header action: ${action}`);
     }
   }
 
@@ -386,7 +392,7 @@ export class AppHeaderImpl
    * Handle logout action - delegate to AppHeaderBinderService via LayoutContext
    */
   private async handleLogoutAction(): Promise<void> {
-    console.log("🚺 AppHeaderImpl - Logout action triggered");
+    this.logger.info("😺 AppHeaderImpl - Logout action triggered");
 
     try {
       // Get the AppHeaderBinderService using the helper method
@@ -405,16 +411,16 @@ export class AppHeaderImpl
       if (binderService) {
         // Delegate logout to the binder service
         await binderService.handleLogoutAction();
-        console.log("✅ AppHeaderImpl - Logout action completed successfully");
+        this.logger.info("✅ AppHeaderImpl - Logout action completed successfully");
       } else {
-        console.warn(
+        this.logger.warn(
           "⚠️ AppHeaderImpl - AppHeaderBinderService not available for logout",
         );
         // Fallback: redirect to logout page
         window.location.href = "/logout";
       }
     } catch (error) {
-      console.error("❌ AppHeaderImpl - Error handling logout action:", error);
+      this.logger.error("❌ AppHeaderImpl - Error handling logout action:", error);
       // Fallback: redirect to logout page
       window.location.href = "/logout";
     }
@@ -433,7 +439,7 @@ export class AppHeaderImpl
         message + "\n\nWould you like to be redirected to our feedback page?",
       )
     ) {
-      console.log("Redirecting to feedback page...");
+      this.logger.info("Redirecting to feedback page...");
       // In a real implementation, this would redirect to the actual feedback page
     }
   }
@@ -445,7 +451,7 @@ export class AppHeaderImpl
     this.user = user;
     this.updateCount++;
 
-    console.log(`AppHeaderImpl - updateUser called: ${user.username}`);
+    this.logger.info(`AppHeaderImpl - updateUser called: ${user.username}`);
 
     // Always use UserMenu - it will handle responsive display via CSS
     if (this.userMenu) {
@@ -454,9 +460,9 @@ export class AppHeaderImpl
         email: user.email,
         avatar: user.avatar,
       });
-      console.log("AppHeaderImpl - User updated via UserMenu");
+      this.logger.info("AppHeaderImpl - User updated via UserMenu");
     } else {
-      console.warn("AppHeaderImpl - UserMenu not available for user update");
+      this.logger.warn("AppHeaderImpl - UserMenu not available for user update");
     }
   }
 
@@ -464,15 +470,15 @@ export class AppHeaderImpl
    * Update user menu items
    */
   updateUserMenuItems(items: UserMenuItem[]): void {
-    console.log(
+    this.logger.info(
       `AppHeaderImpl - updateUserMenuItems called with ${items.length} items`,
     );
 
     if (this.userMenu) {
       this.userMenu.updateMenuItems(items);
-      console.log("AppHeaderImpl - User menu items updated via UserMenu");
+      this.logger.info("AppHeaderImpl - User menu items updated via UserMenu");
     } else {
-      console.warn(
+      this.logger.warn(
         "AppHeaderImpl - UserMenu not available for menu items update",
       );
     }
@@ -489,7 +495,7 @@ export class AppHeaderImpl
     if (logo) {
       logo.textContent = finalTitle;
       logo.href = finalHref;
-      console.log(
+      this.logger.info(
         `AppHeaderImpl - Brand updated: "${finalTitle}" -> ${finalHref}`,
       );
     }
@@ -510,7 +516,7 @@ export class AppHeaderImpl
         document.title = "Opinion";
       }
     } else {
-      console.warn("AppHeaderImpl - BreadcrumbsComponent not initialized");
+      this.logger.warn("AppHeaderImpl - BreadcrumbsComponent not initialized");
     }
   }
 
@@ -590,7 +596,7 @@ export class AppHeaderImpl
    */
   private updateHeaderLayout(ctx: LayoutContext): void {
     if (!this.container) {
-      console.warn(
+      this.logger.warn(
         "AppHeaderImpl - Cannot update layout: container not available",
       );
       return;
@@ -622,20 +628,20 @@ export class AppHeaderImpl
     });
     document.dispatchEvent(event);
 
-    console.log(`✅ AppHeaderImpl - Layout updated`);
+    this.logger.info(`✅ AppHeaderImpl - Layout updated`);
   }
 
   /**
    * Subscribe to layout context events
    */
   private subscribeToLayoutContext(): void {
-    console.log("AppHeaderImpl - Subscribing to layout context events...");
+    this.logger.info("AppHeaderImpl - Subscribing to layout context events...");
 
     // Subscribe to layout mode changes to update header layout
     const layoutModeChangeUnsubscribe = this.layoutContext.subscribe(
       "layout-mode-change",
       (event: LayoutEvent) => {
-        console.log("AppHeaderImpl - Received layout mode change", event.data);
+        this.logger.info("AppHeaderImpl - Received layout mode change", event.data);
         this.updateHeaderLayout(this.layoutContext);
       },
     );
@@ -645,7 +651,7 @@ export class AppHeaderImpl
     const compactModeChangeUnsubscribe = this.layoutContext.subscribe(
       "sidebar-compact-mode-change",
       (event: LayoutEvent) => {
-        console.log(
+        this.logger.info(
           "AppHeaderImpl - Received sidebar compact mode change",
           event.data,
         );
@@ -657,7 +663,7 @@ export class AppHeaderImpl
     // Set initial layout based on current layout mode
     this.updateHeaderLayout(this.layoutContext);
 
-    console.log(
+    this.logger.info(
       "AppHeaderImpl - Successfully subscribed to layout context events ✅",
     );
   }
@@ -666,14 +672,14 @@ export class AppHeaderImpl
    * Cleanup when component is destroyed
    */
   destroy(): void {
-    console.log("AppHeaderImpl - Destroying...");
+    this.logger.info("AppHeaderImpl - Destroying...");
 
     // Unsubscribe from layout context events
     this.layoutUnsubscribers.forEach((unsubscribe) => {
       try {
         unsubscribe();
       } catch (error) {
-        console.error(
+        this.logger.error(
           "AppHeaderImpl - Error unsubscribing from layout context:",
           error,
         );
@@ -683,7 +689,7 @@ export class AppHeaderImpl
 
     // Cleanup chain provider
     this.cleanupChainProvider();
-    console.log("AppHeaderImpl - Chain hotkey provider cleaned up");
+    this.logger.info("AppHeaderImpl - Chain hotkey provider cleaned up");
 
     // Destroy user menu component
     if (this.userMenu) {
@@ -776,7 +782,7 @@ export class AppHeaderImpl
    * Handle ESC key via chain system with smart cooperation
    */
   private handleEscapeKeyChain(ctx: HotkeyExecutionContext): void {
-    console.log("🎯 AppHeaderImpl - ESC key pressed via chain system");
+    this.logger.info("🎯 AppHeaderImpl - ESC key pressed via chain system");
 
     // Check if user menu is actually open/relevant
     if (this.shouldHandleEscapeKey()) {
@@ -789,7 +795,7 @@ export class AppHeaderImpl
       this.layoutContext.emit("user-menu-request", requestEvent.data);
       ctx.preventDefault();
 
-      console.log(
+      this.logger.info(
         "📡 AppHeaderImpl - ESC handled: User menu close request emitted",
       );
 
@@ -919,7 +925,7 @@ export class AppHeaderImpl
     if (this.chainProviderUnsubscriber) {
       this.chainProviderUnsubscriber();
       this.chainProviderUnsubscriber = null;
-      console.log("AppHeaderImpl - Chain provider unregistered");
+      this.logger.info("AppHeaderImpl - Chain provider unregistered");
     }
   }
 }

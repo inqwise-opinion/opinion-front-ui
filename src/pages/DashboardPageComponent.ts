@@ -16,6 +16,8 @@ import Layout from '../components/Layout';
 import type { BreadcrumbItem } from '../interfaces/BreadcrumbItem';
 import type { ChainHotkeyHandler, HotkeyExecutionContext } from '../hotkeys';
 import type { PageContext } from '../interfaces/PageContext';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export interface DashboardPageConfig extends PageComponentConfig {
   layout?: Layout;
@@ -27,6 +29,7 @@ export class DashboardPageComponent extends PageComponent {
   private layout: Layout | null = null;
   private compactMode: boolean = false;
   private isMobileView: boolean = false;
+  protected logger: Logger;
 
   // UI Elements
   private sidebar: HTMLElement | null = null;
@@ -45,6 +48,7 @@ export class DashboardPageComponent extends PageComponent {
     });
 
     this.layout = config.layout || null;
+    this.logger = LoggerFactory.getInstance().getLogger('DashboardPageComponent');
   }
 
   /**
@@ -68,7 +72,7 @@ export class DashboardPageComponent extends PageComponent {
     // Set initial states
     this.updateNavigationState();
     
-    console.log('DashboardPageComponent: Initialized');
+    this.logger.info('Initialized');
   }
   
   /**
@@ -85,12 +89,12 @@ export class DashboardPageComponent extends PageComponent {
           { id: 'dashboard', text: 'Dashboard', caption: 'Main dashboard view' }
         ];
         breadcrumbsManager.set(items);
-        console.log('🍞 DashboardPageComponent - Breadcrumbs initialized via PageContext');
+        this.logger.info('🍞 Breadcrumbs initialized via PageContext');
       } else {
-        console.warn('🍞 DashboardPageComponent - BreadcrumbsManager not available');
+        this.logger.warn('🍞 BreadcrumbsManager not available');
       }
     } catch (error) {
-      console.error('🍞 DashboardPageComponent - Error setting breadcrumbs:', error);
+      this.logger.error('🍞 Error setting breadcrumbs:', error);
     }
   }
 
@@ -241,7 +245,7 @@ export class DashboardPageComponent extends PageComponent {
     // Update copyright positioning
     this.updateCopyrightPosition();
     
-    console.log('Compact mode:', this.compactMode ? 'ON' : 'OFF');
+    this.logger.info('Compact mode:', this.compactMode ? 'ON' : 'OFF');
   }
 
   /**
@@ -422,7 +426,7 @@ export class DashboardPageComponent extends PageComponent {
                    'where you could submit your comments and suggestions.';
     
     if (confirm(message + '\n\nWould you like to be redirected to our feedback page?')) {
-      console.log('Redirecting to feedback page...');
+      this.logger.info('Redirecting to feedback page...');
       // In a real implementation, this would redirect to the actual feedback page
     }
   }
@@ -440,7 +444,7 @@ export class DashboardPageComponent extends PageComponent {
       this.layout.destroy();
     }
     
-    console.log('DashboardPageComponent: Destroyed');
+    this.logger.info('Destroyed');
   }
 
   // Public API
@@ -488,7 +492,7 @@ export class DashboardPageComponent extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 Dashboard: Ctrl+S pressed - Toggle sidebar');
+        this.logger.debug('🎯 Ctrl+S pressed - Toggle sidebar');
         ctx.preventDefault();
         this.toggleSidebar();
         ctx.break(); // Exclusive handler for Ctrl+S
@@ -505,7 +509,7 @@ export class DashboardPageComponent extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 Dashboard: Cmd+S pressed - Toggle sidebar');
+        this.logger.debug('🎯 Cmd+S pressed - Toggle sidebar');
         ctx.preventDefault();
         this.toggleSidebar();
         ctx.break(); // Exclusive handler for Meta+S
@@ -523,7 +527,7 @@ export class DashboardPageComponent extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 Dashboard: Ctrl+C pressed - Toggle compact mode');
+        this.logger.debug('🎯 Ctrl+C pressed - Toggle compact mode');
         ctx.preventDefault();
         this.toggleCompactMode();
         ctx.break(); // Exclusive handler for Ctrl+C
@@ -540,7 +544,7 @@ export class DashboardPageComponent extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 Dashboard: Cmd+C pressed - Toggle compact mode');
+        this.logger.debug('🎯 Cmd+C pressed - Toggle compact mode');
         ctx.preventDefault();
         this.toggleCompactMode();
         ctx.break(); // Exclusive handler for Meta+C
@@ -558,7 +562,7 @@ export class DashboardPageComponent extends PageComponent {
       providerId: this.getHotkeyProviderId(),
       enabled: true,
       handler: (ctx: HotkeyExecutionContext) => {
-        console.log('🎯 Dashboard: Escape pressed - Dashboard-specific handling');
+        this.logger.debug('🎯 Escape pressed - Dashboard-specific handling');
         
         // Handle dashboard-specific escape behavior
         const handled = this.handleDashboardEscapeChain(ctx);
@@ -566,7 +570,7 @@ export class DashboardPageComponent extends PageComponent {
         if (handled) {
           // We handled something, but let other ESC handlers also run
           // This allows AppHeader (user menu), Sidebar (mobile), etc. to also handle ESC
-          console.log('📡 Dashboard: ESC handled, continuing chain for cooperative behavior');
+          this.logger.debug('📡 ESC handled, continuing chain for cooperative behavior');
           ctx.next();
         } else {
           // Nothing to handle on dashboard, pass to other handlers
@@ -591,14 +595,14 @@ export class DashboardPageComponent extends PageComponent {
     
     // Close user menu if open
     if (this.userMenuDropdown?.style.display === 'block') {
-      console.log('📱 Dashboard: Closing user menu on ESC');
+      this.logger.debug('📱 Closing user menu on ESC');
       this.closeUserMenu();
       handled = true;
     }
     
     // Close sidebar on mobile if open
     if (this.isMobileView && !document.body.classList.contains('sidebar-closed')) {
-      console.log('📱 Dashboard: Closing mobile sidebar on ESC');
+      this.logger.debug('📱 Closing mobile sidebar on ESC');
       this.closeSidebarOverlay();
       handled = true;
     }
@@ -626,35 +630,35 @@ export class DashboardPageComponent extends PageComponent {
     
     // Dashboard-specific hotkeys (legacy format for backward compatibility)
     hotkeys.set('Ctrl+s', (event: KeyboardEvent) => {
-      console.log('🔄 Dashboard (Legacy): Ctrl+S pressed - Toggle sidebar');
+      this.logger.debug('🔄 Dashboard (Legacy): Ctrl+S pressed - Toggle sidebar');
       event.preventDefault();
       this.toggleSidebar();
       return false; // prevent default & stop propagation
     });
     
     hotkeys.set('Meta+s', (event: KeyboardEvent) => {
-      console.log('🔄 Dashboard (Legacy): Cmd+S pressed - Toggle sidebar');
+      this.logger.debug('🔄 Dashboard (Legacy): Cmd+S pressed - Toggle sidebar');
       event.preventDefault();
       this.toggleSidebar();
       return false;
     });
     
     hotkeys.set('Ctrl+c', (event: KeyboardEvent) => {
-      console.log('🔄 Dashboard (Legacy): Ctrl+C pressed - Toggle compact mode');
+      this.logger.debug('🔄 Dashboard (Legacy): Ctrl+C pressed - Toggle compact mode');
       event.preventDefault();
       this.toggleCompactMode();
       return false;
     });
     
     hotkeys.set('Meta+c', (event: KeyboardEvent) => {
-      console.log('🔄 Dashboard (Legacy): Cmd+C pressed - Toggle compact mode');
+      this.logger.debug('🔄 Dashboard (Legacy): Cmd+C pressed - Toggle compact mode');
       event.preventDefault();
       this.toggleCompactMode();
       return false;
     });
     
     hotkeys.set('Escape', (event: KeyboardEvent) => {
-      console.log('🔄 Dashboard (Legacy): Escape pressed - Close mobile menus');
+      this.logger.debug('🔄 Dashboard (Legacy): Escape pressed - Close mobile menus');
       // Handle dashboard-specific escape behavior (legacy version)
       this.handleDashboardEscapeLegacy(event);
       // Don't return false - let other Escape handlers also run
@@ -669,13 +673,13 @@ export class DashboardPageComponent extends PageComponent {
   private handleDashboardEscapeLegacy(_event: KeyboardEvent): void {
     // Close user menu if open
     if (this.userMenuDropdown?.style.display === 'block') {
-      console.log('📱 Dashboard (Legacy): Closing user menu on ESC');
+      this.logger.debug('📱 Dashboard (Legacy): Closing user menu on ESC');
       this.closeUserMenu();
     }
     
     // Close sidebar on mobile if open
     if (this.isMobileView && !document.body.classList.contains('sidebar-closed')) {
-      console.log('📱 Dashboard (Legacy): Closing mobile sidebar on ESC');
+      this.logger.debug('📱 Dashboard (Legacy): Closing mobile sidebar on ESC');
       this.closeSidebarOverlay();
     }
   }

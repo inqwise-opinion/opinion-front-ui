@@ -3,6 +3,9 @@
  * Provides reactive data binding capabilities for components
  */
 
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
+
 type Observer<T> = (data: T) => void;
 type Validator<T> = (data: T) => boolean | string;
 type Transformer<T> = (data: T) => T;
@@ -12,9 +15,11 @@ export class Observable<T> {
   private _value: T;
   private validators: Validator<T>[] = [];
   private transformers: Transformer<T>[] = [];
+  private logger: Logger;
 
   constructor(initialValue: T) {
     this._value = initialValue;
+    this.logger = LoggerFactory.getInstance().getLogger('Observable');
   }
 
   /**
@@ -33,7 +38,7 @@ export class Observable<T> {
       const result = validator(newValue);
       if (result !== true) {
         const error = typeof result === 'string' ? result : 'Validation failed';
-        console.warn('Observable validation failed:', error);
+        this.logger.warn('Observable validation failed:', error);
         return; // Don't update if validation fails
       }
     }
@@ -54,11 +59,11 @@ export class Observable<T> {
         try {
           observer(this._value);
         } catch (error) {
-          console.error('Observer error:', error);
+          this.logger.error('Observer error:', error);
         }
       });
 
-      console.log('Observable value changed:', { oldValue, newValue: this._value });
+      this.logger.debug('Observable value changed:', { oldValue, newValue: this._value });
     }
   }
 

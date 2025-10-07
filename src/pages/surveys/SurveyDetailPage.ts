@@ -1,8 +1,11 @@
 import { PageComponent } from '../../components/PageComponent';
 import MainContentImpl from '../../components/MainContentImpl';
 import type { PageContext } from '../../interfaces/PageContext';
+import { LoggerFactory } from '../../logging/LoggerFactory';
+import type { Logger } from '../../logging/Logger';
 
 export default class SurveyDetailPage extends PageComponent {
+  protected readonly logger: Logger = LoggerFactory.getInstance().getLogger(SurveyDetailPage);
   private surveyId: string;
 
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
@@ -34,7 +37,7 @@ export default class SurveyDetailPage extends PageComponent {
 
       // Breadcrumbs are now managed automatically by RouterService
     } catch (error) {
-      console.error('❌ SurveyDetailPage - Initialization failed:', error);
+      this.logger.error('❌ SurveyDetailPage - Initialization failed:', error);
       throw error;
     }
   }
@@ -95,23 +98,23 @@ export default class SurveyDetailPage extends PageComponent {
   // Action Handlers
   private handleEditSurvey(): void {
     // TODO: Implement survey editing logic
-    console.log(`Edit survey ${this.surveyId} clicked`);
+    this.logger.debug('Edit survey {} clicked', this.surveyId);
   }
 
   private handlePreviewSurvey(): void {
     // TODO: Implement survey preview logic
-    console.log(`Preview survey ${this.surveyId} clicked`);
+    this.logger.debug('Preview survey {} clicked', this.surveyId);
     window.open(`/surveys/${this.surveyId}/preview`, '_blank');
   }
 
   private handleManageCollectors(): void {
     // TODO: Implement collectors management logic
-    console.log(`Manage collectors for survey ${this.surveyId} clicked`);
+    this.logger.debug('Manage collectors for survey {} clicked', this.surveyId);
     window.location.href = `/surveys/${this.surveyId}/collectors`;
   }
 
   private handleDeleteSurvey(): void {
     // TODO: Implement survey deletion logic
-    console.log(`Delete survey ${this.surveyId} clicked`);
+    this.logger.debug('Delete survey {} clicked', this.surveyId);
   }
 }

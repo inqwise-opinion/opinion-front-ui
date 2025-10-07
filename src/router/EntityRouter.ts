@@ -1,10 +1,13 @@
 import { Service } from '../interfaces/Service';
 import { LayoutContext } from '../contexts/LayoutContext';
 import { RouteDefinition, RouteResult, RouteContext } from './types';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 export abstract class EntityRouter implements Service {
   protected routes: RouteDefinition[] = [];
   protected serviceId: string;
+  protected logger: Logger;
 
   getServiceId(): string {
     return this.serviceId;
@@ -15,6 +18,7 @@ export abstract class EntityRouter implements Service {
     protected entityName: string
   ) {
     this.serviceId = `${entityName}.router`;
+    this.logger = LoggerFactory.getInstance().getLogger(`EntityRouter(${entityName})`);
   }
 
   protected _isInitialized = false;
@@ -35,7 +39,7 @@ export abstract class EntityRouter implements Service {
   protected async mount() {
     // EntityRouter is self-contained and handles its own routes
     // Routes are registered internally and handled via the handle() method
-    console.log(`EntityRouter '${this.entityName}' mounted with ${this.routes.length} routes`);
+    this.logger.info(`EntityRouter '${this.entityName}' mounted with ${this.routes.length} routes`);
   }
 
 

@@ -29,6 +29,8 @@ import { MockApiService } from '../services/MockApiService';
 import { User } from '../types';
 import type { ServiceConfig } from '../interfaces/Service';
 import { SelfIdentifyingService, validateServiceIdentity } from '../core/ServiceIdentity';
+import { LoggerFactory } from '../logging/LoggerFactory';
+import { Logger } from '../logging/Logger';
 
 /**
  * Configuration for MockSessionAuthProvider
@@ -60,6 +62,7 @@ export class MockSessionAuthProvider implements SessionAuthProvider, SelfIdentif
   private mockAccounts: Account[] = [];
   private initialized = false;
   private destroyed = false;
+  private logger: Logger;
   
   constructor(
     mockApiService: MockApiService, 
@@ -76,6 +79,7 @@ export class MockSessionAuthProvider implements SessionAuthProvider, SelfIdentif
     };
     
     this.mockApiService = mockApiService;
+    this.logger = LoggerFactory.getInstance().getLogger('MockSessionAuthProvider');
     
     // Validate this service implements required identity interface
     validateServiceIdentity(MockSessionAuthProvider, this);
@@ -357,9 +361,9 @@ export class MockSessionAuthProvider implements SessionAuthProvider, SelfIdentif
   private log(prefix: string, message: string, data?: unknown): void {
     const serviceId = this.getServiceId();
     if (data) {
-      console.log(`${prefix} [${serviceId}] ${message}`, data);
+      this.logger.info(`${prefix} [${serviceId}] ${message}`, data);
     } else {
-      console.log(`${prefix} [${serviceId}] ${message}`);
+      this.logger.info(`${prefix} [${serviceId}] ${message}`);
     }
   }
   

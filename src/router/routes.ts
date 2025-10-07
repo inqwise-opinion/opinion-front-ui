@@ -5,9 +5,13 @@ import AccountRootPage from "../pages/account/AccountRootPage";
 import AccountSettingsPage from "../pages/account/AccountSettingsPage";
 import LoginPage from "../pages/auth/LoginPage";
 import { SurveysRouter } from "./SurveysRouter";
+import { LoggerFactory } from '../logging/LoggerFactory';
 
 // Import RouteContextWrapper at the top level
 import { RouteContextWrapper } from './RouteContextWrapper';
+
+// Create logger for route handling
+const logger = LoggerFactory.getInstance().getLogger('Routes');
 
 // Public routes (no authentication required)
 export const PUBLIC_ROUTES: RouteDefinition[] = [
@@ -71,7 +75,7 @@ export const FEATURE_ROUTES: RouteDefinition[] = [
         const result = await (surveysRouter as any).handle(wrappedContext);
         return result;
       } catch (error) {
-        console.error('❌ Surveys routing error:', (error as Error)?.message);
+        logger.error('❌ Surveys routing error:', (error as Error)?.message);
         
         // Return fallback error page
         const ErrorPage = (await import('../pages/ErrorPage')).default;

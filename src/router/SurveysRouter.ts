@@ -13,7 +13,7 @@ export class SurveysRouter extends EntityRouter {
   }
 
   protected registerRoutes(): void {
-    console.log('🔍 SURVEYS ROUTER - Starting route registration...');
+    this.logger.info('🔍 SURVEYS ROUTER - Starting route registration...');
     
     this.routes = [
       {

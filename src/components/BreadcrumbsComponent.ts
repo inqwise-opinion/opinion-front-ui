@@ -13,11 +13,14 @@ import type { BreadcrumbItem } from "../interfaces/BreadcrumbItem";
 import { getBreadcrumbItemAction, hasClickHandler, hasHref } from "../interfaces/BreadcrumbItem";
 import type { LayoutContext } from "../contexts/LayoutContext";
 import { ComponentStatus, ComponentWithStatus } from "../interfaces/ComponentStatus";
+import { LoggerFactory } from "../logging/LoggerFactory";
+import { Logger } from "../logging/Logger";
 
 export class BreadcrumbsComponent implements ComponentWithStatus {
   private container: HTMLElement | null = null;
   private breadcrumbs: BreadcrumbItem[] = [];
   private layoutContext?: LayoutContext;
+  private logger: Logger;
   private isInitialized: boolean = false;
   private initTime: number | null = null;
   private eventListeners: Array<{
@@ -29,8 +32,9 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
   constructor(private parentContainer: HTMLElement, layoutContext?: LayoutContext) {
     this.container = parentContainer;
     this.layoutContext = layoutContext;
+    this.logger = LoggerFactory.getInstance().getLogger('BreadcrumbsComponent');
     
-    console.log("BreadcrumbsComponent - Created with container:", {
+    this.logger.info("BreadcrumbsComponent - Created with container:", {
       containerId: parentContainer.id,
       containerClass: parentContainer.className
     });
@@ -41,11 +45,11 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
    */
   async init(): Promise<void> {
     if (this.isInitialized) {
-      console.warn("BreadcrumbsComponent - Already initialized");
+      this.logger.warn("BreadcrumbsComponent - Already initialized");
       return;
     }
 
-    console.log("BreadcrumbsComponent - Initializing...");
+    this.logger.info("BreadcrumbsComponent - Initializing...");
     
     try {
       // Clear existing content and setup container
@@ -59,9 +63,9 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
       
       this.isInitialized = true;
       this.initTime = Date.now();
-      console.log("BreadcrumbsComponent - Ready");
+      this.logger.info("BreadcrumbsComponent - Ready");
     } catch (error) {
-      console.error("BreadcrumbsComponent - Initialization failed:", error);
+      this.logger.error("BreadcrumbsComponent - Initialization failed:", error);
       throw error;
     }
   }
@@ -86,7 +90,7 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
       </nav>
     `;
 
-    console.log("BreadcrumbsComponent - Container setup complete");
+    this.logger.info("BreadcrumbsComponent - Container setup complete");
   }
 
   /**
@@ -106,7 +110,7 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
         handler: clickHandler
       });
       
-      console.log("BreadcrumbsComponent - Event listeners setup");
+      this.logger.info("BreadcrumbsComponent - Event listeners setup");
     }
   }
 
@@ -128,22 +132,22 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
 
     const breadcrumbItem = this.breadcrumbs.find(item => item.id === breadcrumbId);
     if (!breadcrumbItem) {
-      console.warn(`BreadcrumbsComponent - Breadcrumb not found: ${breadcrumbId}`);
+      this.logger.warn(`BreadcrumbsComponent - Breadcrumb not found: ${breadcrumbId}`);
       return;
     }
 
     // Handle the click based on breadcrumb item type
     if (hasClickHandler(breadcrumbItem)) {
       event.preventDefault();
-      console.log(`BreadcrumbsComponent - Executing click handler for: ${breadcrumbItem.text}`);
+      this.logger.info(`BreadcrumbsComponent - Executing click handler for: ${breadcrumbItem.text}`);
       breadcrumbItem.clickHandler(breadcrumbItem);
     } else if (hasHref(breadcrumbItem)) {
       // Let the natural link behavior handle navigation
-      console.log(`BreadcrumbsComponent - Navigation to: ${breadcrumbItem.href}`);
+      this.logger.info(`BreadcrumbsComponent - Navigation to: ${breadcrumbItem.href}`);
     } else {
       // Display-only breadcrumb, prevent any action
       event.preventDefault();
-      console.log(`BreadcrumbsComponent - Display-only breadcrumb clicked: ${breadcrumbItem.text}`);
+      this.logger.info(`BreadcrumbsComponent - Display-only breadcrumb clicked: ${breadcrumbItem.text}`);
     }
   }
 
@@ -151,7 +155,7 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
    * Set the complete breadcrumb trail
    */
   setBreadcrumbs(items: BreadcrumbItem[]): void {
-    console.log(`BreadcrumbsComponent - Setting ${items.length} breadcrumbs:`, items.map(item => item.text));
+    this.logger.info(`BreadcrumbsComponent - Setting ${items.length} breadcrumbs:`, items.map(item => item.text));
     
     this.breadcrumbs = [...items]; // Create a copy to avoid external modifications
     this.renderBreadcrumbs();
@@ -161,11 +165,11 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
    * Add a breadcrumb to the end of the trail
    */
   addBreadcrumb(item: BreadcrumbItem): void {
-    console.log(`BreadcrumbsComponent - Adding breadcrumb: ${item.text}`);
+    this.logger.info(`BreadcrumbsComponent - Adding breadcrumb: ${item.text}`);
     
     // Check for duplicates
     if (this.breadcrumbs.find(existing => existing.id === item.id)) {
-      console.warn(`BreadcrumbsComponent - Breadcrumb with id '${item.id}' already exists, updating instead`);
+      this.logger.warn(`BreadcrumbsComponent - Breadcrumb with id '${item.id}' already exists, updating instead`);
       this.updateBreadcrumb(item.id, item);
       return;
     }
@@ -178,13 +182,13 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
    * Remove a breadcrumb by ID
    */
   removeBreadcrumb(id: string): void {
-    console.log(`BreadcrumbsComponent - Removing breadcrumb: ${id}`);
+    this.logger.info(`BreadcrumbsComponent - Removing breadcrumb: ${id}`);
     
     const initialLength = this.breadcrumbs.length;
     this.breadcrumbs = this.breadcrumbs.filter(item => item.id !== id);
     
     if (this.breadcrumbs.length === initialLength) {
-      console.warn(`BreadcrumbsComponent - Breadcrumb not found for removal: ${id}`);
+      this.logger.warn(`BreadcrumbsComponent - Breadcrumb not found for removal: ${id}`);
       return;
     }
     
@@ -195,11 +199,11 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
    * Update a specific breadcrumb item
    */
   updateBreadcrumb(id: string, updates: Partial<BreadcrumbItem>): void {
-    console.log(`BreadcrumbsComponent - Updating breadcrumb: ${id}`, updates);
+    this.logger.info(`BreadcrumbsComponent - Updating breadcrumb: ${id}`, updates);
     
     const index = this.breadcrumbs.findIndex(item => item.id === id);
     if (index === -1) {
-      console.warn(`BreadcrumbsComponent - Breadcrumb not found for update: ${id}`);
+      this.logger.warn(`BreadcrumbsComponent - Breadcrumb not found for update: ${id}`);
       return;
     }
     
@@ -211,7 +215,7 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
    * Clear all breadcrumbs
    */
   clearBreadcrumbs(): void {
-    console.log("BreadcrumbsComponent - Clearing all breadcrumbs");
+    this.logger.info("BreadcrumbsComponent - Clearing all breadcrumbs");
     this.breadcrumbs = [];
     this.renderBreadcrumbs();
   }
@@ -228,13 +232,13 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
    */
   private renderBreadcrumbs(): void {
     if (!this.container) {
-      console.warn("BreadcrumbsComponent - Cannot render, no container available");
+      this.logger.warn("BreadcrumbsComponent - Cannot render, no container available");
       return;
     }
 
     const breadcrumbsList = this.container.querySelector('.breadcrumbs-list');
     if (!breadcrumbsList) {
-      console.error("BreadcrumbsComponent - Breadcrumbs list container not found");
+      this.logger.error("BreadcrumbsComponent - Breadcrumbs list container not found");
       return;
     }
 
@@ -258,7 +262,7 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
 
     breadcrumbsList.innerHTML = breadcrumbsHTML;
     
-    console.log(`BreadcrumbsComponent - Rendered ${this.breadcrumbs.length} breadcrumbs`);
+    this.logger.info(`BreadcrumbsComponent - Rendered ${this.breadcrumbs.length} breadcrumbs`);
   }
 
   /**
@@ -360,7 +364,7 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
    * Destroy the component and clean up resources
    */
   destroy(): void {
-    console.log("BreadcrumbsComponent - Destroying...");
+    this.logger.info("BreadcrumbsComponent - Destroying...");
     
     // Remove event listeners
     this.eventListeners.forEach(({ element, event, handler }) => {
@@ -379,6 +383,6 @@ export class BreadcrumbsComponent implements ComponentWithStatus {
     this.isInitialized = false;
     this.initTime = null;
     
-    console.log("BreadcrumbsComponent - Destroyed");
+    this.logger.info("BreadcrumbsComponent - Destroyed");
   }
 }

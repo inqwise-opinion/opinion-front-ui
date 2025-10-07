@@ -290,21 +290,23 @@ describe('ChannelFactory Format Support', () => {
             );
         });
 
-        it('should bypass pre-formatted parsing when custom format is used', () => {
+        it('should parse pre-formatted messages correctly when custom format is used', () => {
             const channel = ChannelFactory.getDefaultConsoleChannel('{level}: {message}');
             
             const mockLogMessage = {
                 message: "2025-10-03 17:47:25,102 INFO  [OpinionApp] Pre-formatted message test",
-                level: "WARN",
-                logNames: ["TestLogger"],
+                level: "WARN", // This gets overridden by the parsed level from the message
+                logNames: ["TestLogger"], // This gets overridden by parsed logger
                 args: [],
                 exception: null
             };
 
             channel.write(mockLogMessage);
 
-            // Should use the raw message content, not parse it
-            expect(warnMethod).toHaveBeenCalledWith('WARN: 2025-10-03 17:47:25,102 INFO  [OpinionApp] Pre-formatted message test');
+            // The console method used is determined by the original level from the message object ("WARN"),
+            // not the parsed level from the formatted message content
+            // So it uses warnMethod even though the formatted output shows "INFO: Pre-formatted message test"
+            expect(warnMethod).toHaveBeenCalledWith('INFO: Pre-formatted message test');
         });
     });
 
