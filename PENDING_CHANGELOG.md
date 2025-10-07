@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 19
+- **Total Commits**: 20
 - **Last Updated**: 2025-10-07 by alex-inqwise
 - **Next Release**: TBD
 
@@ -144,4 +144,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - Fix MessagesComponent auto-hide issues and add unique ID generation ([5a12b7885bdbc6613929076cfa6ee2ee835059e3](https://github.com/inqwise-opinion/opinion-front-ui/commit/5a12b7885bdbc6613929076cfa6ee2ee835059e3)) - _glassfox_
+
+
+---
+**Push on 2025-10-07 by alex-inqwise**
+
+
+### 📦 Changes
+
+- Add test CI workflow to debug issues ([602338e129a641922b01a870357c61ebdaedf564](https://github.com/inqwise-opinion/opinion-front-ui/commit/602338e129a641922b01a870357c61ebdaedf564)) - _glassfox_
 
