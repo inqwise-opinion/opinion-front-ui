@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 25
+- **Total Commits**: 26
 - **Last Updated**: 2025-10-08 by alex-inqwise
 - **Next Release**: TBD
 
@@ -198,4 +198,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - enhance: Improve PR preview cleanup with merge status ([d24ed2d91956f1e0393f64b304b630395cb987ba](https://github.com/inqwise-opinion/opinion-front-ui/commit/d24ed2d91956f1e0393f64b304b630395cb987ba)) - _glassfox_
+
+
+---
+**Push on 2025-10-08 by alex-inqwise**
+
+
+### 📦 Changes
+
+- cleanup: Remove disabled production deploy job from CI ([d5d763ba2e046673a8e66f73daaf7c1a8dbeb2b7](https://github.com/inqwise-opinion/opinion-front-ui/commit/d5d763ba2e046673a8e66f73daaf7c1a8dbeb2b7)) - _glassfox_
 
