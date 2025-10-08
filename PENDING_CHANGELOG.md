@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 28
+- **Total Commits**: 29
 - **Last Updated**: 2025-10-08 by alex-inqwise
 - **Next Release**: TBD
 
@@ -225,4 +225,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🚀 Features
 
 - feat: Implement complete preview deployment for both PR flows ([095fb1f462afad8b97090be792dff390b6f7b1d7](https://github.com/inqwise-opinion/opinion-front-ui/commit/095fb1f462afad8b97090be792dff390b6f7b1d7)) - _glassfox_
+
+
+---
+**Push on 2025-10-08 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: Correct YAML syntax in workflow JavaScript ([e3d411b404d278e749d8ef3fe8aa3f3f513d70a9](https://github.com/inqwise-opinion/opinion-front-ui/commit/e3d411b404d278e749d8ef3fe8aa3f3f513d70a9)) - _glassfox_
 
