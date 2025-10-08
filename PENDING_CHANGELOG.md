@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 29
+- **Total Commits**: 30
 - **Last Updated**: 2025-10-08 by alex-inqwise
 - **Next Release**: TBD
 
@@ -234,4 +234,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: Correct YAML syntax in workflow JavaScript ([e3d411b404d278e749d8ef3fe8aa3f3f513d70a9](https://github.com/inqwise-opinion/opinion-front-ui/commit/e3d411b404d278e749d8ef3fe8aa3f3f513d70a9)) - _glassfox_
+
+
+---
+**Push on 2025-10-08 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: Replace JavaScript template literals with string concatenation ([aaf52b3ba28aae33939f615d9d58152d8443d4e9](https://github.com/inqwise-opinion/opinion-front-ui/commit/aaf52b3ba28aae33939f615d9d58152d8443d4e9)) - _glassfox_
 
