@@ -190,20 +190,17 @@ jobs:
   # Job 4: Preview Deployment (for PRs)
   preview:
     name: 🚀 Preview Deploy
-    runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
-    
-    permissions:
-      contents: write
-      pages: write
-      pull-requests: write
-    
-    steps:
-      - name: 📝 Log PR deployment info
-        run: |
-          echo "Would deploy PR #${{ github.event.number }} to preview environment"
-          echo "Preview URL would be: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.number }}"
+    uses: ./.github/workflows/publish-pages.yml
+    with:
+      deployment_type: "preview"
+      pr_number: ${{ github.event.number }}
+      base_url: "/${{ github.event.repository.name }}/pr-${{ github.event.number }}"
+      build_config: "github-pages-pr"
+      node_version: "20"
+      discord_webhook: false
+    secrets: inherit
 
   # Production deployment is handled by the dedicated 'Production Deployment' workflow
   # which provides proper release validation, manual approval, and controlled deployment
