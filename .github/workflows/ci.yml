@@ -205,32 +205,8 @@ jobs:
           echo "Would deploy PR #${{ github.event.number }} to preview environment"
           echo "Preview URL would be: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.number }}"
 
-  # Job 5: Production Deployment (DISABLED - Use release-driven deployment)
-  deploy:
-    name: 🚀 Production Deploy
-    runs-on: ubuntu-latest
-    needs: build
-    # DISABLED: Production deployment now handled by release-driven workflow
-    # Use 'Production Deployment' workflow with specific releases instead
-    if: false  # github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: production
-
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v5
-
-      - name: 📦 Download build artifacts
-        uses: actions/download-artifact@v5
-        with:
-          name: build-files
-          path: dist/
-
-      - name: 🌍 Deploy to Production
-        run: |
-          echo "🚀 Production deployment would happen here"
-          echo "## 🎉 Production Deployment Successful" >> $GITHUB_STEP_SUMMARY
-          echo "🌟 Your application has been deployed to production!" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 Live URL: https://your-domain.com" >> $GITHUB_STEP_SUMMARY
+  # Production deployment is handled by the dedicated 'Production Deployment' workflow
+  # which provides proper release validation, manual approval, and controlled deployment
 
   # Job 6: Cleanup Preview (when PR is closed)
   cleanup-preview:
@@ -325,9 +301,9 @@ jobs:
   notify:
     name: 🎮 Discord Success Notifications
     runs-on: ubuntu-latest
-    needs: [quality, test, build, preview, deploy]
+    needs: [quality, test, build, preview]
     # Always run to debug - we'll check success condition inside  
-    # Note: preview and deploy might be skipped based on conditions
+    # Note: preview might be skipped based on conditions
     if: always()
     
     steps:
@@ -339,7 +315,6 @@ jobs:
           echo "- **Test Result:** '${{ needs.test.result }}'" >> $GITHUB_STEP_SUMMARY
           echo "- **Build Result:** '${{ needs.build.result }}'" >> $GITHUB_STEP_SUMMARY
           echo "- **Preview Result:** '${{ needs.preview.result }}'" >> $GITHUB_STEP_SUMMARY
-          echo "- **Deploy Result:** '${{ needs.deploy.result }}'" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Check if all core jobs succeeded
@@ -368,15 +343,11 @@ jobs:
           TEST_STATUS="${{ needs.test.result }}"
           BUILD_STATUS="${{ needs.build.result }}"
           PREVIEW_STATUS="${{ needs.preview.result }}"
-          DEPLOY_STATUS="${{ needs.deploy.result }}"
 
           # Determine overall status
           if [[ "$QUALITY_STATUS" == "success" && "$TEST_STATUS" == "success" && "$BUILD_STATUS" == "success" ]]; then
             if [[ "${{ github.event_name }}" == "pull_request" && "$PREVIEW_STATUS" == "success" ]]; then
               OVERALL_STATUS="✅ Success with Preview"
-              EMBED_COLOR="3066993"  # Green
-            elif [[ "${{ github.ref }}" == "refs/heads/main" && "$DEPLOY_STATUS" == "success" ]]; then
-              OVERALL_STATUS="🚀 Success with Deployment"
               EMBED_COLOR="3066993"  # Green
             else
               OVERALL_STATUS="✅ Success"
@@ -393,7 +364,6 @@ jobs:
           echo "test_status=$TEST_STATUS" >> $GITHUB_OUTPUT
           echo "build_status=$BUILD_STATUS" >> $GITHUB_OUTPUT
           echo "preview_status=$PREVIEW_STATUS" >> $GITHUB_OUTPUT
-          echo "deploy_status=$DEPLOY_STATUS" >> $GITHUB_OUTPUT
 
           # Generate preview URL if applicable
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -411,10 +381,6 @@ jobs:
             echo "has_preview=true" >> $GITHUB_OUTPUT
             echo "description=CI Pipeline completed successfully with preview deployment" >> $GITHUB_OUTPUT
             echo "title=🚀 Success with Preview - PR #${{ github.event.number }}" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/main" && "${{ steps.notification.outputs.deploy_status }}" == "success" ]]; then
-            echo "has_preview=false" >> $GITHUB_OUTPUT
-            echo "description=CI Pipeline completed successfully with production deployment" >> $GITHUB_OUTPUT
-            echo "title=🚀 Success with Production Deploy" >> $GITHUB_OUTPUT
           else
             echo "has_preview=false" >> $GITHUB_OUTPUT
             echo "description=All CI checks passed successfully: Quality ✅ Tests ✅ Build ✅" >> $GITHUB_OUTPUT
@@ -447,9 +413,6 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ needs.preview.result }}" == "success" ]]; then
             PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.number }}"
             echo "- 🚀 Preview deployed: [$PREVIEW_URL]($PREVIEW_URL)" >> $GITHUB_STEP_SUMMARY
-          fi
-          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ needs.deploy.result }}" == "success" ]]; then
-            echo "- 🚀 Production deployed" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🎮 **Discord success notification sent!**" >> $GITHUB_STEP_SUMMARY
