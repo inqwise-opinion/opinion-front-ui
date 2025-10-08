@@ -255,6 +255,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Determine if PR was merged or just closed
+          if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+            echo "✅ PR #${{ github.event.number }} was merged - cleaning up preview"
+            COMMIT_MSG="Remove preview for merged PR #${{ github.event.number }}"
+          else
+            echo "❌ PR #${{ github.event.number }} was closed without merge - cleaning up preview"
+            COMMIT_MSG="Remove preview for closed PR #${{ github.event.number }}"
+          fi
+          
           # Clone repository and switch to gh-pages
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
           cd temp-repo
@@ -267,7 +276,7 @@ jobs:
             if [ -d "$PR_DIR" ]; then
               rm -rf "$PR_DIR"
               git add .
-              git commit -m "Remove preview for closed PR #${{ github.event.number }}" || echo "No changes to commit"
+              git commit -m "$COMMIT_MSG" || echo "No changes to commit"
               git push origin gh-pages
               echo "Removed preview directory: $PR_DIR"
             else
@@ -297,8 +306,12 @@ jobs:
             );
 
             if (previewComment) {
-              const updatedBody = previewComment.body +
-                '\n\n---\n☠️ **Preview Cleaned Up**: This preview has been removed since the PR was closed.';
+              const wasMerged = context.payload.pull_request.merged;
+              const statusText = wasMerged 
+                ? '✅ **Preview Cleaned Up**: This preview has been removed since the PR was merged.'
+                : '❌ **Preview Cleaned Up**: This preview has been removed since the PR was closed.';
+              
+              const updatedBody = previewComment.body + '\n\n---\n' + statusText;
 
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
