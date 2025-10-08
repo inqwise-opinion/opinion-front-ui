@@ -287,7 +287,7 @@ jobs:
 🔗 **[View Preview](${previewUrl})**
 
 ---
-- **Branch**: \`${{ github.head_ref }}\`  
+- **Branch**: \`${{ github.head_ref }}\`
 - **Commit**: ${{ github.sha }}
 - **Action**: ${isUpdate ? 'Push to PR branch' : 'PR created'}
 - **Updated**: ${new Date().toISOString()}`;
