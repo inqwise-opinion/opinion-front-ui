@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 24
-- **Last Updated**: 2025-10-07 by alex-inqwise
+- **Total Commits**: 25
+- **Last Updated**: 2025-10-08 by alex-inqwise
 - **Next Release**: TBD
 
 ---
@@ -189,4 +189,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: Replace reusable workflow with inline preview for debugging ([fe414d21c6e17693fad02e1f074e67af71fe81fa](https://github.com/inqwise-opinion/opinion-front-ui/commit/fe414d21c6e17693fad02e1f074e67af71fe81fa)) - _glassfox_
+
+
+---
+**Push on 2025-10-08 by alex-inqwise**
+
+
+### 📦 Changes
+
+- enhance: Improve PR preview cleanup with merge status ([d24ed2d91956f1e0393f64b304b630395cb987ba](https://github.com/inqwise-opinion/opinion-front-ui/commit/d24ed2d91956f1e0393f64b304b630395cb987ba)) - _glassfox_
 
