@@ -277,20 +277,17 @@ jobs:
               comment.user.login === 'github-actions[bot]'
             );
 
-            const previewUrl = `https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.number }}`;
+            const previewUrl = 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.number }}';
             const isUpdate = '${{ github.event.action }}' === 'synchronize';
             
-            const commentBody = `## 🚀 Preview Deployment
-
-✅ **Preview ${isUpdate ? 'updated' : 'deployed'}!**
-
-🔗 **[View Preview](${previewUrl})**
-
----
-- **Branch**: \`${{ github.head_ref }}\`
-- **Commit**: ${{ github.sha }}
-- **Action**: ${isUpdate ? 'Push to PR branch' : 'PR created'}
-- **Updated**: ${new Date().toISOString()}`;
+            const commentBody = '## 🚀 Preview Deployment\n\n' +
+              '✅ **Preview ' + (isUpdate ? 'updated' : 'deployed') + '!**\n\n' +
+              '🔗 **[View Preview](' + previewUrl + ')**\n\n' +
+              '---\n' +
+              '- **Branch**: `${{ github.head_ref }}`\n' +
+              '- **Commit**: ${{ github.sha }}\n' +
+              '- **Action**: ' + (isUpdate ? 'Push to PR branch' : 'PR created') + '\n' +
+              '- **Updated**: ' + new Date().toISOString();
 
             if (existingComment) {
               await github.rest.issues.updateComment({
