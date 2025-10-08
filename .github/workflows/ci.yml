@@ -188,19 +188,125 @@ jobs:
           done
 
   # Job 4: Preview Deployment (for PRs)
+  # Flow 1: PR created (opened)
+  # Flow 2: Push to PR branch (synchronize) - includes build & test
   preview:
     name: 🚀 Preview Deploy
+    runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
-    uses: ./.github/workflows/publish-pages.yml
-    with:
-      deployment_type: "preview"
-      pr_number: ${{ github.event.number }}
-      base_url: "/${{ github.event.repository.name }}/pr-${{ github.event.number }}"
-      build_config: "github-pages-pr"
-      node_version: "20"
-      discord_webhook: false
-    secrets: inherit
+    if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'synchronize')
+    
+    permissions:
+      contents: write
+      pages: write
+      pull-requests: write
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v5
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🏧 Build for preview
+        run: npm run build
+        env:
+          SASS_SILENCE_DEPRECATIONS: legacy-js-api
+          BUILD_CONFIG: github-pages-pr
+          RUNTIME_BASE_URL: /${{ github.event.repository.name }}/pr-${{ github.event.number }}
+
+      - name: 🔧 Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 🚀 Deploy to GitHub Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.number }}
+          echo "🚀 Deploying PR #$PR_NUM preview"
+          
+          # Clone and setup gh-pages
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
+          cd temp-repo
+
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git checkout gh-pages
+          else
+            git checkout --orphan gh-pages
+            git rm -rf . 2>/dev/null || true
+          fi
+
+          # Deploy PR preview
+          PR_DIR="pr-$PR_NUM"
+          rm -rf "$PR_DIR" 2>/dev/null || true
+          mkdir -p "$PR_DIR"
+          cp -r ../dist/* "$PR_DIR/"
+          
+          # Add and commit
+          git add .
+          git commit -m "Deploy PR #$PR_NUM preview" || echo "No changes"
+          git push origin gh-pages
+          
+          cd ..
+          rm -rf temp-repo
+          
+          PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-$PR_NUM"
+          echo "✅ Preview deployed: $PREVIEW_URL"
+          echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+          
+      - name: 💬 Update PR comment
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.find(comment =>
+              comment.body.includes('🚀 Preview Deployment') &&
+              comment.user.login === 'github-actions[bot]'
+            );
+
+            const previewUrl = `https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.number }}`;
+            const isUpdate = '${{ github.event.action }}' === 'synchronize';
+            
+            const commentBody = `## 🚀 Preview Deployment
+
+✅ **Preview ${isUpdate ? 'updated' : 'deployed'}!**
+
+🔗 **[View Preview](${previewUrl})**
+
+---
+- **Branch**: \`${{ github.head_ref }}\`  
+- **Commit**: ${{ github.sha }}
+- **Action**: ${isUpdate ? 'Push to PR branch' : 'PR created'}
+- **Updated**: ${new Date().toISOString()}`;
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
 
   # Production deployment is handled by the dedicated 'Production Deployment' workflow
   # which provides proper release validation, manual approval, and controlled deployment
