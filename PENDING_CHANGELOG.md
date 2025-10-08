@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 26
+- **Total Commits**: 27
 - **Last Updated**: 2025-10-08 by alex-inqwise
 - **Next Release**: TBD
 
@@ -207,4 +207,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - cleanup: Remove disabled production deploy job from CI ([d5d763ba2e046673a8e66f73daaf7c1a8dbeb2b7](https://github.com/inqwise-opinion/opinion-front-ui/commit/d5d763ba2e046673a8e66f73daaf7c1a8dbeb2b7)) - _glassfox_
+
+
+---
+**Push on 2025-10-08 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: Restore actual preview deployment functionality ([fb1a9a19d55707970d356aef550913ccf6e10087](https://github.com/inqwise-opinion/opinion-front-ui/commit/fb1a9a19d55707970d356aef550913ccf6e10087)) - _glassfox_
 
