@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 27
+- **Total Commits**: 28
 - **Last Updated**: 2025-10-08 by alex-inqwise
 - **Next Release**: TBD
 
@@ -216,4 +216,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: Restore actual preview deployment functionality ([fb1a9a19d55707970d356aef550913ccf6e10087](https://github.com/inqwise-opinion/opinion-front-ui/commit/fb1a9a19d55707970d356aef550913ccf6e10087)) - _glassfox_
+
+
+---
+**Push on 2025-10-08 by alex-inqwise**
+
+
+### 🚀 Features
+
+- feat: Implement complete preview deployment for both PR flows ([095fb1f462afad8b97090be792dff390b6f7b1d7](https://github.com/inqwise-opinion/opinion-front-ui/commit/095fb1f462afad8b97090be792dff390b6f7b1d7)) - _glassfox_
 
