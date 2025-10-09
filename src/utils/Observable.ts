@@ -74,7 +74,11 @@ export class Observable<T> {
     this.observers.push(observer);
     
     // Immediately call observer with current value
-    observer(this._value);
+    try {
+      observer(this._value);
+    } catch (error) {
+      this.logger.error('Observer error during subscription:', error);
+    }
     
     // Return unsubscribe function
     return () => {

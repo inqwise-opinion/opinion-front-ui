@@ -162,11 +162,19 @@ export class PageTracker {
     // Listen to page status updates
     const statusConsumer = globalEventBus.consume('page:status-updated', (data: unknown) => {
       const status = data as ActivePageStatus;
-      this.addEventToHistory('page:status-updated', {
-        pageId: status.pageId,
-        pageName: status.pageName,
-        hasActivePage: status.hasActivePage
-      });
+      if (status) {
+        this.addEventToHistory('page:status-updated', {
+          pageId: status.pageId || null,
+          pageName: status.pageName || null,
+          hasActivePage: status.hasActivePage || false
+        });
+      } else {
+        this.addEventToHistory('page:status-updated', {
+          pageId: null,
+          pageName: null,
+          hasActivePage: false
+        });
+      }
     });
     this.consumers.push(statusConsumer);
 
