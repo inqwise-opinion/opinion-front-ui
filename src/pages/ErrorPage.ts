@@ -19,8 +19,7 @@ export default class ErrorPage extends PageComponent {
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
     super(mainContent, pageContext, {
       pageTitle: 'Error',
-      pageId: 'error-page',
-      autoInit: false
+      pageId: 'error-page'
     });
     
     // Read error information from RouteContext if route failed

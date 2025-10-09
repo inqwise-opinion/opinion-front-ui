@@ -10,7 +10,7 @@ export const DEFAULT_NAVIGATION_ITEMS: NavigationItem[] = [
         text: "Dashboard",
         icon: "dashboard",
         href: "/dashboard",
-        caption: "View analytics, reports and key metrics",
+        caption: "Main dashboard - view analytics, reports and key metrics",
         active: false,
     },
     {
@@ -25,7 +25,7 @@ export const DEFAULT_NAVIGATION_ITEMS: NavigationItem[] = [
         id: "debug",
         text: "Debug",
         icon: "bug_report",
-        href: "/",
+        href: "/debug",
         caption: "Development tools and troubleshooting",
         active: false,
     },

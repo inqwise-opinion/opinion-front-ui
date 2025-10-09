@@ -120,7 +120,7 @@ export class DebugPage extends PageComponent {
     if (targetElement) {
 
       const content = `
-        <div class="debug-page-content" style="max-width: 1200px; margin: 0 auto;">
+        <div class="page-content">
           <div class="debug-header" style="background: #f8f9fa; padding: 20px; margin-bottom: 20px; border-radius: 8px;">
             <h1 style="margin: 0 0 10px 0; color: #333;">🛠️ Debug Page</h1>
             <p style="margin: 0; color: #666;">This page uses the regular app layout system with global header, sidebar, and footer components.</p>

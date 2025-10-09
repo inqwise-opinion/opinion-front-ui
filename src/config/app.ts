@@ -10,13 +10,15 @@ export interface AppConfig {
   environment: 'development' | 'production' | 'test';
   enableSpaRouting: boolean;
   enableDebugLogging: boolean;
+  homepagePageId: string;
 }
 
 export const appConfig: AppConfig = {
   baseUrl: buildConfig.baseUrl,
   environment: buildConfig.environment,
   enableSpaRouting: buildConfig.enableSpaRouting,
-  enableDebugLogging: buildConfig.enableDebugLogging
+  enableDebugLogging: buildConfig.enableDebugLogging,
+  homepagePageId: 'dashboard'
 };
 
 /**
@@ -53,6 +55,13 @@ export function getRoutePath(fullPath: string): string {
   }
   
   return fullPath;
+}
+
+/**
+ * Check if a page ID is the homepage
+ */
+export function isHomepage(pageId: string): boolean {
+  return pageId === appConfig.homepagePageId;
 }
 
 // Export helper functions from build config for compatibility

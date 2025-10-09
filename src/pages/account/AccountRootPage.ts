@@ -10,8 +10,7 @@ export default class AccountRootPage extends PageComponent {
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
     super(mainContent, pageContext, {
       pageTitle: 'Account',
-      pageId: 'account-root',
-      autoInit: false
+      pageId: 'account-root'
     });
   }
 

@@ -34,6 +34,8 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
   private closeButtonClickCount: number = 0;
   private logger: Logger;
   private idCounter: number = 0; // Counter to ensure unique IDs
+  private messageOrder: string[] = []; // Track message order for positioning
+  private resizeHandler: (() => void) | null = null;
 
   constructor(layoutContext: LayoutContext) {
     this.layoutContext = layoutContext;
@@ -50,6 +52,39 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
   }
 
   /**
+   * Update deck positioning for all messages using CSS custom properties
+   */
+  private updateDeckPositions(): void {
+    if (!this.container) return;
+
+    // Determine if we're on mobile
+    const isMobile = window.innerWidth <= 768;
+    const pixelOffset = isMobile ? 1 : 2;
+
+    this.messageOrder.forEach((messageId, index) => {
+      const messageElement = this.container?.querySelector(
+        `[data-message-id="${messageId}"]`
+      ) as HTMLElement;
+
+      if (messageElement) {
+        // Cap positioning at 7 messages - don't change position beyond that
+        const effectiveIndex = Math.min(index, 6); // Max index of 6 (7th message)
+        const offsetX = effectiveIndex * pixelOffset;
+        const offsetY = effectiveIndex * pixelOffset;
+        const zIndex = Math.max(10 - index, 1); // Z-index still increments for all messages
+        
+        // Set overflow based on position: visible for first message, hidden for others
+        const overflowValue = index === 0 ? 'visible' : 'hidden';
+
+        messageElement.style.setProperty('--deck-offset-x', `${offsetX}px`);
+        messageElement.style.setProperty('--deck-offset-y', `${offsetY}px`);
+        messageElement.style.setProperty('--deck-z-index', zIndex.toString());
+        messageElement.style.setProperty('--deck-overflow', overflowValue);
+      }
+    });
+  }
+
+  /**
    * Initialize - find the container
    */
   public async init(): Promise<void> {
@@ -61,6 +96,10 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     }
 
     this.layoutContext.registerMessages(this);
+    
+    // Set up resize listener to update positions when switching mobile/desktop
+    this.resizeHandler = () => this.updateDeckPositions();
+    window.addEventListener('resize', this.resizeHandler);
     
     this.initTime = Date.now();
     this.isInitialized = true;
@@ -92,7 +131,14 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     // Store and create message
     this.messages.set(message.id, messageWithDefaults);
     const messageElement = this.createMessageElement(messageWithDefaults);
-    this.container.appendChild(messageElement);
+    // Prepend new messages so they appear first in DOM (newest at top of deck)
+    this.container.prepend(messageElement);
+    
+    // Track message order (newest first)
+    this.messageOrder.unshift(message.id);
+    
+    // Update deck positions for all messages
+    this.updateDeckPositions();
     
     // Track message addition
     this.messageAddCount++;
@@ -140,12 +186,16 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
       `[data-message-id="${id}"]`,
     ) as HTMLElement;
     
-    // Remove from messages map immediately to prevent race conditions
+    // Remove from messages map and order tracking immediately to prevent race conditions
     this.messages.delete(id);
+    this.messageOrder = this.messageOrder.filter(messageId => messageId !== id);
     
     // Track message removal
     this.messageRemoveCount++;
     this.lastActionTime = Date.now();
+    
+    // Update positions for remaining messages
+    this.updateDeckPositions();
 
     // Handle DOM removal with animation
     if (messageElement) {
@@ -193,6 +243,9 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     });
 
     messagesToRemove.forEach((id) => this.removeMessage(id));
+
+    // Reset order tracking
+    this.messageOrder = [];
 
     // Cleanup any remaining orphaned elements after batch removal
     setTimeout(() => this.cleanupOrphanedMessages(), 400);
@@ -541,8 +594,15 @@ export class MessagesComponent implements Messages, ComponentWithStatus {
     // Clear all messages
     this.clearAll(true);
 
+    // Remove resize listener
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+      this.resizeHandler = null;
+    }
+
     // Clean up references
     this.messages.clear();
+    this.messageOrder = [];
     this.container = null;
 
     this.logger.info("Destroyed");

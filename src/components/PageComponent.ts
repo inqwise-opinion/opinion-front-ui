@@ -24,7 +24,6 @@ import { Logger } from '../logging/Logger';
 export interface PageComponentConfig {
   pageTitle?: string;
   layoutConfig?: any;
-  autoInit?: boolean;
   pageId?: string; // Optional override for page ID (deprecated - comes from PageContext)
   pagePath?: string; // URL path for this page (deprecated - comes from PageContext)
   params?: Record<string, string>; // Route parameters (deprecated - comes from PageContext)
@@ -55,10 +54,7 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
     this.logger = LoggerFactory.getInstance().getLogger(`PageComponent:${this.constructor.name}`);
     this.mainContent = mainContent;
     this.pageContext = pageContext;
-    this.config = {
-      autoInit: false,
-      ...config,
-    };
+    this.config = config;
 
     // Get page info from PageContext (route-based)
     const routeContext = pageContext.getRouteContext();
@@ -70,19 +66,14 @@ export abstract class PageComponent extends BaseComponent implements ChainHotkey
     this.pageId = config.pageId || this.constructor.name;
 
     // Page association will be handled by RouterService
-
-    if (this.config.autoInit) {
-      // Initialize on next tick to allow subclass constructor to complete
-      setTimeout(() => this.init(), 0);
-    }
   }
 
   /**
    * Initialize the page component
-   * Called automatically if autoInit is true, or manually by subclasses
+   * Must be called manually by the RouterService or page consumers
    */
   public async init(): Promise<void> {
-    if (!this.mainContent.isReady) {
+    if (!this.mainContent.isReady()) {
       this.logger.warn('mainContent not ready');
       return;
     }

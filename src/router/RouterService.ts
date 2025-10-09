@@ -7,9 +7,10 @@ import { RouteContextImpl } from './RouteContextImpl';
 import { PageContextImpl } from '../contexts/PageContextImpl';
 import { authMiddleware } from './middleware/auth';
 import { ALL_ROUTES } from './routes';
-import { getFullPath, getRoutePath, appConfig } from '../config/app';
+import { getFullPath, getRoutePath, appConfig, isHomepage } from '../config/app';
 import type { ActivePage } from '../interfaces/ActivePage';
 import type { PageProvider } from './types';
+import type { BreadcrumbItem } from '../interfaces/BreadcrumbItem';
 import { LoggerFactory } from '../logging/LoggerFactory';
 import { Logger } from '../logging/Logger';
 
@@ -176,6 +177,9 @@ export class RouterService implements Service {
 
       // Associate page with context (one-time association)
       pageContext.setPage(newPage);
+
+      // Set up breadcrumbs based on current route before page initialization
+      this.setupRouteBreadcrumbs(pageContext);
 
       await newPage.init();
       
@@ -381,6 +385,62 @@ export class RouterService implements Service {
   // ERROR HANDLING HELPERS
   // =====================================================================================
   
+  /**
+   * Setup breadcrumbs based on current route and page details
+   */
+  private setupRouteBreadcrumbs(pageContext: PageContextImpl): void {
+    try {
+      const breadcrumbsManager = pageContext.breadcrumbs();
+      if (!breadcrumbsManager?.isAvailable()) {
+        return;
+      }
+
+      const page = pageContext.getPage();
+      if (!page) {
+        return;
+      }
+
+      const pageInfo = page.getPageInfo();
+      const routeContext = pageContext.getRouteContext();
+      const path = routeContext.getPath();
+      
+      const breadcrumbs: BreadcrumbItem[] = [];
+      const isHomePageAccess = isHomepage(pageInfo.id);
+      
+      // Add Home breadcrumb for non-homepage pages (except debug)
+      if (!isHomePageAccess && pageInfo.id !== 'debug') {
+        breadcrumbs.push({ id: 'home', text: 'Home', href: '/' });
+      }
+      
+      // Add current page breadcrumb
+      // Skip for debug page only
+      if (pageInfo.id !== 'debug') {
+        breadcrumbs.push({
+          id: pageInfo.id,
+          text: pageInfo.name.replace(' - Opinion', ''),
+          caption: this.getBreadcrumbCaption(pageInfo.id)
+        });
+      }
+      
+      if (breadcrumbs.length > 0) {
+        breadcrumbsManager.set(breadcrumbs);
+        this.logger.info(`🍞 RouterService - Set breadcrumbs for ${pageInfo.id}:`, breadcrumbs.map(b => b.text));
+      }
+    } catch (error) {
+      this.logger.error('🍞 RouterService - Error setting up breadcrumbs:', error);
+    }
+  }
+
+  private getBreadcrumbCaption(pageId: string): string | undefined {
+    const captions: Record<string, string> = {
+      'dashboard': 'Main dashboard view',
+      'surveys': 'Survey management',
+      'account': 'Account settings',
+      'error-page': 'Error information'
+    };
+    return captions[pageId];
+  }
+
   /**
    * Create a standardized error page RouteResult
    */

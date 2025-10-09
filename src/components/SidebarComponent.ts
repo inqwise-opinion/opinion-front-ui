@@ -197,7 +197,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
     if (sidebarHeader) {
       sidebarHeader.innerHTML = `
         <div class="sidebar-brand">
-          <a href="${getFullPath('/dashboard')}" class="brand-title-link">
+          <a href="${getFullPath('/')}" class="brand-title-link">
             <h1 class="brand-title">Opinion</h1>
           </a>
         </div>

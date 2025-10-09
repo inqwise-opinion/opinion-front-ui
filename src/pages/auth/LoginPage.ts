@@ -6,8 +6,7 @@ export default class LoginPage extends PageComponent {
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
     super(mainContent, pageContext, {
       pageTitle: 'Login',
-      pageId: 'login',
-      autoInit: false
+      pageId: 'login'
     });
   }
 

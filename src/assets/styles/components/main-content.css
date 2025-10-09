@@ -14,12 +14,13 @@
   /* Flexbox layout for internal content organization */
   gap: 16px;
   
-  /* Ensure proper sizing and positioning - full width */
-  width: 100% !important;
-  max-width: 100% !important;
+  /* Ensure proper sizing and positioning - full width by default */
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
 }
+
 
 /* Webkit scrollbar styling for better desktop experience - target .app-main directly */
 .app-main::-webkit-scrollbar {
@@ -327,20 +328,25 @@
 
 /* PageComponent positioning and layout */
 .main-content .debug-page-content,
-.main-content .page-content,
 .main-content .dashboard-content {
-  /* Ensure page content takes full available space */
+  /* Full width content for legacy classes */
   width: 100%;
   box-sizing: border-box;
   position: relative;
-  
-  /* Remove any conflicting margins from page content */
   margin: 0;
-  
-  /* Allow natural content flow */
   display: block;
-  
-  /* Ensure content doesn't overflow horizontally */
+  overflow-x: hidden;
+  word-wrap: break-word;
+}
+
+.main-content .page-content {
+  /* Width-constrained content similar to page-container */
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  position: relative;
+  display: block;
   overflow-x: hidden;
   word-wrap: break-word;
 }

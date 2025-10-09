@@ -11,8 +11,7 @@ export default class SurveyDetailPage extends PageComponent {
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
     super(mainContent, pageContext, {
       pageTitle: 'Survey Details',
-      pageId: 'surveys',
-      autoInit: false
+      pageId: 'surveys'
     });
     
     // Get surveyId from route parameters

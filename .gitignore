@@ -8,6 +8,9 @@ yarn-error.log*
 dist/
 build/
 *.tsbuildinfo
+.next/
+next-env.d.ts
+.opencode.json
 
 # Environment variables
 .env

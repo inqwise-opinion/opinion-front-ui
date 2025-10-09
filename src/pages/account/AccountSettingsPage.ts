@@ -6,8 +6,7 @@ export default class AccountSettingsPage extends PageComponent {
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
     super(mainContent, pageContext, {
       pageTitle: 'Account Settings',
-      pageId: 'account-settings',
-      autoInit: false
+      pageId: 'account-settings'
     });
   }
 

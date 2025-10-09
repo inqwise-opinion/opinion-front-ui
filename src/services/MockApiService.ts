@@ -6,6 +6,8 @@
 import { Survey, User, UserRole, OpinionStatus } from '../types';
 import { LoggerFactory } from '../logging/LoggerFactory';
 import { Logger } from '../logging/Logger';
+import type { Service } from '../interfaces/Service';
+import type { ServiceIdentity } from '../core/ServiceIdentity';
 
 export interface AuthenticationInfo {
   userInfo: User;
@@ -24,13 +26,51 @@ export interface ChartData {
   };
 }
 
-export class MockApiService {
+export class MockApiService implements Service {
+  // Static service identity
+  static readonly SERVICE_ID = 'MockApiService';
+  static readonly SERVICE_DESCRIPTION = 'Mock API service for development and testing';
+  
   private delay = 500; // Simulate network delay
   private readonly logger: Logger;
+  private initialized = false;
 
   constructor() {
     this.logger = LoggerFactory.getInstance().getLogger('MockApiService');
     this.logger.info('Using mock data for development');
+  }
+
+  /**
+   * Get service ID (Service interface implementation)
+   */
+  getServiceId(): string {
+    return MockApiService.SERVICE_ID;
+  }
+
+  /**
+   * Initialize the service (Service interface implementation)
+   */
+  async init(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+    this.logger.info('Initializing MockApiService...');
+    this.initialized = true;
+  }
+
+  /**
+   * Check if service is ready (Service interface implementation)
+   */
+  isReady(): boolean {
+    return this.initialized;
+  }
+
+  /**
+   * Destroy the service (Service interface implementation)
+   */
+  async destroy(): Promise<void> {
+    this.logger.info('Destroying MockApiService...');
+    this.initialized = false;
   }
 
   /**

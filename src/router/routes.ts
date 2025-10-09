@@ -50,6 +50,21 @@ export const FEATURE_ROUTES: RouteDefinition[] = [
     },
   },
   {
+    path: "/debug",
+    action: async (context) => {
+      const pageProvider: PageProvider = (mainContent, pageContext) =>
+        new DebugPage(mainContent, pageContext);
+
+      return {
+        pageProvider,
+        routeInfo: {
+          path: context.getPath(),
+          params: context.getParams(),
+        },
+      };
+    },
+  },
+  {
     path: "/surveys",
     children: [], // This makes it catch all routes under /surveys
     action: async (context) => {
@@ -145,12 +160,12 @@ export const ALL_ROUTES: RouteDefinition[] = [
   // Account routes with their nested structure
   ...ACCOUNT_ROUTES,
 
-  // Root route last (catch-all)
+  // Root route last (catch-all) - Homepage
   {
     path: "/",
     action: async (context) => {
       const pageProvider: PageProvider = (mainContent, pageContext) =>
-        new DebugPage(mainContent, pageContext);
+        new DashboardPage(mainContent, pageContext);
 
       return {
         pageProvider,

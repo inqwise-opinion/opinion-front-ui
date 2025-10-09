@@ -4,22 +4,22 @@
  * Simple, clean error message styles without complex positioning
  */
 
-/* Container - Hidden by default, shown when has messages */
+/* Container - Overlay positioning for messages that don't affect layout */
 .app-error-messages {
   display: none;
-  padding: 4px 16px 0;
-  background: transparent;
-  width: 100%;
-  margin: 0;
-  /* Use static positioning to not create a stacking context that interferes with dropdowns */
-  position: static;
-  /* Remove z-index since we don't want to create a stacking context */
-  /* z-index: 100; */
+  position: fixed;
+  top: 80px; /* Below header */
+  right: 36px; /* Moved 20px further left (16px + 20px) */
+  width: 800px; /* Doubled from 400px for desktop */
+  max-width: calc(100vw - 52px); /* Adjusted for new right position */
+  z-index: 1000;
+  pointer-events: none; /* Allow clicks to pass through empty areas */
 }
 
 .app-error-messages:not(:empty) {
   display: block;
   animation: slideInFromTop 0.3s ease-out;
+  pointer-events: auto; /* Enable interactions when messages are present */
 }
 
 /* Smooth slide-in animation */
@@ -34,49 +34,60 @@
   }
 }
 
-/* Compact message styling - full width, left aligned text */
+/* Message styling for overlay deck effect */
 .error-message {
-  padding: 6px 10px;
-  margin-bottom: 4px;
-  border-radius: 4px;
+  padding: 12px 16px;
+  border-radius: 6px;
   border: 1px solid;
-  border-left: 3px solid;
+  border-left: 4px solid;
   background: white;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
-  max-width: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  /* Remove relative positioning to avoid creating stacking contexts */
-  position: static;
-  transition: all 0.2s ease;
-  animation: messageSlideIn 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: messageSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   direction: ltr;
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
 }
 
-/* Individual message slide-in animation */
+/* Individual message slide-in animation for overlay */
 @keyframes messageSlideIn {
   from {
     opacity: 0;
-    transform: translateX(-20px);
-    scale: 0.98;
+    transform: translateX(30px) translateY(-10px) scale(0.95);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(-2px) translateY(1px) scale(1.01);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
-    scale: 1;
+    transform: translateX(0) translateY(0) scale(1);
   }
 }
 
-.error-message:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
+/* Deck stacking effect - using CSS custom properties for dynamic positioning */
+.error-message {
+  --deck-offset-x: 0px;
+  --deck-offset-y: 0px;
+  --deck-z-index: 10;
+  --deck-overflow: visible; /* Default overflow behavior */
+  transform: translate(var(--deck-offset-x), var(--deck-offset-y));
+  z-index: var(--deck-z-index);
+  overflow: var(--deck-overflow);
 }
 
-/* Remove bottom margin from last message */
-.error-message:last-child {
-  margin-bottom: 4px;
+.error-message:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translate(0, -2px) !important; /* Override deck positioning on hover */
+  z-index: 50 !important; /* Bring to front on hover */
+  scale: 1.02;
 }
 
 /* Message types with border and background colors - left aligned */
@@ -182,15 +193,28 @@
 @keyframes messageFadeOut {
   from {
     opacity: 1;
-    transform: translateX(0) scale(1);
-    max-height: 200px;
+    transform: scale(1);
   }
   to {
     opacity: 0;
-    transform: translateX(-20px) scale(0.95);
-    max-height: 0;
-    margin-bottom: 0;
-    padding-top: 0;
-    padding-bottom: 0;
+    transform: translateX(30px) translateY(-10px) scale(0.9);
   }
+}
+
+/* Mobile responsive positioning */
+@media (max-width: 768px) {
+  .app-error-messages {
+    top: 70px;
+    left: 28px; /* Moved 20px to the left from original 8px */
+    right: 28px; /* Moved 20px to the left from original 8px */
+    width: auto;
+    max-width: none;
+  }
+  
+  .error-message {
+    padding: 10px 12px;
+    border-radius: 4px;
+  }
+  
+  /* Mobile uses CSS custom properties - no need for separate rules */
 }

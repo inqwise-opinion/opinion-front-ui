@@ -165,6 +165,9 @@ export class OpinionApp {
    * This method creates a LifecycleHandler for service registration
    */
   private async registerServices(context: LayoutContext): Promise<void> {
+    // Register MockApiService first (other services depend on it)
+    registerService(context, MockApiService, this.apiService);
+    
     // Create MockSessionAuthProvider instance
     const mockAuthProvider = new MockSessionAuthProvider(this.apiService, {
       authDelay: 300, // Shorter delay for development
@@ -211,6 +214,7 @@ export class OpinionApp {
     registerService(context, LinkInterceptionService, linkInterceptionService);
 
     // Initialize services in dependency order (dependencies first)
+    await this.apiService.init(); // Initialize MockApiService first
     await mockAuthProvider.init();
     await authService.init(); // AuthService depends on mockAuthProvider
     await userService.init(); // UserService depends on authService and mockAuthProvider
@@ -248,7 +252,7 @@ export class OpinionApp {
       
       navService.syncWithSidebar(sidebar);
       // Set active item through NavigationService - it will handle sidebar sync
-      navService.setActiveItem("debug");
+      navService.setActiveItem("dashboard");
     } catch (error) {
       this.handleError(error);
       throw error; // Re-throw to trigger error handling

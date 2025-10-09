@@ -7,8 +7,7 @@ export default class SurveyListPage extends PageComponent {
   constructor(mainContent: MainContentImpl, pageContext: PageContext) {
     super(mainContent, pageContext, {
       pageTitle: 'Surveys',
-      pageId: 'surveys',
-      autoInit: false
+      pageId: 'surveys'
     });
   }
 
@@ -27,8 +26,7 @@ export default class SurveyListPage extends PageComponent {
       // Set browser tab title
       document.title = 'Surveys - Opinion';
 
-      // Set initial breadcrumb
-      this.setInitialBreadcrumb();
+      // Note: Breadcrumbs are now handled centrally by RouterService
     } catch (error) {
       this.logger.error('Initialization failed', error);
       throw error;
@@ -101,24 +99,6 @@ export default class SurveyListPage extends PageComponent {
     listContainer.innerHTML = '<p>Survey list implementation coming soon</p>';
   }
 
-  private async setInitialBreadcrumb(): Promise<void> {
-    try {
-      const pageContext = await this.getPageContext();
-      const breadcrumbsManager = pageContext.breadcrumbs();
-      
-      if (breadcrumbsManager && breadcrumbsManager.isAvailable()) {
-        const items: BreadcrumbItem[] = [
-          { id: 'home', text: 'Home', href: '/' },
-          { id: 'surveys', text: 'Surveys', href: '/surveys' }
-        ];
-        breadcrumbsManager.set(items);
-      } else {
-        this.logger.warn('BreadcrumbsManager not available');
-      }
-    } catch (error) {
-      this.logger.error('Error setting breadcrumbs', error);
-    }
-  }
 
   // Action Handlers
   private handleCreateSurvey(): void {
