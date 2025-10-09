@@ -255,7 +255,7 @@ export class DashboardPage extends PageComponent {
     // Status filter buttons
     const statusButton = document.getElementById('button_status');
     if (statusButton) {
-      statusButton.addEventListener('click', (e) => {
+      statusButton.addEventListener('click', () => {
         // Handle status filter toggle
         const currentValue = parseInt(statusButton.dataset.value || '1');
         this.state.statusFilter = currentValue;
@@ -405,7 +405,7 @@ export class DashboardPage extends PageComponent {
       .slice(0, 5);
 
     // Add survey rows
-    recentSurveys.forEach((survey, index) => {
+    recentSurveys.forEach((survey) => {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td style="text-align: right;">${survey.id}</td>

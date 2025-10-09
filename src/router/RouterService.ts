@@ -401,8 +401,6 @@ export class RouterService implements Service {
       }
 
       const pageInfo = page.getPageInfo();
-      const routeContext = pageContext.getRouteContext();
-      const path = routeContext.getPath();
       
       const breadcrumbs: BreadcrumbItem[] = [];
       const isHomePageAccess = isHomepage(pageInfo.id);

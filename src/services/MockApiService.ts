@@ -7,7 +7,6 @@ import { Survey, User, UserRole, OpinionStatus } from '../types';
 import { LoggerFactory } from '../logging/LoggerFactory';
 import { Logger } from '../logging/Logger';
 import type { Service } from '../interfaces/Service';
-import type { ServiceIdentity } from '../core/ServiceIdentity';
 
 export interface AuthenticationInfo {
   userInfo: User;

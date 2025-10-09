@@ -1,5 +1,4 @@
 import { PageComponent } from '../../components/PageComponent';
-import type { BreadcrumbItem } from '../../interfaces/BreadcrumbItem';
 import MainContentImpl from '../../components/MainContentImpl';
 import type { PageContext } from '../../interfaces/PageContext';
 
