@@ -517,9 +517,9 @@ export class AppHeaderImpl
       }
       
       // Update image alt text
-      const brandLogo = logo.querySelector(".brand-logo") as HTMLImageElement;
-      if (brandLogo) {
-        brandLogo.alt = finalTitle;
+      const brandLogo = logo.querySelector(".brand-logo");
+      if (brandLogo && brandLogo.tagName?.toLowerCase() === 'img') {
+        brandLogo.setAttribute('alt', finalTitle);
       }
       
       this.logger.info(
