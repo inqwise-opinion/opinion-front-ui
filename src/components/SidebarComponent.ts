@@ -198,6 +198,7 @@ export class SidebarComponent implements Sidebar, ChainHotkeyProvider, Component
       sidebarHeader.innerHTML = `
         <div class="sidebar-brand">
           <a href="${getFullPath('/')}" class="brand-title-link">
+            <img src="/inqwise-opinion.svg" alt="Opinion" class="brand-logo-sidebar" width="24" height="24">
             <h1 class="brand-title">Opinion</h1>
           </a>
         </div>

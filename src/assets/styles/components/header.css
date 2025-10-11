@@ -18,6 +18,39 @@
 .header-left {
   display: flex;
   align-items: center;
+  gap: 12px; /* Space between brand and mobile toggle */
+}
+
+/* Brand Logo */
+.header-brand {
+  display: flex;
+  align-items: center;
+}
+
+.header-brand .logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
+  gap: 8px; /* Space between logo and text */
+}
+
+.header-brand .logo:hover {
+  opacity: 0.8;
+}
+
+.brand-logo {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
 }
 
 .header-center {
@@ -384,6 +417,12 @@
   /* Better spacing on mobile */
   .header-left {
     margin-right: 8px;
+    gap: 8px; /* Reduce gap on mobile */
+  }
+  
+  /* Hide header brand on mobile */
+  .header-mobile .header-brand {
+    display: none;
   }
   
   .header-right {

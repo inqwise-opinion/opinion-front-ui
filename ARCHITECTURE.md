@@ -3,23 +3,27 @@
 ## 1. Component Hierarchy & Responsibility Scope
 
 ```
-OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
-├── LayoutContextImpl (src/contexts/LayoutContextImpl.ts) 🌐 GLOBAL STATE
+OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER & COMPOSITION ROOT
+├── LayoutContextImpl (src/contexts/LayoutContextImpl.ts) 🏗️ MICRO-KERNEL
+│   ├── EventBus (src/events/EventBusImpl.ts) 📡 EVENT COMMUNICATION
+│   ├── ChainHotkeyManager (src/hotkeys/ChainHotkeyManager.ts) ⌨️ HOTKEY CHAINS
+│   ├── ServiceRegistry 🏢 SERVICE MANAGEMENT
+│   └── ComponentRegistry 📋 COMPONENT COORDINATION
 ├── MockApiService (src/services/MockApiService.ts) 📊 DATA LAYER
-├── NavigationService (src/services/navigation/) 🧭 NAVIGATION STATE
 ├── Layout (src/components/Layout.ts) 🏗️ LAYOUT COORDINATOR
 │   ├── AppHeaderImpl (src/components/AppHeaderImpl.ts) 📋 TOP BAR
 │   │   ├── UserMenu (src/components/UserMenu.ts) 👤 USER ACTIONS
-│   │   └── SidebarComponent (src/components/SidebarComponent.ts) 🔗 NAVIGATION
+│   │   ├── SidebarComponent (src/components/SidebarComponent.ts) 🔗 NAVIGATION
+│   │   └── BreadcrumbsComponent (src/components/BreadcrumbsComponent.ts) 🍞 BREADCRUMBS
 │   ├── AppFooterImpl (src/components/AppFooterImpl.ts) 📄 BOTTOM BAR
 │   └── ErrorMessagesComponent (src/components/ErrorMessages.ts) 🚨 GLOBAL MESSAGES
 ├── MainContent (src/components/MainContent.ts) 📱 CONTENT CONTAINER
-└── PageComponents 📄 DYNAMIC PAGES
-    ├── DebugPage (src/pages/DebugPage.ts) 🛠️ DEBUG TOOLS
-    ├── DashboardPage (src/pages/DashboardPage.ts) 📊 DASHBOARD
-    └── Surveys Pages (src/pages/surveys/) 📋 SURVEY MANAGEMENT
-        ├── SurveyListPage 📄 SURVEY LIST
-        └── SurveyDetailPage 📄 SURVEY DETAILS
+└── PageComponents 📄 DYNAMIC PAGES with PageContext
+    ├── DebugPage (src/pages/DebugPage.ts) 🛠️ DEBUG TOOLS & ARCHITECTURE TESTS
+    ├── DashboardPage (src/pages/DashboardPage.ts) 📊 DASHBOARD WITH MOCK DATA
+    └── Future Pages 📋 EXTENSIBLE PAGE SYSTEM
+        ├── Survey Management Pages
+        └── User Account Pages
 ```
 
 ### Component Responsibilities
@@ -33,15 +37,17 @@ OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
   - Manage error handling and recovery
 - **Dependencies**: Layout, MainContent, LayoutContext, MockApiService
 
-#### 🌐 **LayoutContextImpl** (Global State Manager)
-- **Scope**: Cross-component communication and state management
+#### 🏗️ **LayoutContextImpl** (Micro-Kernel Application Kernel)
+- **Scope**: Central application kernel managing all system resources
 - **Responsibilities**:
-  - Manage responsive breakpoints and layout modes
-  - Track sidebar dimensions and states
-  - Provide event system for component coordination
-  - Handle global error messages and notifications
-  - Maintain layout state consistency
-- **Pattern**: Singleton with event emitter
+  - **Service Registry**: Manage business logic services with dependency injection
+  - **Component Registry**: Coordinate layout components (header, sidebar, footer)
+  - **EventBus Management**: Provide unified event communication system
+  - **Hotkey Coordination**: Chain-based hotkey management with priority resolution
+  - **Responsive Layout**: Manage breakpoints, layout modes, and CSS variables
+  - **Error Messaging**: Global error/warning/info/success message coordination
+  - **Resource Cleanup**: Automatic cleanup of services and components
+- **Pattern**: Micro-kernel architecture with service-oriented design
 
 #### 🏗️ **Layout** (Layout Coordinator)
 - **Scope**: Master page component coordination
@@ -107,29 +113,212 @@ OpinionApp (src/app.ts) 🎯 MAIN CONTROLLER
   - Manage message lifecycle (show/hide/clear)
 - **Dependencies**: None (standalone component)
 
-#### 🧭 **NavigationService** (Navigation State Management)
-- **Scope**: Navigation menu state and active page coordination
+#### 📡 **EventBus** (Event Communication System)
+- **Scope**: Unified event communication across all application components
 - **Responsibilities**:
-  - Track active navigation items and states
-  - Implement ActivePageConsumer for page change notifications
-  - Map page IDs to navigation item IDs
-  - Synchronize navigation state with SidebarComponent
-  - Manage navigation menu structure and behavior
-- **Dependencies**: LayoutContextImpl, SidebarComponent
+  - **Publish/Subscribe**: Broadcast events to multiple consumers
+  - **Request/Response**: Point-to-point communication with async responses
+  - **Consumer Management**: Track and cleanup event subscriptions
+  - **Error Handling**: Robust error boundaries for event handlers
+  - **Memory Management**: Prevent memory leaks through proper cleanup
+- **Pattern**: Observer pattern with TypeScript event types
 
-#### 📄 **PageComponents** (Dynamic Content)
-- **Scope**: Individual page/view implementations
+#### ⌨️ **ChainHotkeyManager** (Priority-Based Hotkey System)
+- **Scope**: Application-wide keyboard shortcut management with conflict resolution
 - **Responsibilities**:
-  - Render page-specific content
-  - Handle page-specific interactions
-  - Integrate with MainContent for display
-  - Manage page lifecycle and active page registration
-  - Declare themselves as active via LayoutContext
-- **Examples**: DebugPage, DashboardPage, SurveyListPage, SurveyDetailPage
+  - **Chain Execution**: Priority-based hotkey execution (Modal > Sidebar > Menu > Page)
+  - **Provider Management**: Register and coordinate ChainHotkeyProvider components
+  - **Conflict Resolution**: ESC key and other conflicts resolved through cooperative chains
+  - **Dynamic Control**: Enable/disable individual hotkeys and entire providers
+  - **Legacy Compatibility**: Automatic adapter for legacy registerHotkey() calls
+  - **Debug Support**: Comprehensive chain execution logging and inspection
+- **Pattern**: Chain of Responsibility with priority-based execution
+
+#### 🍞 **BreadcrumbsComponent** (Hierarchical Navigation)
+- **Scope**: Navigation breadcrumb display with hierarchical page management
+- **Responsibilities**:
+  - **Hierarchical Display**: Show current page hierarchy as clickable breadcrumbs
+  - **Page-Scoped Updates**: Accept breadcrumb updates from HierarchicalBreadcrumbsManager
+  - **Click Handling**: Navigate to parent pages when breadcrumb items clicked
+  - **Responsive Design**: Adapt breadcrumb display for mobile and desktop
+- **Dependencies**: LayoutContextImpl (for event communication)
+
+#### 📄 **PageComponents** (Dynamic Content with PageContext)
+- **Scope**: Individual page/view implementations extending PageComponent abstract class
+- **Responsibilities**:
+  - **Content Rendering**: Render page-specific content and handle interactions
+  - **Lifecycle Management**: Implement onInit(), onDestroy() with automatic cleanup
+  - **PageContext Integration**: Access hierarchical breadcrumb management and services
+  - **Event Handling**: Page-level event coordination via EventBus
+  - **Hotkey Registration**: Register page-specific hotkeys via ChainHotkeyProvider
+  - **Service Access**: Consume registered services through LayoutContext
+- **Pattern**: Template Method with lifecycle hooks and dependency injection
+- **Examples**: DebugPage (architecture testing), DashboardPage (mock data integration)
 
 ---
 
-## 2. Initialization Flow
+## 2. Key Architectural Systems
+
+### 2.1 Event-Driven Communication Architecture
+
+The application uses a comprehensive EventBus system for component communication:
+
+```typescript
+// Publishing events (one-to-many)
+layoutContext.publish('sidebar-toggled', { isCompact: true });
+
+// Subscribing to events
+layoutContext.subscribe('sidebar-toggled', (data) => {
+  console.log('Sidebar state changed:', data);
+});
+
+// Request-response patterns (one-to-one)
+const user = await layoutContext.request('get-current-user', {});
+```
+
+**Key Benefits:**
+- **Loose Coupling**: Components don't need direct references to each other
+- **Type Safety**: Full TypeScript event type definitions
+- **Memory Management**: Automatic cleanup prevents memory leaks
+- **Error Isolation**: Errors in one handler don't affect others
+
+### 2.2 Chain-Based Hotkey System
+
+Priority-based hotkey management resolves conflicts through cooperative chain execution:
+
+```typescript
+// High-priority provider (Modal Dialog)
+class ModalProvider implements ChainHotkeyProvider {
+  getProviderPriority(): number { return 1000; }
+  
+  getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
+    return new Map([['Escape', {
+      handler: (ctx) => {
+        this.closeModal();
+        ctx.break(); // Stop chain execution
+      }
+    }]]);
+  }
+}
+
+// Lower-priority provider (Sidebar)
+class SidebarProvider implements ChainHotkeyProvider {
+  getProviderPriority(): number { return 800; }
+  
+  getChainHotkeys(): Map<string, ChainHotkeyHandler> | null {
+    return new Map([['Escape', {
+      handler: (ctx) => {
+        this.closeSidebar();
+        if (ctx.hasProvider('UserMenu')) {
+          ctx.next(); // Allow UserMenu to also handle
+        } else {
+          ctx.break();
+        }
+      }
+    }]]);
+  }
+}
+```
+
+**Chain Execution Order (ESC key):**
+1. **Modal Dialog** (1000) → Executes, calls `ctx.break()` → Chain stops
+2. **Mobile Sidebar** (800) → Only when modal not active
+3. **User Menu** (600) → Cooperative with sidebar
+4. **Page Components** (100-500) → Default handlers
+
+### 2.3 Reactive Data Binding with Observables
+
+Type-safe reactive data binding with automatic change notifications:
+
+```typescript
+// Basic Observable
+const userName = new ObservableImpl<string>('John Doe');
+userName.subscribe((newName) => console.log('User:', newName));
+
+// ComputedObservable with dependency tracking
+const fullName = new ComputedObservable<string>(
+  [firstName, lastName],
+  (first, last) => `${first} ${last}`
+);
+
+// Validators and Transformers
+const email = new ObservableImpl<string>('')
+  .withValidator((email) => email.includes('@'))
+  .withTransformer((email) => email.toLowerCase().trim());
+```
+
+**Features:**
+- **Dependency Tracking**: ComputedObservables automatically update when dependencies change
+- **Validation**: Built-in validation with error handling
+- **Transformation**: Data transformation pipelines
+- **Type Safety**: Full TypeScript generic support
+- **Memory Management**: Automatic cleanup of subscriptions
+
+### 2.4 Service-Oriented Architecture
+
+Dependency injection with service registry and interface contracts:
+
+```typescript
+// Service Interface
+interface UserService {
+  getCurrentUser(): Promise<User>;
+  updateUser(user: User): Promise<void>;
+}
+
+// Service Implementation
+class UserServiceImpl implements UserService {
+  async getCurrentUser(): Promise<User> {
+    return await this.apiClient.get('/user/current');
+  }
+}
+
+// Service Registration (in OpinionApp)
+await layoutContext.registerService('UserService', new UserServiceImpl());
+
+// Service Consumption (in PageComponent)
+const userService = await this.layoutContext.getService<UserService>('UserService');
+const user = await userService.getCurrentUser();
+```
+
+**Benefits:**
+- **Interface Segregation**: Services work with abstract interfaces
+- **Dependency Injection**: Centralized service management
+- **Testability**: Easy mocking and testing
+- **Lifecycle Management**: Automatic cleanup
+
+### 2.5 Hierarchical Breadcrumbs System
+
+Page-scoped breadcrumb management with safe operations:
+
+```typescript
+// Page can only modify breadcrumbs at or below its level
+class ReportsPage extends PageComponent {
+  async onInit() {
+    const pageContext = await this.getPageContext();
+    const breadcrumbs = pageContext.breadcrumbs();
+    
+    // ✅ Safe: Only modifies scoped portion
+    breadcrumbs.set([
+      { id: 'ReportsPage', text: 'Reports' },     // Scope starts here
+      { id: 'analytics', text: 'Analytics' },
+      { id: 'dashboard', text: 'Dashboard View' }
+    ]);
+    
+    // ❌ Ignored: Trying to modify parent scope
+    breadcrumbs.remove('home'); // Silently ignored
+  }
+}
+```
+
+**Scoping Behavior:**
+- **Parent Protection**: Breadcrumbs above current page level remain untouched
+- **Safe Operations**: Operations on out-of-scope items silently ignored
+- **Fallback Mode**: Append-only when page ID not found in hierarchy
+- **Case-Insensitive**: Smart page scope resolution
+
+---
+
+## 3. Initialization Flow
 
 ```mermaid
 sequenceDiagram

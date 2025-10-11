@@ -104,12 +104,23 @@
 }
 
 .brand-title-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     text-decoration: none;
     color: inherit;
+    transition: opacity 0.2s ease;
 }
 
 .brand-title-link:hover {
     color: #3b82f6;
+    opacity: 0.9;
+}
+
+.brand-logo-sidebar {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
 }
 
 /* Sidebar Navigation */
@@ -225,11 +236,11 @@
 
     .app-sidebar.sidebar-compact .sidebar-header {
         padding: 16px 12px;
-        justify-content: center;
+        justify-content: center; /* Center the compact toggle button */
     }
 
     .app-sidebar.sidebar-compact .sidebar-brand {
-        display: none;
+        display: none; /* Hide entire brand section in compact mode */
     }
 
     .app-sidebar.sidebar-compact .sidebar-controls {
@@ -466,6 +477,16 @@
     /* Compact toggle button - hide on mobile */
     .compact-toggle-btn {
         display: none !important;
+    }
+    
+    /* Brand section - hide by default on mobile */
+    .app-sidebar .sidebar-brand {
+        display: none !important;
+    }
+    
+    /* Show brand only when mobile sidebar is visible/open */
+    .app-sidebar.sidebar-mobile-visible .sidebar-brand {
+        display: flex !important;
     }
 
     /* Mobile backdrop overlay with smooth fade and blur */

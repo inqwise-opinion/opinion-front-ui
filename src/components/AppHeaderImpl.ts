@@ -217,9 +217,20 @@ export class AppHeaderImpl
     `
       : "";
 
+    // Brand logo section
+    const brandLogoHtml = `
+      <div class="header-brand">
+        <a href="${this.config.brandHref}" class="logo" title="${this.config.brandTitle}">
+          <img src="/inqwise-opinion.svg" alt="${this.config.brandTitle}" class="brand-logo" width="24" height="24">
+          <span class="brand-text">${this.config.brandTitle}</span>
+        </a>
+      </div>
+    `;
+
     headerContainer.innerHTML = `
-      <!-- Left section: Mobile toggle button -->
+      <!-- Left section: Brand logo and mobile toggle button -->
       <div class="header-left">
+        ${brandLogoHtml}
         ${mobileToggleHtml}
       </div>
 
@@ -493,8 +504,24 @@ export class AppHeaderImpl
 
     const logo = this.container?.querySelector(".logo") as HTMLAnchorElement;
     if (logo) {
-      logo.textContent = finalTitle;
+      // Update href
       logo.href = finalHref;
+      
+      // Update title attribute
+      logo.title = finalTitle;
+      
+      // Update brand text content
+      const brandText = logo.querySelector(".brand-text");
+      if (brandText) {
+        brandText.textContent = finalTitle;
+      }
+      
+      // Update image alt text
+      const brandLogo = logo.querySelector(".brand-logo") as HTMLImageElement;
+      if (brandLogo) {
+        brandLogo.alt = finalTitle;
+      }
+      
       this.logger.info(
         `AppHeaderImpl - Brand updated: "${finalTitle}" -> ${finalHref}`,
       );
