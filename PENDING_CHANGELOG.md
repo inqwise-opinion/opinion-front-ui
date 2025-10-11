@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 34
+- **Total Commits**: 35
 - **Last Updated**: 2025-10-11 by alex-inqwise
 - **Next Release**: TBD
 
@@ -269,4 +269,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🚀 Features
 
 - feat: integrate inqwise-opinion.svg branding and comprehensive documentation updates ([ee0b9658ddd9e4dc7ce80da7d0d11205a7e28309](https://github.com/inqwise-opinion/opinion-front-ui/commit/ee0b9658ddd9e4dc7ce80da7d0d11205a7e28309)) - _glassfox_
+
+
+---
+**Push on 2025-10-11 by alex-inqwise**
+
+
+### 🐛 Bug Fixes
+
+- fix: resolve HTMLImageElement type error in AppHeaderImpl ([29c003d2507b0d2e16b92a73ceaa47d58cc07071](https://github.com/inqwise-opinion/opinion-front-ui/commit/29c003d2507b0d2e16b92a73ceaa47d58cc07071)) - _glassfox_
 
