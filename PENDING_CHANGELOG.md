@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 35
-- **Last Updated**: 2025-10-11 by alex-inqwise
+- **Total Commits**: 36
+- **Last Updated**: 2025-10-13 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -278,4 +278,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: resolve HTMLImageElement type error in AppHeaderImpl ([29c003d2507b0d2e16b92a73ceaa47d58cc07071](https://github.com/inqwise-opinion/opinion-front-ui/commit/29c003d2507b0d2e16b92a73ceaa47d58cc07071)) - _glassfox_
+
+
+---
+**Push on 2025-10-13 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/eslint-plugin (#34) ([b68bb63df9676db05a06dcb618bb81651507fa08](https://github.com/inqwise-opinion/opinion-front-ui/commit/b68bb63df9676db05a06dcb618bb81651507fa08)) - _dependabot[bot]_
 
