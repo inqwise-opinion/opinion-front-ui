@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 38
+- **Total Commits**: 39
 - **Last Updated**: 2025-10-13 by glassfox
 - **Next Release**: TBD
 
@@ -305,4 +305,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/node from 24.7.0 to 24.7.2 (#36) ([e933635c75db1eb62780d9905c8378f987e6c140](https://github.com/inqwise-opinion/opinion-front-ui/commit/e933635c75db1eb62780d9905c8378f987e6c140)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-10-13 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump ts-jest from 29.4.4 to 29.4.5 (#37) ([74f8dd120768002f19c01ef70b9eda1e55480cae](https://github.com/inqwise-opinion/opinion-front-ui/commit/74f8dd120768002f19c01ef70b9eda1e55480cae)) - _dependabot[bot]_
 
