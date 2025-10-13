@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 39
+- **Total Commits**: 40
 - **Last Updated**: 2025-10-13 by glassfox
 - **Next Release**: TBD
 
@@ -314,4 +314,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump ts-jest from 29.4.4 to 29.4.5 (#37) ([74f8dd120768002f19c01ef70b9eda1e55480cae](https://github.com/inqwise-opinion/opinion-front-ui/commit/74f8dd120768002f19c01ef70b9eda1e55480cae)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-10-13 by glassfox**
+
+
+### 👷 CI/CD
+
+- ci(deps): bump github/codeql-action from 3 to 4 (#38) ([60652d724bb4aed57397e042e39bbf3e957200bd](https://github.com/inqwise-opinion/opinion-front-ui/commit/60652d724bb4aed57397e042e39bbf3e957200bd)) - _dependabot[bot]_
 
