@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 40
-- **Last Updated**: 2025-10-13 by glassfox
+- **Total Commits**: 41
+- **Last Updated**: 2025-10-23 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -323,4 +323,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 👷 CI/CD
 
 - ci(deps): bump github/codeql-action from 3 to 4 (#38) ([60652d724bb4aed57397e042e39bbf3e957200bd](https://github.com/inqwise-opinion/opinion-front-ui/commit/60652d724bb4aed57397e042e39bbf3e957200bd)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-10-23 by glassfox**
+
+
+### 👷 CI/CD
+
+- ci(deps): bump actions/setup-node from 5 to 6 (#43) ([507fd778cee8c9ac6f2551787c45b6e5c2dfd33c](https://github.com/inqwise-opinion/opinion-front-ui/commit/507fd778cee8c9ac6f2551787c45b6e5c2dfd33c)) - _dependabot[bot]_
 
