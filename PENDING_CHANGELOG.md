@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 42
+- **Total Commits**: 43
 - **Last Updated**: 2025-10-23 by glassfox
 - **Next Release**: TBD
 
@@ -341,4 +341,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump vite from 7.1.9 to 7.1.11 (#42) ([7d78ded6d2523ab6bef4a6de5411625c917aa847](https://github.com/inqwise-opinion/opinion-front-ui/commit/7d78ded6d2523ab6bef4a6de5411625c917aa847)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-10-23 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/eslint-plugin (#41) ([d683e9531919f595ec5b6dcd268e5eed72abbd33](https://github.com/inqwise-opinion/opinion-front-ui/commit/d683e9531919f595ec5b6dcd268e5eed72abbd33)) - _dependabot[bot]_
 
