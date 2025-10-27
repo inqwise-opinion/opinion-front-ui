@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 45
-- **Last Updated**: 2025-10-23 by glassfox
+- **Total Commits**: 46
+- **Last Updated**: 2025-10-27 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -368,4 +368,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump eslint from 9.37.0 to 9.38.0 (#39) ([d2cf033a4f79869814716fef43022bac8b795911](https://github.com/inqwise-opinion/opinion-front-ui/commit/d2cf033a4f79869814716fef43022bac8b795911)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-10-27 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/eslint-plugin (#44) ([81c1cd42bf067510bf0bc63f9a359e9aa0767976](https://github.com/inqwise-opinion/opinion-front-ui/commit/81c1cd42bf067510bf0bc63f9a359e9aa0767976)) - _dependabot[bot]_
 
