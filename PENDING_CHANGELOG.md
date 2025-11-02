@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 50
-- **Last Updated**: 2025-10-27 by glassfox
+- **Total Commits**: 51
+- **Last Updated**: 2025-11-02 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -413,4 +413,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump vite from 7.1.11 to 7.1.12 (#45) ([263f2855dcf4c582f0acf2a1e1d2a96be73ace84](https://github.com/inqwise-opinion/opinion-front-ui/commit/263f2855dcf4c582f0acf2a1e1d2a96be73ace84)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-11-02 by glassfox**
+
+
+### 📦 Changes
+
+- Update issue templates ([2413c82dc36ac542de809a5588f7f96c8002e96b](https://github.com/inqwise-opinion/opinion-front-ui/commit/2413c82dc36ac542de809a5588f7f96c8002e96b)) - _glassfox_
 
