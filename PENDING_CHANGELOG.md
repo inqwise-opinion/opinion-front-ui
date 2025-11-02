@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 51
+- **Total Commits**: 52
 - **Last Updated**: 2025-11-02 by glassfox
 - **Next Release**: TBD
 
@@ -422,4 +422,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - Update issue templates ([2413c82dc36ac542de809a5588f7f96c8002e96b](https://github.com/inqwise-opinion/opinion-front-ui/commit/2413c82dc36ac542de809a5588f7f96c8002e96b)) - _glassfox_
+
+
+---
+**Push on 2025-11-02 by glassfox**
+
+
+### 📦 Changes
+
+- Add Contributor Covenant Code of Conduct ([b27e8f6581ea0a7d179af9a86d073c663f491af0](https://github.com/inqwise-opinion/opinion-front-ui/commit/b27e8f6581ea0a7d179af9a86d073c663f491af0)) - _glassfox_
 
