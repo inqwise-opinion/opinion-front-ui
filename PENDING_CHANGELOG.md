@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 52
-- **Last Updated**: 2025-11-02 by glassfox
+- **Total Commits**: 53
+- **Last Updated**: 2025-11-10 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -431,4 +431,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - Add Contributor Covenant Code of Conduct ([b27e8f6581ea0a7d179af9a86d073c663f491af0](https://github.com/inqwise-opinion/opinion-front-ui/commit/b27e8f6581ea0a7d179af9a86d073c663f491af0)) - _glassfox_
+
+
+---
+**Push on 2025-11-10 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump sass from 1.93.2 to 1.93.3 (#56) ([98ad3e417dbd6530880238be5cc685e444d75c80](https://github.com/inqwise-opinion/opinion-front-ui/commit/98ad3e417dbd6530880238be5cc685e444d75c80)) - _dependabot[bot]_
 
