@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 54
+- **Total Commits**: 55
 - **Last Updated**: 2025-11-10 by glassfox
 - **Next Release**: TBD
 
@@ -449,4 +449,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps): bump axios from 1.12.2 to 1.13.2 (#55) ([1b7241001d13eef125b04fa1d9c4da2927e6bdd3](https://github.com/inqwise-opinion/opinion-front-ui/commit/1b7241001d13eef125b04fa1d9c4da2927e6bdd3)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-11-10 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/parser from 8.46.2 to 8.46.3 (#54) ([f55a7832c61eb55ee75ce379ff7dc20af993b807](https://github.com/inqwise-opinion/opinion-front-ui/commit/f55a7832c61eb55ee75ce379ff7dc20af993b807)) - _dependabot[bot]_
 
