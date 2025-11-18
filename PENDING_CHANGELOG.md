@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 61
+- **Total Commits**: 62
 - **Last Updated**: 2025-11-18 by glassfox
 - **Next Release**: TBD
 
@@ -512,4 +512,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/node from 24.10.0 to 24.10.1 (#58) ([3c26474bc4890639e0eaf77e4c42deae97a4c5f3](https://github.com/inqwise-opinion/opinion-front-ui/commit/3c26474bc4890639e0eaf77e4c42deae97a4c5f3)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-11-18 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/react from 19.2.2 to 19.2.5 (#57) ([1b4090839798e6975c8ef75e6163dc4c8131c4f4](https://github.com/inqwise-opinion/opinion-front-ui/commit/1b4090839798e6975c8ef75e6163dc4c8131c4f4)) - _dependabot[bot]_
 
