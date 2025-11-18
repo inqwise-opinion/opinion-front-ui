@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 60
-- **Last Updated**: 2025-11-17 by glassfox
+- **Total Commits**: 61
+- **Last Updated**: 2025-11-18 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -503,4 +503,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump sass from 1.93.3 to 1.94.0 (#59) ([decfcb8a7aeec9d9e23cb4e02d380b8cc7bf1ecf](https://github.com/inqwise-opinion/opinion-front-ui/commit/decfcb8a7aeec9d9e23cb4e02d380b8cc7bf1ecf)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-11-18 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/node from 24.10.0 to 24.10.1 (#58) ([3c26474bc4890639e0eaf77e4c42deae97a4c5f3](https://github.com/inqwise-opinion/opinion-front-ui/commit/3c26474bc4890639e0eaf77e4c42deae97a4c5f3)) - _dependabot[bot]_
 
