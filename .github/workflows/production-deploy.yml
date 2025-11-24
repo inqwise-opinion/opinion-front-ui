@@ -108,7 +108,7 @@ jobs:
           echo "- **Release URL**: [${{ needs.validate-release.outputs.release_tag }}](${{ needs.validate-release.outputs.release_url }})" >> $GITHUB_STEP_SUMMARY
           
       - name: 📥 Checkout Release
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.validate-release.outputs.release_tag }}
           
