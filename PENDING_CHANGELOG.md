@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 63
+- **Total Commits**: 64
 - **Last Updated**: 2025-11-24 by glassfox
 - **Next Release**: TBD
 
@@ -530,4 +530,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump sass from 1.94.0 to 1.94.2 (#61) ([7796d0306b47ce6ee6aff3683fcd9ef3cd3bbfee](https://github.com/inqwise-opinion/opinion-front-ui/commit/7796d0306b47ce6ee6aff3683fcd9ef3cd3bbfee)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-11-24 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 7.2.2 to 7.2.4 (#60) ([c7c64191cfeccc5ed4c1b2a00ff0ec7ac7e2f9c6](https://github.com/inqwise-opinion/opinion-front-ui/commit/c7c64191cfeccc5ed4c1b2a00ff0ec7ac7e2f9c6)) - _dependabot[bot]_
 
