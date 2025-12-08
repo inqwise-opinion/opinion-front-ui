@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 70
+- **Total Commits**: 71
 - **Last Updated**: 2025-12-08 by glassfox
 - **Next Release**: TBD
 
@@ -593,4 +593,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump ts-jest from 29.4.5 to 29.4.6 (#68) ([c823a8b13f10651a408182a393a2c1a2d835d2d8](https://github.com/inqwise-opinion/opinion-front-ui/commit/c823a8b13f10651a408182a393a2c1a2d835d2d8)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-12-08 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/eslint-plugin (#66) ([1da33016d9229b704a1bbd6832195bfd6cc853e7](https://github.com/inqwise-opinion/opinion-front-ui/commit/1da33016d9229b704a1bbd6832195bfd6cc853e7)) - _dependabot[bot]_
 
