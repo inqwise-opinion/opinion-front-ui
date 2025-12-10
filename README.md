@@ -24,6 +24,7 @@
 [![Last Commit](https://img.shields.io/github/last-commit/inqwise-opinion/opinion-front-ui)](https://github.com/inqwise-opinion/opinion-front-ui/commits/main)
 [![Stars](https://img.shields.io/github/stars/inqwise-opinion/opinion-front-ui)](https://github.com/inqwise-opinion/opinion-front-ui/stargazers)
 
+
 ## Project Overview
 
 This project represents a **complete architectural migration** from a traditional servlet-based Java application to a modern TypeScript SPA. The application features a **micro-kernel architecture** with component-based design, **event-driven communication**, **reactive data binding**, **chain-based hotkey system**, and advanced layout management with comprehensive test coverage.
