@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 79
+- **Total Commits**: 80
 - **Last Updated**: 2025-12-15 by glassfox
 - **Next Release**: TBD
 
@@ -674,4 +674,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 👷 CI/CD
 
 - ci(deps): bump actions/upload-artifact from 5 to 6 (#73) ([af53050f54cfc33152977a0a5ec4cb0bb98f5c23](https://github.com/inqwise-opinion/opinion-front-ui/commit/af53050f54cfc33152977a0a5ec4cb0bb98f5c23)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-12-15 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 7.2.7 to 7.3.0 (#71) ([e1dc312b262d37d1c79b90e42666aabed709443c](https://github.com/inqwise-opinion/opinion-front-ui/commit/e1dc312b262d37d1c79b90e42666aabed709443c)) - _dependabot[bot]_
 
