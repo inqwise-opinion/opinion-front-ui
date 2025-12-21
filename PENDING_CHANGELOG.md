@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 83
+- **Total Commits**: 84
 - **Last Updated**: 2025-12-21 by glassfox
 - **Next Release**: TBD
 
@@ -710,4 +710,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps): bump glob from 10.4.5 to 10.5.0 (#78) ([380ec867b34804fc84fb5d5ff6ea18e100c3bb08](https://github.com/inqwise-opinion/opinion-front-ui/commit/380ec867b34804fc84fb5d5ff6ea18e100c3bb08)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-12-21 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump js-yaml from 3.14.1 to 3.14.2 (#79) ([38cb5181a54093cf4b0da61ef6b4baa1f1eaa91d](https://github.com/inqwise-opinion/opinion-front-ui/commit/38cb5181a54093cf4b0da61ef6b4baa1f1eaa91d)) - _dependabot[bot]_
 
