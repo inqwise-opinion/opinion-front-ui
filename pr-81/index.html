@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opinion - Survey Management Platform</title>
+  <meta name="description" content="Opinion - Modern survey management platform for creating, managing and analyzing surveys">
+  <link rel="icon" type="image/svg+xml" href="/opinion-front-ui/pr-81/inqwise-opinion.svg">
+  <link rel="icon" type="image/x-icon" href="/opinion-front-ui/pr-81/favicon.ico">
+  
+  <!-- Load critical CSS directly for Vite compatibility -->
+  
+  <!-- Material Icons with font-display swap to prevent layout shift -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Basic reset and foundation - prevent FOUC */
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+    
+    /* Fix H1 styling warning for sectioned h1 elements */
+    .brand-title {
+      margin: 0 !important;
+      font-size: 20px !important;
+      font-weight: 600 !important;
+      color: #111827 !important;
+      line-height: 1.2 !important;
+    }
+    
+    .loader-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f8f9fa;
+    }
+    
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e9ecef;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      color: #6c757d;
+      font-size: 16px;
+      font-weight: 400;
+    }
+  </style>
+  <script type="module" crossorigin src="/opinion-front-ui/pr-81/assets/index-MzelEsj5.js"></script>
+  <link rel="stylesheet" crossorigin href="/opinion-front-ui/pr-81/assets/index-gwPGZYtv.css">
+</head>
+<body>
+  <!-- Modern semantic app layout with declarative structure -->
+  <div class="app-layout">
+    <!-- Sidebar: Static structure, content populated by component -->
+    <nav class="app-sidebar" id="app-sidebar" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <h1 class="brand-title">Opinion</h1>
+        </div>
+      </div>
+      <div class="sidebar-navigation">
+        <!-- Navigation populated by Sidebar component -->
+      </div>
+      <div class="sidebar-footer">
+        <!-- Footer populated by Sidebar component -->
+      </div>
+    </nav>
+    
+    <!-- Content area containing header + scrollable content -->
+    <div class="app-content-area">
+      <!-- Header: Static structure, content populated by component -->
+      <header class="app-header" id="app-header" role="banner">
+        <div class="header-container">
+          <!-- Header content populated by AppHeader component -->
+        </div>
+      </header>
+      
+      <!-- Scrollable container for error messages, main content, and footer -->
+      <div class="app-content-scroll" id="app-content-scroll">
+        <!-- Error Messages Container: For global error messages and notifications -->
+        <div class="app-error-messages" id="app-error-messages" role="alert" aria-live="polite">
+          <!-- Error messages will be populated dynamically -->
+        </div>
+        
+        <!-- Main: Dynamic content area -->
+        <main class="app-main" id="app-main" role="main" aria-label="Main content">
+          <div class="loader-container">
+            <div class="loader"></div>
+            <p class="loading-text">Getting your Opinion ready...</p>
+            <p class="loading-text" style="font-size: 14px; color: #28a745; margin-top: 10px;">
+              🚀 Preview Deployment Test - PR Branch
+            </p>
+          </div>
+        </main>
+        
+        <!-- Footer: Static structure, content populated by component -->
+        <footer class="app-footer" id="app-footer" role="contentinfo">
+          <div class="footer-container">
+            <!-- Footer content populated by AppFooter component -->
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Load main script with CSS ready check to prevent FOUC -->
+  <script>
+    // Simple function to check if critical CSS is loaded
+    function waitForCriticalCSS() {
+      return new Promise((resolve) => {
+        const checkCSS = () => {
+          const stylesheets = document.querySelectorAll('link[rel="stylesheet"]');
+          let loadedCount = 0;
+          
+          // Check if all critical stylesheets are loaded
+          stylesheets.forEach(sheet => {
+            if (sheet.sheet || sheet.disabled) {
+              loadedCount++;
+            }
+          });
+          
+          // Wait for at least the critical ones to load
+          if (loadedCount >= 3 || document.readyState === 'complete') {
+            resolve();
+          } else {
+            // Check again in 10ms
+            setTimeout(checkCSS, 10);
+          }
+        };
+        
+        checkCSS();
+      });
+    }
+    
+    // Initialize app after critical CSS is loaded
+    async function initializeApp() {
+      await waitForCriticalCSS();
+      // App will be initialized by the main script
+    }
+    
+    // Start initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+      initializeApp();
+    }
+  </script>
+  
+  <!-- Main application script - Vite will process this -->
+</body>
+</html>
