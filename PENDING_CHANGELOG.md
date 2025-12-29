@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 88
-- **Last Updated**: 2025-12-23 by glassfox
+- **Total Commits**: 90
+- **Last Updated**: 2025-12-29 by alex-inqwise
 - **Next Release**: TBD
 
 ---
@@ -755,4 +755,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @typescript-eslint/parser from 8.49.0 to 8.50.0 (#83) ([19387cf2a1abfbd21b415f24d62907a034b03f5d](https://github.com/inqwise-opinion/opinion-front-ui/commit/19387cf2a1abfbd21b415f24d62907a034b03f5d)) - _dependabot[bot]_
+
+
+---
+**Push on 2025-12-29 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/eslint-plugin ([f921a2d02ff1f59da107801731f3ed25d26aa916](https://github.com/inqwise-opinion/opinion-front-ui/commit/f921a2d02ff1f59da107801731f3ed25d26aa916)) - _dependabot[bot]_
+- Merge pull request #84 from inqwise-opinion/dependabot/npm_and_yarn/typescript-eslint/eslint-plugin-8.50.1 ([1c43630af679daa0becae021ee9de3e76f6a2576](https://github.com/inqwise-opinion/opinion-front-ui/commit/1c43630af679daa0becae021ee9de3e76f6a2576)) - _Alex Misyuk_
 
