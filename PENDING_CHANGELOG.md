@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 93
+- **Total Commits**: 94
 - **Last Updated**: 2026-01-12 by glassfox
 - **Next Release**: TBD
 
@@ -792,4 +792,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/react from 19.2.7 to 19.2.8 (#89) ([9c273a0b7b391a354811088234fab68ab6f73a0f](https://github.com/inqwise-opinion/opinion-front-ui/commit/9c273a0b7b391a354811088234fab68ab6f73a0f)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-01-12 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 7.3.0 to 7.3.1 (#91) ([8f2e9bd46c9adc8fb856a01695a5ab57c2b55feb](https://github.com/inqwise-opinion/opinion-front-ui/commit/8f2e9bd46c9adc8fb856a01695a5ab57c2b55feb)) - _dependabot[bot]_
 
