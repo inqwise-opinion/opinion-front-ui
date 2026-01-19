@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 98
+- **Total Commits**: 99
 - **Last Updated**: 2026-01-19 by glassfox
 - **Next Release**: TBD
 
@@ -837,4 +837,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps): bump universal-router from 10.0.2 to 10.0.3 (#95) ([789d9fc9d94286362d23842af30373336007dcf0](https://github.com/inqwise-opinion/opinion-front-ui/commit/789d9fc9d94286362d23842af30373336007dcf0)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-01-19 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/eslint-plugin (#96) ([e4e1f8a12508647abc0f95a79ad2c7e21de55f96](https://github.com/inqwise-opinion/opinion-front-ui/commit/e4e1f8a12508647abc0f95a79ad2c7e21de55f96)) - _dependabot[bot]_
 
