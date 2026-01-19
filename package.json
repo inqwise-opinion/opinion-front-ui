@@ -44,7 +44,7 @@
     "dataloader": "^2.2.3",
     "typescript-logging": "^2.2.0",
     "typescript-logging-log4ts-style": "^2.2.0",
-    "universal-router": "^10.0.2"
+    "universal-router": "^10.0.3"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0",
