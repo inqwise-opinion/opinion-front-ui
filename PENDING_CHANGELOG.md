@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 97
-- **Last Updated**: 2026-01-12 by glassfox
+- **Total Commits**: 98
+- **Last Updated**: 2026-01-19 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -828,4 +828,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/node from 25.0.3 to 25.0.6 (#92) ([4ae25fbdbaf86a64c44148a5862cebfbaa3bcb0b](https://github.com/inqwise-opinion/opinion-front-ui/commit/4ae25fbdbaf86a64c44148a5862cebfbaa3bcb0b)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-01-19 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps): bump universal-router from 10.0.2 to 10.0.3 (#95) ([789d9fc9d94286362d23842af30373336007dcf0](https://github.com/inqwise-opinion/opinion-front-ui/commit/789d9fc9d94286362d23842af30373336007dcf0)) - _dependabot[bot]_
 
