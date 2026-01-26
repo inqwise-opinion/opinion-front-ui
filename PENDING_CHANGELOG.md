@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 100
-- **Last Updated**: 2026-01-19 by glassfox
+- **Total Commits**: 101
+- **Last Updated**: 2026-01-26 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -855,4 +855,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/node from 25.0.6 to 25.0.9 (#98) ([6d8783ada6fdc24cce6e1ac8420c4b6d3b3cfa5c](https://github.com/inqwise-opinion/opinion-front-ui/commit/6d8783ada6fdc24cce6e1ac8420c4b6d3b3cfa5c)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-01-26 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps): bump axios from 1.13.2 to 1.13.3 (#104) ([1abdc2f25889fcbb57e972dc195b7720e625b15b](https://github.com/inqwise-opinion/opinion-front-ui/commit/1abdc2f25889fcbb57e972dc195b7720e625b15b)) - _dependabot[bot]_
 
