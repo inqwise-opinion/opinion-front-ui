@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 104
+- **Total Commits**: 105
 - **Last Updated**: 2026-01-26 by glassfox
 - **Next Release**: TBD
 
@@ -891,4 +891,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/react from 19.2.8 to 19.2.9 (#102) ([6a10513269b3ccb0b41212b6fa903a0a2897823b](https://github.com/inqwise-opinion/opinion-front-ui/commit/6a10513269b3ccb0b41212b6fa903a0a2897823b)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-01-26 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/parser from 8.53.0 to 8.53.1 (#100) ([2fdb7c0d68348b855f685433724dcaa92c136c12](https://github.com/inqwise-opinion/opinion-front-ui/commit/2fdb7c0d68348b855f685433724dcaa92c136c12)) - _dependabot[bot]_
 
