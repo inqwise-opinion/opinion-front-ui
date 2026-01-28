@@ -240,7 +240,7 @@
     }
 
     .app-sidebar.sidebar-compact .sidebar-brand {
-        display: none; /* Hide entire brand section in compact mode */
+        display: none !important; /* Hide entire brand section in compact mode */
     }
 
     .app-sidebar.sidebar-compact .sidebar-controls {
