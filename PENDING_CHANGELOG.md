@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 111
+- **Total Commits**: 112
 - **Last Updated**: 2026-02-09 by glassfox
 - **Next Release**: TBD
 
@@ -954,4 +954,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/react from 19.2.10 to 19.2.13 (#113) ([1283b064e1180d591c7599150fd09d6f2e2a7fa6](https://github.com/inqwise-opinion/opinion-front-ui/commit/1283b064e1180d591c7599150fd09d6f2e2a7fa6)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-02-09 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps): bump axios from 1.13.4 to 1.13.5 (#112) ([bb1322b094d33a233f94df779f3e8ba914a8b63c](https://github.com/inqwise-opinion/opinion-front-ui/commit/bb1322b094d33a233f94df779f3e8ba914a8b63c)) - _dependabot[bot]_
 
