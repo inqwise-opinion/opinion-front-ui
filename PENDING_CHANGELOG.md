@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 121
-- **Last Updated**: 2026-03-09 by glassfox
+- **Total Commits**: 122
+- **Last Updated**: 2026-03-16 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1044,4 +1044,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/node from 25.3.3 to 25.3.5 (#129) ([3493ece491c6bce6e6996b5e6996fee1878365b5](https://github.com/inqwise-opinion/opinion-front-ui/commit/3493ece491c6bce6e6996b5e6996fee1878365b5)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-03-16 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/node from 25.3.5 to 25.5.0 (#130) ([f2495803d936165f0f922583d89e73ad4a70d117](https://github.com/inqwise-opinion/opinion-front-ui/commit/f2495803d936165f0f922583d89e73ad4a70d117)) - _dependabot[bot]_
 
