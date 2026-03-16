@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 123
+- **Total Commits**: 124
 - **Last Updated**: 2026-03-16 by glassfox
 - **Next Release**: TBD
 
@@ -1062,4 +1062,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump jest-environment-jsdom from 30.2.0 to 30.3.0 (#134) ([91a42deef767b13aae62fc30842a315b4069c546](https://github.com/inqwise-opinion/opinion-front-ui/commit/91a42deef767b13aae62fc30842a315b4069c546)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-03-16 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump sass from 1.97.3 to 1.98.0 (#136) ([3c2a3d378df1354800e421191aa98747414a4738](https://github.com/inqwise-opinion/opinion-front-ui/commit/3c2a3d378df1354800e421191aa98747414a4738)) - _dependabot[bot]_
 
