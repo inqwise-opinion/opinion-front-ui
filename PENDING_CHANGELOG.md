@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 130
+- **Total Commits**: 131
 - **Last Updated**: 2026-03-30 by glassfox
 - **Next Release**: TBD
 
@@ -1125,4 +1125,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump typescript from 5.9.3 to 6.0.2 (#144) ([e34d6553e30be087b5f9f53d3afdf07da61c89ca](https://github.com/inqwise-opinion/opinion-front-ui/commit/e34d6553e30be087b5f9f53d3afdf07da61c89ca)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-03-30 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps): bump axios from 1.13.5 to 1.14.0 (#145) ([17c2170dd44e83622a5e92219ccfb51a0793bb3c](https://github.com/inqwise-opinion/opinion-front-ui/commit/17c2170dd44e83622a5e92219ccfb51a0793bb3c)) - _dependabot[bot]_
 
