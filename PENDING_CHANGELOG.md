@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 126
-- **Last Updated**: 2026-03-23 by glassfox
+- **Total Commits**: 127
+- **Last Updated**: 2026-03-30 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1089,4 +1089,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump eslint from 9.39.2 to 10.1.0 (#138) ([290a2e545fb09f71103d5b327eb8694e775c22ac](https://github.com/inqwise-opinion/opinion-front-ui/commit/290a2e545fb09f71103d5b327eb8694e775c22ac)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-03-30 by glassfox**
+
+
+### 👷 CI/CD
+
+- ci(deps): bump actions/deploy-pages from 4 to 5 (#141) ([b1618f08955370b8644f2b5e98db9edcf7600518](https://github.com/inqwise-opinion/opinion-front-ui/commit/b1618f08955370b8644f2b5e98db9edcf7600518)) - _dependabot[bot]_
 
