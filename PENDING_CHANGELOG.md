@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 129
+- **Total Commits**: 130
 - **Last Updated**: 2026-03-30 by glassfox
 - **Next Release**: TBD
 
@@ -1116,4 +1116,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 👷 CI/CD
 
 - ci(deps): bump codecov/codecov-action from 5 to 6 (#143) ([e317eac097374aebe793166eec2e4b20f7067f22](https://github.com/inqwise-opinion/opinion-front-ui/commit/e317eac097374aebe793166eec2e4b20f7067f22)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-03-30 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump typescript from 5.9.3 to 6.0.2 (#144) ([e34d6553e30be087b5f9f53d3afdf07da61c89ca](https://github.com/inqwise-opinion/opinion-front-ui/commit/e34d6553e30be087b5f9f53d3afdf07da61c89ca)) - _dependabot[bot]_
 
