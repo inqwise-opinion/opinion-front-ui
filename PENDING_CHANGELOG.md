@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 128
+- **Total Commits**: 129
 - **Last Updated**: 2026-03-30 by glassfox
 - **Next Release**: TBD
 
@@ -1107,4 +1107,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 👷 CI/CD
 
 - ci(deps): bump actions/configure-pages from 5 to 6 (#142) ([d62c0233b2c5bd9429e899dec0857a51008aee09](https://github.com/inqwise-opinion/opinion-front-ui/commit/d62c0233b2c5bd9429e899dec0857a51008aee09)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-03-30 by glassfox**
+
+
+### 👷 CI/CD
+
+- ci(deps): bump codecov/codecov-action from 5 to 6 (#143) ([e317eac097374aebe793166eec2e4b20f7067f22](https://github.com/inqwise-opinion/opinion-front-ui/commit/e317eac097374aebe793166eec2e4b20f7067f22)) - _dependabot[bot]_
 
