@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 131
+- **Total Commits**: 132
 - **Last Updated**: 2026-03-30 by glassfox
 - **Next Release**: TBD
 
@@ -1134,4 +1134,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps): bump axios from 1.13.5 to 1.14.0 (#145) ([17c2170dd44e83622a5e92219ccfb51a0793bb3c](https://github.com/inqwise-opinion/opinion-front-ui/commit/17c2170dd44e83622a5e92219ccfb51a0793bb3c)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-03-30 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 7.3.1 to 8.0.3 (#148) ([6ad219d488282e3897841b6d13fbb46cedde7736](https://github.com/inqwise-opinion/opinion-front-ui/commit/6ad219d488282e3897841b6d13fbb46cedde7736)) - _dependabot[bot]_
 
