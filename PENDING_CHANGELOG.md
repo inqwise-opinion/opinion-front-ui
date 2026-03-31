@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 133
+- **Total Commits**: 134
 - **Last Updated**: 2026-03-31 by glassfox
 - **Next Release**: TBD
 
@@ -1152,4 +1152,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix(eslint): remove missing @eslint/js dependency usage ([b5d3d44b2c34cdeffeacf42f3ce8e8df780ca17c](https://github.com/inqwise-opinion/opinion-front-ui/commit/b5d3d44b2c34cdeffeacf42f3ce8e8df780ca17c)) - _alex misyuk_
+
+
+---
+**Push on 2026-03-31 by glassfox**
+
+
+### 🔧 Maintenance
+
+- chore(deps): upgrade lint/test deps and align TypeScript ([235c5304e4ded12a000b6f1c0fd6a2583abce91a](https://github.com/inqwise-opinion/opinion-front-ui/commit/235c5304e4ded12a000b6f1c0fd6a2583abce91a)) - _alex misyuk_
 
