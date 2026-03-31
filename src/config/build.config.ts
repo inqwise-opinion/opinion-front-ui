@@ -94,7 +94,6 @@ declare global {
  * Get build configuration from Vite-injected constants
  * This is set at build time via Vite's define option
  */
-/* eslint-disable no-undef */
 function getBuildConfig(): BuildConfig {
   // Use Vite-injected configuration if available, otherwise fallback to development
   if (typeof __BUILD_CONFIG__ !== 'undefined') {
@@ -104,7 +103,6 @@ function getBuildConfig(): BuildConfig {
   // Fallback for development/testing when Vite define is not available
   return BUILD_CONFIGS.development;
 }
-/* eslint-enable no-undef */
 
 /**
  * Current build configuration

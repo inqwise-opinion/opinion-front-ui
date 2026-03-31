@@ -1,11 +1,7 @@
-import js from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 
 export default [
-  // Base ESLint recommended rules
-  js.configs.recommended,
-  
   // Configuration for TypeScript source files
   {
     files: ['src/**/*.ts', 'src/**/*.tsx'],
