@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 132
-- **Last Updated**: 2026-03-30 by glassfox
+- **Total Commits**: 133
+- **Last Updated**: 2026-03-31 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1143,4 +1143,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump vite from 7.3.1 to 8.0.3 (#148) ([6ad219d488282e3897841b6d13fbb46cedde7736](https://github.com/inqwise-opinion/opinion-front-ui/commit/6ad219d488282e3897841b6d13fbb46cedde7736)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-03-31 by glassfox**
+
+
+### 🐛 Bug Fixes
+
+- fix(eslint): remove missing @eslint/js dependency usage ([b5d3d44b2c34cdeffeacf42f3ce8e8df780ca17c](https://github.com/inqwise-opinion/opinion-front-ui/commit/b5d3d44b2c34cdeffeacf42f3ce8e8df780ca17c)) - _alex misyuk_
 
