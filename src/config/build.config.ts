@@ -9,8 +9,6 @@
  * Node.js (build) and browser (runtime) environments.
  */
 
-/* eslint-env node */
-
 export interface BuildConfig {
   /**
    * Base URL for the application (used for routing and assets)
