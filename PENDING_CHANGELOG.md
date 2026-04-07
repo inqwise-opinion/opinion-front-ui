@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 136
+- **Total Commits**: 137
 - **Last Updated**: 2026-04-07 by glassfox
 - **Next Release**: TBD
 
@@ -1179,4 +1179,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump vite from 8.0.3 to 8.0.4 (#153) ([acfd33d7cd1e5602ce3958c750de138fed5725a7](https://github.com/inqwise-opinion/opinion-front-ui/commit/acfd33d7cd1e5602ce3958c750de138fed5725a7)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-07 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump eslint from 10.1.0 to 10.2.0 (#149) ([da2e98a6accd08c2156a3f8efd955c4d80f26c22](https://github.com/inqwise-opinion/opinion-front-ui/commit/da2e98a6accd08c2156a3f8efd955c4d80f26c22)) - _dependabot[bot]_
 
