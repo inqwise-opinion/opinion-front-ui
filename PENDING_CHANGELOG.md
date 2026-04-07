@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 138
+- **Total Commits**: 139
 - **Last Updated**: 2026-04-07 by glassfox
 - **Next Release**: TBD
 
@@ -1197,4 +1197,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/node from 25.5.0 to 25.5.2 (#152) ([aafa6f5acf2667dcdc37f1cd815db393b8b4beaf](https://github.com/inqwise-opinion/opinion-front-ui/commit/aafa6f5acf2667dcdc37f1cd815db393b8b4beaf)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-07 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump typescript from 5.9.3 to 6.0.2 (#151) ([9cf08e794b997509ddb57e4ec05ba875af8637b5](https://github.com/inqwise-opinion/opinion-front-ui/commit/9cf08e794b997509ddb57e4ec05ba875af8637b5)) - _dependabot[bot]_
 
