@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 134
-- **Last Updated**: 2026-03-31 by glassfox
+- **Total Commits**: 135
+- **Last Updated**: 2026-04-07 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1161,4 +1161,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🔧 Maintenance
 
 - chore(deps): upgrade lint/test deps and align TypeScript ([235c5304e4ded12a000b6f1c0fd6a2583abce91a](https://github.com/inqwise-opinion/opinion-front-ui/commit/235c5304e4ded12a000b6f1c0fd6a2583abce91a)) - _alex misyuk_
+
+
+---
+**Push on 2026-04-07 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump sass from 1.98.0 to 1.99.0 (#150) ([63612e5e46f3b458ee593f75f0a80629802d44b5](https://github.com/inqwise-opinion/opinion-front-ui/commit/63612e5e46f3b458ee593f75f0a80629802d44b5)) - _dependabot[bot]_
 
