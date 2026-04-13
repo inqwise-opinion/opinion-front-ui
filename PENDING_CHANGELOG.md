@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 149
+- **Total Commits**: 150
 - **Last Updated**: 2026-04-13 by glassfox
 - **Next Release**: TBD
 
@@ -1291,4 +1291,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: remove deprecated ts options and unblock jest ts diagnostics ([11d232858ce66df945a11f0cd36dd142ebb986e2](https://github.com/inqwise-opinion/opinion-front-ui/commit/11d232858ce66df945a11f0cd36dd142ebb986e2)) - _alex misyuk_
+
+
+---
+**Push on 2026-04-13 by glassfox**
+
+
+### 👷 CI/CD
+
+- ci(deps): bump softprops/action-gh-release from 2 to 3 (#158) ([6006d0359834a38efda7ff86479aa2408d3d78c0](https://github.com/inqwise-opinion/opinion-front-ui/commit/6006d0359834a38efda7ff86479aa2408d3d78c0)) - _dependabot[bot]_
 
