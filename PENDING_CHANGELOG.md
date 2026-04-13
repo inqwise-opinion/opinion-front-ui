@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 153
+- **Total Commits**: 154
 - **Last Updated**: 2026-04-13 by glassfox
 - **Next Release**: TBD
 
@@ -1327,4 +1327,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @typescript-eslint/parser from 8.58.0 to 8.58.1 (#163) ([86941b1f7207dec03b97bfa61299de68a488dbce](https://github.com/inqwise-opinion/opinion-front-ui/commit/86941b1f7207dec03b97bfa61299de68a488dbce)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-13 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/node from 25.5.2 to 25.6.0 (#161) ([396447c998cfe7c0b9fb04f2970ba8b86c39155a](https://github.com/inqwise-opinion/opinion-front-ui/commit/396447c998cfe7c0b9fb04f2970ba8b86c39155a)) - _dependabot[bot]_
 
