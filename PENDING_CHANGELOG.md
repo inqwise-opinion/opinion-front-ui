@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 145
+- **Total Commits**: 146
 - **Last Updated**: 2026-04-13 by glassfox
 - **Next Release**: TBD
 
@@ -1260,4 +1260,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps): bump picomatch (#165) ([7faf145674b358d1fea81b0d9ca40162c429371f](https://github.com/inqwise-opinion/opinion-front-ui/commit/7faf145674b358d1fea81b0d9ca40162c429371f)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-13 by glassfox**
+
+
+### 🐛 Bug Fixes
+
+- fix: remove deprecated npm transitive deps and stabilize jest ci ([fecdd5926d6a7a34402aae4d210e6e42fdd130ff](https://github.com/inqwise-opinion/opinion-front-ui/commit/fecdd5926d6a7a34402aae4d210e6e42fdd130ff)) - _alex misyuk_
 
