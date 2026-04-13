@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 140
+- **Total Commits**: 141
 - **Last Updated**: 2026-04-13 by glassfox
 - **Next Release**: TBD
 
@@ -1215,4 +1215,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump ts-jest from 29.4.6 to 29.4.9 (#154) ([88f081811bfc6fec42bf0854cd3b37bc132ac7d4](https://github.com/inqwise-opinion/opinion-front-ui/commit/88f081811bfc6fec42bf0854cd3b37bc132ac7d4)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-13 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps): bump axios from 1.14.0 to 1.15.0 (#155) ([299d24944e436c826129c1af306456e35639bdc3](https://github.com/inqwise-opinion/opinion-front-ui/commit/299d24944e436c826129c1af306456e35639bdc3)) - _dependabot[bot]_
 
