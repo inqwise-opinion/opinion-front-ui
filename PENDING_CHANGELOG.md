@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 144
+- **Total Commits**: 145
 - **Last Updated**: 2026-04-13 by glassfox
 - **Next Release**: TBD
 
@@ -1251,4 +1251,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump minimatch from 3.1.2 to 3.1.5 (#159) ([f062c16ca103857a96f88b0c5050299f32188877](https://github.com/inqwise-opinion/opinion-front-ui/commit/f062c16ca103857a96f88b0c5050299f32188877)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-13 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps): bump picomatch (#165) ([7faf145674b358d1fea81b0d9ca40162c429371f](https://github.com/inqwise-opinion/opinion-front-ui/commit/7faf145674b358d1fea81b0d9ca40162c429371f)) - _dependabot[bot]_
 
