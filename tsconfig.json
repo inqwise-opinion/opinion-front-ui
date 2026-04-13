@@ -17,29 +17,27 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "downlevelIteration": true,
     "jsx": "react-jsx",
     "declaration": true,
     "outDir": "dist",
-    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ],
       "@/components/*": [
-        "src/components/*"
+        "./src/components/*"
       ],
       "@/utils/*": [
-        "src/utils/*"
+        "./src/utils/*"
       ],
       "@/types/*": [
-        "src/types/*"
+        "./src/types/*"
       ],
       "@/api/*": [
-        "src/api/*"
+        "./src/api/*"
       ],
       "@/assets/*": [
-        "src/assets/*"
+        "./src/assets/*"
       ]
     },
     "types": [

@@ -10,7 +10,12 @@ module.exports = {
     '**/*.(test|spec).+(ts|tsx|js)'
   ],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.jest.json' }]
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: '<rootDir>/tsconfig.jest.json',
+      diagnostics: {
+        ignoreCodes: [5107]
+      }
+    }]
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
