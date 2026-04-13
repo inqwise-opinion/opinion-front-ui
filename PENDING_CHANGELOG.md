@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 146
+- **Total Commits**: 148
 - **Last Updated**: 2026-04-13 by glassfox
 - **Next Release**: TBD
 
@@ -1269,4 +1269,17 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🐛 Bug Fixes
 
 - fix: remove deprecated npm transitive deps and stabilize jest ci ([fecdd5926d6a7a34402aae4d210e6e42fdd130ff](https://github.com/inqwise-opinion/opinion-front-ui/commit/fecdd5926d6a7a34402aae4d210e6e42fdd130ff)) - _alex misyuk_
+
+
+---
+**Push on 2026-04-13 by glassfox**
+
+
+### 🐛 Bug Fixes
+
+- fix: silence ts6 deprecation warnings in tsconfig ([c454e9bf142ecf7d6d141decc1341336a44de392](https://github.com/inqwise-opinion/opinion-front-ui/commit/c454e9bf142ecf7d6d141decc1341336a44de392)) - _alex misyuk_
+
+### 🔧 Maintenance
+
+- chore: re-enable TypeScript deprecation diagnostics ([8c70a092c4336f8ce7e7885d3249075a2159f0a3](https://github.com/inqwise-opinion/opinion-front-ui/commit/8c70a092c4336f8ce7e7885d3249075a2159f0a3)) - _alex misyuk_
 
