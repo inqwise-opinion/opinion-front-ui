@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 148
+- **Total Commits**: 149
 - **Last Updated**: 2026-04-13 by glassfox
 - **Next Release**: TBD
 
@@ -1282,4 +1282,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🔧 Maintenance
 
 - chore: re-enable TypeScript deprecation diagnostics ([8c70a092c4336f8ce7e7885d3249075a2159f0a3](https://github.com/inqwise-opinion/opinion-front-ui/commit/8c70a092c4336f8ce7e7885d3249075a2159f0a3)) - _alex misyuk_
+
+
+---
+**Push on 2026-04-13 by glassfox**
+
+
+### 🐛 Bug Fixes
+
+- fix: remove deprecated ts options and unblock jest ts diagnostics ([11d232858ce66df945a11f0cd36dd142ebb986e2](https://github.com/inqwise-opinion/opinion-front-ui/commit/11d232858ce66df945a11f0cd36dd142ebb986e2)) - _alex misyuk_
 
