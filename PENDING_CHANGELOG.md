@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 152
+- **Total Commits**: 153
 - **Last Updated**: 2026-04-13 by glassfox
 - **Next Release**: TBD
 
@@ -1318,4 +1318,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump vite from 8.0.5 to 8.0.8 (#164) ([8456875459638a4b07b19d2331603b251b730ff2](https://github.com/inqwise-opinion/opinion-front-ui/commit/8456875459638a4b07b19d2331603b251b730ff2)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-13 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/parser from 8.58.0 to 8.58.1 (#163) ([86941b1f7207dec03b97bfa61299de68a488dbce](https://github.com/inqwise-opinion/opinion-front-ui/commit/86941b1f7207dec03b97bfa61299de68a488dbce)) - _dependabot[bot]_
 
