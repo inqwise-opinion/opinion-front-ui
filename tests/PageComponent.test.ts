@@ -169,9 +169,8 @@ describe('Page Components', () => {
       value: 768,
     });
 
-    // Set up window.location using jsdom
-    delete (window as any).location;
-    window.location = new URL('http://localhost:3000/dashboard') as any;
+    // Set URL without mutating readonly window.location
+    window.history.replaceState({}, '', 'http://localhost:3000/dashboard');
 
     // Mock document ready state
     Object.defineProperty(document, 'readyState', {

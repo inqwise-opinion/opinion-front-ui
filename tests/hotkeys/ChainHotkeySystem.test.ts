@@ -114,19 +114,24 @@ const createKeyboardEvent = (key: string, modifiers: {
 
 describe('ChainHotkeySystem', () => {
   let manager: ChainHotkeyManagerImpl;
+  let addEventListenerSpy: jest.SpyInstance;
+  let removeEventListenerSpy: jest.SpyInstance;
 
   beforeEach(() => {
     manager = new ChainHotkeyManagerImpl();
-    // Mock document to avoid DOM dependencies in tests
-    const mockDocument = {
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn()
-    };
-    (global as any).document = mockDocument;
+    // Mock document listeners without replacing global document
+    addEventListenerSpy = jest
+      .spyOn(document, 'addEventListener')
+      .mockImplementation(() => {});
+    removeEventListenerSpy = jest
+      .spyOn(document, 'removeEventListener')
+      .mockImplementation(() => {});
   });
 
   afterEach(() => {
     manager.destroy();
+    addEventListenerSpy.mockRestore();
+    removeEventListenerSpy.mockRestore();
   });
 
   describe('Provider Registration', () => {

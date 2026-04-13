@@ -9,7 +9,7 @@ import type { ActivePage, PageInfo } from '../src/interfaces/ActivePage';
 
 // Keep references to original window properties
 const originalWindow = {
-  location: window.location,
+  href: window.location.href,
   innerWidth: window.innerWidth,
   innerHeight: window.innerHeight,
   requestAnimationFrame: window.requestAnimationFrame,
@@ -21,13 +21,6 @@ const originalWindow = {
  * Initialize test DOM environment with consistent mocks
  */
 export function setupTestEnvironment() {
-  // Create mock URL instance
-  const mockURL = new URL('http://localhost:3000/dashboard');
-  Object.defineProperty(mockURL, 'pathname', {
-    writable: true,
-    value: '/dashboard'
-  });
-
   beforeEach(() => {
     // Reset the DOM
     document.body.innerHTML = '';
@@ -37,9 +30,8 @@ export function setupTestEnvironment() {
     container.id = 'app';
     document.body.appendChild(container);
 
-    // Mock window.location
-    delete (window as any).location;
-    window.location = mockURL;
+    // Set URL without mutating readonly window.location
+    window.history.replaceState({}, '', 'http://localhost:3000/dashboard');
 
     // Mock window dimensions
     Object.defineProperties(window, {
@@ -79,7 +71,7 @@ export function setupTestEnvironment() {
 
   afterEach(() => {
     // Restore all window properties
-    window.location = originalWindow.location;
+    window.history.replaceState({}, '', originalWindow.href);
     window.innerWidth = originalWindow.innerWidth;
     window.innerHeight = originalWindow.innerHeight;
     window.requestAnimationFrame = originalWindow.requestAnimationFrame;

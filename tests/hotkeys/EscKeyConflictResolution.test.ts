@@ -205,6 +205,8 @@ describe('ESC Key Conflict Resolution', () => {
   let mobileProvider: MockMobileSidebarProvider;
   let userMenuProvider: MockUserMenuProvider;
   let modalProvider: MockModalDialogProvider;
+  let addEventListenerSpy: jest.SpyInstance;
+  let removeEventListenerSpy: jest.SpyInstance;
 
   beforeEach(() => {
     manager = new ChainHotkeyManagerImpl();
@@ -212,11 +214,13 @@ describe('ESC Key Conflict Resolution', () => {
     userMenuProvider = new MockUserMenuProvider();
     modalProvider = new MockModalDialogProvider();
 
-    // Mock document
-    (global as any).document = {
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn()
-    };
+    // Mock document listeners without replacing global document
+    addEventListenerSpy = jest
+      .spyOn(document, 'addEventListener')
+      .mockImplementation(() => {});
+    removeEventListenerSpy = jest
+      .spyOn(document, 'removeEventListener')
+      .mockImplementation(() => {});
 
     // Register providers
     manager.registerProvider(mobileProvider);
@@ -226,6 +230,8 @@ describe('ESC Key Conflict Resolution', () => {
 
   afterEach(() => {
     manager.destroy();
+    addEventListenerSpy.mockRestore();
+    removeEventListenerSpy.mockRestore();
   });
 
   const createEscEvent = (): KeyboardEvent => {

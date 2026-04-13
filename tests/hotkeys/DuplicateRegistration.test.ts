@@ -16,17 +16,20 @@ const originalLog = console.log;
 describe('Duplicate Provider Registration', () => {
   let chainManager: ChainHotkeyManagerImpl;
   let legacyAdapter: LegacyHotkeyAdapter;
+  let addEventListenerSpy: jest.SpyInstance;
+  let removeEventListenerSpy: jest.SpyInstance;
 
   beforeEach(() => {
     chainManager = new ChainHotkeyManagerImpl();
     legacyAdapter = new LegacyHotkeyAdapter();
     
-    // Mock document to avoid DOM dependencies
-    const mockDocument = {
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn()
-    };
-    (global as any).document = mockDocument;
+    // Mock document listeners without replacing global document
+    addEventListenerSpy = jest
+      .spyOn(document, 'addEventListener')
+      .mockImplementation(() => {});
+    removeEventListenerSpy = jest
+      .spyOn(document, 'removeEventListener')
+      .mockImplementation(() => {});
     
     // Replace console.log to capture structured warnings
     console.log = mockConsoleLog;
@@ -37,6 +40,8 @@ describe('Duplicate Provider Registration', () => {
     chainManager.destroy?.();
     legacyAdapter.destroy();
     console.log = originalLog;
+    addEventListenerSpy.mockRestore();
+    removeEventListenerSpy.mockRestore();
   });
 
   test('should reproduce duplicate registration warning with legacy adapter', () => {
