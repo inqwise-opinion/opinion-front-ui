@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 139
-- **Last Updated**: 2026-04-07 by glassfox
+- **Total Commits**: 140
+- **Last Updated**: 2026-04-13 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1206,4 +1206,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump typescript from 5.9.3 to 6.0.2 (#151) ([9cf08e794b997509ddb57e4ec05ba875af8637b5](https://github.com/inqwise-opinion/opinion-front-ui/commit/9cf08e794b997509ddb57e4ec05ba875af8637b5)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-13 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump ts-jest from 29.4.6 to 29.4.9 (#154) ([88f081811bfc6fec42bf0854cd3b37bc132ac7d4](https://github.com/inqwise-opinion/opinion-front-ui/commit/88f081811bfc6fec42bf0854cd3b37bc132ac7d4)) - _dependabot[bot]_
 
