@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 158
+- **Total Commits**: 159
 - **Last Updated**: 2026-04-20 by glassfox
 - **Next Release**: TBD
 
@@ -1372,4 +1372,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump vite from 8.0.8 to 8.0.9 (#171) ([170770370681a7e7cb8de6c88215bcd876087d71](https://github.com/inqwise-opinion/opinion-front-ui/commit/170770370681a7e7cb8de6c88215bcd876087d71)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-20 by glassfox**
+
+
+### 👷 CI/CD
+
+- ci(deps): bump actions/upload-pages-artifact from 4 to 5 (#166) ([237b625cc3731e23b23865dfd2de518418d64d72](https://github.com/inqwise-opinion/opinion-front-ui/commit/237b625cc3731e23b23865dfd2de518418d64d72)) - _dependabot[bot]_
 
