@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 162
-- **Last Updated**: 2026-04-20 by glassfox
+- **Total Commits**: 163
+- **Last Updated**: 2026-04-27 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1408,4 +1408,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump typescript from 6.0.2 to 6.0.3 (#167) ([d53c3c7551ba0dfcb449bf44f6b6f01b4570df6f](https://github.com/inqwise-opinion/opinion-front-ui/commit/d53c3c7551ba0dfcb449bf44f6b6f01b4570df6f)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-04-27 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 8.0.9 to 8.0.10 (#176) ([8da696b909235f8f5ca33af76698ca04d0e81ed9](https://github.com/inqwise-opinion/opinion-front-ui/commit/8da696b909235f8f5ca33af76698ca04d0e81ed9)) - _dependabot[bot]_
 
