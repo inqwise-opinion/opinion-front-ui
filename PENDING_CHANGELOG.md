@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 166
-- **Last Updated**: 2026-04-27 by glassfox
+- **Total Commits**: 167
+- **Last Updated**: 2026-05-04 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1444,4 +1444,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @typescript-eslint/eslint-plugin (#173) ([7b359501c7bf96572de58d20a6fe1c7d1b820c5d](https://github.com/inqwise-opinion/opinion-front-ui/commit/7b359501c7bf96572de58d20a6fe1c7d1b820c5d)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-05-04 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps): bump axios from 1.15.2 to 1.16.0 (#180) ([90c14e31ac4570ec937f4621c0387074b0141d7d](https://github.com/inqwise-opinion/opinion-front-ui/commit/90c14e31ac4570ec937f4621c0387074b0141d7d)) - _dependabot[bot]_
 
