@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 175
+- **Total Commits**: 176
 - **Last Updated**: 2026-05-19 by glassfox
 - **Next Release**: TBD
 
@@ -1525,4 +1525,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @typescript-eslint/eslint-plugin (#188) ([586ec9d6bbba6cc76fb0b1a353afdff3108aa48b](https://github.com/inqwise-opinion/opinion-front-ui/commit/586ec9d6bbba6cc76fb0b1a353afdff3108aa48b)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-05-19 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump jest-environment-jsdom from 30.3.0 to 30.4.1 (#186) ([3dac3626e817fb30ee8a6a935ba4079602cafbbf](https://github.com/inqwise-opinion/opinion-front-ui/commit/3dac3626e817fb30ee8a6a935ba4079602cafbbf)) - _dependabot[bot]_
 
