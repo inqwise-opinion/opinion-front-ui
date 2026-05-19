@@ -33,7 +33,7 @@
     "eslint": "^10.4.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.4.2",
-    "jest-environment-jsdom": "^30.3.0",
+    "jest-environment-jsdom": "^30.4.1",
     "sass": "^1.99.0",
     "ts-jest": "^29.4.9",
     "typescript": "^6.0.3",
