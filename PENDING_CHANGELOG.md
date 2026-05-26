@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 178
+- **Total Commits**: 179
 - **Last Updated**: 2026-05-26 by glassfox
 - **Next Release**: TBD
 
@@ -1552,4 +1552,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/react from 19.2.14 to 19.2.15 (#194) ([284d84b94ede5716afa015841c7687da152d7b49](https://github.com/inqwise-opinion/opinion-front-ui/commit/284d84b94ede5716afa015841c7687da152d7b49)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-05-26 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump ts-jest from 29.4.9 to 29.4.11 (#193) ([91522910d45e563046bc3f0c879f6947b25a3ac5](https://github.com/inqwise-opinion/opinion-front-ui/commit/91522910d45e563046bc3f0c879f6947b25a3ac5)) - _dependabot[bot]_
 
