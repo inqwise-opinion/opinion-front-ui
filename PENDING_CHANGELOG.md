@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 181
+- **Total Commits**: 182
 - **Last Updated**: 2026-05-26 by glassfox
 - **Next Release**: TBD
 
@@ -1579,4 +1579,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump sass from 1.99.0 to 1.100.0 (#192) ([9743fd06d55d5e4f7a4119927a029941436b7d57](https://github.com/inqwise-opinion/opinion-front-ui/commit/9743fd06d55d5e4f7a4119927a029941436b7d57)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-05-26 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/eslint-plugin (#191) ([ca4c16ff1aa7a91fa11afd2bc5ca8b836401d2a4](https://github.com/inqwise-opinion/opinion-front-ui/commit/ca4c16ff1aa7a91fa11afd2bc5ca8b836401d2a4)) - _dependabot[bot]_
 
