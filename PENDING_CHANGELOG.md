@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 179
+- **Total Commits**: 180
 - **Last Updated**: 2026-05-26 by glassfox
 - **Next Release**: TBD
 
@@ -1561,4 +1561,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump ts-jest from 29.4.9 to 29.4.11 (#193) ([91522910d45e563046bc3f0c879f6947b25a3ac5](https://github.com/inqwise-opinion/opinion-front-ui/commit/91522910d45e563046bc3f0c879f6947b25a3ac5)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-05-26 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 8.0.13 to 8.0.14 (#190) ([157e29dec9fdb669ae01191ae7d3500e38d23fd3](https://github.com/inqwise-opinion/opinion-front-ui/commit/157e29dec9fdb669ae01191ae7d3500e38d23fd3)) - _dependabot[bot]_
 
