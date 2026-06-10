@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 191
+- **Total Commits**: 193
 - **Last Updated**: 2026-06-10 by alex-inqwise
 - **Next Release**: TBD
 
@@ -1653,4 +1653,17 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @types/react from 19.2.16 to 19.2.17 ([9155f33c70c85fef9eb172729d778df615be5274](https://github.com/inqwise-opinion/opinion-front-ui/commit/9155f33c70c85fef9eb172729d778df615be5274)) - _dependabot[bot]_
 - Merge pull request #203 from inqwise-opinion/dependabot/npm_and_yarn/types/react-19.2.17 ([da9085bc31145fece034e1d41185be81a7b0e263](https://github.com/inqwise-opinion/opinion-front-ui/commit/da9085bc31145fece034e1d41185be81a7b0e263)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-06-10 by alex-inqwise**
+
+
+### 📦 Changes
+
+- Merge pull request #200 from inqwise-opinion/dependabot/github_actions/codecov/codecov-action-7 ([3a3bbb460f3a82489ff3543a1fdcc4b17a509015](https://github.com/inqwise-opinion/opinion-front-ui/commit/3a3bbb460f3a82489ff3543a1fdcc4b17a509015)) - _Alex Misyuk_
+
+### 👷 CI/CD
+
+- ci(deps): bump codecov/codecov-action from 6 to 7 ([09ce3ab6a83bf83c7c2c3c88d651a4c1d4d7c34e](https://github.com/inqwise-opinion/opinion-front-ui/commit/09ce3ab6a83bf83c7c2c3c88d651a4c1d4d7c34e)) - _dependabot[bot]_
 
