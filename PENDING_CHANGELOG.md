@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 187
-- **Last Updated**: 2026-06-02 by glassfox
+- **Total Commits**: 189
+- **Last Updated**: 2026-06-10 by alex-inqwise
 - **Next Release**: TBD
 
 ---
@@ -1633,4 +1633,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/react from 19.2.15 to 19.2.16 (#198) ([5b7c5b27c5c57b69daa24431d8fd1650927997b3](https://github.com/inqwise-opinion/opinion-front-ui/commit/5b7c5b27c5c57b69daa24431d8fd1650927997b3)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-06-10 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps): bump axios from 1.16.1 to 1.17.0 ([4a9b5d66f58590c2cbdf9374adf44d775abc465b](https://github.com/inqwise-opinion/opinion-front-ui/commit/4a9b5d66f58590c2cbdf9374adf44d775abc465b)) - _dependabot[bot]_
+- Merge pull request #202 from inqwise-opinion/dependabot/npm_and_yarn/axios-1.17.0 ([416d50a2432f8ccc647d75ac063f7f9d73a0ee23](https://github.com/inqwise-opinion/opinion-front-ui/commit/416d50a2432f8ccc647d75ac063f7f9d73a0ee23)) - _Alex Misyuk_
 
