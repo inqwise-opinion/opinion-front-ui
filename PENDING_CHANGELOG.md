@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 193
-- **Last Updated**: 2026-06-10 by alex-inqwise
+- **Total Commits**: 194
+- **Last Updated**: 2026-06-10 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1666,4 +1666,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 👷 CI/CD
 
 - ci(deps): bump codecov/codecov-action from 6 to 7 ([09ce3ab6a83bf83c7c2c3c88d651a4c1d4d7c34e](https://github.com/inqwise-opinion/opinion-front-ui/commit/09ce3ab6a83bf83c7c2c3c88d651a4c1d4d7c34e)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-06-10 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/node from 25.9.1 to 25.9.2 (#201) ([22f412a55ce648260d312c664ad65d9cf685eff6](https://github.com/inqwise-opinion/opinion-front-ui/commit/22f412a55ce648260d312c664ad65d9cf685eff6)) - _dependabot[bot]_
 
