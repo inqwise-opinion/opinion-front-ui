@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 196
+- **Total Commits**: 198
 - **Last Updated**: 2026-06-17 by alex-inqwise
 - **Next Release**: TBD
 
@@ -1685,4 +1685,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump sass from 1.100.0 to 1.101.0 ([98ddda6eed2ad7e38bfecb335124ec96e87dd517](https://github.com/inqwise-opinion/opinion-front-ui/commit/98ddda6eed2ad7e38bfecb335124ec96e87dd517)) - _dependabot[bot]_
 - Merge pull request #209 from inqwise-opinion/dependabot/npm_and_yarn/sass-1.101.0 ([ca2f587abd7ab5414efc5ad1b58ede635274224c](https://github.com/inqwise-opinion/opinion-front-ui/commit/ca2f587abd7ab5414efc5ad1b58ede635274224c)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-06-17 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/parser from 8.60.1 to 8.61.0 ([4055c88beac37aa1217e01c336f8d01ed87a7bbf](https://github.com/inqwise-opinion/opinion-front-ui/commit/4055c88beac37aa1217e01c336f8d01ed87a7bbf)) - _dependabot[bot]_
+- Merge pull request #207 from inqwise-opinion/dependabot/npm_and_yarn/typescript-eslint/parser-8.61.0 ([20c1e3f3de054229d64e492a032edef2d94dfd6a](https://github.com/inqwise-opinion/opinion-front-ui/commit/20c1e3f3de054229d64e492a032edef2d94dfd6a)) - _Alex Misyuk_
 
