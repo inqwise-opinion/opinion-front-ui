@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 204
-- **Last Updated**: 2026-06-17 by alex-inqwise
+- **Total Commits**: 205
+- **Last Updated**: 2026-06-17 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1725,4 +1725,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump eslint from 10.4.1 to 10.5.0 ([4f2f6922538e1e0a315fd586d4d4d4f011d17495](https://github.com/inqwise-opinion/opinion-front-ui/commit/4f2f6922538e1e0a315fd586d4d4d4f011d17495)) - _dependabot[bot]_
 - Merge pull request #208 from inqwise-opinion/dependabot/npm_and_yarn/eslint-10.5.0 ([0d3c9a044b985949b1f1306ae72767305618e588](https://github.com/inqwise-opinion/opinion-front-ui/commit/0d3c9a044b985949b1f1306ae72767305618e588)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-06-17 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/eslint-plugin (#206) ([bbd385ee4d64603cc3893ed8be8e4f8155f33ca3](https://github.com/inqwise-opinion/opinion-front-ui/commit/bbd385ee4d64603cc3893ed8be8e4f8155f33ca3)) - _dependabot[bot]_
 
