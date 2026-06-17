@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 198
+- **Total Commits**: 200
 - **Last Updated**: 2026-06-17 by alex-inqwise
 - **Next Release**: TBD
 
@@ -1695,4 +1695,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @typescript-eslint/parser from 8.60.1 to 8.61.0 ([4055c88beac37aa1217e01c336f8d01ed87a7bbf](https://github.com/inqwise-opinion/opinion-front-ui/commit/4055c88beac37aa1217e01c336f8d01ed87a7bbf)) - _dependabot[bot]_
 - Merge pull request #207 from inqwise-opinion/dependabot/npm_and_yarn/typescript-eslint/parser-8.61.0 ([20c1e3f3de054229d64e492a032edef2d94dfd6a](https://github.com/inqwise-opinion/opinion-front-ui/commit/20c1e3f3de054229d64e492a032edef2d94dfd6a)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-06-17 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/node from 25.9.2 to 25.9.3 ([77eb8891a8007711b9353bc7d6852941c0b50cf1](https://github.com/inqwise-opinion/opinion-front-ui/commit/77eb8891a8007711b9353bc7d6852941c0b50cf1)) - _dependabot[bot]_
+- Merge pull request #205 from inqwise-opinion/dependabot/npm_and_yarn/types/node-25.9.3 ([877b5b54f1dcc5a80ab6a68bdda3f3a5c3e89072](https://github.com/inqwise-opinion/opinion-front-ui/commit/877b5b54f1dcc5a80ab6a68bdda3f3a5c3e89072)) - _Alex Misyuk_
 
