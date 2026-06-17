@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 202
+- **Total Commits**: 204
 - **Last Updated**: 2026-06-17 by alex-inqwise
 - **Next Release**: TBD
 
@@ -1715,4 +1715,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps): bump axios from 1.17.0 to 1.18.0 ([bc0b9bf25ddf906e12f730f4a4356e608f93598b](https://github.com/inqwise-opinion/opinion-front-ui/commit/bc0b9bf25ddf906e12f730f4a4356e608f93598b)) - _dependabot[bot]_
 - Merge pull request #204 from inqwise-opinion/dependabot/npm_and_yarn/axios-1.18.0 ([c413724b2210d0da8ec4df708a43b34f3e615347](https://github.com/inqwise-opinion/opinion-front-ui/commit/c413724b2210d0da8ec4df708a43b34f3e615347)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-06-17 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump eslint from 10.4.1 to 10.5.0 ([4f2f6922538e1e0a315fd586d4d4d4f011d17495](https://github.com/inqwise-opinion/opinion-front-ui/commit/4f2f6922538e1e0a315fd586d4d4d4f011d17495)) - _dependabot[bot]_
+- Merge pull request #208 from inqwise-opinion/dependabot/npm_and_yarn/eslint-10.5.0 ([0d3c9a044b985949b1f1306ae72767305618e588](https://github.com/inqwise-opinion/opinion-front-ui/commit/0d3c9a044b985949b1f1306ae72767305618e588)) - _Alex Misyuk_
 
