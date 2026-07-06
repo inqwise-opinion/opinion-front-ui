@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 215
+- **Total Commits**: 216
 - **Last Updated**: 2026-07-06 by glassfox
 - **Next Release**: TBD
 
@@ -1819,4 +1819,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @types/node from 26.0.1 to 26.1.0 (#221) ([0c37d8f31e3d06471a34b0e9494963d082fb90bd](https://github.com/inqwise-opinion/opinion-front-ui/commit/0c37d8f31e3d06471a34b0e9494963d082fb90bd)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-07-06 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 8.1.0 to 8.1.3 (#220) ([22b5ad4f4892ac7a7b4e025f18354fc02ba07488](https://github.com/inqwise-opinion/opinion-front-ui/commit/22b5ad4f4892ac7a7b4e025f18354fc02ba07488)) - _dependabot[bot]_
 
