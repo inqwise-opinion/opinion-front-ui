@@ -18,6 +18,8 @@ import { getLayoutContext } from "../contexts/index";
 import type { LayoutEvent, LayoutContext } from "../contexts/LayoutContext";
 import { LayoutEventFactory } from "../contexts/LayoutEventFactory";
 import { AppHeader, HeaderUser } from "./AppHeader";
+// Import app config for base URL handling
+import { getFullPath } from "../config/app";
 import {
   ComponentStatus,
   ComponentWithStatus,
@@ -221,7 +223,7 @@ export class AppHeaderImpl
     const brandLogoHtml = `
       <div class="header-brand">
         <a href="${this.config.brandHref}" class="logo" title="${this.config.brandTitle}">
-          <img src="/inqwise-opinion.svg" alt="${this.config.brandTitle}" class="brand-logo" width="24" height="24">
+          <img src="${getFullPath('/inqwise-opinion.svg')}" alt="${this.config.brandTitle}" class="brand-logo" width="24" height="24">
           <span class="brand-text">${this.config.brandTitle}</span>
         </a>
       </div>
