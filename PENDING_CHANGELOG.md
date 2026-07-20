@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 224
-- **Last Updated**: 2026-07-15 by glassfox
+- **Total Commits**: 226
+- **Last Updated**: 2026-07-20 by alex-inqwise
 - **Next Release**: TBD
 
 ---
@@ -1900,4 +1900,17 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @typescript-eslint/eslint-plugin (#226) ([88352aa5ce8eefa4be78d0a4a071cc84d21f0429](https://github.com/inqwise-opinion/opinion-front-ui/commit/88352aa5ce8eefa4be78d0a4a071cc84d21f0429)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-07-20 by alex-inqwise**
+
+
+### 📦 Changes
+
+- Merge pull request #228 from inqwise-opinion/dependabot/github_actions/actions/setup-node-7 ([3341f779e8bbacb26ffe0eb10fa854f02c41ec00](https://github.com/inqwise-opinion/opinion-front-ui/commit/3341f779e8bbacb26ffe0eb10fa854f02c41ec00)) - _Alex Misyuk_
+
+### 👷 CI/CD
+
+- ci(deps): bump actions/setup-node from 6 to 7 ([848bff137866c5d99c327cf40b22003075dc9786](https://github.com/inqwise-opinion/opinion-front-ui/commit/848bff137866c5d99c327cf40b22003075dc9786)) - _dependabot[bot]_
 
