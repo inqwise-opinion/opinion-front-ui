@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 228
+- **Total Commits**: 230
 - **Last Updated**: 2026-07-20 by alex-inqwise
 - **Next Release**: TBD
 
@@ -1923,4 +1923,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @typescript-eslint/parser from 8.63.0 to 8.64.0 ([052ce09785c864e732116a4f4a7ae2e962e15ca3](https://github.com/inqwise-opinion/opinion-front-ui/commit/052ce09785c864e732116a4f4a7ae2e962e15ca3)) - _dependabot[bot]_
 - Merge pull request #229 from inqwise-opinion/dependabot/npm_and_yarn/typescript-eslint/parser-8.64.0 ([13f34326379350dea85f792d4e71a8275e03220d](https://github.com/inqwise-opinion/opinion-front-ui/commit/13f34326379350dea85f792d4e71a8275e03220d)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-07-20 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 8.1.4 to 8.1.5 ([b96698a9b3b0da1f82ab08e45fa53f4fcd619c9a](https://github.com/inqwise-opinion/opinion-front-ui/commit/b96698a9b3b0da1f82ab08e45fa53f4fcd619c9a)) - _dependabot[bot]_
+- Merge pull request #231 from inqwise-opinion/dependabot/npm_and_yarn/vite-8.1.5 ([85dda391470507a837fee69b8e389b61538bb19a](https://github.com/inqwise-opinion/opinion-front-ui/commit/85dda391470507a837fee69b8e389b61538bb19a)) - _Alex Misyuk_
 
