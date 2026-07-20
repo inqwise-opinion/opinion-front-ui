@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 226
+- **Total Commits**: 228
 - **Last Updated**: 2026-07-20 by alex-inqwise
 - **Next Release**: TBD
 
@@ -1913,4 +1913,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 👷 CI/CD
 
 - ci(deps): bump actions/setup-node from 6 to 7 ([848bff137866c5d99c327cf40b22003075dc9786](https://github.com/inqwise-opinion/opinion-front-ui/commit/848bff137866c5d99c327cf40b22003075dc9786)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-07-20 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @typescript-eslint/parser from 8.63.0 to 8.64.0 ([052ce09785c864e732116a4f4a7ae2e962e15ca3](https://github.com/inqwise-opinion/opinion-front-ui/commit/052ce09785c864e732116a4f4a7ae2e962e15ca3)) - _dependabot[bot]_
+- Merge pull request #229 from inqwise-opinion/dependabot/npm_and_yarn/typescript-eslint/parser-8.64.0 ([13f34326379350dea85f792d4e71a8275e03220d](https://github.com/inqwise-opinion/opinion-front-ui/commit/13f34326379350dea85f792d4e71a8275e03220d)) - _Alex Misyuk_
 
