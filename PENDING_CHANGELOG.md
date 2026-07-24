@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 230
-- **Last Updated**: 2026-07-20 by alex-inqwise
+- **Total Commits**: 232
+- **Last Updated**: 2026-07-24 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1933,4 +1933,17 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump vite from 8.1.4 to 8.1.5 ([b96698a9b3b0da1f82ab08e45fa53f4fcd619c9a](https://github.com/inqwise-opinion/opinion-front-ui/commit/b96698a9b3b0da1f82ab08e45fa53f4fcd619c9a)) - _dependabot[bot]_
 - Merge pull request #231 from inqwise-opinion/dependabot/npm_and_yarn/vite-8.1.5 ([85dda391470507a837fee69b8e389b61538bb19a](https://github.com/inqwise-opinion/opinion-front-ui/commit/85dda391470507a837fee69b8e389b61538bb19a)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-07-24 by glassfox**
+
+
+### 🐛 Bug Fixes
+
+- fix(deps): restore TypeScript ESLint compatibility ([bcfe1793b932177c0610bc84fc0fd4cce05ef517](https://github.com/inqwise-opinion/opinion-front-ui/commit/bcfe1793b932177c0610bc84fc0fd4cce05ef517)) - _alex misyuk_
+
+### 🔧 Maintenance
+
+- chore(deps): upgrade to TypeScript 7 ([b419f9614f64cdac32ce22101b860dc22240a42d](https://github.com/inqwise-opinion/opinion-front-ui/commit/b419f9614f64cdac32ce22101b860dc22240a42d)) - _alex misyuk_
 
