@@ -94,7 +94,6 @@ npm test
 - **Service Architecture**: Dependency injection, service registration, and interface contracts
 - **Layout System**: CSS Grid + Flexbox responsive design with breakpoint management
 - **Hierarchical Breadcrumbs**: Page-scoped breadcrumb management with safe operations
-- **Comprehensive Test Coverage**: 564 tests with 43% overall coverage, 97% config coverage, 93% utilities coverage
 - **Global Layout Components**: Header, Sidebar, Footer with responsive coordination
 - **Navigation Synchronization**: Active page tracking with automatic menu highlighting
 - **Error Handling**: Global error boundary with user-friendly messages and recovery
@@ -105,43 +104,6 @@ npm test
 - **Survey Builder**: Advanced survey creation and editing interface
 - **Data Visualization**: Enhanced charts and analytics for dashboard
 - **Mobile Optimization**: Touch interactions and mobile-specific UX improvements
-
-## Test Coverage
-
-The project maintains comprehensive test coverage across all system components:
-
-### Overall Coverage: **43%** (564 tests)
-
-```
- File                              | % Stmts | % Branch | % Funcs | % Lines
------------------------------------|---------|----------|---------|--------
- All files                         |   43.06 |    34.39 |   40.71 |   43.89
-  src                              |   38.66 |    28.88 |   39.53 |   39.53
-  src/api                          |      30 |        0 |   33.33 |      30
-  src/components                   |   45.36 |    34.78 |   44.07 |   46.53
-  src/contexts                     |   65.78 |    45.45 |   56.25 |   68.42
-  src/events                       |   90.32 |       75 |   83.33 |   90.32
-  src/hotkeys                      |   86.36 |    77.27 |   85.18 |   86.36
-  src/observables                  |   87.50 |    75.00 |   80.00 |   87.50
-  src/pages                        |   28.94 |    21.21 |   33.33 |   29.72
-  src/services                     |   62.50 |       25 |   57.14 |   62.50
-  src/utils                        |   93.33 |    83.33 |      100 |   93.33
-  src/utils/config                 |      100 |      100 |      100 |      100
-```
-
-### Key Testing Achievements
-- **🔥 Hotkey System**: 86% coverage with comprehensive chain execution tests
-- **📡 Event System**: 90% coverage with EventBus integration tests
-- **📊 Observables**: 87% coverage with reactive data binding tests
-- **⚙️ Configuration**: 100% coverage with environment config tests
-- **🛠️ Utilities**: 93% coverage with helper function tests
-- **🏗️ Context System**: 66% coverage with LayoutContext integration tests
-
-### Test Categories
-- **Unit Tests**: Component lifecycle, service logic, utility functions
-- **Integration Tests**: EventBus communication, hotkey chains, breadcrumb scoping
-- **DOM Tests**: Component rendering, event handling, responsive behavior
-- **Architecture Tests**: Service registration, dependency injection, error handling
 
 ## 📚 Comprehensive Documentation
 
@@ -154,39 +116,39 @@ The project maintains comprehensive test coverage across all system components:
 ### System Architecture Documentation
 
 #### **🏗️ Layout & UI Systems**
-- **[layout-architecture.md](docs/layout-architecture.md)** - CSS Grid + Flexbox layout system design
-- **[layout-mode-system.md](docs/layout-mode-system.md)** - Responsive breakpoint management
-- **[component-hierarchy.md](docs/component-hierarchy.md)** - UI component organization and relationships
-- **[layout-context-access-patterns.md](docs/layout-context-access-patterns.md)** - LayoutContext usage patterns
+- **[layout-architecture.md](docs/architecture/layout-architecture.md)** - CSS Grid + Flexbox layout system design
+- **[layout-mode-system.md](docs/architecture/layout-mode-system.md)** - Responsive breakpoint management
+- **[component-hierarchy.md](docs/architecture/component-hierarchy.md)** - UI component organization and relationships
+- **[layout-context-access-patterns.md](docs/guides/layout-context-access-patterns.md)** - LayoutContext usage patterns
 
 #### **📡 Event & Communication Systems**
-- **[event-system.md](docs/event-system.md)** - EventBus architecture with publish/subscribe/request patterns
-- **[eventbus-integration.md](docs/eventbus-integration.md)** - EventBus integration guidelines and best practices
-- **[active-page-eventbus-system.md](docs/active-page-eventbus-system.md)** - Page-level event coordination
+- **[event-system.md](docs/architecture/event-system.md)** - EventBus architecture with publish/subscribe/request patterns
+- **[eventbus-integration.md](docs/architecture/eventbus-integration.md)** - EventBus integration guidelines and best practices
+- **[active-page-eventbus-system.md](docs/guides/active-page-eventbus-system.md)** - Page-level event coordination
 
 #### **⌨️ Hotkey & Input Management**
-- **[hotkey-chain-architecture.md](docs/hotkey-chain-architecture.md)** - Priority-based chain execution system
-- **[hotkey-system-components.md](docs/hotkey-system-components.md)** - Hotkey provider implementation details
-- **[hotkey-system-migration.md](docs/hotkey-system-migration.md)** - Migration from legacy to chain-based system
+- **[hotkey-chain-architecture.md](docs/architecture/hotkey-chain-architecture.md)** - Priority-based chain execution system
+- **[hotkey-system-components.md](docs/implementation/hotkey-system-components.md)** - Hotkey provider implementation details
+- **[hotkey-system-migration.md](docs/implementation/hotkey-system-migration.md)** - Migration from legacy to chain-based system
 - **[src/hotkeys/README.md](src/hotkeys/README.md)** - Implementation code documentation
 
 #### **🍞 Navigation & Breadcrumbs**
-- **[breadcrumbs-architecture.md](docs/breadcrumbs-architecture.md)** - Hierarchical breadcrumb system with page scoping
-- **[layout-navigation.md](docs/layout-navigation.md)** - Navigation patterns and routing integration
+- **[breadcrumbs-architecture.md](docs/architecture/breadcrumbs-architecture.md)** - Hierarchical breadcrumb system with page scoping
+- **[layout-navigation.md](docs/guides/layout-navigation.md)** - Navigation patterns and routing integration
 
 #### **🏢 Service Architecture**
-- **[service-architecture-progress.md](docs/service-architecture-progress.md)** - Service implementation progress and roadmap
-- **[service-interfaces.md](docs/service-interfaces.md)** - Service interface specifications and contracts
-- **[unified-handler-system.md](docs/unified-handler-system.md)** - Handler pattern implementation
+- **[service-architecture-progress.md](docs/implementation/service-architecture-progress.md)** - Service implementation progress and roadmap
+- **[service-interfaces.md](docs/architecture/service-interfaces.md)** - Service interface specifications and contracts
+- **[unified-handler-system.md](docs/architecture/unified-handler-system.md)** - Handler pattern implementation
 
 #### **🛠️ Implementation & Development**
-- **[implementation-summary.md](docs/implementation-summary.md)** - Overall implementation overview
-- **[initialization-flow.md](docs/initialization-flow.md)** - Application startup sequence and lifecycle
+- **[implementation-summary.md](docs/implementation/implementation-summary.md)** - Overall implementation overview
+- **[initialization-flow.md](docs/guides/initialization-flow.md)** - Application startup sequence and lifecycle
 
 #### **🧪 Testing & Quality**
-- **[error-message-tests.md](docs/error-message-tests.md)** - Error handling test patterns and examples
-- **[error-messages.md](docs/error-messages.md)** - Global error message system documentation
-- **[browser-warning-fixes.md](docs/browser-warning-fixes.md)** - Browser compatibility fixes and solutions
+- **[error-message-tests.md](docs/implementation/error-message-tests.md)** - Error handling test patterns and examples
+- **[error-messages.md](docs/guides/error-messages.md)** - Global error message system documentation
+- **[browser-warning-fixes.md](docs/implementation/browser-warning-fixes.md)** - Browser compatibility fixes and solutions
 
 ## 🤖 MCP Integration
 
