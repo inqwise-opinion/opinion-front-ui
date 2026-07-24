@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 233
+- **Total Commits**: 234
 - **Last Updated**: 2026-07-24 by glassfox
 - **Next Release**: TBD
 
@@ -1955,4 +1955,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📚 Documentation
 
 - docs: refresh project badges ([520499903ac6124bfbcb83e714f7d3016c92c8db](https://github.com/inqwise-opinion/opinion-front-ui/commit/520499903ac6124bfbcb83e714f7d3016c92c8db)) - _alex misyuk_
+
+
+---
+**Push on 2026-07-24 by glassfox**
+
+
+### 📚 Documentation
+
+- docs: refresh documentation index ([2fac9d05e926a3d71c798c5fb3dbc29fe083e31d](https://github.com/inqwise-opinion/opinion-front-ui/commit/2fac9d05e926a3d71c798c5fb3dbc29fe083e31d)) - _alex misyuk_
 
