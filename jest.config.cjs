@@ -1,5 +1,4 @@
 module.exports = {
-  preset: 'ts-jest',
   testEnvironment: 'jsdom',
   testEnvironmentOptions: {
     url: 'http://localhost:3000/'
@@ -10,12 +9,7 @@ module.exports = {
     '**/*.(test|spec).+(ts|tsx|js)'
   ],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: '<rootDir>/tsconfig.jest.json',
-      diagnostics: {
-        ignoreCodes: [5107]
-      }
-    }]
+    '^.+\\.(ts|tsx)$': '@swc/jest'
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

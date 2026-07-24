@@ -12,15 +12,12 @@ module.exports = {
     '<rootDir>/src/hotkeys/tests/EscKeyConflictResolution.test.ts'
   ],
   
-  // TypeScript support
-  preset: 'ts-jest',
-  
   // Module file extensions
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   
   // Transform files
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest'
+    '^.+\\.(ts|tsx)$': '@swc/jest'
   },
   
   // Module name mapping for path aliases

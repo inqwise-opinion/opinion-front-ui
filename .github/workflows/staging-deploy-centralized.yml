@@ -33,7 +33,7 @@ jobs:
       - name: 🔧 Install dependencies
         run: npm ci
 
-      - name: 🎯 ESLint check
+      - name: 🎯 Oxlint check
         run: npm run lint
 
       - name: 🧪 Run tests

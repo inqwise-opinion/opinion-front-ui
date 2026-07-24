@@ -284,7 +284,7 @@ export class MyComponentProvider implements ChainHotkeyProvider {
 │   └── Global test helpers          # 🛠️ Utility functions
 │
 └── jest.config.hotkeys.js            # Jest configuration
-    ├── TypeScript support            # 📝 ts-jest
+    ├── TypeScript support            # 📝 SWC
     ├── JSDOM environment            # 🌐 DOM simulation
     ├── Coverage reporting           # 📊 Code coverage
     └── Test file patterns          # 🎯 Test discovery

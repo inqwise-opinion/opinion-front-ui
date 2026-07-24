@@ -11,9 +11,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:hotkeys": "node scripts/test-hotkeys.js",
-    "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
-    "lint:any": "echo 'To see any type warnings, temporarily change eslint.config.js @typescript-eslint/no-explicit-any from off to warn'",
-    "lint:fix": "eslint src --fix"
+    "lint": "oxlint src --deny-warnings",
+    "lint:any": "echo 'To check explicit any usage, run: oxlint src --deny typescript/no-explicit-any'",
+    "lint:fix": "oxlint src --fix"
   },
   "keywords": [
     "opinion",
@@ -25,18 +25,17 @@
   "license": "ISC",
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
+    "@swc/core": "^1.15.46",
+    "@swc/jest": "^0.2.39",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
-    "@typescript-eslint/eslint-plugin": "^8.63.0",
-    "@typescript-eslint/parser": "^8.64.0",
-    "eslint": "^10.7.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
+    "oxlint": "^1.75.0",
     "sass": "^1.101.0",
-    "ts-jest": "^29.4.11",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vite": "^8.1.5"
   },
   "dependencies": {

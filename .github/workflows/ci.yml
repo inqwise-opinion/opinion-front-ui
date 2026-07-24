@@ -31,22 +31,21 @@ jobs:
       - name: 🔧 Install dependencies
         run: npm ci
 
-      - name: 🎯 ESLint check
+      - name: 🎯 Oxlint check
         run: |
-          echo "## 🎯 ESLint Code Quality Check" >> $GITHUB_STEP_SUMMARY
-          echo "Running ESLint analysis..." >> $GITHUB_STEP_SUMMARY
+          echo "## 🎯 Oxlint Code Quality Check" >> $GITHUB_STEP_SUMMARY
+          echo "Running Oxlint analysis..." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if npm run lint; then
-            echo "✅ **ESLint**: No linting errors found" >> $GITHUB_STEP_SUMMARY
-            echo "- **Configuration**: ESLint 9+ flat config" >> $GITHUB_STEP_SUMMARY
-            echo "- **Rules**: TypeScript recommended + custom rules" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Oxlint**: No linting errors found" >> $GITHUB_STEP_SUMMARY
+            echo "- **Configuration**: TypeScript-aware Oxlint rules" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ **ESLint**: Linting errors detected" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Oxlint**: Linting errors detected" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### 🔧 Quick Fixes" >> $GITHUB_STEP_SUMMARY
             echo "- Run \`npm run lint:fix\` to auto-fix issues" >> $GITHUB_STEP_SUMMARY
-            echo "- Check [ESLint docs](https://eslint.org/docs/rules/) for rule details" >> $GITHUB_STEP_SUMMARY
+            echo "- Check [Oxlint docs](https://oxc.rs/docs/guide/usage/linter.html) for rule details" >> $GITHUB_STEP_SUMMARY
             echo "- Review unused variables and \`any\` types" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi

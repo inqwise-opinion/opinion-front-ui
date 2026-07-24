@@ -87,7 +87,7 @@ npm test -- --coverage
 
 ## 🔧 **Test Configuration**
 
-- **Framework**: Jest with ts-jest preset
+- **Framework**: Jest with the SWC TypeScript transformer
 - **Environment**: JSDOM for DOM testing
 - **Setup**: `setup.ts` configures global test environment
 - **Coverage**: Collected from `src/**/*.ts` files

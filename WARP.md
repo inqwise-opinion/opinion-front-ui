@@ -63,10 +63,10 @@ npm test:watch
 
 ### Code Quality
 ```bash
-# Run ESLint
+# Run Oxlint
 npm run lint
 
-# Fix ESLint issues automatically
+# Fix Oxlint issues automatically
 npm run lint:fix
 ```
 
@@ -326,7 +326,7 @@ The application uses a **CSS Grid + Flexbox hybrid layout system**:
 - **Source Maps**: Enabled for debugging
 
 ### Testing Setup
-- **Framework**: Jest with ts-jest preset
+- **Framework**: Jest with the SWC TypeScript transformer
 - **Environment**: JSDOM for DOM testing
 - **Coverage**: Configured for `src/**/*.{ts,tsx}` excluding type definitions
 - **Setup**: Custom test setup in `tests/setup.ts` with console noise reduction
@@ -367,7 +367,7 @@ The application uses a **CSS Grid + Flexbox hybrid layout system**:
 - **Performance Tests**: Layout shift detection, memory leak prevention, cleanup verification
 
 ### Code Standards
-- **ESLint**: TypeScript-aware configuration
+- **Oxlint**: TypeScript-aware configuration
 - **Rules**: Strict TypeScript rules with unused variables as errors
 - **Console**: Console statements allowed (common in this codebase for debugging)
 

@@ -77,7 +77,7 @@ npm test
 - `npm run preview` - Preview production build
 - `npm run test` - Run tests
 - `npm run test:watch` - Run tests in watch mode
-- `npm run lint` - Run ESLint
+- `npm run lint` - Run Oxlint
 - `npm run lint:fix` - Fix linting issues
 
 **Note**: Development server runs on port 3000 with `SASS_SILENCE_DEPRECATIONS=legacy-js-api` to suppress SASS warnings.
@@ -360,7 +360,7 @@ npm update
 ## Contributing
 
 1. Follow TypeScript best practices
-2. Maintain consistent code formatting with ESLint
+2. Maintain consistent code quality with Oxlint
 3. Write tests for new features
 4. Update documentation as needed
 5. Use semantic commit messages
