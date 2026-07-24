@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 232
+- **Total Commits**: 233
 - **Last Updated**: 2026-07-24 by glassfox
 - **Next Release**: TBD
 
@@ -1946,4 +1946,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 🔧 Maintenance
 
 - chore(deps): upgrade to TypeScript 7 ([b419f9614f64cdac32ce22101b860dc22240a42d](https://github.com/inqwise-opinion/opinion-front-ui/commit/b419f9614f64cdac32ce22101b860dc22240a42d)) - _alex misyuk_
+
+
+---
+**Push on 2026-07-24 by glassfox**
+
+
+### 📚 Documentation
+
+- docs: refresh project badges ([520499903ac6124bfbcb83e714f7d3016c92c8db](https://github.com/inqwise-opinion/opinion-front-ui/commit/520499903ac6124bfbcb83e714f7d3016c92c8db)) - _alex misyuk_
 
