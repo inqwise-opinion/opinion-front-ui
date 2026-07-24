@@ -22,7 +22,7 @@
     "migration"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@swc/core": "^1.15.46",

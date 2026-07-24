@@ -4,9 +4,9 @@
 [![CodeQL](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/codeql.yml/badge.svg)](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/codeql.yml)
 [![Release](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/release.yml/badge.svg)](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/release.yml)
 [![GitHub release](https://img.shields.io/github/v/release/inqwise-opinion/opinion-front-ui?include_prereleases&sort=semver)](https://github.com/inqwise-opinion/opinion-front-ui/releases)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-blue.svg)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-7.1.3-646CFF.svg)](https://vitejs.dev/)
+[![Node.js Version](https://img.shields.io/badge/node-%5E20.19.0%20%7C%7C%20%3E%3D22.12.0-brightgreen.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.1.5-646CFF.svg)](https://vite.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **A modern TypeScript front-end application** for the Opinion survey management platform, featuring a sophisticated **micro-kernel architecture** with **event-driven communication**, **reactive data binding**, and comprehensive **chain-based hotkey system**. Successfully migrated from a servlet-based Java system to a cutting-edge single-page application.
@@ -14,9 +14,8 @@
 ## 📊 Project Status
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/inqwise-opinion/opinion-front-ui/ci.yml?branch=main&label=build)](https://github.com/inqwise-opinion/opinion-front-ui/actions/workflows/ci.yml)
-[![Test Coverage](https://img.shields.io/badge/coverage-43%25-yellow)](https://github.com/inqwise-opinion/opinion-front-ui)
+[![Test Coverage](https://codecov.io/gh/inqwise-opinion/opinion-front-ui/branch/main/graph/badge.svg)](https://codecov.io/gh/inqwise-opinion/opinion-front-ui)
 [![Dependencies](https://img.shields.io/librariesio/github/inqwise-opinion/opinion-front-ui?label=dependencies)](https://libraries.io/github/inqwise-opinion/opinion-front-ui)
-[![Package Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)](https://shields.io/category/dependencies)
 [![Security](https://img.shields.io/github/actions/workflow/status/inqwise-opinion/opinion-front-ui/codeql.yml?branch=main&label=security)](https://github.com/inqwise-opinion/opinion-front-ui/security)
 [![Known Vulnerabilities](https://snyk.io/test/github/inqwise-opinion/opinion-front-ui/badge.svg)](https://snyk.io/test/github/inqwise-opinion/opinion-front-ui)
 [![Issues](https://img.shields.io/github/issues/inqwise-opinion/opinion-front-ui)](https://github.com/inqwise-opinion/opinion-front-ui/issues)
@@ -49,7 +48,7 @@ This project represents a **complete architectural migration** from a traditiona
 
 ### Prerequisites
 
-- **Node.js** >= 20.0.0 (as specified in package.json engines)
+- **Node.js** ^20.19.0 or >=22.12.0 (as specified in package.json engines)
 - **npm** >= 10.0.0
 - Modern browser with CSS Grid and ES2020 support
 - **Material Icons** font (loaded via Google Fonts)
