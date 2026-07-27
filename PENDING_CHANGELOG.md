@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 234
-- **Last Updated**: 2026-07-24 by glassfox
+- **Total Commits**: 235
+- **Last Updated**: 2026-07-27 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -1964,4 +1964,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📚 Documentation
 
 - docs: refresh documentation index ([2fac9d05e926a3d71c798c5fb3dbc29fe083e31d](https://github.com/inqwise-opinion/opinion-front-ui/commit/2fac9d05e926a3d71c798c5fb3dbc29fe083e31d)) - _alex misyuk_
+
+
+---
+**Push on 2026-07-27 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @testing-library/jest-dom from 6.9.1 to 7.0.0 (#233) ([f197b00d44522b2c15c55b39eafcf23108c07ab3](https://github.com/inqwise-opinion/opinion-front-ui/commit/f197b00d44522b2c15c55b39eafcf23108c07ab3)) - _dependabot[bot]_
 
