@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 235
+- **Total Commits**: 236
 - **Last Updated**: 2026-07-27 by glassfox
 - **Next Release**: TBD
 
@@ -1973,4 +1973,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @testing-library/jest-dom from 6.9.1 to 7.0.0 (#233) ([f197b00d44522b2c15c55b39eafcf23108c07ab3](https://github.com/inqwise-opinion/opinion-front-ui/commit/f197b00d44522b2c15c55b39eafcf23108c07ab3)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-07-27 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump sass from 1.101.0 to 1.102.0 (#232) ([1614a3e3ecc49cee0fa58c1e37dfabe0df7eea23](https://github.com/inqwise-opinion/opinion-front-ui/commit/1614a3e3ecc49cee0fa58c1e37dfabe0df7eea23)) - _dependabot[bot]_
 
