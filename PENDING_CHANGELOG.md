@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 242
+- **Total Commits**: 244
 - **Last Updated**: 2026-08-04 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2012,4 +2012,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps): bump axios from 1.18.1 to 1.19.0 ([6b22a06025874883feb5c94911b70c6642c076e4](https://github.com/inqwise-opinion/opinion-front-ui/commit/6b22a06025874883feb5c94911b70c6642c076e4)) - _dependabot[bot]_
 - Merge pull request #238 from inqwise-opinion/dependabot/npm_and_yarn/axios-1.19.0 ([6db1694c4318ee1de520aa8e4928dd2940b2c260](https://github.com/inqwise-opinion/opinion-front-ui/commit/6db1694c4318ee1de520aa8e4928dd2940b2c260)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-08-04 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 8.1.5 to 8.2.0 ([3f29de216c2e986d4ca4d7097e523c4e85165da6](https://github.com/inqwise-opinion/opinion-front-ui/commit/3f29de216c2e986d4ca4d7097e523c4e85165da6)) - _dependabot[bot]_
+- Merge pull request #235 from inqwise-opinion/dependabot/npm_and_yarn/vite-8.2.0 ([b2499e216c0780569ff7954e2a56c483ae4436ea](https://github.com/inqwise-opinion/opinion-front-ui/commit/b2499e216c0780569ff7954e2a56c483ae4436ea)) - _Alex Misyuk_
 
