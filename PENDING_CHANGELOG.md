@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 240
+- **Total Commits**: 242
 - **Last Updated**: 2026-08-04 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2002,4 +2002,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @types/react from 19.2.17 to 19.2.18 ([6ab102d209466ef762b4aaebdacc4793f96d5bfa](https://github.com/inqwise-opinion/opinion-front-ui/commit/6ab102d209466ef762b4aaebdacc4793f96d5bfa)) - _dependabot[bot]_
 - Merge pull request #237 from inqwise-opinion/dependabot/npm_and_yarn/types/react-19.2.18 ([d98788e2c30bfe2a483b26711b8008feceaed5cd](https://github.com/inqwise-opinion/opinion-front-ui/commit/d98788e2c30bfe2a483b26711b8008feceaed5cd)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-08-04 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps): bump axios from 1.18.1 to 1.19.0 ([6b22a06025874883feb5c94911b70c6642c076e4](https://github.com/inqwise-opinion/opinion-front-ui/commit/6b22a06025874883feb5c94911b70c6642c076e4)) - _dependabot[bot]_
+- Merge pull request #238 from inqwise-opinion/dependabot/npm_and_yarn/axios-1.19.0 ([6db1694c4318ee1de520aa8e4928dd2940b2c260](https://github.com/inqwise-opinion/opinion-front-ui/commit/6db1694c4318ee1de520aa8e4928dd2940b2c260)) - _Alex Misyuk_
 
