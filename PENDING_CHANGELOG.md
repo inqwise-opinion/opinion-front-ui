@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 250
-- **Last Updated**: 2026-08-10 by alex-inqwise
+- **Total Commits**: 252
+- **Last Updated**: 2026-08-18 by alex-inqwise
 - **Next Release**: TBD
 
 ---
@@ -2052,4 +2052,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump oxlint from 1.76.0 to 1.77.0 ([3e70bd58c1ff5ba53f38506cd8ebd2e78c5e6da9](https://github.com/inqwise-opinion/opinion-front-ui/commit/3e70bd58c1ff5ba53f38506cd8ebd2e78c5e6da9)) - _dependabot[bot]_
 - Merge pull request #240 from inqwise-opinion/dependabot/npm_and_yarn/oxlint-1.77.0 ([5c399130cd37617e455ac05056a12f07f35e6b5f](https://github.com/inqwise-opinion/opinion-front-ui/commit/5c399130cd37617e455ac05056a12f07f35e6b5f)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-08-18 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @testing-library/jest-dom from 7.0.0 to 7.0.1 ([57ece1cfe7ab9a53c801b0d6189f94e4d3768de8](https://github.com/inqwise-opinion/opinion-front-ui/commit/57ece1cfe7ab9a53c801b0d6189f94e4d3768de8)) - _dependabot[bot]_
+- Merge pull request #244 from inqwise-opinion/dependabot/npm_and_yarn/testing-library/jest-dom-7.0.1 ([28f3ae0da8c53558e36a46ed72bafc22c058038b](https://github.com/inqwise-opinion/opinion-front-ui/commit/28f3ae0da8c53558e36a46ed72bafc22c058038b)) - _Alex Misyuk_
 
