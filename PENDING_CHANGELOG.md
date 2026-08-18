@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 254
+- **Total Commits**: 256
 - **Last Updated**: 2026-08-18 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2072,4 +2072,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @types/node from 26.1.1 to 26.2.0 ([a8b2d1d17d4032b77f168937b9aaafb1d6c150c3](https://github.com/inqwise-opinion/opinion-front-ui/commit/a8b2d1d17d4032b77f168937b9aaafb1d6c150c3)) - _dependabot[bot]_
 - Merge pull request #242 from inqwise-opinion/dependabot/npm_and_yarn/types/node-26.2.0 ([1c6890baf3b056657e4866dcd3901f9d8b0ef309](https://github.com/inqwise-opinion/opinion-front-ui/commit/1c6890baf3b056657e4866dcd3901f9d8b0ef309)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-08-18 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump oxlint from 1.77.0 to 1.78.0 ([42566c370fd91ae965a2cfbbb9e8b3b90294d7a8](https://github.com/inqwise-opinion/opinion-front-ui/commit/42566c370fd91ae965a2cfbbb9e8b3b90294d7a8)) - _dependabot[bot]_
+- Merge pull request #243 from inqwise-opinion/dependabot/npm_and_yarn/oxlint-1.78.0 ([502e352e01e3e9e622791a93898415d474226b04](https://github.com/inqwise-opinion/opinion-front-ui/commit/502e352e01e3e9e622791a93898415d474226b04)) - _Alex Misyuk_
 
