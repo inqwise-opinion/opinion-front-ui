@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 260
+- **Total Commits**: 262
 - **Last Updated**: 2026-08-24 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2102,4 +2102,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump sass from 1.102.0 to 1.103.1 ([cbb119641a924aa705d14a1fe5899269c196b22a](https://github.com/inqwise-opinion/opinion-front-ui/commit/cbb119641a924aa705d14a1fe5899269c196b22a)) - _dependabot[bot]_
 - Merge pull request #246 from inqwise-opinion/dependabot/npm_and_yarn/sass-1.103.1 ([0cfd744c2746557dc09a397eee5bad4bdbaa25f5](https://github.com/inqwise-opinion/opinion-front-ui/commit/0cfd744c2746557dc09a397eee5bad4bdbaa25f5)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-08-24 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 8.2.1 to 8.2.2 ([8459617e530ecf08489a632ca9f0aa2a266cf0a3](https://github.com/inqwise-opinion/opinion-front-ui/commit/8459617e530ecf08489a632ca9f0aa2a266cf0a3)) - _dependabot[bot]_
+- Merge pull request #245 from inqwise-opinion/dependabot/npm_and_yarn/vite-8.2.2 ([7b7d075764a38a41f14cff74d327b5207745b12d](https://github.com/inqwise-opinion/opinion-front-ui/commit/7b7d075764a38a41f14cff74d327b5207745b12d)) - _Alex Misyuk_
 
