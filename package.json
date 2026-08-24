@@ -33,7 +33,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
-    "oxlint": "^1.78.0",
+    "oxlint": "^1.79.0",
     "sass": "^1.103.1",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
