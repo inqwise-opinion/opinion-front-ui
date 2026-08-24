@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 256
-- **Last Updated**: 2026-08-18 by alex-inqwise
+- **Total Commits**: 258
+- **Last Updated**: 2026-08-24 by alex-inqwise
 - **Next Release**: TBD
 
 ---
@@ -2082,4 +2082,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump oxlint from 1.77.0 to 1.78.0 ([42566c370fd91ae965a2cfbbb9e8b3b90294d7a8](https://github.com/inqwise-opinion/opinion-front-ui/commit/42566c370fd91ae965a2cfbbb9e8b3b90294d7a8)) - _dependabot[bot]_
 - Merge pull request #243 from inqwise-opinion/dependabot/npm_and_yarn/oxlint-1.78.0 ([502e352e01e3e9e622791a93898415d474226b04](https://github.com/inqwise-opinion/opinion-front-ui/commit/502e352e01e3e9e622791a93898415d474226b04)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-08-24 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @swc/core from 1.15.47 to 1.16.1 ([7a22bcc3fd0ec4f95711e3c9d5e5450310b16980](https://github.com/inqwise-opinion/opinion-front-ui/commit/7a22bcc3fd0ec4f95711e3c9d5e5450310b16980)) - _dependabot[bot]_
+- Merge pull request #247 from inqwise-opinion/dependabot/npm_and_yarn/swc/core-1.16.1 ([5d8fad4098057d212f4cb7a6fcb61cfac4058db8](https://github.com/inqwise-opinion/opinion-front-ui/commit/5d8fad4098057d212f4cb7a6fcb61cfac4058db8)) - _Alex Misyuk_
 
