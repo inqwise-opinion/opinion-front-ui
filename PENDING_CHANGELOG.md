@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 266
+- **Total Commits**: 268
 - **Last Updated**: 2026-09-01 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2132,4 +2132,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @types/node from 26.2.0 to 26.4.0 ([f5344151718eab414df83902eb266067ec521f5f](https://github.com/inqwise-opinion/opinion-front-ui/commit/f5344151718eab414df83902eb266067ec521f5f)) - _dependabot[bot]_
 - Merge pull request #253 from inqwise-opinion/dependabot/npm_and_yarn/types/node-26.4.0 ([71cbfc1e1d4061e2129e674e212a97ef6ca903c8](https://github.com/inqwise-opinion/opinion-front-ui/commit/71cbfc1e1d4061e2129e674e212a97ef6ca903c8)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-09-01 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump jest-environment-jsdom from 30.4.1 to 30.5.0 ([f7a3a80a50e351b114c16362e781432e4b5ae669](https://github.com/inqwise-opinion/opinion-front-ui/commit/f7a3a80a50e351b114c16362e781432e4b5ae669)) - _dependabot[bot]_
+- Merge pull request #250 from inqwise-opinion/dependabot/npm_and_yarn/jest-environment-jsdom-30.5.0 ([a9b752f1bd0f0b986976bc4bb96f323969216ee0](https://github.com/inqwise-opinion/opinion-front-ui/commit/a9b752f1bd0f0b986976bc4bb96f323969216ee0)) - _Alex Misyuk_
 
