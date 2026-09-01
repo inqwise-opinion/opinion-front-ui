@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 268
+- **Total Commits**: 270
 - **Last Updated**: 2026-09-01 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2142,4 +2142,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump jest-environment-jsdom from 30.4.1 to 30.5.0 ([f7a3a80a50e351b114c16362e781432e4b5ae669](https://github.com/inqwise-opinion/opinion-front-ui/commit/f7a3a80a50e351b114c16362e781432e4b5ae669)) - _dependabot[bot]_
 - Merge pull request #250 from inqwise-opinion/dependabot/npm_and_yarn/jest-environment-jsdom-30.5.0 ([a9b752f1bd0f0b986976bc4bb96f323969216ee0](https://github.com/inqwise-opinion/opinion-front-ui/commit/a9b752f1bd0f0b986976bc4bb96f323969216ee0)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-09-01 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps): bump axios from 1.19.0 to 1.20.0 ([3328007ec21f0435f67abd6708a16a5371a33f27](https://github.com/inqwise-opinion/opinion-front-ui/commit/3328007ec21f0435f67abd6708a16a5371a33f27)) - _dependabot[bot]_
+- Merge pull request #249 from inqwise-opinion/dependabot/npm_and_yarn/axios-1.20.0 ([f4d1be6549281767fc3ace7ff4a40aabe74a0bb4](https://github.com/inqwise-opinion/opinion-front-ui/commit/f4d1be6549281767fc3ace7ff4a40aabe74a0bb4)) - _Alex Misyuk_
 
