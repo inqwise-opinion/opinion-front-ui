@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 272
-- **Last Updated**: 2026-09-01 by alex-inqwise
+- **Total Commits**: 273
+- **Last Updated**: 2026-09-03 by glassfox
 - **Next Release**: TBD
 
 ---
@@ -2162,4 +2162,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump jest from 30.4.2 to 30.5.0 ([796e73ec42e5356bef7f5d68ba4d838ba7ff921b](https://github.com/inqwise-opinion/opinion-front-ui/commit/796e73ec42e5356bef7f5d68ba4d838ba7ff921b)) - _dependabot[bot]_
 - Merge pull request #251 from inqwise-opinion/dependabot/npm_and_yarn/jest-30.5.0 ([268df25687a0588dc3ae4bc0549a17639fbbfa7f](https://github.com/inqwise-opinion/opinion-front-ui/commit/268df25687a0588dc3ae4bc0549a17639fbbfa7f)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-09-03 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump oxlint from 1.79.0 to 1.80.0 (#252) ([5b2cbbb0dd0cb852bd89864d804595839c166227](https://github.com/inqwise-opinion/opinion-front-ui/commit/5b2cbbb0dd0cb852bd89864d804595839c166227)) - _dependabot[bot]_
 
