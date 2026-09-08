@@ -32,7 +32,7 @@
     "@types/react": "^19.2.18",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.5.1",
-    "jest-environment-jsdom": "^30.5.0",
+    "jest-environment-jsdom": "^30.5.1",
     "oxlint": "^1.81.0",
     "sass": "^1.104.0",
     "typescript": "^7.0.2",
