@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 283
+- **Total Commits**: 285
 - **Last Updated**: 2026-09-14 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2221,4 +2221,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @swc/core from 1.16.1 to 1.16.2 ([b4ce125daaf95f2c573593657e5a3d75bf7cd67c](https://github.com/inqwise-opinion/opinion-front-ui/commit/b4ce125daaf95f2c573593657e5a3d75bf7cd67c)) - _dependabot[bot]_
 - Merge pull request #259 from inqwise-opinion/dependabot/npm_and_yarn/swc/core-1.16.2 ([ecf4cd73e788c523cdd164cb1e65f66ba0f134cd](https://github.com/inqwise-opinion/opinion-front-ui/commit/ecf4cd73e788c523cdd164cb1e65f66ba0f134cd)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-09-14 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/react from 19.2.18 to 19.3.0 ([965a5f35a65afba659ca8860dfdd7713a7f4fbac](https://github.com/inqwise-opinion/opinion-front-ui/commit/965a5f35a65afba659ca8860dfdd7713a7f4fbac)) - _dependabot[bot]_
+- Merge pull request #260 from inqwise-opinion/dependabot/npm_and_yarn/types/react-19.3.0 ([7c3b4d8399ea0bbd30676f8d3923bfcc54c9fa2b](https://github.com/inqwise-opinion/opinion-front-ui/commit/7c3b4d8399ea0bbd30676f8d3923bfcc54c9fa2b)) - _Alex Misyuk_
 
