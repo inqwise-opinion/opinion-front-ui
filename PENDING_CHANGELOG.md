@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 285
+- **Total Commits**: 287
 - **Last Updated**: 2026-09-14 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2231,4 +2231,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @types/react from 19.2.18 to 19.3.0 ([965a5f35a65afba659ca8860dfdd7713a7f4fbac](https://github.com/inqwise-opinion/opinion-front-ui/commit/965a5f35a65afba659ca8860dfdd7713a7f4fbac)) - _dependabot[bot]_
 - Merge pull request #260 from inqwise-opinion/dependabot/npm_and_yarn/types/react-19.3.0 ([7c3b4d8399ea0bbd30676f8d3923bfcc54c9fa2b](https://github.com/inqwise-opinion/opinion-front-ui/commit/7c3b4d8399ea0bbd30676f8d3923bfcc54c9fa2b)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-09-14 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump oxlint from 1.81.0 to 1.82.0 ([aafd1001178eeee192b3b564a36e56191f63b387](https://github.com/inqwise-opinion/opinion-front-ui/commit/aafd1001178eeee192b3b564a36e56191f63b387)) - _dependabot[bot]_
+- Merge pull request #263 from inqwise-opinion/dependabot/npm_and_yarn/oxlint-1.82.0 ([adb64b90148729d921fa2644b931e6574515142f](https://github.com/inqwise-opinion/opinion-front-ui/commit/adb64b90148729d921fa2644b931e6574515142f)) - _Alex Misyuk_
 
