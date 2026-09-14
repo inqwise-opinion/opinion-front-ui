@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 289
+- **Total Commits**: 291
 - **Last Updated**: 2026-09-14 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2251,4 +2251,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump vite from 8.2.2 to 8.3.0 ([f4d0a2a8f000bdc09021026f402999d3465b03ce](https://github.com/inqwise-opinion/opinion-front-ui/commit/f4d0a2a8f000bdc09021026f402999d3465b03ce)) - _dependabot[bot]_
 - Merge pull request #262 from inqwise-opinion/dependabot/npm_and_yarn/vite-8.3.0 ([4f7b9a43519e8da4456bacc0721ff42645c0a348](https://github.com/inqwise-opinion/opinion-front-ui/commit/4f7b9a43519e8da4456bacc0721ff42645c0a348)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-09-14 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/node from 26.4.1 to 26.5.1 ([15a9dbc65f92b4ddc5951bbbbdfcd7f314f3eec1](https://github.com/inqwise-opinion/opinion-front-ui/commit/15a9dbc65f92b4ddc5951bbbbdfcd7f314f3eec1)) - _dependabot[bot]_
+- Merge pull request #261 from inqwise-opinion/dependabot/npm_and_yarn/types/node-26.5.1 ([8e307ffed4a746273d0c3f004e0c2c5f5e660bfc](https://github.com/inqwise-opinion/opinion-front-ui/commit/8e307ffed4a746273d0c3f004e0c2c5f5e660bfc)) - _Alex Misyuk_
 
