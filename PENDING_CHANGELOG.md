@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 299
+- **Total Commits**: 301
 - **Last Updated**: 2026-09-28 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2301,4 +2301,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump jest-environment-jsdom from 30.5.0 to 30.5.2 ([6f982d7ddeca607960a94d7d96de0a92d8f9bc7c](https://github.com/inqwise-opinion/opinion-front-ui/commit/6f982d7ddeca607960a94d7d96de0a92d8f9bc7c)) - _dependabot[bot]_
 - Merge pull request #272 from inqwise-opinion/dependabot/npm_and_yarn/jest-environment-jsdom-30.5.2 ([c9500764db6d0e001653b56e30f76142584140f3](https://github.com/inqwise-opinion/opinion-front-ui/commit/c9500764db6d0e001653b56e30f76142584140f3)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-09-28 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump sass from 1.104.1 to 1.105.0 ([3cc24cf36320a3372a11b2e5b8facc0ba1695419](https://github.com/inqwise-opinion/opinion-front-ui/commit/3cc24cf36320a3372a11b2e5b8facc0ba1695419)) - _dependabot[bot]_
+- Merge pull request #268 from inqwise-opinion/dependabot/npm_and_yarn/sass-1.105.0 ([9226b2a166a34862b0d997fb6c584facf7961abc](https://github.com/inqwise-opinion/opinion-front-ui/commit/9226b2a166a34862b0d997fb6c584facf7961abc)) - _Alex Misyuk_
 
