@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 303
+- **Total Commits**: 305
 - **Last Updated**: 2026-09-29 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2321,4 +2321,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump jest from 30.5.1 to 30.5.2 ([6be11b4c9d04eeec10b0beaad37e06bfb1035f8b](https://github.com/inqwise-opinion/opinion-front-ui/commit/6be11b4c9d04eeec10b0beaad37e06bfb1035f8b)) - _dependabot[bot]_
 - Merge pull request #271 from inqwise-opinion/dependabot/npm_and_yarn/jest-30.5.2 ([9f09d03cdcbccde56634e1b0edb0b7ad5cdeb0b8](https://github.com/inqwise-opinion/opinion-front-ui/commit/9f09d03cdcbccde56634e1b0edb0b7ad5cdeb0b8)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-09-29 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/node from 26.6.1 to 26.6.2 ([099f01bfe128e36df043b99b4a3c2dbe9eeb63f5](https://github.com/inqwise-opinion/opinion-front-ui/commit/099f01bfe128e36df043b99b4a3c2dbe9eeb63f5)) - _dependabot[bot]_
+- Merge pull request #267 from inqwise-opinion/dependabot/npm_and_yarn/types/node-26.6.2 ([07419acedb078c5eb175393c97806fb476483a62](https://github.com/inqwise-opinion/opinion-front-ui/commit/07419acedb078c5eb175393c97806fb476483a62)) - _Alex Misyuk_
 
