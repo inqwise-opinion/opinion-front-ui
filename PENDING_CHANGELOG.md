@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 315
+- **Total Commits**: 316
 - **Last Updated**: 2026-10-05 by glassfox
 - **Next Release**: TBD
 
@@ -2389,4 +2389,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump vite from 8.3.1 to 8.3.2 (#273) ([bfb054b89a462d2213c2d4ce0da7850d03927c37](https://github.com/inqwise-opinion/opinion-front-ui/commit/bfb054b89a462d2213c2d4ce0da7850d03927c37)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-10-05 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump oxlint from 1.85.0 to 1.86.0 (#275) ([ec7915eff69f21e030556c0dfbe4c93a4b4ed253](https://github.com/inqwise-opinion/opinion-front-ui/commit/ec7915eff69f21e030556c0dfbe4c93a4b4ed253)) - _dependabot[bot]_
 
