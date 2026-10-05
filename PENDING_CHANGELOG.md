@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 314
+- **Total Commits**: 315
 - **Last Updated**: 2026-10-05 by glassfox
 - **Next Release**: TBD
 
@@ -2380,4 +2380,13 @@ It is automatically maintained by the Changeset Accumulator workflow.
 ### 📦 Changes
 
 - deps(deps-dev): bump @swc/core from 1.16.2 to 1.16.13 (#274) ([1bf486cb5c0edd7e4323b25aa49c04b753190fda](https://github.com/inqwise-opinion/opinion-front-ui/commit/1bf486cb5c0edd7e4323b25aa49c04b753190fda)) - _dependabot[bot]_
+
+
+---
+**Push on 2026-10-05 by glassfox**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 8.3.1 to 8.3.2 (#273) ([bfb054b89a462d2213c2d4ce0da7850d03927c37](https://github.com/inqwise-opinion/opinion-front-ui/commit/bfb054b89a462d2213c2d4ce0da7850d03927c37)) - _dependabot[bot]_
 
