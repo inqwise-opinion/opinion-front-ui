@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="75" height="75" viewBox="0 0 75 75" aria-label="inqwise-opinion">
+  <title>inqwise-opinion</title>
+  <!-- Base rounded square with white inner stroke -->
+  <rect x="2" y="2" width="71" height="71" rx="8" ry="8" fill="#5a73a9" stroke="#ffffff" stroke-width="4"/>
+  <!-- Outer hairline stroke to match original edge -->
+  <rect x="1.5" y="1.5" width="72" height="72" rx="8.5" ry="8.5" fill="none" stroke="#7c7c7c" stroke-width="1"/>
+  <!-- Check mark -->
+  <path d="M18 40 L30 52 L57 25" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
