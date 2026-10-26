@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 328
+- **Total Commits**: 330
 - **Last Updated**: 2026-10-26 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2458,4 +2458,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump oxlint from 1.88.0 to 1.89.0 ([875cd79dea3ac48c305d7ba429c094148539ae6d](https://github.com/inqwise-opinion/opinion-front-ui/commit/875cd79dea3ac48c305d7ba429c094148539ae6d)) - _dependabot[bot]_
 - Merge pull request #287 from inqwise-opinion/dependabot/npm_and_yarn/oxlint-1.89.0 ([cffde6cee84e7f06d4a4a697bb205222704607e0](https://github.com/inqwise-opinion/opinion-front-ui/commit/cffde6cee84e7f06d4a4a697bb205222704607e0)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-10-26 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump vite from 8.3.4 to 8.3.5 ([36edf7a435440a5304eabe7f3563f432966ebce1](https://github.com/inqwise-opinion/opinion-front-ui/commit/36edf7a435440a5304eabe7f3563f432966ebce1)) - _dependabot[bot]_
+- Merge pull request #285 from inqwise-opinion/dependabot/npm_and_yarn/vite-8.3.5 ([35d4644d2901268be196828fe76da28a3c59a823](https://github.com/inqwise-opinion/opinion-front-ui/commit/35d4644d2901268be196828fe76da28a3c59a823)) - _Alex Misyuk_
 
