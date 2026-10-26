@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 332
+- **Total Commits**: 334
 - **Last Updated**: 2026-10-26 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2478,4 +2478,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @swc/core from 1.16.18 to 1.16.20 ([f70d6763c739b83b4e7d2907df194751b35c394e](https://github.com/inqwise-opinion/opinion-front-ui/commit/f70d6763c739b83b4e7d2907df194751b35c394e)) - _dependabot[bot]_
 - Merge pull request #284 from inqwise-opinion/dependabot/npm_and_yarn/swc/core-1.16.20 ([9422ae495fb4dc5e12d569c1d3e7a8aa4da6f793](https://github.com/inqwise-opinion/opinion-front-ui/commit/9422ae495fb4dc5e12d569c1d3e7a8aa4da6f793)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-10-26 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump sass from 1.105.1 to 1.106.1 ([ce2db6f8c74207c6476863856f69d1cd6c70b671](https://github.com/inqwise-opinion/opinion-front-ui/commit/ce2db6f8c74207c6476863856f69d1cd6c70b671)) - _dependabot[bot]_
+- Merge pull request #286 from inqwise-opinion/dependabot/npm_and_yarn/sass-1.106.1 ([ba633e4da311c90c2e7332a72a59cae9e31dc1da](https://github.com/inqwise-opinion/opinion-front-ui/commit/ba633e4da311c90c2e7332a72a59cae9e31dc1da)) - _Alex Misyuk_
 
