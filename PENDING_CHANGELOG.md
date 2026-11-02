@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 338
+- **Total Commits**: 340
 - **Last Updated**: 2026-11-02 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2508,4 +2508,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump oxlint from 1.89.0 to 1.90.0 ([747b36170edf0441952cd252e8a7da6e9bbd84fb](https://github.com/inqwise-opinion/opinion-front-ui/commit/747b36170edf0441952cd252e8a7da6e9bbd84fb)) - _dependabot[bot]_
 - Merge pull request #289 from inqwise-opinion/dependabot/npm_and_yarn/oxlint-1.90.0 ([3029342193543d44828d18fe9571b1b962bb6096](https://github.com/inqwise-opinion/opinion-front-ui/commit/3029342193543d44828d18fe9571b1b962bb6096)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-11-02 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps): bump axios from 1.20.0 to 1.21.0 ([0d98cf14940392f2d7cdc6287ffcd9cbf39c85b7](https://github.com/inqwise-opinion/opinion-front-ui/commit/0d98cf14940392f2d7cdc6287ffcd9cbf39c85b7)) - _dependabot[bot]_
+- Merge pull request #291 from inqwise-opinion/dependabot/npm_and_yarn/axios-1.21.0 ([80901d4231a660022605d1efd916ab14b0640693](https://github.com/inqwise-opinion/opinion-front-ui/commit/80901d4231a660022605d1efd916ab14b0640693)) - _Alex Misyuk_
 
