@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 340
+- **Total Commits**: 342
 - **Last Updated**: 2026-11-02 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2518,4 +2518,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps): bump axios from 1.20.0 to 1.21.0 ([0d98cf14940392f2d7cdc6287ffcd9cbf39c85b7](https://github.com/inqwise-opinion/opinion-front-ui/commit/0d98cf14940392f2d7cdc6287ffcd9cbf39c85b7)) - _dependabot[bot]_
 - Merge pull request #291 from inqwise-opinion/dependabot/npm_and_yarn/axios-1.21.0 ([80901d4231a660022605d1efd916ab14b0640693](https://github.com/inqwise-opinion/opinion-front-ui/commit/80901d4231a660022605d1efd916ab14b0640693)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-11-02 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @types/node from 26.6.5 to 26.6.6 ([2995c3c1166fe20458b136b984466fb8cae76604](https://github.com/inqwise-opinion/opinion-front-ui/commit/2995c3c1166fe20458b136b984466fb8cae76604)) - _dependabot[bot]_
+- Merge pull request #288 from inqwise-opinion/dependabot/npm_and_yarn/types/node-26.6.6 ([a5f98ec56d4aa42a66469bc5f8810335d2032248](https://github.com/inqwise-opinion/opinion-front-ui/commit/a5f98ec56d4aa42a66469bc5f8810335d2032248)) - _Alex Misyuk_
 
