@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 336
+- **Total Commits**: 338
 - **Last Updated**: 2026-11-02 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2498,4 +2498,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump sass from 1.106.1 to 1.107.0 ([71ce50d0b780ede689a62cc8657909987dc1ff2e](https://github.com/inqwise-opinion/opinion-front-ui/commit/71ce50d0b780ede689a62cc8657909987dc1ff2e)) - _dependabot[bot]_
 - Merge pull request #290 from inqwise-opinion/dependabot/npm_and_yarn/sass-1.107.0 ([4eeb7fb8ba6989dc94a1d0c8c2b0cd1e71d55e69](https://github.com/inqwise-opinion/opinion-front-ui/commit/4eeb7fb8ba6989dc94a1d0c8c2b0cd1e71d55e69)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-11-02 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump oxlint from 1.89.0 to 1.90.0 ([747b36170edf0441952cd252e8a7da6e9bbd84fb](https://github.com/inqwise-opinion/opinion-front-ui/commit/747b36170edf0441952cd252e8a7da6e9bbd84fb)) - _dependabot[bot]_
+- Merge pull request #289 from inqwise-opinion/dependabot/npm_and_yarn/oxlint-1.90.0 ([3029342193543d44828d18fe9571b1b962bb6096](https://github.com/inqwise-opinion/opinion-front-ui/commit/3029342193543d44828d18fe9571b1b962bb6096)) - _Alex Misyuk_
 
