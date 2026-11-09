@@ -4,7 +4,7 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 344
+- **Total Commits**: 346
 - **Last Updated**: 2026-11-09 by alex-inqwise
 - **Next Release**: TBD
 
@@ -2538,4 +2538,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @swc/core from 1.16.20 to 1.16.22 ([082d1cfcac86653cd44e06a31edd5cf4675e5091](https://github.com/inqwise-opinion/opinion-front-ui/commit/082d1cfcac86653cd44e06a31edd5cf4675e5091)) - _dependabot[bot]_
 - Merge pull request #295 from inqwise-opinion/dependabot/npm_and_yarn/swc/core-1.16.22 ([2120d6cf90f6da75842cd541661ee423d1c0d082](https://github.com/inqwise-opinion/opinion-front-ui/commit/2120d6cf90f6da75842cd541661ee423d1c0d082)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-11-09 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump oxlint from 1.90.0 to 1.91.0 ([82566f4981c6e0824e1b9371a6e0113121e27262](https://github.com/inqwise-opinion/opinion-front-ui/commit/82566f4981c6e0824e1b9371a6e0113121e27262)) - _dependabot[bot]_
+- Merge pull request #294 from inqwise-opinion/dependabot/npm_and_yarn/oxlint-1.91.0 ([70093228552587557e8e9f6e0b128c430a01b768](https://github.com/inqwise-opinion/opinion-front-ui/commit/70093228552587557e8e9f6e0b128c430a01b768)) - _Alex Misyuk_
 
