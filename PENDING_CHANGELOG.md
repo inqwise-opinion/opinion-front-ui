@@ -4,8 +4,8 @@ This file accumulates changes that will be included in the next release.
 It is automatically maintained by the Changeset Accumulator workflow.
 
 ## 📊 Summary
-- **Total Commits**: 342
-- **Last Updated**: 2026-11-02 by alex-inqwise
+- **Total Commits**: 344
+- **Last Updated**: 2026-11-09 by alex-inqwise
 - **Next Release**: TBD
 
 ---
@@ -2528,4 +2528,14 @@ It is automatically maintained by the Changeset Accumulator workflow.
 
 - deps(deps-dev): bump @types/node from 26.6.5 to 26.6.6 ([2995c3c1166fe20458b136b984466fb8cae76604](https://github.com/inqwise-opinion/opinion-front-ui/commit/2995c3c1166fe20458b136b984466fb8cae76604)) - _dependabot[bot]_
 - Merge pull request #288 from inqwise-opinion/dependabot/npm_and_yarn/types/node-26.6.6 ([a5f98ec56d4aa42a66469bc5f8810335d2032248](https://github.com/inqwise-opinion/opinion-front-ui/commit/a5f98ec56d4aa42a66469bc5f8810335d2032248)) - _Alex Misyuk_
+
+
+---
+**Push on 2026-11-09 by alex-inqwise**
+
+
+### 📦 Changes
+
+- deps(deps-dev): bump @swc/core from 1.16.20 to 1.16.22 ([082d1cfcac86653cd44e06a31edd5cf4675e5091](https://github.com/inqwise-opinion/opinion-front-ui/commit/082d1cfcac86653cd44e06a31edd5cf4675e5091)) - _dependabot[bot]_
+- Merge pull request #295 from inqwise-opinion/dependabot/npm_and_yarn/swc/core-1.16.22 ([2120d6cf90f6da75842cd541661ee423d1c0d082](https://github.com/inqwise-opinion/opinion-front-ui/commit/2120d6cf90f6da75842cd541661ee423d1c0d082)) - _Alex Misyuk_
 
