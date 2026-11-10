@@ -25,21 +25,21 @@
   "license": "MIT",
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",
-    "@swc/core": "^1.16.13",
+    "@swc/core": "^1.16.22",
     "@swc/jest": "^0.2.39",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
-    "oxlint": "^1.87.0",
-    "sass": "^1.105.2",
+    "oxlint": "^1.91.0",
+    "sass": "^1.108.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4"
+    "vite": "^8.3.6"
   },
   "dependencies": {
-    "axios": "^1.20.0",
+    "axios": "^1.21.0",
     "dataloader": "^2.2.3",
     "typescript-logging": "^2.2.0",
     "typescript-logging-log4ts-style": "^2.2.0",
